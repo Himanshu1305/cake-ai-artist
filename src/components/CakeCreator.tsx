@@ -40,20 +40,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         throw new Error("Failed to generate cake image");
       }
 
-      const data = await response.json();
-      
-      // Handle different possible response formats
+      // Check if response is binary data (image)
+      const contentType = response.headers.get("content-type");
       let imageUrl = "";
-      if (data.imageUrl) {
-        imageUrl = data.imageUrl;
-      } else if (data.image) {
-        imageUrl = data.image;
-      } else if (data.url) {
-        imageUrl = data.url;
-      } else if (typeof data === "string" && data.startsWith("http")) {
-        imageUrl = data;
+      
+      if (contentType && contentType.startsWith("image/")) {
+        // Handle binary image response
+        const blob = await response.blob();
+        imageUrl = URL.createObjectURL(blob);
       } else {
-        throw new Error("No image URL found in response");
+        try {
+          // Try to parse as JSON first
+          const data = await response.json();
+          
+          // Handle different possible JSON response formats
+          if (data.imageUrl) {
+            imageUrl = data.imageUrl;
+          } else if (data.image) {
+            imageUrl = data.image;
+          } else if (data.url) {
+            imageUrl = data.url;
+          } else if (typeof data === "string" && data.startsWith("http")) {
+            imageUrl = data;
+          } else {
+            throw new Error("No image URL found in response");
+          }
+        } catch (jsonError) {
+          // If JSON parsing fails, treat as binary data
+          const blob = await response.blob();
+          imageUrl = URL.createObjectURL(blob);
+        }
       }
 
       setGeneratedImage(imageUrl);
