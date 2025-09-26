@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User } from "lucide-react";
 
 interface CakeCreatorProps {}
 
@@ -14,6 +15,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [name, setName] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [useAI, setUseAI] = useState(true);
+  const [occasion, setOccasion] = useState("");
+  const [relation, setRelation] = useState("");
+  const [gender, setGender] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
@@ -38,6 +42,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
+    if (useAI && (!occasion || !relation || !gender)) {
+      toast({
+        title: "Please complete all fields",
+        description: "When using AI, please select occasion, relation, and gender for better personalized messages!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setGeneratedImage(null);
 
@@ -49,7 +62,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         },
         body: JSON.stringify({ 
           name: name.trim(),
-          ...(useAI ? { useAI: true } : { message: customMessage.trim() })
+          ...(useAI ? { 
+            useAI: true,
+            occasion: occasion,
+            relation: relation,
+            gender: gender
+          } : { message: customMessage.trim() })
         }),
       });
 
@@ -155,6 +173,79 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               disabled={isLoading}
             />
 
+            {/* Context Fields for AI */}
+            {useAI && (
+              <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-2">Help AI personalize your message</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="occasion" className="text-sm font-medium flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Occasion
+                    </Label>
+                    <Select value={occasion} onValueChange={setOccasion} disabled={isLoading}>
+                      <SelectTrigger className="bg-background border-border">
+                        <SelectValue placeholder="Select occasion" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border z-50">
+                        <SelectItem value="birthday">Birthday</SelectItem>
+                        <SelectItem value="anniversary">Anniversary</SelectItem>
+                        <SelectItem value="graduation">Graduation</SelectItem>
+                        <SelectItem value="wedding">Wedding</SelectItem>
+                        <SelectItem value="celebration">Celebration</SelectItem>
+                        <SelectItem value="farewell">Farewell</SelectItem>
+                        <SelectItem value="congratulations">Congratulations</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="relation" className="text-sm font-medium flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Relation
+                    </Label>
+                    <Select value={relation} onValueChange={setRelation} disabled={isLoading}>
+                      <SelectTrigger className="bg-background border-border">
+                        <SelectValue placeholder="Select relation" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border z-50">
+                        <SelectItem value="brother">Brother</SelectItem>
+                        <SelectItem value="sister">Sister</SelectItem>
+                        <SelectItem value="father">Father</SelectItem>
+                        <SelectItem value="mother">Mother</SelectItem>
+                        <SelectItem value="daughter">Daughter</SelectItem>
+                        <SelectItem value="son">Son</SelectItem>
+                        <SelectItem value="friend">Friend</SelectItem>
+                        <SelectItem value="in-laws">In-laws</SelectItem>
+                        <SelectItem value="partner">Partner</SelectItem>
+                        <SelectItem value="colleague">Colleague</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gender" className="text-sm font-medium flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Gender
+                    </Label>
+                    <Select value={gender} onValueChange={setGender} disabled={isLoading}>
+                      <SelectTrigger className="bg-background border-border">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border z-50">
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* AI Message Toggle */}
             <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
               <div className="space-y-1">
@@ -193,7 +284,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             
             <Button
               type="submit"
-              disabled={isLoading || !name.trim() || (!useAI && !customMessage.trim())}
+              disabled={isLoading || !name.trim() || (!useAI && !customMessage.trim()) || (useAI && (!occasion || !relation || !gender))}
               className="w-full py-6 text-lg bg-gradient-gold hover:shadow-gold transition-all duration-300 transform hover:scale-[1.02]"
             >
               {isLoading ? (
