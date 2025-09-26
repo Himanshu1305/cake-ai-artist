@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles } from "lucide-react";
+import { Download, Sparkles, MessageSquare } from "lucide-react";
 
 interface CakeCreatorProps {}
 
 export const CakeCreator = ({}: CakeCreatorProps) => {
   const [name, setName] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+  const [useAI, setUseAI] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
@@ -24,6 +29,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
+    if (!useAI && !customMessage.trim()) {
+      toast({
+        title: "Please enter a message",
+        description: "When not using AI, you need to provide a custom message for your cake!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setGeneratedImage(null);
 
@@ -33,7 +47,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ 
+          name: name.trim(),
+          ...(useAI ? { useAI: true } : { message: customMessage.trim() })
+        }),
       });
 
       if (!response.ok) {
@@ -125,10 +142,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-semibold text-foreground">Create Your Personalized Cake</h2>
-            <p className="text-muted-foreground">Enter a name and we'll create a beautiful custom cake just for you</p>
+            <p className="text-muted-foreground">Enter a name and customize your cake message</p>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Input
               type="text"
               placeholder="Enter the name for your cake"
@@ -137,10 +154,46 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               className="text-lg py-6 px-4 bg-surface border-border focus:ring-gold focus:border-gold"
               disabled={isLoading}
             />
+
+            {/* AI Message Toggle */}
+            <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
+              <div className="space-y-1">
+                <Label htmlFor="ai-toggle" className="text-base font-medium">
+                  AI-Generated Message
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Let AI create a perfect message for your cake
+                </p>
+              </div>
+              <Switch
+                id="ai-toggle"
+                checked={useAI}
+                onCheckedChange={setUseAI}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Custom Message */}
+            {!useAI && (
+              <div className="space-y-2">
+                <Label htmlFor="message" className="text-base font-medium flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Custom Message
+                </Label>
+                <Textarea
+                  id="message"
+                  placeholder="Enter your custom message for the cake..."
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  className="min-h-[100px] bg-surface border-border focus:ring-gold focus:border-gold"
+                  disabled={isLoading}
+                />
+              </div>
+            )}
             
             <Button
               type="submit"
-              disabled={isLoading || !name.trim()}
+              disabled={isLoading || !name.trim() || (!useAI && !customMessage.trim())}
               className="w-full py-6 text-lg bg-gradient-gold hover:shadow-gold transition-all duration-300 transform hover:scale-[1.02]"
             >
               {isLoading ? (
