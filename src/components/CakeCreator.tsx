@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle } from "lucide-react";
 
 interface CakeCreatorProps {}
 
@@ -151,6 +151,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleShare = (platform: string) => {
+    if (!generatedImage) return;
+
+    const shareText = `Check out this amazing personalized cake I created for ${name}! 🎂✨`;
+    const shareUrl = window.location.href;
+    
+    let shareLink = "";
+    
+    switch (platform) {
+      case "facebook":
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        break;
+      case "twitter":
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case "whatsapp":
+        shareLink = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
+        break;
+      default:
+        return;
+    }
+    
+    window.open(shareLink, "_blank", "width=600,height=400");
+    
+    toast({
+      title: "Sharing opened",
+      description: `Share your cake on ${platform}!`,
+    });
   };
 
   return (
@@ -340,13 +370,48 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               />
             </div>
             
-            <Button
-              onClick={handleDownload}
-              className="w-full py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Download Your Cake
-            </Button>
+            <div className="space-y-4">
+              <Button
+                onClick={handleDownload}
+                className="w-full py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download Your Cake
+              </Button>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Share2 className="w-4 h-4" />
+                  Share on social media
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    onClick={() => handleShare("facebook")}
+                    variant="outline"
+                    className="flex items-center gap-2 py-3"
+                  >
+                    <Facebook className="w-4 h-4" />
+                    Facebook
+                  </Button>
+                  <Button
+                    onClick={() => handleShare("twitter")}
+                    variant="outline"
+                    className="flex items-center gap-2 py-3"
+                  >
+                    <Twitter className="w-4 h-4" />
+                    Twitter
+                  </Button>
+                  <Button
+                    onClick={() => handleShare("whatsapp")}
+                    variant="outline"
+                    className="flex items-center gap-2 py-3"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    WhatsApp
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       )}
