@@ -18,6 +18,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [occasion, setOccasion] = useState("");
   const [relation, setRelation] = useState("");
   const [gender, setGender] = useState("");
+  const [cakeType, setCakeType] = useState("");
+  const [layers, setLayers] = useState("");
+  const [theme, setTheme] = useState("");
+  const [colors, setColors] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
@@ -62,6 +66,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         },
         body: JSON.stringify({ 
           name: name.trim(),
+          cakeType: cakeType || undefined,
+          layers: layers || undefined,
+          theme: theme || undefined,
+          colors: colors || undefined,
           ...(useAI ? { 
             useAI: true,
             occasion: occasion,
@@ -275,6 +283,88 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
               </div>
             )}
+
+            {/* Cake Customization */}
+            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-2">Customize Your Cake</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cake-type" className="text-sm font-medium">
+                    Cake Type
+                  </Label>
+                  <Select value={cakeType} onValueChange={setCakeType} disabled={isLoading}>
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select cake type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="chocolate">Chocolate</SelectItem>
+                      <SelectItem value="vanilla">Vanilla</SelectItem>
+                      <SelectItem value="strawberry">Strawberry</SelectItem>
+                      <SelectItem value="red-velvet">Red Velvet</SelectItem>
+                      <SelectItem value="funfetti">Funfetti</SelectItem>
+                      <SelectItem value="carrot">Carrot</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="layers" className="text-sm font-medium">
+                    Layers
+                  </Label>
+                  <Select value={layers} onValueChange={setLayers} disabled={isLoading}>
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select layers" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="single">Single Layer</SelectItem>
+                      <SelectItem value="double">2-Layer</SelectItem>
+                      <SelectItem value="triple">3-Layer</SelectItem>
+                      <SelectItem value="tiered">Tiered</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="theme" className="text-sm font-medium">
+                    Theme/Style
+                  </Label>
+                  <Select value={theme} onValueChange={setTheme} disabled={isLoading}>
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="classic">Classic</SelectItem>
+                      <SelectItem value="modern">Modern</SelectItem>
+                      <SelectItem value="rustic">Rustic</SelectItem>
+                      <SelectItem value="elegant">Elegant</SelectItem>
+                      <SelectItem value="fun">Fun/Cartoon</SelectItem>
+                      <SelectItem value="minimalist">Minimalist</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="colors" className="text-sm font-medium">
+                    Colors
+                  </Label>
+                  <Select value={colors} onValueChange={setColors} disabled={isLoading}>
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select colors" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="pink">Pink</SelectItem>
+                      <SelectItem value="blue">Blue</SelectItem>
+                      <SelectItem value="white">White</SelectItem>
+                      <SelectItem value="multicolor">Multicolor</SelectItem>
+                      <SelectItem value="gold-silver">Gold/Silver</SelectItem>
+                      <SelectItem value="pastel">Pastel</SelectItem>
+                      <SelectItem value="rainbow">Rainbow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
 
             {/* AI Message Toggle */}
             <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
