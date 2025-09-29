@@ -24,6 +24,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [colors, setColors] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +58,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     setIsLoading(true);
     setGeneratedImage(null);
+    setGeneratedMessage(null);
 
     try {
       const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
@@ -95,6 +97,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         try {
           // Try to parse as JSON first
           const data = await response.json();
+          
+          // Extract message if available
+          let message = "";
+          if (data.message) {
+            message = data.message;
+            setGeneratedMessage(message);
+          }
           
           // Handle different possible JSON response formats
           if (data.image_url) {
@@ -446,6 +455,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <h3 className="text-xl font-semibold text-foreground mb-2">Your Personalized Cake is Ready!</h3>
               <p className="text-muted-foreground">A beautiful cake created especially for {name}</p>
             </div>
+            
+            {/* Display AI-generated message if available */}
+            {generatedMessage && (
+              <div className="p-4 bg-gold/10 border border-gold/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <MessageSquare className="w-5 h-5 text-gold mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">Personalized Message</p>
+                    <p className="text-foreground leading-relaxed">{generatedMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="rounded-lg overflow-hidden shadow-gold">
               <img
