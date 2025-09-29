@@ -445,9 +445,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <h3 className="text-2xl font-bold text-foreground">🎂 Crafting Your Magical Cake ✨</h3>
               <p className="text-foreground/80 text-lg">Our AI is designing the perfect celebration cake for {name}... 🎉</p>
               <div className="flex items-center justify-center gap-2 mt-4">
-                <span className="animate-bounce">🎈</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🎊</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
+                <span className="animate-bounce floating-flame">🎈</span>
+                <span className="animate-bounce dancing-flame" style={{ animationDelay: '0.1s' }}>🎊</span>
+                <span className="animate-bounce floating-flame" style={{ animationDelay: '0.2s' }}>✨</span>
               </div>
             </div>
           </div>

@@ -125,3 +125,35 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Flame Effects */
+  .candle-flame {
+    @apply animate-flame-flicker;
+    filter: blur(0.5px);
+    transform-origin: bottom center;
+  }
+
+  .candle-flame-large {
+    @apply animate-flame-dance;
+    filter: blur(0.3px);
+    transform-origin: bottom center;
+  }
+
+  .candle-glow {
+    @apply animate-candle-glow;
+  }
+
+  /* Floating candle flame emoji */
+  .floating-flame {
+    @apply animate-flame-flicker;
+    display: inline-block;
+    transform-origin: center bottom;
+  }
+
+  .dancing-flame {
+    @apply animate-flame-dance;
+    display: inline-block;
+    transform-origin: center bottom;
+  }
+}

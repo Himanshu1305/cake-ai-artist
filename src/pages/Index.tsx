@@ -17,18 +17,18 @@ const Index = () => {
           <div className="text-center space-y-6 px-4">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground drop-shadow-lg">
               <span className="bg-gradient-party bg-clip-text text-transparent animate-pulse">
-                🎂 Cake Magic
+                <span className="floating-flame">🕯️</span> Cake Magic <span className="dancing-flame">🔥</span>
               </span>
               <br />
-              <span className="text-foreground">Creator ✨</span>
+              <span className="text-foreground">Creator <span className="floating-flame">✨</span></span>
             </h1>
             <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium">
               Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉
             </p>
             <div className="flex items-center justify-center gap-4 text-lg">
-              <span className="animate-bounce">🎈</span>
+              <span className="animate-bounce floating-flame">🎈</span>
               <span className="text-foreground/80">Make Every Moment Special</span>
-              <span className="animate-bounce">🎊</span>
+              <span className="animate-bounce dancing-flame">🎊</span>
             </div>
           </div>
         </div>
@@ -53,9 +53,15 @@ const Index = () => {
               that make every occasion magical and memorable!
             </p>
             <div className="flex gap-3 flex-wrap">
-              <span className="px-3 py-1 bg-party-pink/20 text-foreground rounded-full text-sm">🎂 Custom Messages</span>
-              <span className="px-3 py-1 bg-party-purple/20 text-foreground rounded-full text-sm">🎨 Beautiful Designs</span>
-              <span className="px-3 py-1 bg-gold/20 text-foreground rounded-full text-sm">✨ AI-Powered</span>
+              <span className="px-3 py-1 bg-party-pink/20 text-foreground rounded-full text-sm">
+                <span className="floating-flame">🎂</span> Custom Messages
+              </span>
+              <span className="px-3 py-1 bg-party-purple/20 text-foreground rounded-full text-sm">
+                <span className="dancing-flame">🎨</span> Beautiful Designs
+              </span>
+              <span className="px-3 py-1 bg-gold/20 text-foreground rounded-full text-sm candle-glow">
+                <span className="floating-flame">✨</span> AI-Powered
+              </span>
             </div>
           </div>
         </div>
