@@ -97,7 +97,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           const data = await response.json();
           
           // Handle different possible JSON response formats
-          if (data.imageUrl) {
+          if (data.image_url) {
+            imageUrl = data.image_url;
+          } else if (data.imageUrl) {
             imageUrl = data.imageUrl;
           } else if (data.image) {
             imageUrl = data.image;
