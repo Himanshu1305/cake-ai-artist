@@ -1,44 +1,89 @@
 import { CakeCreator } from "@/components/CakeCreator";
-import heroImage from "@/assets/hero-cake.jpg";
+import partyHero from "@/assets/party-hero.jpg";
+import celebrationCake from "@/assets/celebration-cake.jpg";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-celebration">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
         <img
-          src={heroImage}
-          alt="Luxury cake background"
-          className="w-full h-64 md:h-80 object-cover opacity-30"
+          src={partyHero}
+          alt="Vibrant birthday party celebration"
+          className="w-full h-72 md:h-96 object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-              <span className="bg-gradient-gold bg-clip-text text-transparent">
-                Custom Cake
+          <div className="text-center space-y-6 px-4">
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground drop-shadow-lg">
+              <span className="bg-gradient-party bg-clip-text text-transparent animate-pulse">
+                🎂 Cake Magic
               </span>
               <br />
-              <span className="text-foreground">Creator</span>
+              <span className="text-foreground">Creator ✨</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-              Transform any name into a stunning, personalized cake design powered by AI
+            <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium">
+              Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉
             </p>
+            <div className="flex items-center justify-center gap-4 text-lg">
+              <span className="animate-bounce">🎈</span>
+              <span className="text-foreground/80">Make Every Moment Special</span>
+              <span className="animate-bounce">🎊</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Highlight */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <img
+              src={celebrationCake}
+              alt="Beautiful celebration cake"
+              className="w-full h-64 object-cover rounded-2xl shadow-party"
+            />
+          </div>
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-foreground">
+              🌟 Create Unforgettable Moments
+            </h2>
+            <p className="text-lg text-foreground/80">
+              From birthdays to celebrations, our AI creates stunning personalized cakes 
+              that make every occasion magical and memorable!
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <span className="px-3 py-1 bg-party-pink/20 text-foreground rounded-full text-sm">🎂 Custom Messages</span>
+              <span className="px-3 py-1 bg-party-purple/20 text-foreground rounded-full text-sm">🎨 Beautiful Designs</span>
+              <span className="px-3 py-1 bg-gold/20 text-foreground rounded-full text-sm">✨ AI-Powered</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8">
         <CakeCreator />
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">
-            Create beautiful, personalized cakes with the power of AI
+      <footer className="border-t border-border/30 py-12 mt-16 bg-gradient-surface">
+        <div className="container mx-auto px-4 text-center space-y-4">
+          <div className="flex items-center justify-center gap-2 text-2xl mb-4">
+            <span>🎂</span>
+            <h3 className="font-bold text-foreground">Cake Magic Creator</h3>
+            <span>✨</span>
+          </div>
+          <p className="text-foreground/70 text-lg">
+            Bringing joy to every celebration, one personalized cake at a time! 🎉
           </p>
+          <div className="flex items-center justify-center gap-6 text-sm text-foreground/60">
+            <span>Made with 💖</span>
+            <span>•</span>
+            <span>Powered by AI 🤖</span>
+            <span>•</span>
+            <span>Spread the Joy 🌈</span>
+          </div>
         </div>
       </footer>
     </div>

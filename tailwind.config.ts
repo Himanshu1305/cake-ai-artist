@@ -66,14 +66,23 @@ export default {
           DEFAULT: "hsl(var(--surface))",
           elevated: "hsl(var(--surface-elevated))",
         },
+        party: {
+          pink: "hsl(var(--party-pink))",
+          purple: "hsl(var(--party-purple))",
+          coral: "hsl(var(--party-coral))",
+          mint: "hsl(var(--party-mint))",
+        },
       },
       backgroundImage: {
         'gradient-gold': 'var(--gradient-gold)',
         'gradient-surface': 'var(--gradient-surface)',
+        'gradient-party': 'var(--gradient-party)',
+        'gradient-celebration': 'var(--gradient-celebration)',
       },
       boxShadow: {
         'elegant': 'var(--shadow-elegant)',
         'gold': 'var(--shadow-gold)',
+        'party': 'var(--shadow-party)',
       },
       borderRadius: {
         lg: "var(--radius)",

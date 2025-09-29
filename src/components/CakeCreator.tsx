@@ -202,23 +202,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
   };
 
-  return (
+    return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
       {/* Input Form */}
-      <Card className="p-8 bg-gradient-surface border-border shadow-elegant">
+      <Card className="p-8 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-semibold text-foreground">Create Your Personalized Cake</h2>
-            <p className="text-muted-foreground">Enter a name and customize your cake message</p>
+            <h2 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
+              🎂 Create Your Dream Cake ✨
+            </h2>
+            <p className="text-foreground/80 text-lg">Enter a name and let the magic begin! 🎉</p>
           </div>
           
           <div className="space-y-6">
             <Input
               type="text"
-              placeholder="Enter the name for your cake"
+              placeholder="🎯 Enter the special person's name..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="text-lg py-6 px-4 bg-surface border-border focus:ring-gold focus:border-gold"
+              className="text-lg py-6 px-4 bg-surface border-party-pink/50 focus:ring-party-pink focus:border-party-pink transition-all duration-300"
               disabled={isLoading}
             />
 
@@ -416,17 +418,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             <Button
               type="submit"
               disabled={isLoading || !name.trim() || (!useAI && !customMessage.trim()) || (useAI && (!occasion || !relation || !gender))}
-              className="w-full py-6 text-lg bg-gradient-gold hover:shadow-gold transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full py-6 text-lg bg-gradient-party hover:shadow-party transition-all duration-300 transform hover:scale-[1.02] text-white font-semibold"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Creating your cake...
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  🎂 Creating your magical cake...
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  Generate Cake
+                  ✨ Generate My Cake Magic 🎉
                 </div>
               )}
             </Button>
@@ -436,12 +438,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       {/* Loading State */}
       {isLoading && (
-        <Card className="p-8 bg-surface-elevated border-border">
+        <Card className="p-8 bg-gradient-party/10 border-party-purple/40 border-2 shadow-party">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-16 h-16 border-4 border-party-pink border-t-transparent rounded-full animate-spin mx-auto" />
             <div className="space-y-2">
-              <h3 className="text-xl font-medium text-foreground">Crafting Your Perfect Cake</h3>
-              <p className="text-muted-foreground">Our AI is designing a beautiful personalized cake for {name}...</p>
+              <h3 className="text-2xl font-bold text-foreground">🎂 Crafting Your Magical Cake ✨</h3>
+              <p className="text-foreground/80 text-lg">Our AI is designing the perfect celebration cake for {name}... 🎉</p>
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <span className="animate-bounce">🎈</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🎊</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
+              </div>
             </div>
           </div>
         </Card>
@@ -449,21 +456,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       {/* Generated Image */}
       {generatedImage && !isLoading && (
-        <Card className="p-6 bg-surface-elevated border-border shadow-elegant">
+        <Card className="p-6 bg-gradient-celebration/20 border-2 border-gold/50 shadow-party backdrop-blur-sm">
           <div className="space-y-6">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-foreground mb-2">Your Personalized Cake is Ready!</h3>
-              <p className="text-muted-foreground">A beautiful cake created especially for {name}</p>
+              <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+                🎊 Your Dream Cake is Ready! ✨
+              </h3>
+              <p className="text-foreground/80 text-lg">A magical cake created especially for {name} 🎂💖</p>
             </div>
             
             {/* Display AI-generated message if available */}
             {generatedMessage && (
-              <div className="p-4 bg-gold/10 border border-gold/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <MessageSquare className="w-5 h-5 text-gold mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground mb-1">Personalized Message</p>
-                    <p className="text-foreground leading-relaxed">{generatedMessage}</p>
+              <div className="p-6 bg-gradient-party/10 border-2 border-party-pink/30 rounded-xl shadow-party">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-party rounded-full flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-party-pink mb-2 flex items-center gap-2">
+                      🎉 Your Personalized Message ✨
+                    </p>
+                    <p className="text-foreground leading-relaxed text-lg font-medium">{generatedMessage}</p>
                   </div>
                 </div>
               </div>
