@@ -17,6 +17,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [occasion, setOccasion] = useState("");
   const [relation, setRelation] = useState("");
   const [gender, setGender] = useState("");
+  const [character, setCharacter] = useState("");
   const [cakeType, setCakeType] = useState("");
   const [layers, setLayers] = useState("");
   const [theme, setTheme] = useState("");
@@ -65,7 +66,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           useAI: true,
           occasion: occasion,
           relation: relation,
-          gender: gender
+          gender: gender,
+          character: character || undefined
         }),
       });
 
@@ -216,7 +218,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
               <h3 className="text-lg font-medium text-foreground mb-2">Help AI personalize your message</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="occasion" className="text-sm font-medium flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
@@ -277,6 +279,48 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="character" className="text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Character
+                    </Label>
+                    <Select value={character} onValueChange={setCharacter} disabled={isLoading}>
+                      <SelectTrigger className="bg-background border-border">
+                        <SelectValue placeholder="Select character (optional)" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border z-50 max-h-[300px]">
+                        <SelectItem value="spider-man">Spider-Man</SelectItem>
+                        <SelectItem value="hulk">Hulk</SelectItem>
+                        <SelectItem value="captain-america">Captain America</SelectItem>
+                        <SelectItem value="peppa-pig">Peppa Pig</SelectItem>
+                        <SelectItem value="doraemon">Doraemon</SelectItem>
+                        <SelectItem value="shinchan">Shinchan</SelectItem>
+                        <SelectItem value="minions">Minions</SelectItem>
+                        <SelectItem value="hello-kitty">Hello Kitty</SelectItem>
+                        <SelectItem value="chhota-bheem">Chhota Bheem</SelectItem>
+                        <SelectItem value="motu-patlu">Motu Patlu</SelectItem>
+                        <SelectItem value="pikachu">Pikachu</SelectItem>
+                        <SelectItem value="totoro">Totoro</SelectItem>
+                        <SelectItem value="sailor-moon">Sailor Moon</SelectItem>
+                        <SelectItem value="tom-and-jerry">Tom and Jerry</SelectItem>
+                        <SelectItem value="gojo-satoru">Gojo Satoru</SelectItem>
+                        <SelectItem value="inosuke">Inosuke</SelectItem>
+                        <SelectItem value="zenitsu">Zenitsu</SelectItem>
+                        <SelectItem value="todoroki-shoto">Todoroki Shoto</SelectItem>
+                        <SelectItem value="anya-forger">Anya Forger</SelectItem>
+                        <SelectItem value="loid-forger">Loid Forger</SelectItem>
+                        <SelectItem value="goku">Goku</SelectItem>
+                        <SelectItem value="naruto">Naruto</SelectItem>
+                        <SelectItem value="masha-and-bear">Masha and the Bear</SelectItem>
+                        <SelectItem value="mickey-minnie">Mickey Mouse and Minnie Mouse</SelectItem>
+                        <SelectItem value="anna">Anna</SelectItem>
+                        <SelectItem value="elsa">Elsa</SelectItem>
+                        <SelectItem value="olaf">Olaf</SelectItem>
+                        <SelectItem value="sven">Sven</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
