@@ -13,8 +13,7 @@ interface CakeCreatorProps {}
 
 export const CakeCreator = ({}: CakeCreatorProps) => {
   const [name, setName] = useState("");
-  const [customMessage, setCustomMessage] = useState("");
-  const [useAI, setUseAI] = useState(true);
+  const [useAI] = useState(true);
   const [occasion, setOccasion] = useState("");
   const [relation, setRelation] = useState("");
   const [gender, setGender] = useState("");
@@ -38,16 +37,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
-    if (!useAI && !customMessage.trim()) {
-      toast({
-        title: "Please enter a message",
-        description: "When not using AI, you need to provide a custom message for your cake!",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (useAI && (!occasion || !relation || !gender)) {
+    if (!occasion || !relation || !gender) {
       toast({
         title: "Please complete all fields",
         description: "When using AI, please select occasion, relation, and gender for better personalized messages!",
@@ -72,12 +62,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           layers: layers || undefined,
           theme: theme || undefined,
           colors: colors || undefined,
-          ...(useAI ? { 
-            useAI: true,
-            occasion: occasion,
-            relation: relation,
-            gender: gender
-          } : { message: customMessage.trim() })
+          useAI: true,
+          occasion: occasion,
+          relation: relation,
+          gender: gender
         }),
       });
 
@@ -225,9 +213,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             />
 
             {/* Context Fields for AI */}
-            {useAI && (
-              <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
-                <h3 className="text-lg font-medium text-foreground mb-2">Help AI personalize your message</h3>
+            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-2">Help AI personalize your message</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -294,8 +281,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     </Select>
                   </div>
                 </div>
-              </div>
-            )}
+            </div>
 
             {/* Cake Customization */}
             <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
@@ -379,45 +365,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
             </div>
 
-            {/* AI Message Toggle */}
-            <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
-              <div className="space-y-1">
-                <Label htmlFor="ai-toggle" className="text-base font-medium">
-                  AI-Generated Message
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Let AI create a perfect message for your cake
-                </p>
-              </div>
-              <Switch
-                id="ai-toggle"
-                checked={useAI}
-                onCheckedChange={setUseAI}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Custom Message */}
-            {!useAI && (
-              <div className="space-y-2">
-                <Label htmlFor="message" className="text-base font-medium flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Custom Message
-                </Label>
-                <Textarea
-                  id="message"
-                  placeholder="Enter your custom message for the cake..."
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  className="min-h-[100px] bg-surface border-border focus:ring-gold focus:border-gold"
-                  disabled={isLoading}
-                />
-              </div>
-            )}
-            
             <Button
               type="submit"
-              disabled={isLoading || !name.trim() || (!useAI && !customMessage.trim()) || (useAI && (!occasion || !relation || !gender))}
+              disabled={isLoading || !name.trim() || !occasion || !relation || !gender}
               className="w-full py-6 text-lg bg-gradient-party hover:shadow-party transition-all duration-300 transform hover:scale-[1.02] text-white font-semibold"
             >
               {isLoading ? (

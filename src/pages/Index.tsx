@@ -1,4 +1,5 @@
 import { CakeCreator } from "@/components/CakeCreator";
+import { Link } from "react-router-dom";
 import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
 
@@ -15,20 +16,27 @@ const Index = () => {
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4">
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
               <span className="bg-gradient-party bg-clip-text text-transparent animate-pulse">
-                <span className="floating-flame">🕯️</span> Cake Magic <span className="dancing-flame">🔥</span>
+                <span className="animate-flame-flicker inline-block">🕯️</span> Cake Magic <span className="animate-flame-dance inline-block">🔥</span>
               </span>
               <br />
-              <span className="text-foreground">Creator <span className="floating-flame">✨</span></span>
+              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">Creator <span className="animate-flame-flicker inline-block">✨</span></span>
             </h1>
             <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium">
               Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉
             </p>
-            <div className="flex items-center justify-center gap-4 text-lg">
-              <span className="animate-bounce floating-flame">🎈</span>
+            <div className="flex items-center justify-center gap-4 text-lg flex-wrap">
+              <span className="animate-bounce inline-block">🎈</span>
               <span className="text-foreground/80">Make Every Moment Special</span>
-              <span className="animate-bounce dancing-flame">🎊</span>
+              <span className="animate-bounce inline-block">🎊</span>
+            </div>
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <Link to="/about">
+                <button className="px-6 py-3 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300 transform hover:scale-105">
+                  Learn More
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -74,21 +82,53 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/30 py-12 mt-16 bg-gradient-surface">
-        <div className="container mx-auto px-4 text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 text-2xl mb-4">
-            <span>🎂</span>
-            <h3 className="font-bold text-foreground">Cake Magic Creator</h3>
-            <span>✨</span>
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center md:text-left space-y-3">
+              <div className="flex items-center justify-center md:justify-start gap-2 text-2xl">
+                <span className="animate-flame-flicker inline-block">🎂</span>
+                <h3 className="font-bold text-foreground">Cake Magic Creator</h3>
+                <span className="animate-flame-flicker inline-block">✨</span>
+              </div>
+              <p className="text-foreground/70">
+                Bringing joy to every celebration with AI-powered personalized cakes!
+              </p>
+            </div>
+            
+            <div className="text-center space-y-2">
+              <h4 className="font-semibold text-foreground mb-3">Quick Links</h4>
+              <div className="flex flex-col gap-2">
+                <Link to="/about" className="text-foreground/70 hover:text-primary transition-colors">
+                  About Us
+                </Link>
+                <Link to="/privacy" className="text-foreground/70 hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+            
+            <div className="text-center md:text-right space-y-2">
+              <h4 className="font-semibold text-foreground mb-3">Freemium Model</h4>
+              <p className="text-foreground/70 text-sm">
+                Free for all users!
+              </p>
+              <p className="text-foreground/70 text-sm">
+                Premium: 100 generations/year
+              </p>
+            </div>
           </div>
-          <p className="text-foreground/70 text-lg">
-            Bringing joy to every celebration, one personalized cake at a time! 🎉
-          </p>
-          <div className="flex items-center justify-center gap-6 text-sm text-foreground/60">
-            <span>Made with 💖</span>
-            <span>•</span>
-            <span>Powered by AI 🤖</span>
-            <span>•</span>
-            <span>Spread the Joy 🌈</span>
+          
+          <div className="text-center pt-8 border-t border-border/30">
+            <div className="flex items-center justify-center gap-6 text-sm text-foreground/60">
+              <span>Made with 💖</span>
+              <span>•</span>
+              <span>Powered by AI 🤖</span>
+              <span>•</span>
+              <span>Spread the Joy 🌈</span>
+            </div>
+            <p className="text-foreground/50 text-xs mt-4">
+              © 2025 Cake Magic Creator. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
