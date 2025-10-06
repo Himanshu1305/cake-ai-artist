@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +14,7 @@ import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Faceb
 interface CakeCreatorProps {}
 
 export const CakeCreator = ({}: CakeCreatorProps) => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [useAI] = useState(true);
   const [occasion, setOccasion] = useState("");
@@ -25,6 +28,54 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [generationCount, setGenerationCount] = useState(0);
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      setUser(session.user);
+      setIsLoggedIn(true);
+      await loadUserData(session.user.id);
+    }
+  };
+
+  const loadUserData = async (userId: string) => {
+    try {
+      // Get profile to check premium status
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", userId)
+        .single();
+
+      if (profile) {
+        setIsPremium(profile.is_premium);
+      }
+
+      // Get generation count for current year
+      const currentYear = new Date().getFullYear();
+      const { data: tracking } = await supabase
+        .from("generation_tracking")
+        .select("count")
+        .eq("user_id", userId)
+        .eq("year", currentYear)
+        .single();
+
+      if (tracking) {
+        setGenerationCount(tracking.count);
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +93,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       toast({
         title: "Please complete all fields",
         description: "When using AI, please select occasion, relation, and gender for better personalized messages!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check generation limits for logged-in users
+    if (isLoggedIn && isPremium && generationCount >= 100) {
+      toast({
+        title: "Generation limit reached",
+        description: "You've reached your limit of 100 generations for this year.",
         variant: "destructive",
       });
       return;
@@ -117,9 +178,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       }
 
       setGeneratedImage(imageUrl);
+      
+      // Save image if user is logged in
+      if (isLoggedIn && user) {
+        await saveGeneratedImage(imageUrl);
+      }
+      
       toast({
         title: "Cake created successfully!",
-        description: `Your personalized cake for ${name} is ready!`,
+        description: isLoggedIn 
+          ? `Your personalized cake for ${name} is ready and saved!` 
+          : `Your personalized cake for ${name} is ready! Login to save it.`,
       });
     } catch (error) {
       console.error("Error generating cake:", error);
@@ -130,6 +199,53 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveGeneratedImage = async (imageUrl: string) => {
+    if (!user) return;
+
+    try {
+      const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
+      
+      // Save image
+      const { error: imageError } = await supabase
+        .from("generated_images")
+        .insert({
+          user_id: user.id,
+          image_url: imageUrl,
+          prompt: prompt,
+        });
+
+      if (imageError) throw imageError;
+
+      // Update generation tracking
+      const currentYear = new Date().getFullYear();
+      const { data: existing } = await supabase
+        .from("generation_tracking")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("year", currentYear)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from("generation_tracking")
+          .update({ count: existing.count + 1 })
+          .eq("id", existing.id);
+        setGenerationCount(existing.count + 1);
+      } else {
+        await supabase
+          .from("generation_tracking")
+          .insert({
+            user_id: user.id,
+            year: currentYear,
+            count: 1,
+          });
+        setGenerationCount(1);
+      }
+    } catch (error) {
+      console.error("Error saving image:", error);
     }
   };
 
@@ -194,6 +310,54 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
+      {/* User Status Banner */}
+      {isLoggedIn && (
+        <Card className="p-4 bg-party-purple/10 border-party-purple/30 border-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {isPremium ? "🌟 Premium User" : "✨ Free User"}
+              </p>
+              <p className="text-xs text-foreground/70">
+                {isPremium 
+                  ? `${generationCount} / 100 generations used this year`
+                  : "Unlimited generations, but images aren't saved"}
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/gallery")}
+              variant="outline"
+              size="sm"
+              className="border-party-purple/30 hover:border-party-purple"
+            >
+              View Gallery
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {!isLoggedIn && (
+        <Card className="p-4 bg-party-pink/10 border-party-pink/30 border-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                🎁 Free Trial Mode
+              </p>
+              <p className="text-xs text-foreground/70">
+                Generate cakes for free! Login to save and access them later.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/auth")}
+              className="bg-party-pink hover:bg-party-pink/90"
+              size="sm"
+            >
+              Login / Sign Up
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Input Form */}
       <Card className="p-8 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="space-y-6">

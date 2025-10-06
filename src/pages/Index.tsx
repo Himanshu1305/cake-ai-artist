@@ -1,14 +1,49 @@
 import { CakeCreator } from "@/components/CakeCreator";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setIsLoggedIn(!!session);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-celebration">
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6">
         <div className="flex justify-end gap-4">
+          {isLoggedIn && (
+            <Button
+              onClick={() => navigate("/gallery")}
+              variant="outline"
+              className="border-party-purple/30 hover:border-party-purple"
+            >
+              My Gallery
+            </Button>
+          )}
           <Link to="/about">
             <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300">
               About Us
@@ -19,6 +54,22 @@ const Index = () => {
               Learn More
             </button>
           </a>
+          {isLoggedIn ? (
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="border-party-pink/30 hover:border-party-pink"
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate("/auth")}
+              className="bg-party-pink hover:bg-party-pink/90"
+            >
+              Login / Sign Up
+            </Button>
+          )}
         </div>
       </nav>
 
