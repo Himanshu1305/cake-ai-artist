@@ -6,6 +6,22 @@ import celebrationCake from "@/assets/celebration-cake.jpg";
 const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      {/* Navigation Header */}
+      <nav className="container mx-auto px-4 py-6">
+        <div className="flex justify-end gap-4">
+          <Link to="/about">
+            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300">
+              About Us
+            </button>
+          </Link>
+          <a href="#creator">
+            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-purple/30 hover:border-party-purple hover:shadow-party transition-all duration-300">
+              Learn More
+            </button>
+          </a>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
@@ -30,13 +46,6 @@ const Index = () => {
               <span className="animate-bounce inline-block">🎈</span>
               <span className="text-foreground/80">Make Every Moment Special</span>
               <span className="animate-bounce inline-block">🎊</span>
-            </div>
-            <div className="flex items-center justify-center gap-4 mt-4">
-              <Link to="/about">
-                <button className="px-6 py-3 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300 transform hover:scale-105">
-                  Learn More
-                </button>
-              </Link>
             </div>
           </div>
         </div>
@@ -76,7 +85,7 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div id="creator" className="container mx-auto px-4 py-8">
         <CakeCreator />
       </div>
 

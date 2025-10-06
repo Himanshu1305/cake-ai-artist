@@ -98,7 +98,7 @@ const About = () => {
               </div>
               <h3 className="text-2xl font-bold text-foreground">Freemium Model</h3>
               <p className="text-foreground/70">
-                Start for free! All users get access to basic features. Premium users enjoy 100 cake generations per year with priority support and advanced options.
+                Start for free! All users get access to basic features. Premium users enjoy 100 cake generations per year.
               </p>
             </div>
           </Card>
