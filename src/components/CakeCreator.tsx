@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown } from "lucide-react";
 
 interface CakeCreatorProps {}
 
@@ -32,6 +32,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
+  const [totalGenerations, setTotalGenerations] = useState(0);
+
+  const PREMIUM_CHARACTERS = [
+    "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
+    "shinchan", "minions", "hello-kitty", "chhota-bheem", "motu-patlu",
+    "pikachu", "totoro", "sailor-moon", "tom-and-jerry", "gojo-satoru",
+    "inosuke", "zenitsu", "todoroki-shoto", "anya-forger", "loid-forger",
+    "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven"
+  ];
+  const FREE_GENERATION_LIMIT = 5;
 
   useEffect(() => {
     checkUser();
@@ -60,7 +70,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         setIsPremium(profile.is_premium);
       }
 
-      // Get generation count for current year
+      // Get generation count for current year (for premium users)
       const currentYear = new Date().getFullYear();
       const { data: tracking } = await supabase
         .from("generation_tracking")
@@ -71,6 +81,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       if (tracking) {
         setGenerationCount(tracking.count);
+      }
+
+      // Get total generation count (for free users)
+      const { data: allTracking } = await supabase
+        .from("generation_tracking")
+        .select("count")
+        .eq("user_id", userId);
+
+      if (allTracking) {
+        const total = allTracking.reduce((sum, record) => sum + (record.count || 0), 0);
+        setTotalGenerations(total);
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -99,10 +120,31 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
 
     // Check generation limits for logged-in users
-    if (isLoggedIn && isPremium && generationCount >= 100) {
+    if (isLoggedIn) {
+      if (isPremium && generationCount >= 100) {
+        toast({
+          title: "Generation limit reached",
+          description: "You've reached your limit of 100 generations for this year.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!isPremium && totalGenerations >= FREE_GENERATION_LIMIT) {
+        toast({
+          title: "Free limit reached",
+          description: `You've used all ${FREE_GENERATION_LIMIT} free generations. Upgrade to Premium for unlimited cakes!`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Check if character is premium and user is not premium
+    if (character && PREMIUM_CHARACTERS.includes(character) && !isPremium) {
       toast({
-        title: "Generation limit reached",
-        description: "You've reached your limit of 100 generations for this year.",
+        title: "Premium character selected",
+        description: "This character is only available for Premium users. Upgrade to unlock all characters!",
         variant: "destructive",
       });
       return;
@@ -234,6 +276,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           .update({ count: existing.count + 1 })
           .eq("id", existing.id);
         setGenerationCount(existing.count + 1);
+        setTotalGenerations(totalGenerations + 1);
       } else {
         await supabase
           .from("generation_tracking")
@@ -243,6 +286,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             count: 1,
           });
         setGenerationCount(1);
+        setTotalGenerations(totalGenerations + 1);
       }
     } catch (error) {
       console.error("Error saving image:", error);
@@ -315,23 +359,42 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         <Card className="p-4 bg-party-purple/10 border-party-purple/30 border-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-foreground">
-                {isPremium ? "🌟 Premium User" : "✨ Free User"}
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                {isPremium ? (
+                  <>
+                    <Crown className="w-4 h-4 text-yellow-500" />
+                    Premium User
+                  </>
+                ) : (
+                  "✨ Free User"
+                )}
               </p>
               <p className="text-xs text-foreground/70">
                 {isPremium 
                   ? `${generationCount} / 100 generations used this year`
-                  : "Unlimited generations, but images aren't saved"}
+                  : `${totalGenerations} / ${FREE_GENERATION_LIMIT} free generations used`}
               </p>
             </div>
-            <Button
-              onClick={() => navigate("/gallery")}
-              variant="outline"
-              size="sm"
-              className="border-party-purple/30 hover:border-party-purple"
-            >
-              View Gallery
-            </Button>
+            <div className="flex gap-2">
+              {!isPremium && (
+                <Button
+                  onClick={() => navigate("/auth")}
+                  size="sm"
+                  className="bg-gradient-party hover:shadow-party"
+                >
+                  <Crown className="w-4 h-4 mr-1" />
+                  Upgrade
+                </Button>
+              )}
+              <Button
+                onClick={() => navigate("/gallery")}
+                variant="outline"
+                size="sm"
+                className="border-party-purple/30 hover:border-party-purple"
+              >
+                View Gallery
+              </Button>
+            </div>
           </div>
         </Card>
       )}
@@ -457,34 +520,144 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         <SelectValue placeholder="Select character (optional)" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-border z-50 max-h-[300px]">
-                        <SelectItem value="spider-man">Spider-Man</SelectItem>
-                        <SelectItem value="hulk">Hulk</SelectItem>
-                        <SelectItem value="captain-america">Captain America</SelectItem>
-                        <SelectItem value="peppa-pig">Peppa Pig</SelectItem>
-                        <SelectItem value="doraemon">Doraemon</SelectItem>
-                        <SelectItem value="shinchan">Shinchan</SelectItem>
-                        <SelectItem value="minions">Minions</SelectItem>
-                        <SelectItem value="hello-kitty">Hello Kitty</SelectItem>
-                        <SelectItem value="chhota-bheem">Chhota Bheem</SelectItem>
-                        <SelectItem value="motu-patlu">Motu Patlu</SelectItem>
-                        <SelectItem value="pikachu">Pikachu</SelectItem>
-                        <SelectItem value="totoro">Totoro</SelectItem>
-                        <SelectItem value="sailor-moon">Sailor Moon</SelectItem>
-                        <SelectItem value="tom-and-jerry">Tom and Jerry</SelectItem>
-                        <SelectItem value="gojo-satoru">Gojo Satoru</SelectItem>
-                        <SelectItem value="inosuke">Inosuke</SelectItem>
-                        <SelectItem value="zenitsu">Zenitsu</SelectItem>
-                        <SelectItem value="todoroki-shoto">Todoroki Shoto</SelectItem>
-                        <SelectItem value="anya-forger">Anya Forger</SelectItem>
-                        <SelectItem value="loid-forger">Loid Forger</SelectItem>
-                        <SelectItem value="goku">Goku</SelectItem>
-                        <SelectItem value="naruto">Naruto</SelectItem>
-                        <SelectItem value="masha-and-bear">Masha and the Bear</SelectItem>
-                        <SelectItem value="mickey-minnie">Mickey Mouse and Minnie Mouse</SelectItem>
-                        <SelectItem value="anna">Anna</SelectItem>
-                        <SelectItem value="elsa">Elsa</SelectItem>
-                        <SelectItem value="olaf">Olaf</SelectItem>
-                        <SelectItem value="sven">Sven</SelectItem>
+                        <SelectItem value="mickey-minnie" className="flex items-center gap-2">
+                          Mickey Mouse and Minnie Mouse
+                        </SelectItem>
+                        <SelectItem value="spider-man" disabled={!isPremium} className="flex items-center gap-2">
+                          <span className="flex items-center gap-2">
+                            Spider-Man {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="hulk" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Hulk {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="captain-america" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Captain America {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="peppa-pig" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Peppa Pig {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="doraemon" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Doraemon {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="shinchan" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Shinchan {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="minions" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Minions {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="hello-kitty" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Hello Kitty {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="chhota-bheem" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Chhota Bheem {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="motu-patlu" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Motu Patlu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="pikachu" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Pikachu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="totoro" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Totoro {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="sailor-moon" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Sailor Moon {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="tom-and-jerry" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Tom and Jerry {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="gojo-satoru" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Gojo Satoru {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="inosuke" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Inosuke {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="zenitsu" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Zenitsu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="todoroki-shoto" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Todoroki Shoto {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="anya-forger" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Anya Forger {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="loid-forger" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Loid Forger {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="goku" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Goku {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="naruto" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Naruto {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="masha-and-bear" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Masha and the Bear {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="anna" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Anna {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="elsa" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Elsa {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="olaf" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Olaf {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="sven" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Sven {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -1,4 +1,5 @@
 import { CakeCreator } from "@/components/CakeCreator";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -23,6 +25,18 @@ const Index = () => {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     setIsLoggedIn(!!session);
+    
+    if (session) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (profile) {
+        setIsPremium(profile.is_premium);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -32,6 +46,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
+      
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-50 border-b border-border/30">
         <div className="flex justify-end gap-4">
