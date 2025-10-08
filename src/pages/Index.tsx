@@ -33,41 +33,41 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       {/* Navigation Header */}
-      <nav className="container mx-auto px-4 py-6">
+      <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-50 border-b border-border/30">
         <div className="flex justify-end gap-4">
           {isLoggedIn && (
             <Button
               onClick={() => navigate("/gallery")}
               variant="outline"
-              className="border-party-purple/30 hover:border-party-purple"
+              className="border-party-purple/30 hover:border-party-purple hover:scale-105 transition-transform duration-300"
             >
-              My Gallery
+              🖼️ My Gallery
             </Button>
           )}
           <Link to="/about">
-            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300">
-              About Us
+            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300 hover:scale-105">
+              ℹ️ About Us
             </button>
           </Link>
           <a href="#creator">
-            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-purple/30 hover:border-party-purple hover:shadow-party transition-all duration-300">
-              Learn More
+            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-purple/30 hover:border-party-purple hover:shadow-party transition-all duration-300 hover:scale-105">
+              📖 Learn More
             </button>
           </a>
           {isLoggedIn ? (
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="border-party-pink/30 hover:border-party-pink"
+              className="border-party-pink/30 hover:border-party-pink hover:scale-105 transition-transform duration-300"
             >
-              Logout
+              🚪 Logout
             </Button>
           ) : (
             <Button
               onClick={() => navigate("/auth")}
-              className="bg-party-pink hover:bg-party-pink/90"
+              className="bg-party-pink hover:bg-party-pink/90 hover:scale-105 transition-transform duration-300 hover:shadow-party"
             >
-              Login / Sign Up
+              🔐 Login / Sign Up
             </Button>
           )}
         </div>
@@ -79,10 +79,10 @@ const Index = () => {
         <img
           src={partyHero}
           alt="Vibrant birthday party celebration"
-          className="w-full h-72 md:h-96 object-cover"
+          className="w-full h-72 md:h-96 object-cover transition-transform duration-700 hover:scale-105"
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4">
+          <div className="text-center space-y-6 px-4 float">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
               <span className="bg-gradient-party bg-clip-text text-transparent animate-pulse">
                 <span className="animate-flame-flicker inline-block">🕯️</span> Cake Magic <span className="animate-flame-dance inline-block">🔥</span>
@@ -94,40 +94,52 @@ const Index = () => {
               Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉
             </p>
             <div className="flex items-center justify-center gap-4 text-lg flex-wrap">
-              <span className="animate-bounce inline-block">🎈</span>
-              <span className="text-foreground/80">Make Every Moment Special</span>
-              <span className="animate-bounce inline-block">🎊</span>
+              <span className="animate-bounce inline-block text-2xl">🎈</span>
+              <span className="text-foreground/80 font-semibold">Make Every Moment Special</span>
+              <span className="animate-bounce inline-block text-2xl">🎊</span>
+            </div>
+            <div className="pt-4">
+              <a href="#creator">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-gold text-white hover:shadow-gold transition-all duration-300 hover:scale-110 text-lg px-8 py-6 animate-pulse"
+                >
+                  🎂 Start Creating Now! ✨
+                </Button>
+              </a>
             </div>
           </div>
         </div>
       </div>
 
       {/* Feature Highlight */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div>
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-party opacity-30 rounded-2xl blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
             <img
               src={celebrationCake}
               alt="Beautiful celebration cake"
-              className="w-full h-64 object-cover rounded-2xl shadow-party"
+              className="relative w-full h-64 object-cover rounded-2xl shadow-party transition-transform duration-500 hover:scale-105 pulse-glow"
             />
           </div>
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-foreground">
-              🌟 Create Unforgettable Moments
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold text-foreground flex items-center gap-2">
+              <span className="animate-bounce inline-block">🌟</span>
+              Create Unforgettable Moments
             </h2>
-            <p className="text-lg text-foreground/80">
+            <p className="text-xl text-foreground/80 leading-relaxed">
               From birthdays to celebrations, our AI creates stunning personalized cakes 
               that make every occasion magical and memorable!
             </p>
             <div className="flex gap-3 flex-wrap">
-              <span className="px-3 py-1 bg-party-pink/20 text-foreground rounded-full text-sm">
+              <span className="px-4 py-2 bg-party-pink/20 text-foreground rounded-full text-base font-medium border-2 border-party-pink/40 hover:bg-party-pink/30 transition-all duration-300 hover:scale-110 cursor-pointer">
                 <span className="floating-flame">🎂</span> Custom Messages
               </span>
-              <span className="px-3 py-1 bg-party-purple/20 text-foreground rounded-full text-sm">
+              <span className="px-4 py-2 bg-party-purple/20 text-foreground rounded-full text-base font-medium border-2 border-party-purple/40 hover:bg-party-purple/30 transition-all duration-300 hover:scale-110 cursor-pointer">
                 <span className="dancing-flame">🎨</span> Beautiful Designs
               </span>
-              <span className="px-3 py-1 bg-gold/20 text-foreground rounded-full text-sm candle-glow">
+              <span className="px-4 py-2 bg-gold/20 text-foreground rounded-full text-base font-medium border-2 border-gold/40 hover:bg-gold/30 transition-all duration-300 hover:scale-110 cursor-pointer candle-glow">
                 <span className="floating-flame">✨</span> AI-Powered
               </span>
             </div>

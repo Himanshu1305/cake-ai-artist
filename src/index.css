@@ -156,4 +156,58 @@ All colors MUST be HSL.
     display: inline-block;
     transform-origin: center bottom;
   }
+
+  /* Bouncing elements */
+  .bounce-slow {
+    animation: bounce 3s ease-in-out infinite;
+  }
+
+  /* Pulse glow effect */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--party-pink) / 0.4), 0 0 40px hsl(var(--party-purple) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px hsl(var(--party-pink) / 0.6), 0 0 60px hsl(var(--party-purple) / 0.5);
+    }
+  }
+
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--party-pink) / 0.2),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
 }
