@@ -100,7 +100,7 @@ const Index = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 float">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
-              <span className="bg-gradient-party bg-clip-text text-transparent animate-pulse">
+              <span className="text-white drop-shadow-[0_4px_20px_rgba(255,20,147,0.8)] [text-shadow:_2px_2px_8px_rgb(255_20_147_/_80%),_-2px_-2px_8px_rgb(138_43_226_/_60%)] animate-pulse">
                 <span className="animate-flame-flicker inline-block">🕯️</span> Cake Magic <span className="animate-flame-dance inline-block">🔥</span>
               </span>
               <br />
