@@ -60,14 +60,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const loadUserData = async (userId: string) => {
     try {
       // Get profile to check premium status
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("is_premium")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
+
+      console.log("Profile data:", profile, "Error:", profileError);
 
       if (profile) {
-        setIsPremium(profile.is_premium);
+        setIsPremium(profile.is_premium || false);
+        console.log("Premium status set to:", profile.is_premium);
       }
 
       // Get generation count for current year (for premium users)
