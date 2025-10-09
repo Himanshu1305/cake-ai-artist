@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram } from "lucide-react";
 
 interface CakeCreatorProps {}
 
@@ -343,6 +343,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       case "whatsapp":
         shareLink = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
         break;
+      case "instagram":
+        // Instagram doesn't support web sharing directly, so we'll open Instagram web
+        toast({
+          title: "Instagram Sharing",
+          description: "Please save the image and share it on Instagram app!",
+        });
+        return;
       default:
         return;
     }
@@ -845,7 +852,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <Share2 className="w-4 h-4" />
                   Share on social media
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <Button
                     onClick={() => handleShare("facebook")}
                     variant="outline"
@@ -869,6 +876,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   >
                     <MessageCircle className="w-4 h-4" />
                     WhatsApp
+                  </Button>
+                  <Button
+                    onClick={() => handleShare("instagram")}
+                    variant="outline"
+                    className="flex items-center gap-2 py-3"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Instagram
                   </Button>
                 </div>
               </div>
