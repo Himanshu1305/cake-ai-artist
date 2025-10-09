@@ -816,11 +816,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
             )}
             
-            <div className="rounded-lg overflow-hidden shadow-gold">
+            <div className="rounded-lg overflow-hidden shadow-gold bg-background/50">
               <img
                 src={generatedImage}
                 alt={`Personalized cake for ${name}`}
-                className="w-full h-auto max-h-96 object-cover"
+                className="w-full h-auto object-contain"
                 onError={() => {
                   toast({
                     title: "Image failed to load",
