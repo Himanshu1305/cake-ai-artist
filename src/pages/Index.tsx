@@ -97,24 +97,14 @@ const Index = () => {
           alt="Vibrant birthday party celebration"
           className="w-full h-72 md:h-96 object-cover transition-transform duration-700 hover:scale-105"
         />
-        {/* Flickering candles */}
-        <div className="absolute top-8 left-1/4 flex gap-3 text-4xl pointer-events-none z-20">
-          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]">🕯️</span>
-          <span className="animate-flame-dance inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]">🕯️</span>
-          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.5s' }}>🕯️</span>
-        </div>
-        <div className="absolute top-12 right-1/4 flex gap-3 text-4xl pointer-events-none z-20">
-          <span className="animate-flame-dance inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.3s' }}>🕯️</span>
-          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.7s' }}>🕯️</span>
-        </div>
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 float">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
               <span className="text-white drop-shadow-[0_4px_20px_rgba(255,20,147,0.8)] [text-shadow:_2px_2px_8px_rgb(255_20_147_/_80%),_-2px_-2px_8px_rgb(138_43_226_/_60%)] animate-pulse">
-                <span className="animate-flame-flicker inline-block">🕯️</span> Cake Magic <span className="animate-flame-dance inline-block">🔥</span>
+                Cake Magic
               </span>
               <br />
-              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">Creator <span className="animate-flame-flicker inline-block">✨</span></span>
+              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">Creator ✨</span>
             </h1>
             <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium">
               Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉

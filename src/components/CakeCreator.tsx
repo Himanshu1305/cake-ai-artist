@@ -858,7 +858,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 <Button
                   onClick={handleRotateImage}
                   variant="outline"
-                  className="py-4 border-party-purple/30 hover:border-party-purple"
+                  className="py-4 border-party-purple/30 hover:border-party-purple bg-background"
                 >
                   <RotateCw className="w-5 h-5 mr-2" />
                   Rotate

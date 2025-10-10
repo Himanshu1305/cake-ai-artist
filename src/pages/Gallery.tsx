@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, RotateCw, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,8 @@ const Gallery = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [imageRotation, setImageRotation] = useState(0);
 
   useEffect(() => {
     checkUser();
@@ -128,6 +131,73 @@ const Gallery = () => {
     navigate("/");
   };
 
+  const handleImageClick = (image: GeneratedImage) => {
+    setSelectedImage(image);
+    setImageRotation(0);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedImage(null);
+    setImageRotation(0);
+  };
+
+  const handleRotateImage = () => {
+    setImageRotation((prev) => (prev + 90) % 360);
+  };
+
+  const handleDownloadRotated = async () => {
+    if (!selectedImage) return;
+
+    try {
+      const response = await fetch(selectedImage.image_url);
+      const blob = await response.blob();
+      
+      // Create canvas to rotate image
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = URL.createObjectURL(blob);
+      
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        if (!ctx) return;
+        
+        // Set canvas size based on rotation
+        if (imageRotation % 180 === 0) {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        } else {
+          canvas.width = img.height;
+          canvas.height = img.width;
+        }
+        
+        // Rotate and draw
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((imageRotation * Math.PI) / 180);
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+        
+        // Download
+        canvas.toBlob((rotatedBlob) => {
+          if (rotatedBlob) {
+            const url = URL.createObjectURL(rotatedBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${selectedImage.prompt.substring(0, 30)}-rotated.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.success("Rotated image downloaded!");
+          }
+        }, "image/jpeg");
+      };
+    } catch (error) {
+      console.error("Error downloading rotated image:", error);
+      toast.error("Failed to download rotated image");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
@@ -186,7 +256,10 @@ const Gallery = () => {
                 key={image.id}
                 className="overflow-hidden bg-surface-elevated/80 backdrop-blur-sm border-2 border-party-pink/30 hover:border-party-pink transition-all"
               >
-                <div className="aspect-square relative">
+                <div 
+                  className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => handleImageClick(image)}
+                >
                   <img
                     src={image.image_url}
                     alt={image.prompt}
@@ -268,6 +341,64 @@ const Gallery = () => {
           </div>
         )}
       </div>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!selectedImage} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-w-4xl p-0 bg-surface-elevated border-party-pink/30">
+          {selectedImage && (
+            <div className="relative">
+              <Button
+                onClick={handleCloseModal}
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-50 bg-background/80 hover:bg-background"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              
+              <div className="p-4">
+                <div className="relative flex items-center justify-center bg-background/50 rounded-lg overflow-hidden min-h-[400px]">
+                  <img
+                    src={selectedImage.image_url}
+                    alt={selectedImage.prompt}
+                    className="max-w-full max-h-[70vh] object-contain transition-transform duration-300"
+                    style={{ transform: `rotate(${imageRotation}deg)` }}
+                  />
+                </div>
+                
+                <div className="mt-4 space-y-3">
+                  <p className="text-sm text-foreground/70">{selectedImage.prompt}</p>
+                  
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      onClick={handleRotateImage}
+                      variant="outline"
+                      size="sm"
+                      className="border-party-purple/30 hover:border-party-purple bg-background"
+                    >
+                      <RotateCw className="w-4 h-4 mr-2" />
+                      Rotate
+                    </Button>
+                    
+                    <Button
+                      onClick={imageRotation === 0 
+                        ? () => handleDownload(selectedImage.image_url, selectedImage.prompt)
+                        : handleDownloadRotated
+                      }
+                      variant="outline"
+                      size="sm"
+                      className="border-party-pink/30 hover:border-party-pink bg-background"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download {imageRotation !== 0 && "Rotated"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
