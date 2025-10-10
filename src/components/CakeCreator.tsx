@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw } from "lucide-react";
 
 interface CakeCreatorProps {}
 
@@ -33,6 +33,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
+  const [imageRotation, setImageRotation] = useState(0);
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -156,6 +157,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     setIsLoading(true);
     setGeneratedImage(null);
     setGeneratedMessage(null);
+    setImageRotation(0);
 
     try {
       const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
@@ -360,6 +362,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       title: "Sharing opened",
       description: `Share your cake on ${platform}!`,
     });
+  };
+
+  const handleRotateImage = () => {
+    setImageRotation((prev) => (prev + 90) % 360);
   };
 
     return (
@@ -827,7 +833,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <img
                 src={generatedImage}
                 alt={`Personalized cake for ${name}`}
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain transition-transform duration-500"
+                style={{ transform: `rotate(${imageRotation}deg)` }}
                 onError={() => {
                   toast({
                     title: "Image failed to load",
@@ -839,13 +846,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
             
             <div className="space-y-4">
-              <Button
-                onClick={handleDownload}
-                className="w-full py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Download Your Cake
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={handleDownload}
+                  className="py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Download
+                </Button>
+                
+                <Button
+                  onClick={handleRotateImage}
+                  variant="outline"
+                  className="py-4 border-party-purple/30 hover:border-party-purple"
+                >
+                  <RotateCw className="w-5 h-5 mr-2" />
+                  Rotate
+                </Button>
+              </div>
               
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

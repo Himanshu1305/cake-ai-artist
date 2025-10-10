@@ -97,6 +97,16 @@ const Index = () => {
           alt="Vibrant birthday party celebration"
           className="w-full h-72 md:h-96 object-cover transition-transform duration-700 hover:scale-105"
         />
+        {/* Flickering candles */}
+        <div className="absolute top-8 left-1/4 flex gap-3 text-4xl pointer-events-none z-20">
+          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]">🕯️</span>
+          <span className="animate-flame-dance inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]">🕯️</span>
+          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.5s' }}>🕯️</span>
+        </div>
+        <div className="absolute top-12 right-1/4 flex gap-3 text-4xl pointer-events-none z-20">
+          <span className="animate-flame-dance inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.3s' }}>🕯️</span>
+          <span className="animate-flame-flicker inline-block drop-shadow-[0_0_15px_rgba(255,165,0,0.9)]" style={{ animationDelay: '0.7s' }}>🕯️</span>
+        </div>
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 float">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">

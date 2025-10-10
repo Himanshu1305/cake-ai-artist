@@ -192,11 +192,6 @@ const Gallery = () => {
                     alt={image.prompt}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-3 text-3xl pointer-events-none">
-                    <span className="animate-flame-flicker inline-block drop-shadow-[0_0_10px_rgba(255,165,0,0.8)]">🕯️</span>
-                    <span className="animate-flame-dance inline-block drop-shadow-[0_0_10px_rgba(255,165,0,0.8)]">🕯️</span>
-                    <span className="animate-flame-flicker inline-block drop-shadow-[0_0_10px_rgba(255,165,0,0.8)]" style={{ animationDelay: '0.5s' }}>🕯️</span>
-                  </div>
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
