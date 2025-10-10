@@ -4,7 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface GeneratedImage {
   id: string;
@@ -68,6 +74,53 @@ const Gallery = () => {
       console.error("Error deleting image:", error);
       toast.error("Failed to delete image");
     }
+  };
+
+  const handleDownload = async (imageUrl: string, prompt: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${prompt.substring(0, 30)}-cake.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success("Download started!");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image");
+    }
+  };
+
+  const handleShare = (platform: string, prompt: string) => {
+    const shareText = `Check out this amazing personalized cake! 🎂✨`;
+    const shareUrl = window.location.origin;
+    
+    let shareLink = "";
+    
+    switch (platform) {
+      case "facebook":
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        break;
+      case "twitter":
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case "whatsapp":
+        shareLink = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
+        break;
+      case "instagram":
+        toast.success("Please save the image and share it on Instagram app!");
+        return;
+      default:
+        return;
+    }
+    
+    window.open(shareLink, "_blank", "width=600,height=400");
+    toast.success(`Sharing on ${platform}!`);
   };
 
   const handleLogout = async () => {
@@ -149,17 +202,70 @@ const Gallery = () => {
                   <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
                     {image.prompt}
                   </p>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-2">
                     <span className="text-xs text-foreground/50">
                       {new Date(image.created_at).toLocaleDateString()}
                     </span>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteImage(image.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownload(image.image_url, image.prompt)}
+                        className="border-party-purple/30 hover:border-party-purple"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-party-pink/30 hover:border-party-pink"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-surface-elevated border-party-pink/30">
+                          <DropdownMenuItem 
+                            onClick={() => handleShare("facebook", image.prompt)}
+                            className="cursor-pointer hover:bg-party-pink/10"
+                          >
+                            <Facebook className="w-4 h-4 mr-2" />
+                            Facebook
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleShare("twitter", image.prompt)}
+                            className="cursor-pointer hover:bg-party-pink/10"
+                          >
+                            <Twitter className="w-4 h-4 mr-2" />
+                            Twitter
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleShare("whatsapp", image.prompt)}
+                            className="cursor-pointer hover:bg-party-pink/10"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            WhatsApp
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleShare("instagram", image.prompt)}
+                            className="cursor-pointer hover:bg-party-pink/10"
+                          >
+                            <Instagram className="w-4 h-4 mr-2" />
+                            Instagram
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteImage(image.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>
