@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, RotateCw, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,8 +143,8 @@ const Gallery = () => {
     setImageRotation(0);
   };
 
-  const handleRotateImage = () => {
-    setImageRotation((prev) => (prev + 90) % 360);
+  const handleRotateImage = (value: number[]) => {
+    setImageRotation(value[0]);
   };
 
   const handleDownloadRotated = async () => {
@@ -366,32 +368,42 @@ const Gallery = () => {
                   />
                 </div>
                 
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 space-y-4">
                   <p className="text-sm text-foreground/70">{selectedImage.prompt}</p>
                   
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={handleRotateImage}
-                      variant="outline"
-                      size="sm"
-                      className="border-party-purple/30 hover:border-party-purple bg-background"
-                    >
-                      <RotateCw className="w-4 h-4 mr-2" />
-                      Rotate
-                    </Button>
+                  <div className="space-y-3">
+                    <div className="space-y-2 p-3 border border-party-purple/30 rounded-md bg-background/50">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium flex items-center gap-2">
+                          <RotateCw className="w-4 h-4" />
+                          Rotate Image
+                        </Label>
+                        <span className="text-xs text-muted-foreground">{imageRotation}°</span>
+                      </div>
+                      <Slider
+                        value={[imageRotation]}
+                        onValueChange={handleRotateImage}
+                        min={0}
+                        max={360}
+                        step={1}
+                        className="w-full"
+                      />
+                    </div>
                     
-                    <Button
-                      onClick={imageRotation === 0 
-                        ? () => handleDownload(selectedImage.image_url, selectedImage.prompt)
-                        : handleDownloadRotated
-                      }
-                      variant="outline"
-                      size="sm"
-                      className="border-party-pink/30 hover:border-party-pink bg-background"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download {imageRotation !== 0 && "Rotated"}
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        onClick={imageRotation === 0 
+                          ? () => handleDownload(selectedImage.image_url, selectedImage.prompt)
+                          : handleDownloadRotated
+                        }
+                        variant="outline"
+                        size="sm"
+                        className="border-party-pink/30 hover:border-party-pink bg-background"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download {imageRotation !== 0 && "Rotated"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

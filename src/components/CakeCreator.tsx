@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 interface CakeCreatorProps {}
 
@@ -40,7 +41,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     "shinchan", "minions", "hello-kitty", "chhota-bheem", "motu-patlu",
     "pikachu", "totoro", "sailor-moon", "tom-and-jerry", "gojo-satoru",
     "inosuke", "zenitsu", "todoroki-shoto", "anya-forger", "loid-forger",
-    "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven"
+    "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven", "barbie"
   ];
   const FREE_GENERATION_LIMIT = 5;
 
@@ -364,8 +365,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
   };
 
-  const handleRotateImage = () => {
-    setImageRotation((prev) => (prev + 90) % 360);
+  const handleRotateImage = (value: number[]) => {
+    setImageRotation(value[0]);
   };
 
     return (
@@ -674,6 +675,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             Sven {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
                           </span>
                         </SelectItem>
+                        <SelectItem value="barbie" disabled={!isPremium}>
+                          <span className="flex items-center gap-2">
+                            Barbie {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
+                          </span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -855,14 +861,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   Download
                 </Button>
                 
-                <Button
-                  onClick={handleRotateImage}
-                  variant="outline"
-                  className="py-4 border-party-purple/30 hover:border-party-purple bg-background"
-                >
-                  <RotateCw className="w-5 h-5 mr-2" />
-                  Rotate
-                </Button>
+                <div className="space-y-2 p-4 border border-party-purple/30 rounded-md bg-background">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <RotateCw className="w-4 h-4" />
+                      Rotate Image
+                    </Label>
+                    <span className="text-xs text-muted-foreground">{imageRotation}°</span>
+                  </div>
+                  <Slider
+                    value={[imageRotation]}
+                    onValueChange={handleRotateImage}
+                    min={0}
+                    max={360}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
               </div>
               
               <div className="space-y-3">

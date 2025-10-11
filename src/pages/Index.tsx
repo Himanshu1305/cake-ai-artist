@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
+import heroCake from "@/assets/hero-cake.jpg";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -161,6 +163,66 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Cake Carousel */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
+            ✨ Get Inspired by These Amazing Creations ✨
+          </h2>
+          <p className="text-xl text-foreground/80">
+            You can create stunning cakes like these too!
+          </p>
+        </div>
+        <Carousel className="w-full max-w-5xl mx-auto">
+          <CarouselContent>
+            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+              <div className="p-2">
+                <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
+                  <img
+                    src={heroCake}
+                    alt="Example cake design 1"
+                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <span className="text-foreground font-semibold">Birthday Celebration</span>
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+              <div className="p-2">
+                <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
+                  <img
+                    src={celebrationCake}
+                    alt="Example cake design 2"
+                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <span className="text-foreground font-semibold">Special Occasion</span>
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+              <div className="p-2">
+                <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
+                  <img
+                    src={partyHero}
+                    alt="Example cake design 3"
+                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <span className="text-foreground font-semibold">Party Theme</span>
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious className="left-0" />
+          <CarouselNext className="right-0" />
+        </Carousel>
       </div>
 
       {/* Main Content */}
