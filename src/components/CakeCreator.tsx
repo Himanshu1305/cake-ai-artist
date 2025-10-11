@@ -256,12 +256,33 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     try {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
       
-      // Save image
+      // Save image to permanent storage
+      console.log('Saving image to storage...');
+      const { data: storageData, error: storageError } = await supabase.functions.invoke(
+        'save-image-to-storage',
+        {
+          body: { 
+            imageUrl, 
+            userId: user.id,
+            prompt 
+          }
+        }
+      );
+
+      if (storageError) {
+        console.error('Storage error:', storageError);
+        throw storageError;
+      }
+
+      const permanentUrl = storageData?.publicUrl || imageUrl;
+      console.log('Permanent URL:', permanentUrl);
+
+      // Save image with permanent URL
       const { error: imageError } = await supabase
         .from("generated_images")
         .insert({
           user_id: user.id,
-          image_url: imageUrl,
+          image_url: permanentUrl,
           prompt: prompt,
         });
 

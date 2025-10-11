@@ -13,9 +13,11 @@ const Index = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
 
   useEffect(() => {
     checkAuth();
+    loadFeaturedCakes();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsLoggedIn(!!session);
@@ -23,6 +25,25 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const loadFeaturedCakes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("generated_images")
+        .select("image_url, prompt")
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        setFeaturedCakes(data);
+      }
+    } catch (error) {
+      console.error("Error loading featured cakes:", error);
+    }
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -177,48 +198,69 @@ const Index = () => {
         </div>
         <Carousel className="w-full max-w-5xl mx-auto">
           <CarouselContent>
-            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-2">
-                <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
-                  <img
-                    src={heroCake}
-                    alt="Example cake design 1"
-                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                    <span className="text-foreground font-semibold">Birthday Celebration</span>
+            {featuredCakes.length > 0 ? (
+              featuredCakes.map((cake, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
+                      <img
+                        src={cake.image_url}
+                        alt={cake.prompt}
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4 px-2">
+                        <span className="text-foreground font-semibold text-sm text-center line-clamp-2">{cake.prompt}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CarouselItem>
-            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-2">
-                <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
-                  <img
-                    src={celebrationCake}
-                    alt="Example cake design 2"
-                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                    <span className="text-foreground font-semibold">Special Occasion</span>
+                </CarouselItem>
+              ))
+            ) : (
+              <>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
+                      <img
+                        src={heroCake}
+                        alt="Example cake design 1"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <span className="text-foreground font-semibold">Birthday Celebration</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CarouselItem>
-            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-2">
-                <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
-                  <img
-                    src={partyHero}
-                    alt="Example cake design 3"
-                    className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                    <span className="text-foreground font-semibold">Party Theme</span>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
+                      <img
+                        src={celebrationCake}
+                        alt="Example cake design 2"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <span className="text-foreground font-semibold">Special Occasion</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CarouselItem>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
+                      <img
+                        src={partyHero}
+                        alt="Example cake design 3"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <span className="text-foreground font-semibold">Party Theme</span>
+                      </div>
+                    </div>
+                  </div>
+                </CarouselItem>
+              </>
+            )}
           </CarouselContent>
           <CarouselPrevious className="left-0" />
           <CarouselNext className="right-0" />

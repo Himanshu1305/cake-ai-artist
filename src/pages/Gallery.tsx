@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, RotateCw, X } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, RotateCw, X, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -20,6 +20,7 @@ interface GeneratedImage {
   image_url: string;
   prompt: string;
   created_at: string;
+  featured: boolean;
 }
 
 const Gallery = () => {
@@ -145,6 +146,30 @@ const Gallery = () => {
 
   const handleRotateImage = (value: number[]) => {
     setImageRotation(value[0]);
+  };
+
+  const toggleFeatured = async (imageId: string, currentFeatured: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("generated_images")
+        .update({ featured: !currentFeatured })
+        .eq("id", imageId);
+
+      if (error) throw error;
+
+      setImages(images.map(img => 
+        img.id === imageId ? { ...img, featured: !currentFeatured } : img
+      ));
+
+      toast.success(
+        !currentFeatured 
+          ? "Image featured! It will appear in the homepage carousel." 
+          : "Image unfeatured."
+      );
+    } catch (error: any) {
+      console.error("Error updating featured status:", error);
+      toast.error("Failed to update featured status");
+    }
   };
 
   const handleDownloadRotated = async () => {
@@ -277,6 +302,18 @@ const Gallery = () => {
                       {new Date(image.created_at).toLocaleDateString()}
                     </span>
                     <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={image.featured ? "default" : "outline"}
+                        onClick={() => toggleFeatured(image.id, image.featured)}
+                        className={image.featured 
+                          ? "bg-gold hover:bg-gold/90 border-gold" 
+                          : "border-gold/30 hover:border-gold"
+                        }
+                        title={image.featured ? "Remove from featured" : "Feature on homepage"}
+                      >
+                        <Star className={`w-4 h-4 ${image.featured ? "fill-current" : ""}`} />
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
