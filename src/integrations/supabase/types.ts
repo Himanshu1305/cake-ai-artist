@@ -20,6 +20,8 @@ export type Database = {
           featured: boolean | null
           id: string
           image_url: string
+          message: string | null
+          message_type: string | null
           prompt: string
           user_id: string
         }
@@ -28,6 +30,8 @@ export type Database = {
           featured?: boolean | null
           id?: string
           image_url: string
+          message?: string | null
+          message_type?: string | null
           prompt: string
           user_id: string
         }
@@ -36,6 +40,8 @@ export type Database = {
           featured?: boolean | null
           id?: string
           image_url?: string
+          message?: string | null
+          message_type?: string | null
           prompt?: string
           user_id?: string
         }

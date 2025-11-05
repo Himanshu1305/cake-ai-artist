@@ -27,14 +27,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [theme, setTheme] = useState("");
   const [colors, setColors] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
+  const [customMessage, setCustomMessage] = useState<string>("");
+  const [useCustomMessage, setUseCustomMessage] = useState<boolean>(false);
+  const [displayedMessage, setDisplayedMessage] = useState<string>("");
   const [user, setUser] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
-  const [imageRotation, setImageRotation] = useState(0);
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -156,9 +159,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
 
     setIsLoading(true);
-    setGeneratedImage(null);
+    setGeneratedImages([]);
+    setSelectedImages(new Set());
     setGeneratedMessage(null);
-    setImageRotation(0);
 
     try {
       const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
@@ -184,52 +187,40 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         throw new Error("Failed to generate cake image");
       }
 
-      // Check if response is binary data (image)
-      const contentType = response.headers.get("content-type");
-      let imageUrl = "";
+      // Parse JSON response expecting array of 4 images
+      const data = await response.json();
       
-      if (contentType && contentType.startsWith("image/")) {
-        // Handle binary image response
-        const blob = await response.blob();
-        imageUrl = URL.createObjectURL(blob);
-      } else {
-        try {
-          // Try to parse as JSON first
-          const data = await response.json();
-          
-          // Extract message if available
-          let message = "";
-          if (data.message) {
-            message = data.message;
-            setGeneratedMessage(message);
-          }
-          
-          // Handle different possible JSON response formats
-          if (data.image_url) {
-            imageUrl = data.image_url;
-          } else if (data.imageUrl) {
-            imageUrl = data.imageUrl;
-          } else if (data.image) {
-            imageUrl = data.image;
-          } else if (data.url) {
-            imageUrl = data.url;
-          } else if (typeof data === "string" && data.startsWith("http")) {
-            imageUrl = data;
-          } else {
-            throw new Error("No image URL found in response");
-          }
-        } catch (jsonError) {
-          // If JSON parsing fails, treat as binary data
-          const blob = await response.blob();
-          imageUrl = URL.createObjectURL(blob);
+      // Extract 4 images
+      let images: string[] = [];
+      if (data.images && Array.isArray(data.images)) {
+        images = data.images;
+      } else if (data.image_urls) {
+        images = data.image_urls;
+      }
+
+      // Extract AI message
+      if (data.message) {
+        setGeneratedMessage(data.message);
+        if (!useCustomMessage) {
+          setDisplayedMessage(data.message);
         }
       }
 
-      setGeneratedImage(imageUrl);
+      // Update displayed message
+      if (useCustomMessage && customMessage.trim()) {
+        setDisplayedMessage(customMessage);
+      } else if (data.message) {
+        setDisplayedMessage(data.message);
+      }
+
+      // Set images and select first by default
+      setGeneratedImages(images);
+      setSelectedImages(new Set([0]));
       
-      // Save image if user is logged in
-      if (isLoggedIn && user) {
-        await saveGeneratedImage(imageUrl);
+      // Save images if user is logged in
+      if (isLoggedIn && user && images.length > 0) {
+        const selectedUrls = [images[0]]; // Initially save first image
+        await saveGeneratedImage(selectedUrls);
       }
       
       toast({
@@ -250,43 +241,48 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
-  const saveGeneratedImage = async (imageUrl: string) => {
+  const saveGeneratedImage = async (selectedImageUrls: string[]) => {
     if (!user) return;
 
     try {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
       
-      // Save image to permanent storage
-      console.log('Saving image to storage...');
-      const { data: storageData, error: storageError } = await supabase.functions.invoke(
-        'save-image-to-storage',
-        {
-          body: { 
-            imageUrl, 
-            userId: user.id,
-            prompt 
+      // Save all selected images
+      for (const imageUrl of selectedImageUrls) {
+        // Save image to permanent storage
+        console.log('Saving image to storage...');
+        const { data: storageData, error: storageError } = await supabase.functions.invoke(
+          'save-image-to-storage',
+          {
+            body: { 
+              imageUrl, 
+              userId: user.id,
+              prompt 
+            }
           }
+        );
+
+        if (storageError) {
+          console.error('Storage error:', storageError);
+          throw storageError;
         }
-      );
 
-      if (storageError) {
-        console.error('Storage error:', storageError);
-        throw storageError;
+        const permanentUrl = storageData?.publicUrl || imageUrl;
+        console.log('Permanent URL:', permanentUrl);
+
+        // Save image with permanent URL and message
+        const { error: imageError } = await supabase
+          .from("generated_images")
+          .insert({
+            user_id: user.id,
+            image_url: permanentUrl,
+            prompt: prompt,
+            message: displayedMessage || null,
+            message_type: useCustomMessage ? 'custom' : 'ai',
+          });
+
+        if (imageError) throw imageError;
       }
-
-      const permanentUrl = storageData?.publicUrl || imageUrl;
-      console.log('Permanent URL:', permanentUrl);
-
-      // Save image with permanent URL
-      const { error: imageError } = await supabase
-        .from("generated_images")
-        .insert({
-          user_id: user.id,
-          image_url: permanentUrl,
-          prompt: prompt,
-        });
-
-      if (imageError) throw imageError;
 
       // Update generation tracking
       const currentYear = new Date().getFullYear();
@@ -320,74 +316,222 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
-  const handleDownload = async () => {
-    if (!generatedImage) return;
+  const createShareableImage = async (
+    cakeImageUrl: string,
+    message: string,
+    recipientName: string
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#fff1f2');
+      gradient.addColorStop(1, '#fce7f3');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Load cake image
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        // Draw cake image (centered, maintain aspect ratio)
+        const imgAspect = img.width / img.height;
+        const maxWidth = 1000;
+        const maxHeight = 800;
+        let drawWidth = maxWidth;
+        let drawHeight = maxWidth / imgAspect;
+        
+        if (drawHeight > maxHeight) {
+          drawHeight = maxHeight;
+          drawWidth = maxHeight * imgAspect;
+        }
+        
+        const x = (canvas.width - drawWidth) / 2;
+        const y = 80;
+        
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        
+        // Draw message box
+        const messageY = y + drawHeight + 40;
+        const messageBoxHeight = 200;
+        
+        // Message background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+        ctx.shadowBlur = 20;
+        ctx.fillRect(40, messageY, canvas.width - 80, messageBoxHeight);
+        ctx.shadowBlur = 0;
+        
+        // Message text
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 32px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        
+        // Word wrap function
+        const wrapText = (text: string, maxWidth: number) => {
+          const words = text.split(' ');
+          const lines: string[] = [];
+          let currentLine = '';
+          
+          words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          });
+          
+          if (currentLine) lines.push(currentLine);
+          return lines;
+        };
+        
+        const lines = wrapText(message, canvas.width - 160);
+        const lineHeight = 40;
+        const textStartY = messageY + (messageBoxHeight - (lines.length * lineHeight)) / 2 + 30;
+        
+        lines.forEach((line, i) => {
+          ctx.fillText(line, canvas.width / 2, textStartY + (i * lineHeight));
+        });
+        
+        // Footer
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#999';
+        ctx.fillText('Created with ❤️ for ' + recipientName, canvas.width / 2, canvas.height - 40);
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(URL.createObjectURL(blob));
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, 'image/png');
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = cakeImageUrl;
+    });
+  };
 
+  const handleDownload = async () => {
+    if (selectedImages.size === 0) {
+      toast({
+        title: "No images selected",
+        description: "Please select at least one image to download",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
-      const response = await fetch(generatedImage);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${name}-cake.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      for (const index of Array.from(selectedImages)) {
+        const imageUrl = generatedImages[index];
+        
+        // Create composite image
+        const compositeUrl = await createShareableImage(
+          imageUrl,
+          displayedMessage || `Happy celebration for ${name}!`,
+          name
+        );
+        
+        // Download
+        const link = document.createElement('a');
+        link.href = compositeUrl;
+        link.download = `${name}-cake-${index + 1}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(compositeUrl);
+      }
       
       toast({
-        title: "Download started",
-        description: "Your cake image is downloading!",
+        title: "Download complete!",
+        description: `${selectedImages.size} shareable card(s) downloaded successfully`,
       });
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error('Download error:', error);
       toast({
         title: "Download failed",
-        description: "Could not download the image. Please try again.",
+        description: "Could not create shareable image",
         variant: "destructive",
       });
     }
   };
 
-  const handleShare = (platform: string) => {
-    if (!generatedImage) return;
-
-    const shareText = `Check out this amazing personalized cake I created for ${name}! 🎂✨`;
-    const shareUrl = window.location.href;
-    
-    let shareLink = "";
-    
-    switch (platform) {
-      case "facebook":
-        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-        break;
-      case "twitter":
-        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        break;
-      case "whatsapp":
-        shareLink = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
-        break;
-      case "instagram":
-        // Instagram doesn't support web sharing directly, so we'll open Instagram web
-        toast({
-          title: "Instagram Sharing",
-          description: "Please save the image and share it on Instagram app!",
-        });
-        return;
-      default:
-        return;
+  const handleShare = async (platform: string) => {
+    if (selectedImages.size === 0) {
+      toast({
+        title: "No images selected",
+        description: "Please select at least one image to share",
+        variant: "destructive",
+      });
+      return;
     }
     
-    window.open(shareLink, "_blank", "width=600,height=400");
-    
-    toast({
-      title: "Sharing opened",
-      description: `Share your cake on ${platform}!`,
-    });
-  };
-
-  const handleRotateImage = (value: number[]) => {
-    setImageRotation(value[0]);
+    try {
+      // Use first selected image for sharing
+      const firstSelected = Array.from(selectedImages)[0];
+      const imageUrl = generatedImages[firstSelected];
+      
+      // Create composite
+      const compositeUrl = await createShareableImage(
+        imageUrl,
+        displayedMessage || `Happy celebration for ${name}!`,
+        name
+      );
+      
+      const shareText = `Check out this amazing cake I created for ${name}! 🎂✨`;
+      
+      switch (platform) {
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+          break;
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+          break;
+        case 'whatsapp':
+          window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + window.location.href)}`, '_blank');
+          break;
+        case 'instagram':
+          // Instagram doesn't support web sharing, download instead
+          const link = document.createElement('a');
+          link.href = compositeUrl;
+          link.download = `${name}-cake-instagram.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          toast({
+            title: "Image downloaded!",
+            description: "Open Instagram app and upload the downloaded image",
+          });
+          break;
+      }
+      
+      URL.revokeObjectURL(compositeUrl);
+    } catch (error) {
+      console.error('Share error:', error);
+      toast({
+        title: "Share failed",
+        description: "Could not create shareable image",
+        variant: "destructive",
+      });
+    }
   };
 
     return (
@@ -789,6 +933,49 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
             </div>
 
+            {/* Custom Message Section */}
+            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Message Options
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {useCustomMessage ? "Custom" : "AI Generated"}
+                  </span>
+                  <Switch
+                    checked={useCustomMessage}
+                    onCheckedChange={setUseCustomMessage}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              
+              {useCustomMessage ? (
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Write your personalized message here... (max 250 characters)"
+                    value={customMessage}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 250) {
+                        setCustomMessage(e.target.value);
+                      }
+                    }}
+                    className="min-h-[100px] bg-background border-border"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {customMessage.length}/250 characters
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  AI will generate a personalized message based on the details you've provided
+                </p>
+              )}
+            </div>
+
             <Button
               type="submit"
               disabled={isLoading || !name.trim() || !occasion || !relation || !gender}
@@ -822,124 +1009,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 <span className="animate-bounce floating-flame">🎈</span>
                 <span className="animate-bounce dancing-flame" style={{ animationDelay: '0.1s' }}>🎊</span>
                 <span className="animate-bounce floating-flame" style={{ animationDelay: '0.2s' }}>✨</span>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Generated Image */}
-      {generatedImage && !isLoading && (
-        <Card className="p-6 bg-gradient-celebration/20 border-2 border-gold/50 shadow-party backdrop-blur-sm">
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
-                🎊 Your Dream Cake is Ready! ✨
-              </h3>
-              <p className="text-foreground/80 text-lg">A magical cake created especially for {name} 🎂💖</p>
-            </div>
-            
-            {/* Display AI-generated message if available */}
-            {generatedMessage && (
-              <div className="p-6 bg-gradient-party/10 border-2 border-party-pink/30 rounded-xl shadow-party">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-gradient-party rounded-full flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-party-pink mb-2 flex items-center gap-2">
-                      🎉 Your Personalized Message ✨
-                    </p>
-                    <p className="text-foreground leading-relaxed text-lg font-medium">{generatedMessage}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="rounded-lg overflow-hidden shadow-gold bg-background/50">
-              <img
-                src={generatedImage}
-                alt={`Personalized cake for ${name}`}
-                className="w-full h-auto object-contain transition-transform duration-500"
-                style={{ transform: `rotate(${imageRotation}deg)` }}
-                onError={() => {
-                  toast({
-                    title: "Image failed to load",
-                    description: "There was an issue loading your cake image.",
-                    variant: "destructive",
-                  });
-                }}
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={handleDownload}
-                  className="py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Download
-                </Button>
-                
-                <div className="space-y-2 p-4 border border-party-purple/30 rounded-md bg-background">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium flex items-center gap-2">
-                      <RotateCw className="w-4 h-4" />
-                      Rotate Image
-                    </Label>
-                    <span className="text-xs text-muted-foreground">{imageRotation}°</span>
-                  </div>
-                  <Slider
-                    value={[imageRotation]}
-                    onValueChange={handleRotateImage}
-                    min={0}
-                    max={360}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Share2 className="w-4 h-4" />
-                  Share on social media
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <Button
-                    onClick={() => handleShare("facebook")}
-                    variant="outline"
-                    className="flex items-center gap-2 py-3"
-                  >
-                    <Facebook className="w-4 h-4" />
-                    Facebook
-                  </Button>
-                  <Button
-                    onClick={() => handleShare("twitter")}
-                    variant="outline"
-                    className="flex items-center gap-2 py-3"
-                  >
-                    <Twitter className="w-4 h-4" />
-                    Twitter
-                  </Button>
-                  <Button
-                    onClick={() => handleShare("whatsapp")}
-                    variant="outline"
-                    className="flex items-center gap-2 py-3"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </Button>
-                  <Button
-                    onClick={() => handleShare("instagram")}
-                    variant="outline"
-                    className="flex items-center gap-2 py-3"
-                  >
-                    <Instagram className="w-4 h-4" />
-                    Instagram
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
