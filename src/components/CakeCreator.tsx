@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface CakeCreatorProps {}
@@ -1013,6 +1013,179 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Generated Images Display */}
+      {!isLoading && generatedImages.length > 0 && (
+        <div className="space-y-6">
+          {/* Message Display Card */}
+          {displayedMessage && (
+            <Card className="p-6 bg-gradient-celebration/30 border-party-pink/40 border-2 shadow-party">
+              <div className="text-center space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-party-pink" />
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {useCustomMessage ? "Your Custom Message" : "AI Generated Message"}
+                  </h3>
+                </div>
+                <p className="text-foreground text-base leading-relaxed">
+                  {displayedMessage}
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {/* Image Grid */}
+          <Card className="p-6 bg-gradient-party/10 border-party-purple/40 border-2 shadow-party">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  🎂 Your Generated Cakes
+                </h3>
+                <span className="text-sm text-muted-foreground">
+                  {selectedImages.size} of {generatedImages.length} selected
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {generatedImages.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      const newSelected = new Set(selectedImages);
+                      if (newSelected.has(index)) {
+                        newSelected.delete(index);
+                      } else {
+                        newSelected.add(index);
+                      }
+                      setSelectedImages(newSelected);
+                    }}
+                    className={`relative cursor-pointer rounded-lg overflow-hidden border-4 transition-all duration-300 hover:scale-[1.02] ${
+                      selectedImages.has(index)
+                        ? "border-party-pink shadow-lg shadow-party-pink/50"
+                        : "border-border hover:border-party-purple/50"
+                    }`}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Cake angle ${index + 1}`}
+                      className="w-full h-full object-cover aspect-square"
+                    />
+                    
+                    {/* Selection Indicator */}
+                    {selectedImages.has(index) && (
+                      <div className="absolute top-2 right-2 bg-party-pink text-white rounded-full p-1.5 shadow-lg">
+                        <Check className="w-5 h-5" />
+                      </div>
+                    )}
+                    
+                    {/* Angle Label */}
+                    <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                      Angle {index + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Click on images to select/deselect them for download or sharing
+              </p>
+            </div>
+          </Card>
+
+          {/* Action Buttons */}
+          <Card className="p-6 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground text-center">
+                What would you like to do?
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Download Button */}
+                <Button
+                  onClick={handleDownload}
+                  disabled={selectedImages.size === 0}
+                  className="w-full py-6 bg-gradient-party hover:shadow-party transition-all duration-300 text-white font-semibold"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Download {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
+                </Button>
+
+                {/* Save to Gallery Button */}
+                {isLoggedIn && (
+                  <Button
+                    onClick={async () => {
+                      if (selectedImages.size === 0) {
+                        toast({
+                          title: "No images selected",
+                          description: "Please select at least one image to save",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
+                      await saveGeneratedImage(selectedUrls);
+                      
+                      toast({
+                        title: "Saved to Gallery!",
+                        description: `${selectedImages.size} image(s) saved successfully`,
+                      });
+                    }}
+                    disabled={selectedImages.size === 0}
+                    className="w-full py-6 bg-party-purple hover:bg-party-purple/90 transition-all duration-300 text-white font-semibold"
+                  >
+                    <Save className="w-5 h-5 mr-2" />
+                    Save to Gallery {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
+                  </Button>
+                )}
+              </div>
+
+              {/* Share Buttons */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground text-center">Share on Social Media</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <Button
+                    onClick={() => handleShare('facebook')}
+                    disabled={selectedImages.size === 0}
+                    variant="outline"
+                    className="border-party-blue hover:bg-party-blue hover:text-white"
+                  >
+                    <Facebook className="w-4 h-4 mr-1" />
+                    Facebook
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('twitter')}
+                    disabled={selectedImages.size === 0}
+                    variant="outline"
+                    className="border-party-blue hover:bg-party-blue hover:text-white"
+                  >
+                    <Twitter className="w-4 h-4 mr-1" />
+                    Twitter
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('whatsapp')}
+                    disabled={selectedImages.size === 0}
+                    variant="outline"
+                    className="border-green-500 hover:bg-green-500 hover:text-white"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    WhatsApp
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('instagram')}
+                    disabled={selectedImages.size === 0}
+                    variant="outline"
+                    className="border-party-pink hover:bg-party-pink hover:text-white"
+                  >
+                    <Instagram className="w-4 h-4 mr-1" />
+                    Instagram
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );
