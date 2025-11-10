@@ -202,21 +202,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       console.log('Parsed images:', images);
 
-      // Extract AI message
-      if (data.message) {
-        setGeneratedMessage(data.message);
+      // Extract AI message - check both 'message' and 'greetingMessage'
+      const aiMessage = data.message || data.greetingMessage;
+      if (aiMessage) {
+        setGeneratedMessage(aiMessage);
         if (!useCustomMessage) {
-          setDisplayedMessage(data.message);
+          setDisplayedMessage(aiMessage);
         }
       } else {
-        console.warn('No message field in N8N response:', data);
+        console.warn('No message or greetingMessage field in N8N response:', data);
       }
 
       // Update displayed message
       if (useCustomMessage && customMessage.trim()) {
         setDisplayedMessage(customMessage);
-      } else if (data.message) {
-        setDisplayedMessage(data.message);
+      } else if (aiMessage) {
+        setDisplayedMessage(aiMessage);
       }
 
       // Set images and select first by default
