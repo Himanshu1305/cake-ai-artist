@@ -189,18 +189,51 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       // Parse JSON response expecting array of 4 images
       const data = await response.json();
+      console.log('Raw N8N data:', data);
       
       // Extract 4 images - handle both array of strings and array of objects
       let images: string[] = [];
       if (data.images && Array.isArray(data.images)) {
-        images = data.images.map((img: any) => 
-          typeof img === 'string' ? img : img.imageUrl || img.image_url || img
+        images = data.images
+          .map((img: any) => {
+            // Extract URL from object or use string directly
+            if (typeof img === 'string') return img;
+            return img.imageUrl || img.image_url || null;
+          })
+          .filter((url: string | null) => {
+            // Validate URLs - must be non-empty strings starting with http
+            if (!url || typeof url !== 'string') {
+              console.error('Invalid image URL:', url);
+              return false;
+            }
+            if (!url.startsWith('http')) {
+              console.error('Image URL must start with http:', url);
+              return false;
+            }
+            return true;
+          });
+      } else if (data.image_urls && Array.isArray(data.image_urls)) {
+        images = data.image_urls.filter((url: any) => 
+          url && typeof url === 'string' && url.startsWith('http')
         );
-      } else if (data.image_urls) {
-        images = data.image_urls;
       }
 
       console.log('Parsed images:', images);
+      console.log('Valid image count:', images.length);
+      console.log('All images are valid strings:', images.every(img => typeof img === 'string'));
+
+      // Validate we have at least one valid image
+      if (images.length === 0) {
+        throw new Error('No valid images received from N8N. Please check your workflow configuration.');
+      }
+
+      if (images.length !== 4) {
+        console.warn(`Expected 4 images but received ${images.length}. Some images may be invalid.`);
+        toast({
+          title: "Partial results",
+          description: `Received ${images.length} valid images instead of 4. Some may have failed to generate.`,
+        });
+      }
 
       // Extract AI message - check both 'message' and 'greetingMessage'
       const aiMessage = data.message || data.greetingMessage;
@@ -1074,9 +1107,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     }`}
                   >
                     <img
-                      src={imageUrl}
+                      src={imageUrl || '/placeholder.svg'}
                       alt={`Cake angle ${index + 1}`}
                       className="w-full h-full object-cover aspect-square"
+                      onError={(e) => {
+                        console.error('Failed to load image:', imageUrl);
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
                     />
                     
                     {/* Selection Indicator */}
