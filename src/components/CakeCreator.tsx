@@ -190,13 +190,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       // Parse JSON response expecting array of 4 images
       const data = await response.json();
       
-      // Extract 4 images
+      // Extract 4 images - handle both array of strings and array of objects
       let images: string[] = [];
       if (data.images && Array.isArray(data.images)) {
-        images = data.images;
+        images = data.images.map((img: any) => 
+          typeof img === 'string' ? img : img.imageUrl || img.image_url || img
+        );
       } else if (data.image_urls) {
         images = data.image_urls;
       }
+
+      console.log('Parsed images:', images);
 
       // Extract AI message
       if (data.message) {
@@ -204,6 +208,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         if (!useCustomMessage) {
           setDisplayedMessage(data.message);
         }
+      } else {
+        console.warn('No message field in N8N response:', data);
       }
 
       // Update displayed message
