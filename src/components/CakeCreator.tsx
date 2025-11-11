@@ -169,7 +169,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
       try {
-        const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
+        const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook/20991645-1c69-48bd-915e-5bfd58e64016", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
