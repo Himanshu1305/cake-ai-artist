@@ -164,116 +164,184 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     setGeneratedMessage(null);
 
     try {
-      const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          name: name.trim(),
-          cakeType: cakeType || undefined,
-          layers: layers || undefined,
-          theme: theme || undefined,
-          colors: colors || undefined,
-          useAI: true,
-          occasion: occasion,
-          relation: relation,
-          gender: gender,
-          character: character || undefined
-        }),
-      });
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-      if (!response.ok) {
-        throw new Error("Failed to generate cake image");
-      }
-
-      // Parse JSON response expecting array of 4 images
-      const data = await response.json();
-      console.log('Raw N8N data:', data);
-      
-      // Extract 4 images - handle both array of strings and array of objects
-      let images: string[] = [];
-      if (data.images && Array.isArray(data.images)) {
-        images = data.images
-          .map((img: any) => {
-            // Extract URL from object or use string directly
-            if (typeof img === 'string') return img;
-            return img.imageUrl || img.image_url || null;
-          })
-          .filter((url: string | null) => {
-            // Validate URLs - must be non-empty strings starting with http
-            if (!url || typeof url !== 'string') {
-              console.error('Invalid image URL:', url);
-              return false;
-            }
-            if (!url.startsWith('http')) {
-              console.error('Image URL must start with http:', url);
-              return false;
-            }
-            return true;
-          });
-      } else if (data.image_urls && Array.isArray(data.image_urls)) {
-        images = data.image_urls.filter((url: any) => 
-          url && typeof url === 'string' && url.startsWith('http')
-        );
-      }
-
-      console.log('Parsed images:', images);
-      console.log('Valid image count:', images.length);
-      console.log('All images are valid strings:', images.every(img => typeof img === 'string'));
-
-      // Validate we have at least one valid image
-      if (images.length === 0) {
-        throw new Error('No valid images received from N8N. Please check your workflow configuration.');
-      }
-
-      if (images.length !== 4) {
-        console.warn(`Expected 4 images but received ${images.length}. Some images may be invalid.`);
-        toast({
-          title: "Partial results",
-          description: `Received ${images.length} valid images instead of 4. Some may have failed to generate.`,
+      try {
+        const response = await fetch("https://n8n-6421994137235212.kloudbeansite.com/webhook-test/20991645-1c69-48bd-915e-5bfd58e64016", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            name: name.trim(),
+            cakeType: cakeType || undefined,
+            layers: layers || undefined,
+            theme: theme || undefined,
+            colors: colors || undefined,
+            useAI: true,
+            occasion: occasion,
+            relation: relation,
+            gender: gender,
+            character: character || undefined
+          }),
+          signal: controller.signal
         });
-      }
 
-      // Extract AI message - check both 'message' and 'greetingMessage'
-      const aiMessage = data.message || data.greetingMessage;
-      if (aiMessage) {
-        setGeneratedMessage(aiMessage);
-        if (!useCustomMessage) {
+        clearTimeout(timeoutId); // Clear timeout if request succeeds
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('N8N error response:', errorText);
+          throw new Error(`Failed to generate cake image: ${response.status} ${response.statusText}`);
+        }
+
+        // Check if response has content before parsing JSON
+        const contentType = response.headers.get("content-type");
+        const contentLength = response.headers.get("content-length");
+
+        console.log('Response headers:', {
+          contentType,
+          contentLength,
+          status: response.status,
+          statusText: response.statusText
+        });
+
+        // Validate response has JSON content
+        if (!contentType || !contentType.includes("application/json")) {
+          const text = await response.text();
+          console.error('N8N returned non-JSON response:', text);
+          throw new Error('N8N webhook returned invalid response format. Expected JSON.');
+        }
+
+        if (contentLength === "0" || contentLength === null) {
+          console.error('N8N returned empty response');
+          throw new Error('N8N webhook returned empty response. Please check your workflow configuration.');
+        }
+
+        // Safely parse JSON with try-catch
+        let data;
+        try {
+          const responseText = await response.text();
+          console.log('Raw N8N response text:', responseText);
+          data = JSON.parse(responseText);
+          console.log('Parsed N8N data:', data);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          throw new Error('N8N webhook returned invalid JSON. Please check your workflow output.');
+        }
+      
+        // Extract 4 images - handle both array of strings and array of objects
+        let images: string[] = [];
+        if (data.images && Array.isArray(data.images)) {
+          images = data.images
+            .map((img: any) => {
+              // Extract URL from object or use string directly
+              if (typeof img === 'string') return img;
+              return img.imageUrl || img.image_url || null;
+            })
+            .filter((url: string | null) => {
+              // Validate URLs - must be non-empty strings starting with http
+              if (!url || typeof url !== 'string') {
+                console.error('Invalid image URL:', url);
+                return false;
+              }
+              if (!url.startsWith('http')) {
+                console.error('Image URL must start with http:', url);
+                return false;
+              }
+              return true;
+            });
+        } else if (data.image_urls && Array.isArray(data.image_urls)) {
+          images = data.image_urls.filter((url: any) => 
+            url && typeof url === 'string' && url.startsWith('http')
+          );
+        }
+
+        console.log('Parsed images:', images);
+        console.log('Valid image count:', images.length);
+        console.log('All images are valid strings:', images.every(img => typeof img === 'string'));
+
+        // Validate we have at least one valid image
+        if (images.length === 0) {
+          throw new Error('No valid images received from N8N. Please check your workflow configuration.');
+        }
+
+        if (images.length !== 4) {
+          console.warn(`Expected 4 images but received ${images.length}. Some images may be invalid.`);
+          toast({
+            title: "Partial results",
+            description: `Received ${images.length} valid images instead of 4. Some may have failed to generate.`,
+          });
+        }
+
+        // Extract AI message - check both 'message' and 'greetingMessage'
+        const aiMessage = data.message || data.greetingMessage;
+        if (aiMessage) {
+          setGeneratedMessage(aiMessage);
+          if (!useCustomMessage) {
+            setDisplayedMessage(aiMessage);
+          }
+        } else {
+          console.warn('No message or greetingMessage field in N8N response:', data);
+        }
+
+        // Update displayed message
+        if (useCustomMessage && customMessage.trim()) {
+          setDisplayedMessage(customMessage);
+        } else if (aiMessage) {
           setDisplayedMessage(aiMessage);
         }
-      } else {
-        console.warn('No message or greetingMessage field in N8N response:', data);
-      }
 
-      // Update displayed message
-      if (useCustomMessage && customMessage.trim()) {
-        setDisplayedMessage(customMessage);
-      } else if (aiMessage) {
-        setDisplayedMessage(aiMessage);
+        // Set images and select first by default
+        setGeneratedImages(images);
+        setSelectedImages(new Set([0]));
+        
+        // Save images if user is logged in
+        if (isLoggedIn && user && images.length > 0) {
+          const selectedUrls = [images[0]]; // Initially save first image
+          await saveGeneratedImage(selectedUrls);
+        }
+        
+        toast({
+          title: "Cake created successfully!",
+          description: isLoggedIn 
+            ? `Your personalized cake for ${name} is ready and saved!` 
+            : `Your personalized cake for ${name} is ready! Login to save it.`,
+        });
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Request timeout. N8N workflow took too long to respond (>60s).');
+        }
+        throw fetchError;
       }
-
-      // Set images and select first by default
-      setGeneratedImages(images);
-      setSelectedImages(new Set([0]));
-      
-      // Save images if user is logged in
-      if (isLoggedIn && user && images.length > 0) {
-        const selectedUrls = [images[0]]; // Initially save first image
-        await saveGeneratedImage(selectedUrls);
-      }
-      
-      toast({
-        title: "Cake created successfully!",
-        description: isLoggedIn 
-          ? `Your personalized cake for ${name} is ready and saved!` 
-          : `Your personalized cake for ${name} is ready! Login to save it.`,
-      });
     } catch (error) {
       console.error("Error generating cake:", error);
+      
+      let errorMessage = "Something went wrong. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = "Cannot connect to image generation service. Please check your internet connection or try again later.";
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "Image generation is taking too long. Please try again with simpler options.";
+        } else if (error.message.includes('JSON') || error.message.includes('json')) {
+          errorMessage = "Image generation service returned invalid data. Please try again or contact support.";
+        } else if (error.message.includes('No valid images')) {
+          errorMessage = "No images were generated. Please check your N8N workflow configuration.";
+        } else if (error.message.includes('empty response')) {
+          errorMessage = "Image generation service returned no data. Please check your N8N workflow.";
+        } else if (error.message.includes('invalid response format')) {
+          errorMessage = "Image generation service returned wrong format. Expected JSON response.";
+        }
+      }
+      
       toast({
         title: "Failed to create cake",
-        description: "Something went wrong. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
