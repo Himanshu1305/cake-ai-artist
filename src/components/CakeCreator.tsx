@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 
 interface CakeCreatorProps {}
@@ -38,6 +39,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -1159,37 +1161,49 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 {generatedImages.map((imageUrl, index) => (
                   <div
                     key={index}
-                    onClick={() => {
-                      const newSelected = new Set(selectedImages);
-                      if (newSelected.has(index)) {
-                        newSelected.delete(index);
-                      } else {
-                        newSelected.add(index);
-                      }
-                      setSelectedImages(newSelected);
-                    }}
-                    className={`relative cursor-pointer rounded-lg overflow-hidden border-4 transition-all duration-300 hover:scale-[1.02] ${
+                    className={`relative rounded-lg overflow-hidden border-4 transition-all duration-300 ${
                       selectedImages.has(index)
                         ? "border-party-pink shadow-lg shadow-party-pink/50"
                         : "border-border hover:border-party-purple/50"
                     }`}
                   >
-                    <img
-                      src={imageUrl || '/placeholder.svg'}
-                      alt={`Cake angle ${index + 1}`}
-                      className="w-full h-full object-cover aspect-square"
-                      onError={(e) => {
-                        console.error('Failed to load image:', imageUrl);
-                        e.currentTarget.src = '/placeholder.svg';
-                      }}
-                    />
+                    <div
+                      onClick={() => setPreviewImage(imageUrl)}
+                      className="cursor-pointer hover:opacity-90 transition-opacity"
+                    >
+                      <img
+                        src={imageUrl || '/placeholder.svg'}
+                        alt={`Cake angle ${index + 1}`}
+                        className="w-full h-full object-cover aspect-square"
+                        onError={(e) => {
+                          console.error('Failed to load image:', imageUrl);
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
                     
-                    {/* Selection Indicator */}
-                    {selectedImages.has(index) && (
-                      <div className="absolute top-2 right-2 bg-party-pink text-white rounded-full p-1.5 shadow-lg">
+                    {/* Selection Checkbox */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newSelected = new Set(selectedImages);
+                        if (newSelected.has(index)) {
+                          newSelected.delete(index);
+                        } else {
+                          newSelected.add(index);
+                        }
+                        setSelectedImages(newSelected);
+                      }}
+                      className="absolute top-2 right-2 cursor-pointer"
+                    >
+                      <div className={`rounded-full p-1.5 shadow-lg transition-all ${
+                        selectedImages.has(index)
+                          ? "bg-party-pink text-white"
+                          : "bg-white/80 text-gray-600 hover:bg-white"
+                      }`}>
                         <Check className="w-5 h-5" />
                       </div>
-                    )}
+                    </div>
                     
                     {/* Angle Label */}
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
@@ -1200,7 +1214,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                Click on images to select/deselect them for download or sharing
+                Click images to preview • Click checkmark to select for download/share
               </p>
             </div>
           </Card>
@@ -1299,6 +1313,34 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           </Card>
         </div>
       )}
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl p-0 bg-surface-elevated border-party-pink/30">
+          {previewImage && (
+            <div className="relative">
+              <Button
+                onClick={() => setPreviewImage(null)}
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-50 bg-background/80 hover:bg-background"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              
+              <div className="p-4">
+                <div className="relative flex items-center justify-center bg-background/50 rounded-lg overflow-hidden min-h-[400px]">
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="max-w-full max-h-[80vh] object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

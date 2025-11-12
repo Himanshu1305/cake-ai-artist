@@ -4,10 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, RotateCw, X, Star } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, X, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +27,6 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
-  const [imageRotation, setImageRotation] = useState(0);
 
   useEffect(() => {
     checkUser();
@@ -136,16 +133,10 @@ const Gallery = () => {
 
   const handleImageClick = (image: GeneratedImage) => {
     setSelectedImage(image);
-    setImageRotation(0);
   };
 
   const handleCloseModal = () => {
     setSelectedImage(null);
-    setImageRotation(0);
-  };
-
-  const handleRotateImage = (value: number[]) => {
-    setImageRotation(value[0]);
   };
 
   const toggleFeatured = async (imageId: string, currentFeatured: boolean) => {
@@ -169,59 +160,6 @@ const Gallery = () => {
     } catch (error: any) {
       console.error("Error updating featured status:", error);
       toast.error("Failed to update featured status");
-    }
-  };
-
-  const handleDownloadRotated = async () => {
-    if (!selectedImage) return;
-
-    try {
-      const response = await fetch(selectedImage.image_url);
-      const blob = await response.blob();
-      
-      // Create canvas to rotate image
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = URL.createObjectURL(blob);
-      
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        
-        if (!ctx) return;
-        
-        // Set canvas size based on rotation
-        if (imageRotation % 180 === 0) {
-          canvas.width = img.width;
-          canvas.height = img.height;
-        } else {
-          canvas.width = img.height;
-          canvas.height = img.width;
-        }
-        
-        // Rotate and draw
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((imageRotation * Math.PI) / 180);
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
-        
-        // Download
-        canvas.toBlob((rotatedBlob) => {
-          if (rotatedBlob) {
-            const url = URL.createObjectURL(rotatedBlob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${selectedImage.prompt.substring(0, 30)}-rotated.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.success("Rotated image downloaded!");
-          }
-        }, "image/jpeg");
-      };
-    } catch (error) {
-      console.error("Error downloading rotated image:", error);
-      toast.error("Failed to download rotated image");
     }
   };
 
@@ -400,47 +338,23 @@ const Gallery = () => {
                   <img
                     src={selectedImage.image_url}
                     alt={selectedImage.prompt}
-                    className="max-w-full max-h-[70vh] object-contain transition-transform duration-300"
-                    style={{ transform: `rotate(${imageRotation}deg)` }}
+                    className="max-w-full max-h-[70vh] object-contain"
                   />
                 </div>
                 
                 <div className="mt-4 space-y-4">
                   <p className="text-sm text-foreground/70">{selectedImage.prompt}</p>
                   
-                  <div className="space-y-3">
-                    <div className="space-y-2 p-3 border border-party-purple/30 rounded-md bg-background/50">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                          <RotateCw className="w-4 h-4" />
-                          Rotate Image
-                        </Label>
-                        <span className="text-xs text-muted-foreground">{imageRotation}°</span>
-                      </div>
-                      <Slider
-                        value={[imageRotation]}
-                        onValueChange={handleRotateImage}
-                        min={0}
-                        max={360}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                    
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        onClick={imageRotation === 0 
-                          ? () => handleDownload(selectedImage.image_url, selectedImage.prompt)
-                          : handleDownloadRotated
-                        }
-                        variant="outline"
-                        size="sm"
-                        className="border-party-pink/30 hover:border-party-pink bg-background"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download {imageRotation !== 0 && "Rotated"}
-                      </Button>
-                    </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      onClick={() => handleDownload(selectedImage.image_url, selectedImage.prompt)}
+                      variant="outline"
+                      size="sm"
+                      className="border-party-pink/30 hover:border-party-pink bg-background"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
                   </div>
                 </div>
               </div>
