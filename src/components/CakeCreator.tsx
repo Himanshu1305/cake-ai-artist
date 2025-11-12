@@ -215,7 +215,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('N8N webhook returned invalid response format. Expected JSON.');
         }
 
-        if (contentLength === "0" || contentLength === null) {
+        if (contentLength === "0") {
           console.error('N8N returned empty response');
           throw new Error('N8N webhook returned empty response. Please check your workflow configuration.');
         }
