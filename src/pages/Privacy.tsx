@@ -40,7 +40,7 @@ const Privacy = () => {
               <div className="space-y-3">
                 <h2 className="text-2xl font-bold text-foreground">Our Privacy Commitment</h2>
                 <p className="text-foreground/80 text-lg">
-                  At Cake Magic Creator, we respect your privacy and are committed to protecting your personal information. 
+                  At Cake AI Artist, we respect your privacy and are committed to protecting your personal information. 
                   We believe in transparency and want you to understand exactly what data we collect and how we use it.
                 </p>
               </div>

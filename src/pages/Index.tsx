@@ -107,7 +107,7 @@ const Index = () => {
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-16 z-40 border-b border-border/30">
         <div className="flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold text-foreground">Cake Magic</Link>
+          <Link to="/" className="text-xl font-bold text-foreground">Cake AI Artist</Link>
           <div className="flex gap-3">
             <Link to="/how-it-works"><Button variant="ghost" size="sm">How It Works</Button></Link>
             <Link to="/pricing">

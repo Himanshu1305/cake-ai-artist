@@ -75,7 +75,7 @@ const BlogPost = () => {
         <li><strong>Your relationship:</strong> Close friends can pull off inside jokes. Professional relationships might need something more neutral.</li>
       </ul>
 
-      <p>The beauty of Cake Magic Creator is that you can experiment with all these ideas in minutes. 
+      <p>The beauty of Cake AI Artist is that you can experiment with all these ideas in minutes. 
       Generate a minimalist design, then try a rainbow explosion, then go vintage—all without committing 
       until you find the one that feels just right.</p>
 

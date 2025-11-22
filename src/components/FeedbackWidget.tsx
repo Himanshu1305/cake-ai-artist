@@ -71,7 +71,7 @@ export const FeedbackWidget = () => {
 
       toast({
         title: "Thank you for your feedback!",
-        description: "Your input helps us improve Cake Magic.",
+        description: "Your input helps us improve Cake AI Artist.",
       });
 
       // Reset form

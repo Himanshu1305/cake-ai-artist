@@ -22,7 +22,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-3">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing and using Cake Magic Creator, you accept and agree to be bound by these Terms of Service. 
+                By accessing and using Cake AI Artist, you accept and agree to be bound by these Terms of Service. 
                 If you don't agree with any part of these terms, please don't use our service.
               </p>
             </section>
@@ -30,7 +30,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-3">2. Service Description</h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                Cake Magic Creator is an AI-powered tool that generates personalized cake designs based on user input. 
+                Cake AI Artist is an AI-powered tool that generates personalized cake designs based on user input. 
                 We provide both free and premium subscription tiers with different feature sets.
               </p>
               <p className="text-muted-foreground leading-relaxed">
@@ -63,7 +63,7 @@ const Terms = () => {
                 Premium subscribers receive a commercial use license. Free users may use images for personal, non-commercial purposes only.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                <strong>Our Platform:</strong> The Cake Magic Creator platform, including our AI technology, design, and code, 
+                <strong>Our Platform:</strong> The Cake AI Artist platform, including our AI technology, design, and code, 
                 remains our exclusive property. All rights reserved.
               </p>
             </section>
@@ -104,7 +104,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-3">8. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Cake Magic Creator is provided "as is" without warranties of any kind. We are not liable for any damages arising from 
+                Cake AI Artist is provided "as is" without warranties of any kind. We are not liable for any damages arising from 
                 your use of the service, including but not limited to direct, indirect, incidental, or consequential damages. 
                 Our total liability is limited to the amount you paid us in the 12 months preceding the claim.
               </p>
@@ -148,7 +148,7 @@ const Terms = () => {
 
             <section className="mt-8 pt-6 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                By using Cake Magic Creator, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+                By using Cake AI Artist, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
               </p>
             </section>
           </div>

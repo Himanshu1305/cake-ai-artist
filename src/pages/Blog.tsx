@@ -67,7 +67,7 @@ const Blog = () => {
         </Link>
 
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Magic Blog</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake AI Artist Blog</h1>
           <p className="text-muted-foreground text-xl max-w-2xl">
             Ideas, tips, and inspiration for making every celebration more special. 
             From design trends to party planning hacks, we've got you covered.
