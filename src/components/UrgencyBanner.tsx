@@ -15,7 +15,11 @@ export const UrgencyBanner = () => {
   const navigate = useNavigate();
 
   // Check if sale is still active
-  const saleEndDate = new Date('2025-12-31T23:59:59');
+  // TESTING: Set to yesterday to test Jan 1st behavior
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const saleEndDate = yesterday;
+  // const saleEndDate = new Date('2025-12-31T23:59:59');
   // Auto-cleanup enabled: Banner will hide after Dec 31, 2025
   // If sale ends and you want to extend, update the date above
   // To close permanently, follow FOUNDING_MEMBER_CLEANUP_INSTRUCTIONS.md

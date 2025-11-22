@@ -7,8 +7,12 @@ interface CountdownTimerProps {
   className?: string;
 }
 
+// TESTING: Set to yesterday to test Jan 1st behavior
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+const SALE_END_DATE = yesterday;
 // December 31, 2025 at 11:59:59 PM
-const SALE_END_DATE = new Date('2025-12-31T23:59:59');
+// const SALE_END_DATE = new Date('2025-12-31T23:59:59');
 
 export const CountdownTimer = ({ compact = false, className = '' }: CountdownTimerProps) => {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(SALE_END_DATE);
