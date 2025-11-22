@@ -1,6 +1,10 @@
 import { CakeCreator } from "@/components/CakeCreator";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
+import { UrgencyBanner } from "@/components/UrgencyBanner";
+import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
+import { CountdownTimer } from "@/components/CountdownTimer";
+import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
