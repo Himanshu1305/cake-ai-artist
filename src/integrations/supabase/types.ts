@@ -75,6 +75,39 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          feedback_type: string
+          id: string
+          message: string | null
+          page_url: string | null
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          feedback_type: string
+          id?: string
+          message?: string | null
+          page_url?: string | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          feedback_type?: string
+          id?: string
+          message?: string | null
+          page_url?: string | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       founding_members: {
         Row: {
           created_at: string | null

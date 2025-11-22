@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 
@@ -40,6 +40,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isPremium, setIsPremium] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
+  const [postGenRating, setPostGenRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [ratingFeedback, setRatingFeedback] = useState("");
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -312,6 +316,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             ? `Your personalized cake for ${name} is ready and saved!` 
             : `Your personalized cake for ${name} is ready! Login to save it.`,
         });
+
+        // Show post-generation rating prompt if logged in
+        if (isLoggedIn) {
+          setShowRatingPrompt(true);
+        }
       } catch (fetchError) {
         clearTimeout(timeoutId);
         
@@ -423,6 +432,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       }
     } catch (error) {
       console.error("Error saving image:", error);
+    }
+  };
+
+  const handleRatingSubmit = async () => {
+    if (!postGenRating || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from("feedback")
+        .insert({
+          user_id: user.id,
+          rating: postGenRating,
+          feedback_type: "post_generation",
+          category: "general",
+          message: ratingFeedback.trim() || null,
+          page_url: window.location.pathname,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Thanks for rating!",
+        description: "Your feedback helps us improve",
+      });
+
+      setShowRatingPrompt(false);
+      setPostGenRating(0);
+      setRatingFeedback("");
+    } catch (error) {
+      console.error("Error submitting rating:", error);
     }
   };
 
@@ -1121,6 +1160,57 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 <span className="animate-bounce floating-flame" style={{ animationDelay: '0.2s' }}>✨</span>
               </div>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Post-Generation Rating Prompt */}
+      {showRatingPrompt && generatedImages.length > 0 && !isLoading && (
+        <Card className="p-6 bg-party-purple/10 border-party-purple/30 mb-6 relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowRatingPrompt(false)}
+            className="absolute top-2 right-2"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-center">How did we do?</h3>
+            <div className="flex gap-2 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setPostGenRating(star)}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={`w-8 h-8 ${
+                      star <= (hoveredRating || postGenRating)
+                        ? "fill-gold text-gold"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <Textarea
+              placeholder="Any thoughts? (Optional)"
+              value={ratingFeedback}
+              onChange={(e) => setRatingFeedback(e.target.value)}
+              rows={2}
+              className="resize-none"
+            />
+            <Button
+              onClick={handleRatingSubmit}
+              disabled={!postGenRating}
+              className="w-full"
+            >
+              Submit Rating
+            </Button>
           </div>
         </Card>
       )}
