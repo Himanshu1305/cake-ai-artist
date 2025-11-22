@@ -13,16 +13,15 @@ const SALE_END_DATE = new Date('2025-12-31T23:59:59');
 export const CountdownTimer = ({ compact = false, className = '' }: CountdownTimerProps) => {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(SALE_END_DATE);
 
-  // TODO: MANUAL CLEANUP REQUIRED - DO NOT AUTO-HIDE AFTER JAN 1
-  // User requested to consult before any Post-January 1st cleanup
-  // Commenting out auto-hide when expired - timer will show negative/zero values
-  // if (isExpired) {
-  //   return (
-  //     <div className={`text-destructive font-bold ${className}`}>
-  //       Sale Ended
-  //     </div>
-  //   );
-  // }
+  // Auto-cleanup enabled: Shows "Sale Ended" after Dec 31, 2025
+  // Check AdminSaleReminder component for options to extend or close
+  if (isExpired) {
+    return (
+      <div className={`text-destructive font-bold ${className}`}>
+        Sale Ended
+      </div>
+    );
+  }
 
   const getUrgencyColor = () => {
     if (days === 0) return 'text-destructive'; // Red when <24 hours

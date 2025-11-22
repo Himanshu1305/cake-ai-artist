@@ -2,6 +2,7 @@ import { CakeCreator } from "@/components/CakeCreator";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
+import { AdminSaleReminder } from "@/components/AdminSaleReminder";
 import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
@@ -77,6 +78,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <AdminSaleReminder />
       <UrgencyBanner />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
