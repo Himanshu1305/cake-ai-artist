@@ -44,6 +44,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [postGenRating, setPostGenRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingFeedback, setRatingFeedback] = useState("");
+  const [occasionDate, setOccasionDate] = useState<string>("");
+  const [recipientName, setRecipientName] = useState<string>("");
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -398,6 +400,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             prompt: prompt,
             message: displayedMessage || null,
             message_type: useCustomMessage ? 'custom' : 'ai',
+            recipient_name: recipientName.trim() || null,
+            occasion_type: occasion || null,
+            occasion_date: occasionDate || null,
           });
 
         if (imageError) throw imageError;
@@ -998,7 +1003,43 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     </Select>
                   </div>
                 </div>
-            </div>
+
+                {/* Memory Fields - NEW */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-pink/20">
+                  <div className="space-y-2">
+                    <Label htmlFor="recipientName" className="text-sm font-medium flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Who is this for? (Optional)
+                    </Label>
+                    <Input
+                      id="recipientName"
+                      type="text"
+                      placeholder="e.g., Sarah, Mom, Best Friend"
+                      value={recipientName}
+                      onChange={(e) => setRecipientName(e.target.value)}
+                      className="bg-background border-border"
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">Save as a memory to remember later</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="occasionDate" className="text-sm font-medium flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Occasion Date (Optional)
+                    </Label>
+                    <Input
+                      id="occasionDate"
+                      type="date"
+                      value={occasionDate}
+                      onChange={(e) => setOccasionDate(e.target.value)}
+                      className="bg-background border-border"
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">For future reminders</p>
+                  </div>
+                </div>
+              </div>
 
             {/* Cake Customization */}
             <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">

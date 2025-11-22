@@ -152,7 +152,10 @@ export type Database = {
           image_url: string
           message: string | null
           message_type: string | null
+          occasion_date: string | null
+          occasion_type: string | null
           prompt: string
+          recipient_name: string | null
           user_id: string
         }
         Insert: {
@@ -162,7 +165,10 @@ export type Database = {
           image_url: string
           message?: string | null
           message_type?: string | null
+          occasion_date?: string | null
+          occasion_type?: string | null
           prompt: string
+          recipient_name?: string | null
           user_id: string
         }
         Update: {
@@ -172,7 +178,10 @@ export type Database = {
           image_url?: string
           message?: string | null
           message_type?: string | null
+          occasion_date?: string | null
+          occasion_type?: string | null
           prompt?: string
+          recipient_name?: string | null
           user_id?: string
         }
         Relationships: [
