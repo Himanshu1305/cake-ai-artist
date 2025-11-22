@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Home, Shield, Lock, Eye, Database, Mail } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const Privacy = () => {
   return (
@@ -213,6 +214,7 @@ const Privacy = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

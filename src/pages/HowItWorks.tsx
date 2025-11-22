@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Type, Sparkles, Download, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Footer } from "@/components/Footer";
 
 const HowItWorks = () => {
   return (
@@ -188,6 +189,7 @@ const HowItWorks = () => {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

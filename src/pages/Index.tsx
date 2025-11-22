@@ -7,6 +7,7 @@ import { LivePurchaseNotifications } from "@/components/LivePurchaseNotification
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -494,44 +495,7 @@ const Index = () => {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-foreground mb-4">Cake Magic</h3>
-              <p className="text-sm text-muted-foreground">
-                Creating personalized cakes in seconds, not hours.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">Product</h4>
-              <div className="space-y-2">
-                <Link to="/how-it-works" className="block text-sm text-muted-foreground hover:text-foreground">How It Works</Link>
-                <Link to="/pricing" className="block text-sm text-muted-foreground hover:text-foreground">Pricing</Link>
-                <Link to="/use-cases" className="block text-sm text-muted-foreground hover:text-foreground">Use Cases</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">Resources</h4>
-              <div className="space-y-2">
-                <Link to="/blog" className="block text-sm text-muted-foreground hover:text-foreground">Blog</Link>
-                <Link to="/faq" className="block text-sm text-muted-foreground hover:text-foreground">FAQ</Link>
-                <Link to="/contact" className="block text-sm text-muted-foreground hover:text-foreground">Contact</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">Legal</h4>
-              <div className="space-y-2">
-                <Link to="/privacy" className="block text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link>
-                <Link to="/terms" className="block text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>© 2025 Cake Magic. Making celebrations special, one cake at a time.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

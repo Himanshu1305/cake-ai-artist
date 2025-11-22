@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Cake, Heart, GraduationCap, Baby, Briefcase, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Footer } from "@/components/Footer";
 
 const UseCases = () => {
   return (
@@ -229,6 +230,7 @@ const UseCases = () => {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

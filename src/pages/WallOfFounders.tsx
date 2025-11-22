@@ -9,6 +9,7 @@ import { SpotsRemainingCounter } from '@/components/SpotsRemainingCounter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Search } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 
 export default function WallOfFounders() {
   const navigate = useNavigate();
@@ -168,6 +169,7 @@ export default function WallOfFounders() {
           </Button>
         </motion.div>
       </div>
+      <Footer />
     </div>
   );
 }

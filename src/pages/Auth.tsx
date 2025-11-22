@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Footer } from "@/components/Footer";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -141,6 +142,7 @@ const Auth = () => {
           </button>
         </div>
       </Card>
+      <Footer />
     </div>
   );
 };
