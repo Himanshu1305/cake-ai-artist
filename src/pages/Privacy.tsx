@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Home, Shield, Lock, Eye, Database } from "lucide-react";
+import { Home, Shield, Lock, Eye, Database, Mail } from "lucide-react";
 
 const Privacy = () => {
   return (
@@ -112,6 +112,31 @@ const Privacy = () => {
                     <li>Regular security audits and updates</li>
                     <li>Restricted access to personal data (premium users only)</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-8 bg-surface-elevated border-party-pink/30 border-2 shadow-party">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-party-pink rounded-full flex items-center justify-center flex-shrink-0">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold text-foreground">Email Communications</h2>
+                <div className="text-foreground/80 space-y-2">
+                  <p>We may use your email address to send you information about:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>Promotional offers and special deals</li>
+                    <li>New features and product updates</li>
+                    <li>Blog posts and educational content</li>
+                    <li>Important service announcements</li>
+                  </ul>
+                  <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border">
+                    <p className="font-semibold text-foreground mb-2">Your Control:</p>
+                    <p className="text-sm">You can unsubscribe from promotional emails at any time using the link in the email footer.</p>
+                    <p className="text-sm mt-2">Service-critical emails (password resets, account security) cannot be unsubscribed from as they're essential for your account safety.</p>
+                  </div>
                 </div>
               </div>
             </div>

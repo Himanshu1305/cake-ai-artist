@@ -6,6 +6,7 @@ import { AdminSaleReminder } from "@/components/AdminSaleReminder";
 import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,13 +17,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Download } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const Index = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
+  const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -42,7 +45,7 @@ const Index = () => {
         .select("image_url, prompt")
         .eq("featured", true)
         .order("created_at", { ascending: false })
-        .limit(6);
+        .limit(20);
 
       if (error) throw error;
       
@@ -76,6 +79,21 @@ const Index = () => {
     setIsLoggedIn(false);
   };
 
+  const handleDownloadCarouselImage = async (imageUrl: string, prompt: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cake-design-${prompt.slice(0, 20).replace(/\s+/g, '-')}-${Date.now()}.png`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <AdminSaleReminder />
@@ -83,6 +101,7 @@ const Index = () => {
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
       <LivePurchaseNotifications />
+      <FeedbackWidget />
       
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-16 z-40 border-b border-border/30">
@@ -100,6 +119,7 @@ const Index = () => {
             </Link>
             <Link to="/wall-of-founders"><Button variant="ghost" size="sm">Founding Members</Button></Link>
             <Link to="/use-cases"><Button variant="ghost" size="sm">Examples</Button></Link>
+            <Link to="/community"><Button variant="ghost" size="sm">Community</Button></Link>
             <Link to="/blog"><Button variant="ghost" size="sm">Blog</Button></Link>
             <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
             {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="outline" size="sm">My Gallery</Button>}
@@ -259,53 +279,72 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Real Testimonials */}
+      {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
           What People Actually Say
         </h2>
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {[
-            {
-              quote: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
-              author: "Sarah M.",
-              role: "Perpetual Last-Minute Planner",
-              rating: 5
-            },
-            {
-              quote: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
-              author: "James K.",
-              role: "Dad of Two",
-              rating: 5
-            },
-            {
-              quote: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
-              author: "Maria G.",
-              role: "Event Coordinator",
-              rating: 5
-            }
-          ].map((testimonial, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + idx * 0.1 }}
-            >
-              <Card className="p-6 bg-surface-elevated border-border h-full">
-                <div className="flex gap-1 mb-3">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-gold text-gold" />
-                  ))}
+        <Carousel className="w-full max-w-5xl mx-auto mb-12">
+          <CarouselContent>
+            {[
+              {
+                quote: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
+                author: "Sarah M.",
+                role: "Perpetual Last-Minute Planner",
+                rating: 5
+              },
+              {
+                quote: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
+                author: "James K.",
+                role: "Dad of Two",
+                rating: 5
+              },
+              {
+                quote: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
+                author: "Maria G.",
+                role: "Event Coordinator",
+                rating: 5
+              },
+              {
+                quote: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
+                author: "Jessica T.",
+                role: "Bakery Owner",
+                rating: 5
+              },
+              {
+                quote: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
+                author: "Priya S.",
+                role: "Mom & Anime Fan",
+                rating: 5
+              },
+              {
+                quote: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
+                author: "David L.",
+                role: "Event Planner",
+                rating: 5
+              }
+            ].map((testimonial, idx) => (
+              <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-2">
+                  <Card className="p-6 bg-surface-elevated border-border h-full">
+                    <div className="flex gap-1 mb-3">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-gold text-gold" />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
+                    <div>
+                      <p className="font-semibold text-foreground">{testimonial.author}</p>
+                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    </div>
+                  </Card>
                 </div>
-                <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
-                <div>
-                  <p className="font-semibold text-foreground">{testimonial.author}</p>
-                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </div>
 
       {/* Stats Section */}
@@ -349,13 +388,18 @@ const Index = () => {
               featuredCakes.map((cake, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-2">
-                    <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
+                    <div 
+                      className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all cursor-pointer"
+                      onClick={() => setSelectedCarouselImage(cake)}
+                    >
                       <img
                         src={cake.image_url}
                         alt="Featured user cake design"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <p className="text-white text-sm font-semibold">Click to view</p>
+                      </div>
                     </div>
                   </div>
                 </CarouselItem>
@@ -380,6 +424,43 @@ const Index = () => {
           <CarouselNext />
         </Carousel>
       </div>
+
+      {/* Image Zoom Modal */}
+      <Dialog open={!!selectedCarouselImage} onOpenChange={() => setSelectedCarouselImage(null)}>
+        <DialogContent className="max-w-4xl">
+          {selectedCarouselImage && (
+            <div className="space-y-4">
+              <img 
+                src={selectedCarouselImage.image_url} 
+                alt="Community creation" 
+                className="w-full h-auto rounded-lg"
+              />
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground italic">{selectedCarouselImage.prompt}</p>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleDownloadCarouselImage(selectedCarouselImage.image_url, selectedCarouselImage.prompt)}
+                    className="flex-1"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSelectedCarouselImage(null);
+                      navigate('#creator');
+                    }}
+                    className="flex-1"
+                  >
+                    Create Similar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Main Creator Section */}
       <div id="creator" className="container mx-auto px-4 py-16">

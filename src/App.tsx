@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Auth from "./pages/Auth";
 import Gallery from "./pages/Gallery";
+import CommunityGallery from "./pages/CommunityGallery";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/community" element={<CommunityGallery />} />
           <Route path="/wall-of-founders" element={<WallOfFounders />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
