@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, Twitter, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X, Star } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 
@@ -651,29 +651,105 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       
       const shareText = `Check out this amazing cake I created for ${name}! 🎂✨`;
       
+      // Convert blob URL to actual blob for sharing
+      const response = await fetch(compositeUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${name}-cake.png`, { type: 'image/png' });
+      
+      // Try Web Share API first (works on mobile)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: shareText,
+            text: shareText,
+          });
+          toast({
+            title: "Shared successfully!",
+            description: "Your cake card has been shared",
+          });
+          URL.revokeObjectURL(compositeUrl);
+          return;
+        } catch (shareError) {
+          // User cancelled or share failed, continue to platform-specific sharing
+          console.log('Web Share API failed, falling back to platform-specific:', shareError);
+        }
+      }
+      
+      // Platform-specific sharing fallbacks
       switch (platform) {
         case 'facebook':
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'twitter':
-          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
-          break;
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + window.location.href)}`, '_blank');
-          break;
-        case 'instagram':
-          // Instagram doesn't support web sharing, download instead
+        case 'x':
+          // These platforms don't support direct image sharing from web
+          // Download and provide instructions
           const link = document.createElement('a');
           link.href = compositeUrl;
-          link.download = `${name}-cake-instagram.png`;
+          link.download = `${name}-cake-${platform}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           
           toast({
             title: "Image downloaded!",
-            description: "Open Instagram app and upload the downloaded image",
+            description: `Open ${platform === 'x' ? 'X' : 'Facebook'} and upload the downloaded image with your post`,
+            duration: 5000,
           });
+          break;
+          
+        case 'whatsapp':
+          // WhatsApp Web doesn't support image sharing
+          // Download and provide instructions
+          const waLink = document.createElement('a');
+          waLink.href = compositeUrl;
+          waLink.download = `${name}-cake-whatsapp.png`;
+          document.body.appendChild(waLink);
+          waLink.click();
+          document.body.removeChild(waLink);
+          
+          toast({
+            title: "Image downloaded!",
+            description: "Open WhatsApp and attach the downloaded image to share",
+            duration: 5000,
+          });
+          break;
+          
+        case 'instagram':
+          // Try Instagram app URL scheme on mobile, otherwise download
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          if (isMobile) {
+            // Download first
+            const igLink = document.createElement('a');
+            igLink.href = compositeUrl;
+            igLink.download = `${name}-cake-instagram.png`;
+            document.body.appendChild(igLink);
+            igLink.click();
+            document.body.removeChild(igLink);
+            
+            // Try to open Instagram
+            setTimeout(() => {
+              window.location.href = 'instagram://library';
+            }, 500);
+            
+            toast({
+              title: "Opening Instagram...",
+              description: "Image downloaded. Select it from your gallery in Instagram",
+              duration: 5000,
+            });
+          } else {
+            // Desktop: just download
+            const igLink = document.createElement('a');
+            igLink.href = compositeUrl;
+            igLink.download = `${name}-cake-instagram.png`;
+            document.body.appendChild(igLink);
+            igLink.click();
+            document.body.removeChild(igLink);
+            
+            toast({
+              title: "Image downloaded!",
+              description: "Open Instagram on your phone and upload the downloaded image",
+              duration: 5000,
+            });
+          }
           break;
       }
       
@@ -1214,7 +1290,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             onClick={() => setShowRatingPrompt(false)}
             className="absolute top-2 right-2"
           >
-            <X className="w-4 h-4" />
+            <XIcon className="w-4 h-4" />
           </Button>
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-center">How did we do?</h3>
@@ -1412,13 +1488,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     Facebook
                   </Button>
                   <Button
-                    onClick={() => handleShare('twitter')}
+                    onClick={() => handleShare('x')}
                     disabled={selectedImages.size === 0}
                     variant="outline"
                     className="border-party-blue hover:bg-party-blue hover:text-white"
                   >
-                    <Twitter className="w-4 h-4 mr-1" />
-                    Twitter
+                    <XIcon className="w-4 h-4 mr-1" />
+                    X
                   </Button>
                   <Button
                     onClick={() => handleShare('whatsapp')}
@@ -1456,7 +1532,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 size="icon"
                 className="absolute top-2 right-2 z-50 bg-background/80 hover:bg-background"
               >
-                <X className="w-4 h-4" />
+                <XIcon className="w-4 h-4" />
               </Button>
               
               <div className="p-4">

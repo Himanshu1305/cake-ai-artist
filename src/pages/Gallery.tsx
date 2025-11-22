@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, X, Star } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
 import {
@@ -113,7 +113,7 @@ const Gallery = () => {
       case "facebook":
         shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
         break;
-      case "twitter":
+      case "x":
         shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
         break;
       case "whatsapp":
@@ -305,11 +305,11 @@ const Gallery = () => {
                             Facebook
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleShare("twitter", image.prompt)}
+                            onClick={() => handleShare("x", image.prompt)}
                             className="cursor-pointer hover:bg-party-pink/10"
                           >
-                            <Twitter className="w-4 h-4 mr-2" />
-                            Twitter
+                            <XIcon className="w-4 h-4 mr-2" />
+                            X
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleShare("whatsapp", image.prompt)}
@@ -355,7 +355,7 @@ const Gallery = () => {
                 size="icon"
                 className="absolute top-2 right-2 z-50 bg-background/80 hover:bg-background"
               >
-                <X className="w-4 h-4" />
+                <XIcon className="w-4 h-4" />
               </Button>
               
               <div className="p-4">

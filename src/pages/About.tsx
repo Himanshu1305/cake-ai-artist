@@ -87,7 +87,7 @@ const About = () => {
               </div>
               <h3 className="text-2xl font-bold text-foreground">Social Sharing</h3>
               <p className="text-foreground/70">
-                Share your beautiful cake creations directly to Facebook, Twitter, and WhatsApp. Spread the joy with friends and family!
+                Share your beautiful cake creations directly to Facebook, X, and WhatsApp. Spread the joy with friends and family!
               </p>
             </div>
           </Card>

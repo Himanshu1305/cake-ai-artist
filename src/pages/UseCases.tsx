@@ -178,7 +178,7 @@ const UseCases = () => {
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-semibold text-lg mb-3 text-foreground">Social Media Posts</h3>
               <p className="text-muted-foreground mb-3">
-                Create eye-catching birthday posts for Instagram, Facebook, or Twitter. Much more engaging than a generic "Happy Birthday" text post.
+                Create eye-catching birthday posts for Instagram, Facebook, or X. Much more engaging than a generic "Happy Birthday" text post.
               </p>
               <p className="text-sm text-muted-foreground italic">
                 Works great for: Birthday shoutouts, anniversary posts, congratulations messages
