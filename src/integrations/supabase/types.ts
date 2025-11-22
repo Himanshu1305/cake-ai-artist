@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_type: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_feed: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          message: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          message: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_feed_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_images: {
         Row: {
           created_at: string | null
@@ -93,33 +154,134 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
+          current_streak: number | null
           email: string
           id: string
           is_premium: boolean | null
+          last_generation_date: string | null
+          premium_until: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          current_streak?: number | null
           email: string
           id: string
           is_premium?: boolean | null
+          last_generation_date?: string | null
+          premium_until?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          current_streak?: number | null
           email?: string
           id?: string
           is_premium?: boolean | null
+          last_generation_date?: string | null
+          premium_until?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          referred_email: string
+          referred_user_id: string | null
+          referrer_id: string
+          reward_days: number | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referred_email: string
+          referred_user_id?: string | null
+          referrer_id: string
+          reward_days?: number | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referred_email?: string
+          referred_user_id?: string | null
+          referrer_id?: string
+          reward_days?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_user_id_fkey"
+            columns: ["referred_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_settings: {
+        Row: {
+          birthday_reminders: boolean | null
+          created_at: string
+          email_reminders: boolean | null
+          id: string
+          marketing_emails: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday_reminders?: boolean | null
+          created_at?: string
+          email_reminders?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday_reminders?: boolean | null
+          created_at?: string
+          email_reminders?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_activity_feed: {
+        Args: { p_activity_type: string; p_message: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
