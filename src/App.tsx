@@ -16,6 +16,7 @@ import HowItWorks from "./pages/HowItWorks";
 import UseCases from "./pages/UseCases";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import WallOfFounders from "./pages/WallOfFounders";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/wall-of-founders" element={<WallOfFounders />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

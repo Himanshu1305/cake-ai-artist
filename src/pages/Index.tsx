@@ -73,16 +73,26 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <UrgencyBanner />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
+      <LivePurchaseNotifications />
       
       {/* Navigation Header */}
-      <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-50 border-b border-border/30">
+      <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-16 z-40 border-b border-border/30">
         <div className="flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-foreground">Cake Magic</Link>
           <div className="flex gap-3">
             <Link to="/how-it-works"><Button variant="ghost" size="sm">How It Works</Button></Link>
-            <Link to="/pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
+            <Link to="/pricing">
+              <Button variant="ghost" size="sm" className="relative">
+                Pricing
+                <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
+                  🔥
+                </span>
+              </Button>
+            </Link>
+            <Link to="/wall-of-founders"><Button variant="ghost" size="sm">Founding Members</Button></Link>
             <Link to="/use-cases"><Button variant="ghost" size="sm">Examples</Button></Link>
             <Link to="/blog"><Button variant="ghost" size="sm">Blog</Button></Link>
             <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
@@ -96,46 +106,88 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section - Founding Member Sale */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
         <img
           src={partyHero}
           alt="Vibrant birthday party celebration"
-          className="w-full h-72 md:h-96 object-cover transition-transform duration-700 hover:scale-105"
+          className="w-full h-auto md:h-[600px] object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4">
+          <div className="text-center space-y-6 px-4 max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block"
+            >
+              <p className="text-white font-bold text-lg">
+                🎊 FOUNDING MEMBER SALE ENDS IN:
+              </p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <CountdownTimer />
+            </motion.div>
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-bold drop-shadow-lg"
+              transition={{ delay: 0.3 }}
+              className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
-              <span className="text-white drop-shadow-[0_4px_20px_rgba(255,20,147,0.8)]">
-                Create the Perfect Cake
-              </span>
-              <br />
-              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">In 30 Seconds</span>
+              Get LIFETIME ACCESS for just $49
             </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium"
-            >
-              Remember spending hours searching for the perfect cake design? Not anymore. Type a name, hit generate, done.
-            </motion.p>
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="pt-4"
+              className="space-y-2"
             >
-              <a href="#creator">
-                <Button size="lg" className="text-lg px-8 py-6">
-                  Start Creating Free
-                </Button>
-              </a>
+              <p className="text-white text-xl md:text-2xl font-semibold drop-shadow-md">
+                First 50 members only • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" /> spots left
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto"
+            >
+              <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Regular price:</p>
+                  <p className="text-lg font-bold line-through text-muted-foreground">$156/year forever</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Your price:</p>
+                  <p className="text-3xl font-bold text-gold">$49 ONCE</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">You save:</p>
+                  <p className="text-lg font-bold text-party-pink">$1,509 over 10 years</p>
+                </div>
+              </div>
+              
+              <Button
+                size="lg"
+                className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow"
+                onClick={() => navigate('/pricing')}
+              >
+                Claim Your Founding Spot Now →
+              </Button>
+              
+              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+                <p>"After Dec 31, this becomes $12.99/month forever"</p>
+                <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
+              </div>
             </motion.div>
           </div>
         </div>

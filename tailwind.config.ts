@@ -62,6 +62,10 @@ export default {
           DEFAULT: "hsl(var(--gold))",
           muted: "hsl(var(--gold-muted))",
         },
+        silver: {
+          DEFAULT: "hsl(var(--silver))",
+          muted: "hsl(var(--silver-muted))",
+        },
         surface: {
           DEFAULT: "hsl(var(--surface))",
           elevated: "hsl(var(--surface-elevated))",
