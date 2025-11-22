@@ -20,6 +20,9 @@ interface GeneratedImage {
   prompt: string;
   created_at: string;
   featured: boolean;
+  recipient_name?: string | null;
+  occasion_type?: string | null;
+  occasion_date?: string | null;
 }
 
 const Gallery = () => {
@@ -233,12 +236,33 @@ const Gallery = () => {
                   />
                 </div>
                 <div className="p-4">
+                  {/* Memory Info */}
+                  {(image.recipient_name || image.occasion_date) && (
+                    <div className="mb-3 p-3 bg-gradient-party/10 rounded-lg border border-party-pink/20">
+                      {image.recipient_name && (
+                        <p className="text-sm font-semibold text-foreground mb-1">
+                          🎁 For: {image.recipient_name}
+                        </p>
+                      )}
+                      {image.occasion_date && (
+                        <p className="text-xs text-foreground/70">
+                          📅 {new Date(image.occasion_date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                          {image.occasion_type && ` • ${image.occasion_type.charAt(0).toUpperCase() + image.occasion_type.slice(1)}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
                     {image.prompt}
                   </p>
                   <div className="flex justify-between items-center gap-2">
                     <span className="text-xs text-foreground/50">
-                      {new Date(image.created_at).toLocaleDateString()}
+                      Created {new Date(image.created_at).toLocaleDateString()}
                     </span>
                     <div className="flex gap-2">
                       <Button
@@ -344,6 +368,25 @@ const Gallery = () => {
                 </div>
                 
                 <div className="mt-4 space-y-4">
+                  {/* Memory Info in Modal */}
+                  {selectedImage.recipient_name && (
+                    <div className="p-3 bg-gradient-party/10 rounded-lg border border-party-pink/20">
+                      <p className="text-sm font-semibold text-foreground">
+                        🎁 Created for: {selectedImage.recipient_name}
+                      </p>
+                      {selectedImage.occasion_date && (
+                        <p className="text-xs text-foreground/70 mt-1">
+                          📅 Occasion: {new Date(selectedImage.occasion_date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                          {selectedImage.occasion_type && ` • ${selectedImage.occasion_type.charAt(0).toUpperCase() + selectedImage.occasion_type.slice(1)}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-sm text-foreground/70">{selectedImage.prompt}</p>
                   
                   <div className="flex gap-2 justify-end">
