@@ -14,11 +14,7 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
   useEffect(() => {
     // Console warning for January 1st decision
     const now = new Date();
-    // TESTING: Set to yesterday to test behavior
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const janFirst2026 = yesterday;
-    // const janFirst2026 = new Date('2026-01-01T00:00:00');
+    const janFirst2026 = new Date('2026-01-01T00:00:00');
     const hasShownWarning = sessionStorage.getItem('jan1_sale_warning_shown');
     
     if (now >= janFirst2026 && !hasShownWarning) {

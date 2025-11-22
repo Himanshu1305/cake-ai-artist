@@ -12,11 +12,7 @@ export const AdminSaleReminder = () => {
 
   useEffect(() => {
     const now = new Date();
-    // TESTING: Set to yesterday to test behavior
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const janFirst2026 = yesterday;
-    // const janFirst2026 = new Date('2026-01-01T00:00:00');
+    const janFirst2026 = new Date('2026-01-01T00:00:00');
     
     // Only show if we're past Jan 1, 2026
     if (now < janFirst2026) {
