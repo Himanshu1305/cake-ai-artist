@@ -75,6 +75,42 @@ export type Database = {
           },
         ]
       }
+      founding_members: {
+        Row: {
+          created_at: string | null
+          display_on_wall: boolean | null
+          id: string
+          member_number: number
+          price_paid: number
+          purchased_at: string | null
+          special_badge: string | null
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_on_wall?: boolean | null
+          id?: string
+          member_number: number
+          price_paid: number
+          purchased_at?: string | null
+          special_badge?: string | null
+          tier: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_on_wall?: boolean | null
+          id?: string
+          member_number?: number
+          price_paid?: number
+          purchased_at?: string | null
+          special_badge?: string | null
+          tier?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_images: {
         Row: {
           created_at: string | null
@@ -156,30 +192,45 @@ export type Database = {
           created_at: string | null
           current_streak: number | null
           email: string
+          founding_member_number: number | null
+          founding_tier: string | null
           id: string
+          is_founding_member: boolean | null
           is_premium: boolean | null
           last_generation_date: string | null
+          lifetime_access: boolean | null
           premium_until: string | null
+          purchased_date: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           current_streak?: number | null
           email: string
+          founding_member_number?: number | null
+          founding_tier?: string | null
           id: string
+          is_founding_member?: boolean | null
           is_premium?: boolean | null
           last_generation_date?: string | null
+          lifetime_access?: boolean | null
           premium_until?: string | null
+          purchased_date?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           current_streak?: number | null
           email?: string
+          founding_member_number?: number | null
+          founding_tier?: string | null
           id?: string
+          is_founding_member?: boolean | null
           is_premium?: boolean | null
           last_generation_date?: string | null
+          lifetime_access?: boolean | null
           premium_until?: string | null
+          purchased_date?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -282,6 +333,7 @@ export type Database = {
         Args: { p_activity_type: string; p_message: string }
         Returns: undefined
       }
+      get_available_spots: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never
