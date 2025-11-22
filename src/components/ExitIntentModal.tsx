@@ -19,6 +19,7 @@ interface ExitIntentModalProps {
 export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps) => {
   const [showModal, setShowModal] = useState(false);
   const [hasShown, setHasShown] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +40,21 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [isPremium, hasShown]);
+
+  useEffect(() => {
+    if (showModal && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [showModal, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const handleUpgrade = () => {
     setShowModal(false);
@@ -104,13 +120,16 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
             </motion.div>
 
             <motion.div 
-              className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center"
+              className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center"
               initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
+              animate={{ opacity: 1, scale: [1, 1.05, 1] }}
+              transition={{ delay: 0.5, duration: 0.3, repeat: Infinity, repeatDelay: 2 }}
             >
-              <p className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">
-                🎊 Limited Time: Get 20% OFF Your First Month!
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                🔥 30% OFF Expires in: {formatTime(timeLeft)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                This special offer won't last long!
               </p>
             </motion.div>
 
