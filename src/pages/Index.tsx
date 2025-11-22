@@ -205,12 +205,10 @@ const Index = () => {
                     <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
                       <img
                         src={cake.image_url}
-                        alt={cake.prompt}
+                        alt="Featured user cake design"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4 px-2">
-                        <span className="text-foreground font-semibold text-sm text-center line-clamp-2">{cake.prompt}</span>
-                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                   </div>
                 </CarouselItem>
