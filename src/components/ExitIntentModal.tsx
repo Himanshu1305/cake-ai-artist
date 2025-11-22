@@ -56,7 +56,7 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
 
   return (
     <Dialog open={showModal} onOpenChange={setShowModal}>
-      <DialogContent className="sm:max-w-md bg-gradient-celebration/20 border-party-purple/30 border-2 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-md bg-background/95 border-party-purple/30 border-2 backdrop-blur-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
             <Crown className="w-6 h-6 text-yellow-500" />
