@@ -16,10 +16,10 @@ export const UrgencyBanner = () => {
 
   // Check if sale is still active
   const saleEndDate = new Date('2025-12-31T23:59:59');
-  // TODO: MANUAL CLEANUP REQUIRED - DO NOT AUTO-DISABLE AFTER JAN 1
-  // User requested to consult before any Post-January 1st cleanup
-  // const isSaleActive = new Date() < saleEndDate;
-  const isSaleActive = true; // ALWAYS ACTIVE - REMOVE MANUALLY AFTER CONSULTING USER
+  // Auto-cleanup enabled: Banner will hide after Dec 31, 2025
+  // If sale ends and you want to extend, update the date above
+  // To close permanently, follow FOUNDING_MEMBER_CLEANUP_INSTRUCTIONS.md
+  const isSaleActive = new Date() < saleEndDate;
 
   useEffect(() => {
     if (isDismissed) {
