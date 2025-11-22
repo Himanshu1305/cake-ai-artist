@@ -1253,7 +1253,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  ✨ Generate My Cake Magic 🎉
+                  ✨ Generate My Cake 🎉
                 </div>
               )}
             </Button>

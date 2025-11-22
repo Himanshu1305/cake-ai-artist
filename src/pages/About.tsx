@@ -22,7 +22,7 @@ const About = () => {
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground">
             <span className="bg-gradient-party bg-clip-text text-transparent">
-              About Cake Magic Creator
+              About Cake AI Artist
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto">

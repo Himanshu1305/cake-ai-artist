@@ -6,7 +6,7 @@ export const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
           <div>
-            <h3 className="font-bold text-lg mb-4">Cake Magic</h3>
+            <h3 className="font-bold text-lg mb-4">Cake AI Artist</h3>
             <p className="text-sm opacity-90">
               Create stunning personalized cakes with AI magic.
             </p>
@@ -68,7 +68,7 @@ export const Footer = () => {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/20 text-center text-sm text-white opacity-90">
-          <p>&copy; 2024 Cake Magic. All rights reserved.</p>
+          <p>&copy; 2024 Cake AI Artist. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -39,11 +39,11 @@ const Pricing = () => {
     },
     {
       question: "Is this really lifetime access?",
-      answer: "Yes! As long as Cake Magic exists, your founding member access will remain active. You'll never be charged again and will receive all future updates and features at no additional cost."
+      answer: "Yes! As long as Cake AI Artist exists, your founding member access will remain active. You'll never be charged again and will receive all future updates and features at no additional cost."
     },
     {
       question: "What if the service shuts down?",
-      answer: "We're committed to Cake Magic for the long term. However, if we ever need to shut down, we'll provide 90 days notice and offer full refunds to all founding members."
+      answer: "We're committed to Cake AI Artist for the long term. However, if we ever need to shut down, we'll provide 90 days notice and offer full refunds to all founding members."
     },
     {
       question: "Can I get a refund?",
@@ -55,7 +55,7 @@ const Pricing = () => {
     },
     {
       question: "Why should I buy now vs waiting?",
-      answer: "This is the cheapest Cake Magic will ever be. At regular pricing of $9.99/month ($119.88/year), you'd spend $1,198.80 over 10 years. Founding members pay just $49-$99 once and save over $1,100. This offer will never be repeated."
+      answer: "This is the cheapest Cake AI Artist will ever be. At regular pricing of $9.99/month ($119.88/year), you'd spend $1,198.80 over 10 years. Founding members pay just $49-$99 once and save over $1,100. This offer will never be repeated."
     },
   ];
 

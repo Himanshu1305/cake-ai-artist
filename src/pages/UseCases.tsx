@@ -18,7 +18,7 @@ const UseCases = () => {
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 text-foreground">Perfect for Every Celebration</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-            Whether it's a milestone moment or a simple "just because," Cake Magic Creator helps you make it special.
+            Whether it's a milestone moment or a simple "just because," Cake AI Artist helps you make it special.
           </p>
         </div>
 
@@ -128,7 +128,7 @@ const UseCases = () => {
                   <h3 className="font-semibold text-lg mb-2 text-foreground">Sarah's Last-Minute Save</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     "I completely forgot about my coworker's retirement party until the morning of. I needed something thoughtful but fast. 
-                    Used Cake Magic Creator to make a personalized cake image for the digital slideshow. Everyone thought I'd spent hours on it. 
+                    Used Cake AI Artist to make a personalized cake image for the digital slideshow. Everyone thought I'd spent hours on it. 
                     It took me literally two minutes."
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">— Sarah M., Event Coordinator</p>
@@ -160,7 +160,7 @@ const UseCases = () => {
                 <div>
                   <h3 className="font-semibold text-lg mb-2 text-foreground">Lisa's Virtual Party Solution</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    "My mom's 60th birthday happened during a time when we couldn't gather in person. I used Cake Magic Creator to design a beautiful cake image, 
+                    "My mom's 60th birthday happened during a time when we couldn't gather in person. I used Cake AI Artist to design a beautiful cake image, 
                     printed it on a poster board, and shipped it to her. During our video call, she held it up and we all sang together. It made the virtual celebration feel more real."
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">— Lisa T., Daughter & Party Planner</p>
@@ -172,7 +172,7 @@ const UseCases = () => {
 
         {/* Ideas by Occasion */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center text-foreground">More Ways to Use Cake Magic Creator</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center text-foreground">More Ways to Use Cake AI Artist</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
