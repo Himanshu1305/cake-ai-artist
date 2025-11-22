@@ -73,42 +73,21 @@ const Index = () => {
       
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-50 border-b border-border/30">
-        <div className="flex justify-end gap-4">
-          {isLoggedIn && (
-            <Button
-              onClick={() => navigate("/gallery")}
-              variant="outline"
-              className="border-party-purple/30 hover:border-party-purple hover:scale-105 transition-transform duration-300"
-            >
-              🖼️ My Gallery
-            </Button>
-          )}
-          <Link to="/about">
-            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-pink/30 hover:border-party-pink hover:shadow-party transition-all duration-300 hover:scale-105">
-              ℹ️ About Us
-            </button>
-          </Link>
-          <a href="#creator">
-            <button className="px-5 py-2 bg-surface-elevated/80 backdrop-blur-sm text-foreground font-semibold rounded-lg border-2 border-party-purple/30 hover:border-party-purple hover:shadow-party transition-all duration-300 hover:scale-105">
-              📖 Learn More
-            </button>
-          </a>
-          {isLoggedIn ? (
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-party-pink/30 hover:border-party-pink hover:scale-105 transition-transform duration-300"
-            >
-              🚪 Logout
-            </Button>
-          ) : (
-            <Button
-              onClick={() => navigate("/auth")}
-              className="bg-party-pink hover:bg-party-pink/90 hover:scale-105 transition-transform duration-300 hover:shadow-party"
-            >
-              🔐 Login / Sign Up
-            </Button>
-          )}
+        <div className="flex justify-between items-center">
+          <Link to="/" className="text-xl font-bold text-foreground">Cake Magic</Link>
+          <div className="flex gap-3">
+            <Link to="/how-it-works"><Button variant="ghost" size="sm">How It Works</Button></Link>
+            <Link to="/pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
+            <Link to="/use-cases"><Button variant="ghost" size="sm">Examples</Button></Link>
+            <Link to="/blog"><Button variant="ghost" size="sm">Blog</Button></Link>
+            <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
+            {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="outline" size="sm">My Gallery</Button>}
+            {isLoggedIn ? (
+              <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
+            ) : (
+              <Button onClick={() => navigate("/auth")} size="sm">Sign In</Button>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -123,14 +102,14 @@ const Index = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 float">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
-              <span className="text-white drop-shadow-[0_4px_20px_rgba(255,20,147,0.8)] [text-shadow:_2px_2px_8px_rgb(255_20_147_/_80%),_-2px_-2px_8px_rgb(138_43_226_/_60%)] animate-pulse">
-                Cake Magic
+              <span className="text-white drop-shadow-[0_4px_20px_rgba(255,20,147,0.8)]">
+                Create the Perfect Cake
               </span>
               <br />
-              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">Creator ✨</span>
+              <span className="text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">In 30 Seconds</span>
             </h1>
             <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto font-medium">
-              Turn any celebration into pure joy with stunning, AI-powered personalized cakes! 🎉
+              Remember spending hours searching for the perfect cake design? Not anymore. Type a name, hit generate, done.
             </p>
             <div className="flex items-center justify-center gap-4 text-lg flex-wrap">
               <span className="animate-bounce inline-block text-2xl">🎈</span>
@@ -139,11 +118,8 @@ const Index = () => {
             </div>
             <div className="pt-4">
               <a href="#creator">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-gold text-white hover:shadow-gold transition-all duration-300 hover:scale-110 text-lg px-8 py-6 animate-pulse"
-                >
-                  🎂 Start Creating Now! ✨
+                <Button size="lg" className="text-lg px-8 py-6">
+                  Start Creating Free
                 </Button>
               </a>
             </div>
@@ -163,13 +139,13 @@ const Index = () => {
             />
           </div>
           <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-foreground flex items-center gap-2">
-              <span className="animate-bounce inline-block">🌟</span>
-              Create Unforgettable Moments
+            <h2 className="text-4xl font-bold text-foreground">
+              Why waste time searching?
             </h2>
             <p className="text-xl text-foreground/80 leading-relaxed">
-              From birthdays to celebrations, our AI creates stunning personalized cakes 
-              that make every occasion magical and memorable!
+              Here's the thing about celebrations—they're only as special as the thought you put into them. 
+              But when you're juggling everything else, who has three hours to browse stock photos? 
+              That's where we come in. Beautiful, personalized cake designs in the time it takes to make coffee.
             </p>
             <div className="flex gap-3 flex-wrap">
               <span className="px-4 py-2 bg-party-pink/20 text-foreground rounded-full text-base font-medium border-2 border-party-pink/40 hover:bg-party-pink/30 transition-all duration-300 hover:scale-110 cursor-pointer">
@@ -288,12 +264,12 @@ const Index = () => {
             <div className="text-center space-y-2">
               <h4 className="font-semibold text-foreground mb-3">Quick Links</h4>
               <div className="flex flex-col gap-2">
-                <Link to="/about" className="text-foreground/70 hover:text-primary transition-colors">
-                  About Us
-                </Link>
-                <Link to="/privacy" className="text-foreground/70 hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
+                <Link to="/how-it-works" className="text-foreground/70 hover:text-primary transition-colors">How It Works</Link>
+                <Link to="/pricing" className="text-foreground/70 hover:text-primary transition-colors">Pricing</Link>
+                <Link to="/faq" className="text-foreground/70 hover:text-primary transition-colors">FAQ</Link>
+                <Link to="/contact" className="text-foreground/70 hover:text-primary transition-colors">Contact</Link>
+                <Link to="/terms" className="text-foreground/70 hover:text-primary transition-colors">Terms</Link>
+                <Link to="/privacy" className="text-foreground/70 hover:text-primary transition-colors">Privacy</Link>
               </div>
             </div>
             
