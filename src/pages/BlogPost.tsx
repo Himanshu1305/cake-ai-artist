@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -157,6 +158,7 @@ const BlogPost = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

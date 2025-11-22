@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap } from 'lucide-react';
-import { CountdownTimer } from './CountdownTimer';
 import { SpotsRemainingCounter } from './SpotsRemainingCounter';
 import { Button } from './ui/button';
 
@@ -55,12 +54,10 @@ export const UrgencyBanner = () => {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
               <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
+                <span>🚨 FOUNDING MEMBER SALE -</span>
                 <SpotsRemainingCounter className="flex-shrink-0" />
-                <span className="hidden sm:inline">lifetime spots left at $49</span>
-                <span className="sm:hidden">at $49</span>
-                <span className="hidden md:inline">|</span>
-                <span className="hidden md:inline">Sale ends in</span>
-                <CountdownTimer compact className="flex-shrink-0" />
+                <span className="hidden sm:inline">SPOTS LEFT AT $49 - ENDS DEC 31</span>
+                <span className="sm:hidden">LEFT - ENDS DEC 31</span>
               </div>
             </div>
             <Button

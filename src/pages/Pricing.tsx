@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, ArrowLeft, Crown, Star, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -324,6 +325,7 @@ const Pricing = () => {
           </Button>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Home, Sparkles, Brain, Palette, Download, Share2, Gift } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const About = () => {
   return (
@@ -151,6 +152,7 @@ const About = () => {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

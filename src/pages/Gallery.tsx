@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Trash2, Download, Share2, Facebook, Twitter, MessageCircle, Instagram, X, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Footer } from "@/components/Footer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -362,6 +363,7 @@ const Gallery = () => {
           )}
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   );
 };

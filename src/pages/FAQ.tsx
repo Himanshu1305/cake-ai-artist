@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import {
   Accordion,
@@ -202,6 +203,7 @@ const FAQ = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
