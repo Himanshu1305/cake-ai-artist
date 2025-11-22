@@ -328,8 +328,44 @@ export type Database = {
           },
         ]
       }
+      reminder_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_id: string
+          reminder_date: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_id: string
+          reminder_date: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_id?: string
+          reminder_date?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_logs_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "generated_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_settings: {
         Row: {
+          anniversary_reminders: boolean | null
           birthday_reminders: boolean | null
           created_at: string
           email_reminders: boolean | null
@@ -339,6 +375,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          anniversary_reminders?: boolean | null
           birthday_reminders?: boolean | null
           created_at?: string
           email_reminders?: boolean | null
@@ -348,6 +385,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          anniversary_reminders?: boolean | null
           birthday_reminders?: boolean | null
           created_at?: string
           email_reminders?: boolean | null
