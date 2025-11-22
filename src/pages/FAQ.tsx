@@ -1,0 +1,209 @@
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const FAQ = () => {
+  return (
+    <div className="min-h-screen bg-gradient-subtle">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Link to="/">
+          <Button variant="ghost" className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+
+        <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
+          <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
+          <p className="text-muted-foreground text-lg mb-8">
+            Got questions? We've got answers. Can't find what you're looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
+          </p>
+
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                How do I create my first cake?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), 
+                and hit the "Create My Cake" button. In about 20 seconds, you'll get four unique designs to choose from. 
+                Pick your favorite and download it. No design skills needed.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Do I need to create an account?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Nope! You can try the service without signing up. However, creating a free account lets you save your creations, 
+                access your generation history, and track your daily limit. Plus, if you ever upgrade to premium, 
+                your account will have all your past designs ready to go.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Is it really free?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes! Free users can generate up to 3 personalized cakes per day. That's perfect for most people. 
+                If you're planning multiple events or want unlimited creations, our premium plan removes all limits 
+                and adds priority processing for just a few dollars a month.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Can I change the message after generating?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Currently, each generation creates four variations with slightly different messages and designs. 
+                If you don't love what you see, simply hit generate again—it counts as one of your daily generations. 
+                Premium users can regenerate as many times as they want until they find the perfect message.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                What cake styles are available?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Our AI generates various styles based on your inputs—from elegant multi-tiered cakes to fun single-layer designs. 
+                The style adapts to the occasion you select. Birthday cakes tend to be more colorful and playful, 
+                while anniversary cakes lean toward romantic and sophisticated designs.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                What's included in the Premium subscription?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Premium gets you unlimited cake generations (no daily limits), priority processing (faster generation), 
+                access to advanced customization options, commercial use license for your images, and early access to new features. 
+                Plus, you support us in making the service even better!
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                How many cakes can I generate with Premium?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Unlimited. Seriously. Generate as many as you want, whenever you want. Planning 50 different birthday parties? Go for it. 
+                Want to experiment with different messages until you find the perfect one? Have at it.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Can I upgrade or downgrade anytime?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Absolutely. You can upgrade to premium anytime and start using unlimited generations immediately. 
+                If you decide to downgrade, your premium access continues until the end of your billing period, 
+                then you'll return to the free plan. No penalties, no hassle.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-9" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                What image format do you provide?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                All images are provided in high-quality PNG format with transparent backgrounds where appropriate. 
+                This makes them perfect for sharing on social media, printing, or using in digital invitations. 
+                The resolution is optimized for both screen display and printing.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-10" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Can I print the cake designs?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes! While these are AI-generated cake images (not actual cake designs for bakers), 
+                many people print them for party decorations, invitations, or digital displays. 
+                The image quality is suitable for standard photo printing.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-11" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                What if the image doesn't load?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                First, check your internet connection. If that's fine, try refreshing the page. 
+                Still having issues? It might be a temporary server hiccup. Wait a minute and try again. 
+                If problems persist, reach out to our support team at support@cakemagic.com and we'll sort it out.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-12" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Can I use this for my business?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Free accounts are limited to personal, non-commercial use. If you want to use the images for business purposes 
+                (event planning, social media marketing, client gifts, etc.), you'll need a premium subscription, 
+                which includes a commercial use license.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-13" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                Are there bulk options for businesses?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Currently, our premium plan handles most business needs with unlimited generations. 
+                If you're an enterprise with specific requirements (custom branding, API access, white-label solutions), 
+                contact us at support@cakemagic.com to discuss custom arrangements.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-14" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                What's the license for commercial use?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Premium subscribers receive a commercial use license that allows them to use generated images for business purposes, 
+                including marketing, client presentations, social media, and commercial printing. 
+                You cannot resell the raw images themselves, but you can use them as part of your business services.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-15" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                How does the AI create personalized messages?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Our AI analyzes the name, occasion, and relationship context you provide to craft messages that feel genuinely personal. 
+                It considers factors like formality level, emotional tone, and cultural appropriateness. 
+                Every message is unique—no cookie-cutter templates here.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <div className="mt-12 p-6 bg-party-purple/10 rounded-lg border border-party-purple/20">
+            <h3 className="text-xl font-semibold mb-2 text-foreground">Still have questions?</h3>
+            <p className="text-muted-foreground mb-4">
+              Can't find the answer you're looking for? Our support team is here to help.
+            </p>
+            <Link to="/contact">
+              <Button>Contact Support</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FAQ;
