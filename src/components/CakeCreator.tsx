@@ -9,9 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ShareInstructions } from "@/components/ShareInstructions";
 
 interface CakeCreatorProps {}
 
@@ -46,6 +50,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [ratingFeedback, setRatingFeedback] = useState("");
   const [occasionDate, setOccasionDate] = useState<string>("");
   const [recipientName, setRecipientName] = useState<string>("");
+  const [showShareInstructions, setShowShareInstructions] = useState(false);
+  const isMobile = useIsMobile();
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -591,6 +597,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
     
     try {
+      const fileNames: string[] = [];
+      
       for (const index of Array.from(selectedImages)) {
         const imageUrl = generatedImages[index];
         
@@ -602,9 +610,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         );
         
         // Download
+        const fileName = `${name}-cake-${index + 1}.png`;
+        fileNames.push(fileName);
+        
         const link = document.createElement('a');
         link.href = compositeUrl;
-        link.download = `${name}-cake-${index + 1}.png`;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -614,8 +625,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       }
       
       toast({
-        title: "Download complete!",
-        description: `${selectedImages.size} shareable card(s) downloaded successfully`,
+        title: "✅ Download complete!",
+        description: `Downloaded: ${fileNames.join(', ')} to your Downloads folder`,
+        duration: 5000,
       });
     } catch (error) {
       console.error('Download error:', error);
@@ -628,6 +640,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   };
 
   const handleShare = async (platform: string) => {
+    // Check if user has seen instructions
+    const hasSeenInstructions = localStorage.getItem('hasSeenShareInstructions');
+    if (!hasSeenInstructions) {
+      setShowShareInstructions(true);
+      // Still continue with download after showing modal
+    }
+
     if (selectedImages.size === 0) {
       toast({
         title: "No images selected",
@@ -665,7 +684,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             text: shareText,
           });
           toast({
-            title: "Shared successfully!",
+            title: "Shared successfully! 🎉",
             description: "Your cake card has been shared",
           });
           URL.revokeObjectURL(compositeUrl);
@@ -676,82 +695,61 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         }
       }
       
-      // Platform-specific sharing fallbacks
-      switch (platform) {
-        case 'facebook':
-        case 'x':
-          // These platforms don't support direct image sharing from web
-          // Download and provide instructions
-          const link = document.createElement('a');
-          link.href = compositeUrl;
-          link.download = `${name}-cake-${platform}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          toast({
-            title: "Image downloaded!",
-            description: `Open ${platform === 'x' ? 'X' : 'Facebook'} and upload the downloaded image with your post`,
-            duration: 5000,
-          });
-          break;
-          
-        case 'whatsapp':
-          // WhatsApp Web doesn't support image sharing
-          // Download and provide instructions
-          const waLink = document.createElement('a');
-          waLink.href = compositeUrl;
-          waLink.download = `${name}-cake-whatsapp.png`;
-          document.body.appendChild(waLink);
-          waLink.click();
-          document.body.removeChild(waLink);
-          
-          toast({
-            title: "Image downloaded!",
-            description: "Open WhatsApp and attach the downloaded image to share",
-            duration: 5000,
-          });
-          break;
-          
-        case 'instagram':
-          // Try Instagram app URL scheme on mobile, otherwise download
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          if (isMobile) {
-            // Download first
-            const igLink = document.createElement('a');
-            igLink.href = compositeUrl;
-            igLink.download = `${name}-cake-instagram.png`;
-            document.body.appendChild(igLink);
-            igLink.click();
-            document.body.removeChild(igLink);
-            
-            // Try to open Instagram
+      // Platform-specific sharing fallbacks with enhanced messaging
+      const platformName = platform === 'x' ? 'X' : platform.charAt(0).toUpperCase() + platform.slice(1);
+      
+      // Download the image
+      const link = document.createElement('a');
+      link.href = compositeUrl;
+      link.download = `${name}-cake-${platform}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Platform-specific toast messages with detailed instructions
+      let toastDescription = "";
+      
+      if (isMobile) {
+        switch (platform) {
+          case 'facebook':
+            toastDescription = "Tap 'What's on your mind?' → Photo/Video → Select downloaded image";
+            break;
+          case 'x':
+            toastDescription = "Tap '+' → Media → Select downloaded image → Add your text";
+            break;
+          case 'whatsapp':
+            toastDescription = "Open chat → Paperclip icon → Gallery → Select downloaded image";
+            break;
+          case 'instagram':
+            toastDescription = "Opening Instagram... Select the image from your gallery";
+            // Try to open Instagram app
             setTimeout(() => {
               window.location.href = 'instagram://library';
             }, 500);
-            
-            toast({
-              title: "Opening Instagram...",
-              description: "Image downloaded. Select it from your gallery in Instagram",
-              duration: 5000,
-            });
-          } else {
-            // Desktop: just download
-            const igLink = document.createElement('a');
-            igLink.href = compositeUrl;
-            igLink.download = `${name}-cake-instagram.png`;
-            document.body.appendChild(igLink);
-            igLink.click();
-            document.body.removeChild(igLink);
-            
-            toast({
-              title: "Image downloaded!",
-              description: "Open Instagram on your phone and upload the downloaded image",
-              duration: 5000,
-            });
-          }
-          break;
+            break;
+        }
+      } else {
+        switch (platform) {
+          case 'facebook':
+            toastDescription = "Open Facebook → What's on your mind? → Photo/Video → Upload downloaded image";
+            break;
+          case 'x':
+            toastDescription = "Open X → Post button → Media icon → Upload downloaded image";
+            break;
+          case 'whatsapp':
+            toastDescription = "Open WhatsApp Web → Chat → Paperclip → Photos & Videos → Upload image";
+            break;
+          case 'instagram':
+            toastDescription = "Open Instagram on your phone → '+' → Post → Select image from gallery";
+            break;
+        }
       }
+      
+      toast({
+        title: `✅ Image downloaded!`,
+        description: toastDescription,
+        duration: 7000,
+      });
       
       URL.revokeObjectURL(compositeUrl);
     } catch (error) {
@@ -1475,46 +1473,146 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
 
               {/* Share Buttons */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground text-center">Share on Social Media</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <Button
-                    onClick={() => handleShare('facebook')}
-                    disabled={selectedImages.size === 0}
-                    variant="outline"
-                    className="border-party-blue hover:bg-party-blue hover:text-white"
-                  >
-                    <Facebook className="w-4 h-4 mr-1" />
-                    Facebook
-                  </Button>
-                  <Button
-                    onClick={() => handleShare('x')}
-                    disabled={selectedImages.size === 0}
-                    variant="outline"
-                    className="border-party-blue hover:bg-party-blue hover:text-white"
-                  >
-                    <XIcon className="w-4 h-4 mr-1" />
-                    X
-                  </Button>
-                  <Button
-                    onClick={() => handleShare('whatsapp')}
-                    disabled={selectedImages.size === 0}
-                    variant="outline"
-                    className="border-green-500 hover:bg-green-500 hover:text-white"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-1" />
-                    WhatsApp
-                  </Button>
-                  <Button
-                    onClick={() => handleShare('instagram')}
-                    disabled={selectedImages.size === 0}
-                    variant="outline"
-                    className="border-party-pink hover:bg-party-pink hover:text-white"
-                  >
-                    <Instagram className="w-4 h-4 mr-1" />
-                    Instagram
-                  </Button>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-sm font-medium text-foreground">Share Your Cake Card 🎉</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setShowShareInstructions(true)}
+                        >
+                          <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How to share on social media</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  {isMobile ? "Tap to download & open app" : "Click to download & upload manually"}
+                </p>
+                
+                {/* Collapsible How to Share Section */}
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="share-guide" className="border-party-purple/20">
+                    <AccordionTrigger className="text-xs py-2 hover:no-underline">
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        {isMobile ? <Smartphone className="w-3 h-3" /> : <Monitor className="w-3 h-3" />}
+                        How to Share (Quick Guide)
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-xs text-muted-foreground space-y-2 pb-3">
+                      {isMobile ? (
+                        <div className="space-y-1.5">
+                          <div className="flex items-start gap-2">
+                            <span className="text-party-pink font-bold">1.</span>
+                            <span>Tap a button below → Image saves & app opens</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-party-pink font-bold">2.</span>
+                            <span>In the app, create post & select image from gallery</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="text-party-pink font-bold">3.</span>
+                            <span>Add your caption & share! 🎉</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <div className="flex items-start gap-2">
+                            <Download className="w-3 h-3 text-party-pink shrink-0 mt-0.5" />
+                            <span>Click button → Image downloads to Downloads folder</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Upload className="w-3 h-3 text-party-purple shrink-0 mt-0.5" />
+                            <span>Open platform → Create post → Upload downloaded image</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-party-mint pt-1">
+                            <span>💡 Tip: Check your Downloads folder for the image</span>
+                          </div>
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
+                <TooltipProvider>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleShare('facebook')}
+                          disabled={selectedImages.size === 0}
+                          variant="outline"
+                          className="border-party-blue hover:bg-party-blue hover:text-white"
+                        >
+                          <Facebook className="w-4 h-4 mr-1" />
+                          {isMobile ? "📱" : "💻"} Facebook
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isMobile ? "Downloads & opens Facebook app" : "Downloads image for manual upload"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleShare('x')}
+                          disabled={selectedImages.size === 0}
+                          variant="outline"
+                          className="border-party-blue hover:bg-party-blue hover:text-white"
+                        >
+                          <XIcon className="w-4 h-4 mr-1" />
+                          {isMobile ? "📱" : "💻"} X
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isMobile ? "Downloads & opens X app" : "Downloads image for manual upload"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleShare('whatsapp')}
+                          disabled={selectedImages.size === 0}
+                          variant="outline"
+                          className="border-green-500 hover:bg-green-500 hover:text-white"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          {isMobile ? "📱" : "💻"} WhatsApp
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isMobile ? "Downloads & opens WhatsApp" : "Downloads for WhatsApp Web"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleShare('instagram')}
+                          disabled={selectedImages.size === 0}
+                          variant="outline"
+                          className="border-party-pink hover:bg-party-pink hover:text-white"
+                        >
+                          <Instagram className="w-4 h-4 mr-1" />
+                          {isMobile ? "📱" : "💻"} Instagram
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isMobile ? "Downloads & tries to open Instagram" : "Downloads - use phone to upload"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
               </div>
             </div>
           </Card>
@@ -1548,6 +1646,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Share Instructions Modal */}
+      <ShareInstructions 
+        open={showShareInstructions} 
+        onOpenChange={setShowShareInstructions}
+      />
     </div>
   );
 };

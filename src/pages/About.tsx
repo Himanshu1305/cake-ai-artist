@@ -85,9 +85,10 @@ const About = () => {
               <div className="w-16 h-16 mx-auto bg-party-mint rounded-full flex items-center justify-center">
                 <Share2 className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Social Sharing</h3>
+              <h3 className="text-2xl font-bold text-foreground">Easy Social Sharing</h3>
               <p className="text-foreground/70">
-                Share your beautiful cake creations directly to Facebook, X, and WhatsApp. Spread the joy with friends and family!
+                Share your cake cards on Facebook, X, WhatsApp, and Instagram! On mobile, we'll open the app for you. 
+                On desktop, download and upload manually. Simple, secure, and works everywhere!
               </p>
             </div>
           </Card>

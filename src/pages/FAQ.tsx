@@ -190,6 +190,40 @@ const FAQ = () => {
                 Every message is unique—no cookie-cutter templates here.
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="item-16" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
+                How do I share my cake on social media?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                <p className="mb-3">
+                  Sharing works differently on mobile and desktop due to browser security restrictions:
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">📱 On Mobile:</p>
+                    <p>
+                      Tap a share button (Facebook, X, WhatsApp, or Instagram) and your cake card will download. 
+                      We'll try to open the app for you automatically. Then just select the downloaded image from your gallery and post!
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">💻 On Desktop:</p>
+                    <p>
+                      Click a share button to download the card to your Downloads folder. 
+                      Then open the social media platform in your browser and upload the downloaded image manually. 
+                      For Instagram, you'll need to use your phone as desktop uploads aren't supported.
+                    </p>
+                  </div>
+                  <div className="bg-party-purple/10 p-3 rounded-lg border border-party-purple/20 mt-3">
+                    <p className="text-sm">
+                      💡 <span className="font-semibold text-foreground">Why this approach?</span> Most social platforms don't allow direct image uploads from websites for security reasons. 
+                      This two-step process gives you full control and ensures the best quality!
+                    </p>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
 
           <div className="mt-12 p-6 bg-party-purple/10 rounded-lg border border-party-purple/20">
