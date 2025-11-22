@@ -31,7 +31,7 @@ const Pricing = () => {
   const faqItems = [
     {
       question: "What happens after December 31st?",
-      answer: "After December 31, 2025, the founding member offer closes forever. New users will only be able to subscribe at $12.99/month. If you purchase founding member access, you'll have lifetime access regardless of future price changes."
+      answer: "After December 31, 2025, the founding member offer closes forever. New users will only be able to subscribe at $9.99/month. If you purchase founding member access, you'll have lifetime access regardless of future price changes."
     },
     {
       question: "Can I upgrade from free to founding member later?",
@@ -55,7 +55,7 @@ const Pricing = () => {
     },
     {
       question: "Why should I buy now vs waiting?",
-      answer: "This is the cheapest Cake Magic will ever be. At regular pricing of $12.99/month ($155.88/year), you'd spend $1,558.80 over 10 years. Founding members pay just $49-$99 once and save over $1,400. This offer will never be repeated."
+      answer: "This is the cheapest Cake Magic will ever be. At regular pricing of $9.99/month ($119.88/year), you'd spend $1,198.80 over 10 years. Founding members pay just $49-$99 once and save over $1,100. This offer will never be repeated."
     },
   ];
 
@@ -126,7 +126,7 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>First 50 Members Only</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">$1,558 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">$1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
                       <span className="text-5xl font-bold text-gold">$49</span>
                       <span className="text-muted-foreground">once</span>
@@ -144,7 +144,7 @@ const Pricing = () => {
                     ))}
                   </ul>
                   <div className="mt-6 p-3 bg-gold/10 rounded-lg border border-gold/30">
-                    <p className="text-sm font-bold text-gold">💰 Save $1,509 forever</p>
+                    <p className="text-sm font-bold text-gold">💰 Save $1,149.80 forever</p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
@@ -179,7 +179,7 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>Members 51-200</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">$1,558 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">$1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
                       <span className="text-5xl font-bold text-silver">$99</span>
                       <span className="text-muted-foreground">once</span>
@@ -197,7 +197,7 @@ const Pricing = () => {
                     ))}
                   </ul>
                   <div className="mt-6 p-3 bg-silver/10 rounded-lg border border-silver/30">
-                    <p className="text-sm font-bold text-silver">💰 Save $1,459 forever</p>
+                    <p className="text-sm font-bold text-silver">💰 Save $1,099.80 forever</p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
@@ -230,10 +230,10 @@ const Pricing = () => {
                   <CardDescription>After December 31st</CardDescription>
                   <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">$12.99</span>
+                      <span className="text-5xl font-bold">$9.99</span>
                       <span className="text-muted-foreground">/month</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">or $155.88/year</p>
+                    <p className="text-sm text-muted-foreground mt-2">or $119.88/year</p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -247,7 +247,7 @@ const Pricing = () => {
                   </ul>
                   <div className="mt-6 p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      = $1,558.80 over 10 years
+                      = $1,198.80 over 10 years
                     </p>
                   </div>
                 </CardContent>

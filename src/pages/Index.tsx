@@ -192,7 +192,7 @@ const Index = () => {
               <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Regular price:</p>
-                  <p className="text-lg font-bold line-through text-muted-foreground">$156/year forever</p>
+                  <p className="text-lg font-bold line-through text-muted-foreground">$120/year forever</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Your price:</p>
@@ -200,7 +200,7 @@ const Index = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">You save:</p>
-                  <p className="text-lg font-bold text-party-pink">$1,509 over 10 years</p>
+                  <p className="text-lg font-bold text-party-pink">$1,149.80 over 10 years</p>
                 </div>
               </div>
               
@@ -213,7 +213,7 @@ const Index = () => {
               </Button>
               
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"After Dec 31, this becomes $12.99/month forever"</p>
+                <p>"After Dec 31, this becomes $9.99/month forever"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
             </motion.div>
