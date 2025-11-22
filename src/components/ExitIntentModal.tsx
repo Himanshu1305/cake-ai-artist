@@ -64,9 +64,9 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
   };
 
   const benefits = [
-    { smart: "Pay $49 once ✅", expensive: "Pay $156/year ❌" },
+    { smart: "Pay $49 once ✅", expensive: "Pay $120/year ❌" },
     { smart: "Never pay again", expensive: "Forever" },
-    { smart: "= $49 total", expensive: "= $1,560 over 10yrs" },
+    { smart: "= $49 total", expensive: "= $1,200 over 10yrs" },
   ];
 
   return (
@@ -128,7 +128,7 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
                 <SpotsRemainingCounter tier="tier_1_49" />
               </div>
               <div className="p-4 bg-gold/10 rounded-lg border border-gold/30 text-center">
-                <p className="font-bold text-gold text-lg">💰 Your savings: $1,509 FOREVER</p>
+                <p className="font-bold text-gold text-lg">💰 Your savings: $1,149.80 FOREVER</p>
               </div>
             </motion.div>
 
@@ -164,7 +164,7 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
                 variant="ghost"
                 className="w-full text-muted-foreground hover:text-foreground"
               >
-                No thanks, I'll pay $156/year instead
+                No thanks, I'll pay $120/year instead
               </Button>
             </motion.div>
 
