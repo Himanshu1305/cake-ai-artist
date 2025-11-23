@@ -14,9 +14,9 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>FAQ - Virtual Cake Designer Questions Answered | Cake AI Artist</title>
-        <meta name="description" content="Frequently asked questions about our virtual cake designer. Learn about creating custom cakes, pricing, premium features, and how our AI cake generator works." />
-        <meta name="keywords" content="cake designer FAQ, virtual cake questions, AI cake generator help, custom cake design support" />
+        <title>FAQ - Best AI Cake Designer Questions | Cake AI Artist</title>
+        <meta name="description" content="Frequently asked questions about the best AI cake designer and best virtual cake creator. Learn about creating the best virtual cakes, pricing, and premium features." />
+        <meta name="keywords" content="best ai cake designer FAQ, best virtual cake questions, AI cake generator help, best cake design support" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
       </Helmet>
       
@@ -29,9 +29,9 @@ const FAQ = () => {
         </Link>
 
         <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
-          <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
+          <h1 className="text-4xl font-bold mb-4 text-foreground">Best AI Cake Designer - Frequently Asked Questions</h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Got questions? We've got answers. Can't find what you're looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
+            Got questions about the best virtual cake creator? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
           </p>
 
           <Accordion type="single" collapsible className="w-full space-y-4">

@@ -9,9 +9,9 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>About Cake AI Artist - Leading Virtual Cake Design Platform</title>
-        <meta name="description" content="Learn about Cake AI Artist, the leading virtual cake designer using AI technology. Discover how we help create personalized cake designs for birthdays, celebrations, and special occasions." />
-        <meta name="keywords" content="about cake AI artist, virtual cake designer, AI cake technology, personalized cake design platform" />
+        <title>About - Best AI Cake Designer Platform | Cake AI Artist</title>
+        <meta name="description" content="Learn about Cake AI Artist, the best AI cake designer and best virtual cake creator. Discover how we create the best virtual cakes for birthdays, celebrations, and special occasions." />
+        <meta name="keywords" content="best ai cake designer, best virtual cake designer, about cake AI artist, AI cake technology, best virtual cake platform" />
         <link rel="canonical" href="https://cakeaiartist.com/about" />
       </Helmet>
       
@@ -30,11 +30,11 @@ const About = () => {
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground">
             <span className="bg-gradient-party bg-clip-text text-transparent">
-              About Cake AI Artist
+              About the Best AI Cake Designer
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto">
-            Bringing joy to celebrations with AI-powered personalized cakes! <span className="floating-flame">🎂</span>
+            Bringing joy to celebrations with the best virtual cake creator - AI-powered personalized cakes! <span className="floating-flame">🎂</span>
           </p>
         </div>
 
