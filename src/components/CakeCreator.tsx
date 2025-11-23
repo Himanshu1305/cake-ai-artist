@@ -1444,31 +1444,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
                 {/* Save to Gallery Button */}
                 {isLoggedIn && (
-                  <Button
-                    onClick={async () => {
-                      if (selectedImages.size === 0) {
+                  <div className="space-y-2">
+                    <Button
+                      onClick={async () => {
+                        if (selectedImages.size === 0) {
+                          toast({
+                            title: "No images selected",
+                            description: "Please select at least one image to save",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        
+                        const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
+                        await saveGeneratedImage(selectedUrls);
+                        
                         toast({
-                          title: "No images selected",
-                          description: "Please select at least one image to save",
-                          variant: "destructive",
+                          title: "Saved to Gallery!",
+                          description: `${selectedImages.size} image(s) saved successfully. Go to your gallery and click the star ⭐ to feature them on our homepage!`,
                         });
-                        return;
-                      }
-                      
-                      const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
-                      await saveGeneratedImage(selectedUrls);
-                      
-                      toast({
-                        title: "Saved to Gallery!",
-                        description: `${selectedImages.size} image(s) saved successfully`,
-                      });
-                    }}
-                    disabled={selectedImages.size === 0}
-                    className="w-full py-6 bg-party-purple hover:bg-party-purple/90 transition-all duration-300 text-white font-semibold"
-                  >
-                    <Save className="w-5 h-5 mr-2" />
-                    Save to Gallery {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
-                  </Button>
+                      }}
+                      disabled={selectedImages.size === 0}
+                      className="w-full py-6 bg-party-purple hover:bg-party-purple/90 transition-all duration-300 text-white font-semibold"
+                    >
+                      <Save className="w-5 h-5 mr-2" />
+                      Save to Gallery {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">
+                      💡 Saved images can be starred ⭐ in your gallery to feature on our homepage!
+                    </p>
+                  </div>
                 )}
               </div>
 

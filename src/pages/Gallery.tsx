@@ -208,6 +208,23 @@ const Gallery = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Feature Info Banner */}
+        <Card className="mb-6 p-6 bg-gradient-to-r from-gold/10 to-party-pink/10 border-2 border-gold/30">
+          <div className="flex items-start gap-4">
+            <Star className="w-8 h-8 text-gold fill-gold flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="text-lg font-bold text-foreground mb-2">
+                ⭐ Get Featured on Our Homepage!
+              </h3>
+              <p className="text-foreground/80 text-sm leading-relaxed">
+                Love one of your cake designs? Click the star icon ⭐ on any image to feature it on our homepage! 
+                Your creation will be displayed in the &quot;Recent Creations from Our Community&quot; carousel for everyone to see. 
+                Share your best work with the community and inspire others!
+              </p>
+            </div>
+          </div>
+        </Card>
+
         <div className="mb-6">
           <p className="text-foreground/70">
             You have {images.length} saved images (max 20)
@@ -281,7 +298,7 @@ const Gallery = () => {
                           ? "bg-gold hover:bg-gold/90 border-gold" 
                           : "border-gold/30 hover:border-gold"
                         }
-                        title={image.featured ? "Remove from featured" : "Feature on homepage"}
+                        title={image.featured ? "Remove from homepage" : "⭐ Feature on homepage - your cake will appear in the community carousel!"}
                       >
                         <Star className={`w-4 h-4 ${image.featured ? "fill-current" : ""}`} />
                       </Button>
