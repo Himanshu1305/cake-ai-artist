@@ -399,8 +399,11 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Recent Creations from Our Community
           </h2>
-          <p className="text-xl text-muted-foreground">
-            Real cakes made by real people. Yours could be here next.
+          <p className="text-xl text-muted-foreground mb-2">
+            Real cakes made by real people. Yours could be here next!
+          </p>
+          <p className="text-base text-gold font-semibold">
+            ⭐ Create an account and star your favorite designs to feature them here
           </p>
         </div>
         <Carousel className="w-full max-w-5xl mx-auto">

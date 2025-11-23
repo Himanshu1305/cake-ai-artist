@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Type, Sparkles, Download, Share2 } from "lucide-react";
+import { ArrowLeft, Type, Sparkles, Download, Share2, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -148,8 +148,16 @@ const HowItWorks = () => {
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-semibold text-lg mb-2 text-foreground">Download in High Quality</h3>
               <p className="text-muted-foreground">
-                Always download the full-resolution image. It's optimized for both digital sharing and printing, 
-                so you won't lose quality no matter how you use it.
+                Always download the full-resolution image. It&apos;s optimized for both digital sharing and printing, 
+                so you won&apos;t lose quality no matter how you use it.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-semibold text-lg mb-2 text-foreground">Save to Your Gallery</h3>
+              <p className="text-muted-foreground">
+                Create a free account to save your favorite designs to your personal gallery. You can access them anytime, 
+                re-download them, or even feature them on our homepage to share with the community!
               </p>
             </Card>
           </div>
@@ -177,8 +185,20 @@ const HowItWorks = () => {
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-semibold text-lg mb-2 text-foreground">Not Saving Your Favorites</h3>
               <p className="text-muted-foreground">
-                Found the perfect design? Download it immediately or save it to your account. Don't rely on generating the exact same design again—
+                Found the perfect design? Download it immediately or save it to your account. Don&apos;t rely on generating the exact same design again—
                 each generation is unique.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-r from-gold/10 to-party-pink/10 border-2 border-gold/30">
+              <h3 className="font-semibold text-lg mb-2 text-foreground flex items-center gap-2">
+                <Star className="w-5 h-5 text-gold fill-gold" />
+                Get Featured on Our Homepage
+              </h3>
+              <p className="text-muted-foreground">
+                Create an account and click the star icon ⭐ on any of your saved images to feature them on our homepage! 
+                Your best cake designs will appear in the community carousel for everyone to see. It&apos;s a great way to 
+                showcase your creativity and inspire other users!
               </p>
             </Card>
           </div>
