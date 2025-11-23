@@ -281,6 +281,17 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Main Creator Section - Moved Up */}
+      <div id="creator" className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
+            <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
+          </div>
+          <CakeCreator />
+        </div>
+      </div>
+
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
@@ -463,17 +474,6 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Main Creator Section */}
-      <div id="creator" className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
-            <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
-          </div>
-          <CakeCreator />
-        </div>
-      </div>
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-16">
