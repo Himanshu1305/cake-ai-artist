@@ -63,9 +63,9 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>Pricing - Affordable Virtual Cake Designer Plans | Cake AI Artist</title>
-        <meta name="description" content="Get lifetime access to the best virtual cake designer. Founding member special: $49 one-time payment for unlimited AI-powered custom cake designs. Limited spots available!" />
-        <meta name="keywords" content="cake designer pricing, virtual cake creator plans, affordable cake design tool, lifetime cake design access, AI cake generator subscription" />
+        <title>Pricing - Best AI Cake Designer Plans | Cake AI Artist</title>
+        <meta name="description" content="Get lifetime access to the best AI cake designer and best virtual cake creator. Founding member special: $49 one-time payment for unlimited best virtual cakes. Limited spots available!" />
+        <meta name="keywords" content="best ai cake designer pricing, best virtual cake plans, affordable ai cake tool, lifetime cake access, best virtual cake subscription" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
       </Helmet>
       

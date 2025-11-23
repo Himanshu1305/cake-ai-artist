@@ -37,9 +37,9 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Contact Us - Get Support for Virtual Cake Designer | Cake AI Artist</title>
-        <meta name="description" content="Have questions about our virtual cake designer? Contact Cake AI Artist for support, feedback, or inquiries. We typically respond within 24-48 hours." />
-        <meta name="keywords" content="contact cake ai artist, virtual cake designer support, cake generator help, customer service" />
+        <title>Contact Us - Best AI Cake Designer Support | Cake AI Artist</title>
+        <meta name="description" content="Have questions about the best AI cake designer? Contact Cake AI Artist for support with the best virtual cake creator. We typically respond within 24-48 hours." />
+        <meta name="keywords" content="contact best ai cake designer, best virtual cake support, cake generator help, customer service" />
         <link rel="canonical" href="https://cakeaiartist.com/contact" />
       </Helmet>
       
@@ -53,10 +53,10 @@ const Contact = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-foreground">Get in Touch</h1>
+            <h1 className="text-4xl font-bold mb-4 text-foreground">Contact the Best AI Cake Designer</h1>
             <p className="text-muted-foreground text-lg mb-8">
-              Have a question, suggestion, or just want to say hi? We'd love to hear from you. 
-              Drop us a message and we'll get back to you as soon as possible.
+              Have a question about the best virtual cake creator? We&apos;d love to hear from you. 
+              Drop us a message and we&apos;ll get back to you as soon as possible.
             </p>
 
             <div className="space-y-6">

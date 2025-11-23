@@ -99,9 +99,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>Cake AI Artist - Best Virtual Cake Designer | AI-Powered Custom Cake Creator</title>
-        <meta name="description" content="The best virtual cake designer powered by AI. Create stunning personalized cake designs in seconds. Custom birthday cakes, celebration cakes, and special occasion designs. No design skills needed!" />
-        <meta name="keywords" content="virtual cake designer, AI cake creator, custom cake design, personalized birthday cake, cake image generator, digital cake designer, AI cake maker" />
+        <title>Best AI Cake Designer - Best Virtual Cake Creator | Cake AI Artist</title>
+        <meta name="description" content="The best AI cake designer and best virtual cake creator. Create stunning personalized cake designs in seconds. Best virtual cakes for birthdays, celebrations, and special occasions. No design skills needed!" />
+        <meta name="keywords" content="best ai cake designer, best virtual cake designer, best virtual cake, best ai cake creator, virtual cake designer, AI cake creator, custom cake design" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
       </Helmet>
       
@@ -242,12 +242,12 @@ const Index = () => {
           </div>
           <div className="space-y-6">
             <h2 className="text-4xl font-bold text-foreground">
-              Why waste time searching?
+              The Best AI Cake Designer
             </h2>
             <p className="text-xl text-foreground/80 leading-relaxed">
-              Here's the thing about celebrations—they're only as special as the thought you put into them. 
-              But when you're juggling everything else, who has three hours to browse stock photos? 
-              That's where we come in. Beautiful, personalized cake designs in the time it takes to make coffee.
+              Here&apos;s the thing about celebrations—they&apos;re only as special as the thought you put into them. 
+              But when you&apos;re juggling everything else, who has three hours to browse stock photos? 
+              That&apos;s where we come in. The best virtual cake creator delivers beautiful, personalized designs in the time it takes to make coffee.
             </p>
           </div>
         </div>

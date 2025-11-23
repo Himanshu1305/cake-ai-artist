@@ -9,9 +9,9 @@ const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>How It Works - Create Custom Cakes in 30 Seconds | Virtual Cake Designer</title>
-        <meta name="description" content="Learn how to create personalized cake designs in 30 seconds with our virtual cake designer. Simple 3-step process: enter name, choose occasion, download your custom AI-generated cake." />
-        <meta name="keywords" content="how to create virtual cake, cake design tutorial, AI cake generator guide, personalized cake maker steps" />
+        <title>How It Works - Best AI Cake Designer Process | Cake AI Artist</title>
+        <meta name="description" content="Learn how to create the best virtual cakes in 30 seconds with the best AI cake designer. Simple 3-step process: enter name, choose occasion, download your custom AI-generated cake." />
+        <meta name="keywords" content="best ai cake designer process, how to create best virtual cake, best cake design tutorial, AI cake generator guide" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
       </Helmet>
       
@@ -24,9 +24,9 @@ const HowItWorks = () => {
         </Link>
 
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">How It Works</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">How the Best AI Cake Designer Works</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-            Creating a personalized cake has never been easier. Here's how you go from idea to image in 30 seconds.
+            Creating the best virtual cake has never been easier. Here&apos;s how you go from idea to image in 30 seconds.
           </p>
         </div>
 

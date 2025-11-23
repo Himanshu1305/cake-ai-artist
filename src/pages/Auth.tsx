@@ -80,9 +80,9 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration flex items-center justify-center p-4">
       <Helmet>
-        <title>{isLogin ? 'Sign In' : 'Sign Up'} - Best Virtual Cake Designer | Cake AI Artist</title>
-        <meta name="description" content={`${isLogin ? 'Sign in to' : 'Create an account for'} Cake AI Artist, the best virtual cake designer. Access your custom cake gallery and premium features.`} />
-        <meta name="keywords" content="cake designer login, sign up virtual cake creator, AI cake account, cake generator access" />
+        <title>{isLogin ? "Sign In" : "Sign Up"} - Best AI Cake Designer | Cake AI Artist</title>
+        <meta name="description" content={`${isLogin ? "Sign in to" : "Create an account for"} the best AI cake designer and best virtual cake creator. Access your custom cake gallery and premium features.`} />
+        <meta name="keywords" content="best ai cake designer login, sign up best virtual cake, AI cake account, best cake generator access" />
         <link rel="canonical" href="https://cakeaiartist.com/auth" />
       </Helmet>
       
