@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import {
   Accordion,
   AccordionContent,
@@ -12,6 +13,13 @@ import {
 const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>FAQ - Virtual Cake Designer Questions Answered | Cake AI Artist</title>
+        <meta name="description" content="Frequently asked questions about our virtual cake designer. Learn about creating custom cakes, pricing, premium features, and how our AI cake generator works." />
+        <meta name="keywords" content="cake designer FAQ, virtual cake questions, AI cake generator help, custom cake design support" />
+        <link rel="canonical" href="https://cakeaiartist.com/faq" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">

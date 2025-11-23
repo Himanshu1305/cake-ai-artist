@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Search } from 'lucide-react';
 import { Footer } from '@/components/Footer';
+import { Helmet } from 'react-helmet-async';
 
 export default function WallOfFounders() {
   const navigate = useNavigate();
@@ -33,6 +34,13 @@ export default function WallOfFounders() {
 
   return (
     <div className="min-h-screen bg-gradient-surface">
+      <Helmet>
+        <title>Wall of Founders - Founding Members Hall of Fame | Cake AI Artist</title>
+        <meta name="description" content="Meet the founding members of Cake AI Artist, the best virtual cake designer. Join our exclusive founding member community with lifetime access." />
+        <meta name="keywords" content="founding members, cake ai artist founders, lifetime access members, premium cake designer community" />
+        <link rel="canonical" href="https://cakeaiartist.com/wall-of-founders" />
+      </Helmet>
+      
       {/* Header */}
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">

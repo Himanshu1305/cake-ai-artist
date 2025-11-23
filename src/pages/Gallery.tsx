@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -177,6 +178,13 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>My Gallery - Your Custom Cake Designs | Virtual Cake Designer</title>
+        <meta name="description" content="View and manage your personalized AI-generated cake designs. Download, share, and organize your custom cakes created with our virtual cake designer." />
+        <meta name="keywords" content="my cake designs, saved cakes, cake gallery, download cakes, share cake designs" />
+        <link rel="canonical" href="https://cakeaiartist.com/gallery" />
+      </Helmet>
+      
       <nav className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-foreground">My Gallery</h1>

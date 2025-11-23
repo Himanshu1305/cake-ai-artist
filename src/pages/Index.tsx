@@ -20,6 +20,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { motion } from "framer-motion";
 import { Star, Download } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Helmet } from "react-helmet-async";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -97,6 +98,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>Cake AI Artist - Best Virtual Cake Designer | AI-Powered Custom Cake Creator</title>
+        <meta name="description" content="The best virtual cake designer powered by AI. Create stunning personalized cake designs in seconds. Custom birthday cakes, celebration cakes, and special occasion designs. No design skills needed!" />
+        <meta name="keywords" content="virtual cake designer, AI cake creator, custom cake design, personalized birthday cake, cake image generator, digital cake designer, AI cake maker" />
+        <link rel="canonical" href="https://cakeaiartist.com/" />
+      </Helmet>
+      
       <AdminSaleReminder />
       <UrgencyBanner />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />

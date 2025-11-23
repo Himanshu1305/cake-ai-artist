@@ -3,10 +3,18 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Type, Sparkles, Download, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>How It Works - Create Custom Cakes in 30 Seconds | Virtual Cake Designer</title>
+        <meta name="description" content="Learn how to create personalized cake designs in 30 seconds with our virtual cake designer. Simple 3-step process: enter name, choose occasion, download your custom AI-generated cake." />
+        <meta name="keywords" content="how to create virtual cake, cake design tutorial, AI cake generator guide, personalized cake maker steps" />
+        <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">

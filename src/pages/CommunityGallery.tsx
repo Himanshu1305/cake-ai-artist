@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Download, Sparkles } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { Helmet } from "react-helmet-async";
 
 interface CommunityImage {
   id: string;
@@ -87,6 +88,13 @@ const CommunityGallery = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>Community Gallery - Featured Cake Designs | Cake AI Artist</title>
+        <meta name="description" content="Explore amazing cake designs created by our community. Get inspired by the best virtual cake creations from Cake AI Artist users worldwide." />
+        <meta name="keywords" content="community cakes, featured designs, cake inspiration, virtual cake gallery, AI cake examples" />
+        <link rel="canonical" href="https://cakeaiartist.com/community" />
+      </Helmet>
+      
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-40 border-b border-border/30">
         <div className="flex justify-between items-center">

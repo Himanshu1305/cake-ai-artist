@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Blog = () => {
   const blogPosts = [
@@ -58,6 +59,13 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>Blog - Cake Design Ideas & Celebration Tips | Cake AI Artist</title>
+        <meta name="description" content="Explore our virtual cake designer blog for birthday ideas, cake design trends, celebration planning tips, and creative inspiration for every special occasion." />
+        <meta name="keywords" content="cake design blog, birthday ideas, celebration tips, cake trends, party planning, virtual cake inspiration" />
+        <link rel="canonical" href="https://cakeaiartist.com/blog" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">

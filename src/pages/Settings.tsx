@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -107,6 +108,13 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>Settings - Manage Your Preferences | Cake AI Artist</title>
+        <meta name="description" content="Manage your Cake AI Artist account settings. Configure email reminders, notification preferences, and personalize your virtual cake designer experience." />
+        <meta name="keywords" content="account settings, cake designer preferences, email notifications, user settings" />
+        <link rel="canonical" href="https://cakeaiartist.com/settings" />
+      </Helmet>
+      
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-40 border-b border-border/30">
         <div className="flex justify-between items-center">
           <Button variant="ghost" onClick={() => navigate("/")}>

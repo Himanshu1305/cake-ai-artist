@@ -3,10 +3,18 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Cake, Heart, GraduationCap, Baby, Briefcase, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>Use Cases - Virtual Cake Designer for Every Celebration | Cake AI Artist</title>
+        <meta name="description" content="Discover how to use our virtual cake designer for birthdays, anniversaries, graduations, baby showers, and more. Perfect AI-generated cake designs for every special occasion." />
+        <meta name="keywords" content="birthday cake designs, anniversary cake ideas, graduation cake, baby shower cake, virtual cake examples, celebration cake designs" />
+        <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">
