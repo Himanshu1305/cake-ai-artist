@@ -3,10 +3,18 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Home, Shield, Lock, Eye, Database, Mail } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Privacy = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>Privacy Policy - Your Data Protection | Cake AI Artist</title>
+        <meta name="description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data and ensure secure use of our virtual cake designer platform." />
+        <meta name="keywords" content="privacy policy, data protection, cake ai artist privacy, secure cake designer" />
+        <link rel="canonical" href="https://cakeaiartist.com/privacy" />
+      </Helmet>
+      
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
         <Link to="/">

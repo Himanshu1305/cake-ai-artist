@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -90,6 +91,13 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>{post.title} - Cake Design Ideas | Cake AI Artist Blog</title>
+        <meta name="description" content={`${post.category}: ${post.title}. Creative cake design inspiration and celebration tips from the best virtual cake designer.`} />
+        <meta name="keywords" content="cake design ideas, birthday cake tips, celebration planning, virtual cake inspiration" />
+        <link rel="canonical" href={`https://cakeaiartist.com/blog/${id}`} />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link to="/blog">
           <Button variant="ghost" className="mb-6">

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import {
   Accordion,
   AccordionContent,
@@ -61,6 +62,13 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-gradient-surface">
+      <Helmet>
+        <title>Pricing - Affordable Virtual Cake Designer Plans | Cake AI Artist</title>
+        <meta name="description" content="Get lifetime access to the best virtual cake designer. Founding member special: $49 one-time payment for unlimited AI-powered custom cake designs. Limited spots available!" />
+        <meta name="keywords" content="cake designer pricing, virtual cake creator plans, affordable cake design tool, lifetime cake design access, AI cake generator subscription" />
+        <link rel="canonical" href="https://cakeaiartist.com/pricing" />
+      </Helmet>
+      
       {/* Navigation */}
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

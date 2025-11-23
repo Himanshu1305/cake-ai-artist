@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, Clock, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -35,6 +36,13 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>Contact Us - Get Support for Virtual Cake Designer | Cake AI Artist</title>
+        <meta name="description" content="Have questions about our virtual cake designer? Contact Cake AI Artist for support, feedback, or inquiries. We typically respond within 24-48 hours." />
+        <meta name="keywords" content="contact cake ai artist, virtual cake designer support, cake generator help, customer service" />
+        <link rel="canonical" href="https://cakeaiartist.com/contact" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">

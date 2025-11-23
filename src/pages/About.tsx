@@ -3,10 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Home, Sparkles, Brain, Palette, Download, Share2, Gift } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      <Helmet>
+        <title>About Cake AI Artist - Leading Virtual Cake Design Platform</title>
+        <meta name="description" content="Learn about Cake AI Artist, the leading virtual cake designer using AI technology. Discover how we help create personalized cake designs for birthdays, celebrations, and special occasions." />
+        <meta name="keywords" content="about cake AI artist, virtual cake designer, AI cake technology, personalized cake design platform" />
+        <link rel="canonical" href="https://cakeaiartist.com/about" />
+      </Helmet>
+      
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
         <Link to="/">

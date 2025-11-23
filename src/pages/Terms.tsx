@@ -2,10 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Terms = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Helmet>
+        <title>Terms of Service - User Agreement | Cake AI Artist</title>
+        <meta name="description" content="Read the terms of service for Cake AI Artist, the virtual cake designer. Understand your rights and responsibilities when using our platform." />
+        <meta name="keywords" content="terms of service, user agreement, cake ai artist terms, virtual cake designer policy" />
+        <link rel="canonical" href="https://cakeaiartist.com/terms" />
+      </Helmet>
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">

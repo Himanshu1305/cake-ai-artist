@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Footer } from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -78,6 +79,13 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-celebration flex items-center justify-center p-4">
+      <Helmet>
+        <title>{isLogin ? 'Sign In' : 'Sign Up'} - Best Virtual Cake Designer | Cake AI Artist</title>
+        <meta name="description" content={`${isLogin ? 'Sign in to' : 'Create an account for'} Cake AI Artist, the best virtual cake designer. Access your custom cake gallery and premium features.`} />
+        <meta name="keywords" content="cake designer login, sign up virtual cake creator, AI cake account, cake generator access" />
+        <link rel="canonical" href="https://cakeaiartist.com/auth" />
+      </Helmet>
+      
       <Card className="w-full max-w-md p-8 bg-surface-elevated/90 backdrop-blur-sm border-2 border-party-pink/30">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
