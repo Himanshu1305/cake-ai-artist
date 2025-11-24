@@ -51,6 +51,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [occasionDate, setOccasionDate] = useState<string>("");
   const [recipientName, setRecipientName] = useState<string>("");
   const [showShareInstructions, setShowShareInstructions] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const PREMIUM_CHARACTERS = [
@@ -178,6 +180,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     setGeneratedMessage(null);
 
     try {
+      // Convert uploaded image to base64 if present
+      let customImageBase64: string | undefined;
+      if (uploadedImage) {
+        try {
+          customImageBase64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(uploadedImage);
+          });
+        } catch (error) {
+          console.error('Error converting image to base64:', error);
+          toast({
+            title: "Image upload failed",
+            description: "Could not process the uploaded image",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // Create abort controller for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
@@ -198,7 +222,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             occasion: occasion,
             relation: relation,
             gender: gender,
-            character: character || undefined
+            character: character || undefined,
+            customImage: customImageBase64
           }),
           signal: controller.signal
         });
@@ -1078,6 +1103,103 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   </div>
                 </div>
 
+                {/* Custom Image Upload */}
+                <div className="mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-purple/30">
+                  <Label className="text-sm font-medium flex items-center gap-2 mb-3">
+                    <Upload className="w-4 h-4" />
+                    Upload Custom Image for Cake (Optional)
+                    {!isPremium && <Crown className="w-4 h-4 text-yellow-500" />}
+                  </Label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Upload a photo to create a custom photo cake. Best with square or portrait images.
+                  </p>
+                  
+                  {!uploadedImagePreview ? (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          // Validate file type
+                          if (!file.type.startsWith('image/')) {
+                            toast({
+                              title: "Invalid file",
+                              description: "Please upload an image file (JPG, PNG, or WEBP)",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          // Validate file size (5MB max)
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast({
+                              title: "File too large",
+                              description: "Maximum file size is 5MB",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          setUploadedImage(file);
+
+                          // Create preview
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setUploadedImagePreview(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+
+                          toast({
+                            title: "Image uploaded",
+                            description: "Your custom image will be placed on the cake",
+                          });
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={isLoading || (!isPremium && false)} // Enable for all users for now
+                      />
+                      <div className="border-2 border-dashed border-party-purple/50 rounded-lg p-6 hover:border-party-purple transition-colors cursor-pointer bg-surface/50">
+                        <div className="flex flex-col items-center gap-2 text-center">
+                          <Upload className="w-8 h-8 text-party-purple" />
+                          <p className="text-sm font-medium text-foreground">
+                            Click to upload or drag and drop
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            JPG, PNG or WEBP (max 5MB)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <img
+                        src={uploadedImagePreview}
+                        alt="Uploaded preview"
+                        className="w-full h-40 object-cover rounded-lg border border-party-purple/30"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setUploadedImage(null);
+                          setUploadedImagePreview(null);
+                          toast({
+                            title: "Image removed",
+                            description: "Custom image cleared",
+                          });
+                        }}
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        disabled={isLoading}
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Memory Fields - NEW */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-pink/20">
                   <div className="space-y-2">
@@ -1410,9 +1532,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       </div>
                     </div>
                     
-                    {/* Angle Label */}
+                    {/* View Label */}
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                      Angle {index + 1}
+                      {["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`}
                     </div>
                   </div>
                 ))}
