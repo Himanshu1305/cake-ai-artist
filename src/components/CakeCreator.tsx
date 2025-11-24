@@ -64,6 +64,67 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   ];
   const FREE_GENERATION_LIMIT = 5;
 
+  // Image compression utility
+  const compressImage = async (file: File, maxWidth = 1024, quality = 0.75): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions while maintaining aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxWidth) {
+              width = (width * maxWidth) / height;
+              height = maxWidth;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to JPEG with quality, return only base64 data without prefix
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed.split(',')[1]); // Remove data URI prefix
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Image validation and compression wrapper
+  const validateAndCompressImage = async (file: File) => {
+    // Check file size (max 10MB before compression)
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('Image too large. Please use an image under 10MB.');
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Please upload a valid image file.');
+    }
+
+    return await compressImage(file, 1024, 0.75);
+  };
+
   useEffect(() => {
     checkUser();
   }, []);
@@ -180,21 +241,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     setGeneratedMessage(null);
 
     try {
-      // Convert uploaded image to base64 if present
+      // Validate and compress uploaded image if present
       let customImageBase64: string | undefined;
       if (uploadedImage) {
         try {
-          customImageBase64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(uploadedImage);
-          });
+          customImageBase64 = await validateAndCompressImage(uploadedImage);
+          console.log('Compressed image size:', customImageBase64.length, 'characters');
         } catch (error) {
-          console.error('Error converting image to base64:', error);
+          console.error('Error processing image:', error);
           toast({
-            title: "Image upload failed",
-            description: "Could not process the uploaded image",
+            title: "Image processing failed",
+            description: error instanceof Error ? error.message : "Could not process the uploaded image",
             variant: "destructive",
           });
           setIsLoading(false);
@@ -1133,11 +1190,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             return;
                           }
 
-                          // Validate file size (5MB max)
-                          if (file.size > 5 * 1024 * 1024) {
+                          // Validate file size (10MB max before compression)
+                          if (file.size > 10 * 1024 * 1024) {
                             toast({
                               title: "File too large",
-                              description: "Maximum file size is 5MB",
+                              description: "Maximum file size is 10MB",
                               variant: "destructive",
                             });
                             return;
@@ -1154,7 +1211,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
                           toast({
                             title: "Image uploaded",
-                            description: "Your custom image will be placed on the cake",
+                            description: "Your image will be compressed and optimized for the cake",
                           });
                         }}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -1167,7 +1224,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             Click to upload or drag and drop
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            JPG, PNG or WEBP (max 5MB)
+                            JPG, PNG or WEBP (max 10MB)
                           </p>
                         </div>
                       </div>
