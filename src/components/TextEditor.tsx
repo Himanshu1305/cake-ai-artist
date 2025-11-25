@@ -70,6 +70,9 @@ export const TextEditor = ({
     canvas.width = img.width;
     canvas.height = img.height;
 
+    // Explicitly clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     // Draw image
     ctx.drawImage(img, 0, 0);
 
