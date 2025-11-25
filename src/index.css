@@ -213,11 +213,18 @@ All colors MUST be HSL.
     }
   }
 
-  /* Mobile select dropdown fixes */
-  body.select-open {
-    overflow: hidden;
+  /* iOS-safe scroll lock for mobile select dropdowns */
+  html.scroll-locked {
     position: fixed;
     width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html.scroll-locked body {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
   }
 
   /* Better touch handling for selects on mobile */
