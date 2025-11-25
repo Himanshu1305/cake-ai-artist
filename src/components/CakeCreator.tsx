@@ -976,6 +976,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         <SelectItem value="mother">Mother</SelectItem>
                         <SelectItem value="daughter">Daughter</SelectItem>
                         <SelectItem value="son">Son</SelectItem>
+                        <SelectItem value="husband">Husband</SelectItem>
+                        <SelectItem value="wife">Wife</SelectItem>
                         <SelectItem value="friend">Friend</SelectItem>
                         <SelectItem value="in-laws">In-laws</SelectItem>
                         <SelectItem value="partner">Partner</SelectItem>
@@ -1160,7 +1162,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   </div>
                 </div>
 
-                {/* Custom Image Upload */}
+                {/* Custom Image Upload - Hidden for now */}
+                {false && (
                 <div className="mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-purple/30">
                   <Label className="text-sm font-medium flex items-center gap-2 mb-3">
                     <Upload className="w-4 h-4" />
@@ -1256,6 +1259,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Memory Fields - NEW */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-pink/20">
