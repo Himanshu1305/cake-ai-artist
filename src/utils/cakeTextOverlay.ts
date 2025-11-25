@@ -85,19 +85,37 @@ const analyzeImageForText = async (
   }
 };
 
+export const FONT_OPTIONS = [
+  // Script/Elegant Fonts
+  { id: 'great-vibes', name: 'Great Vibes', family: "'Great Vibes', cursive", category: 'Script' },
+  { id: 'dancing-script', name: 'Dancing Script', family: "'Dancing Script', cursive", category: 'Script' },
+  { id: 'allura', name: 'Allura', family: "'Allura', cursive", category: 'Script' },
+  { id: 'alex-brush', name: 'Alex Brush', family: "'Alex Brush', cursive", category: 'Script' },
+  { id: 'sacramento', name: 'Sacramento', family: "'Sacramento', cursive", category: 'Script' },
+  
+  // Decorative Fonts
+  { id: 'pacifico', name: 'Pacifico', family: "'Pacifico', cursive", category: 'Decorative' },
+  { id: 'lobster', name: 'Lobster', family: "'Lobster', cursive", category: 'Decorative' },
+  { id: 'satisfy', name: 'Satisfy', family: "'Satisfy', cursive", category: 'Decorative' },
+  { id: 'cookie', name: 'Cookie', family: "'Cookie', cursive", category: 'Decorative' },
+  
+  // Classic Fonts
+  { id: 'pinyon-script', name: 'Pinyon Script', family: "'Pinyon Script', cursive", category: 'Classic' },
+  { id: 'tangerine', name: 'Tangerine', family: "'Tangerine', cursive", category: 'Classic' },
+  { id: 'rochester', name: 'Rochester', family: "'Rochester', cursive", category: 'Classic' },
+  
+  // System fallbacks (legacy support)
+  { id: 'elegant', name: 'Elegant (System)', family: "'Brush Script MT', cursive", category: 'System' },
+  { id: 'playful', name: 'Playful (System)', family: "'Comic Sans MS', 'Brush Script MT', cursive", category: 'System' },
+  { id: 'classic', name: 'Classic (System)', family: "Georgia, serif", category: 'System' },
+];
+
 /**
- * Gets the appropriate font based on style
+ * Gets the appropriate font family based on font ID
  */
-export const getFontFamily = (style: string = 'elegant'): string => {
-  switch (style) {
-    case 'playful':
-      return "'Comic Sans MS', 'Brush Script MT', cursive";
-    case 'classic':
-      return "Georgia, 'Times New Roman', serif";
-    case 'elegant':
-    default:
-      return "'Brush Script MT', 'Lucida Handwriting', cursive";
-  }
+export const getFontFamily = (fontId: string = 'great-vibes'): string => {
+  const font = FONT_OPTIONS.find(f => f.id === fontId);
+  return font?.family || "'Great Vibes', cursive";
 };
 
 /**
