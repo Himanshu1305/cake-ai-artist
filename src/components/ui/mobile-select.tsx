@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useIOSScrollLock } from "@/hooks/useIOSScrollLock";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -34,15 +35,18 @@ export const MobileSelect = ({
 }: MobileSelectProps) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(false);
+  
+  // Apply custom scroll lock on mobile to prevent layout shifts
+  useIOSScrollLock(open && isMobile);
 
   // Get the display label for selected value
   const selectedOption = options.find(opt => opt.value === value);
   const displayValue = selectedOption ? selectedOption.label : placeholder;
 
-  // On mobile portrait: use bottom Sheet for better UX
+  // On mobile portrait: use bottom Sheet for better UX with custom scroll lock
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={open} onOpenChange={setOpen} modal={false}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
