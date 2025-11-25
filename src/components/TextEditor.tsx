@@ -24,7 +24,7 @@ export const TextEditor = ({
   recipientName,
   initialPosition = { x: 0.5, y: 0.65 },
   initialFontSize = 42,
-  initialColor = "#D4687A",
+  initialColor = "#2563EB",
   initialRotation = 0,
   initialFontStyle = "great-vibes",
   onSave,

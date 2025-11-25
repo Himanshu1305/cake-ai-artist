@@ -33,46 +33,49 @@ serve(async (req) => {
     // Prepare the vision analysis prompt with detailed instructions
     const prompt = `You are an expert cake decorator analyzing a cake image to determine the optimal placement for a name decoration.
 
-CRITICAL RULES:
-1. USE LARGE FONT SIZES: If there's blank fondant space, use fontSize 40-50px. Don't be conservative!
-2. FOR TOP-DOWN VIEWS: Text must be ON the cake surface (y: 0.35-0.50), NOT on labels or stands below
-3. MAXIMIZE SPACE: Use all available blank areas - bigger is better for readability
+CRITICAL RULES - READ CAREFULLY:
+1. **FIND BLANK FONDANT FIRST**: Look for the LARGEST area of plain, smooth, WHITE/CREAM/LIGHT-COLORED fondant with NO decorations, NO characters, NO patterns. This is your PRIMARY target!
+2. **AVOID BUSY AREAS**: NEVER place text on decorations, characters, flowers, patterns, or textured areas
+3. **USE LARGE FONT SIZES**: On blank fondant, use fontSize 42-50px for maximum readability
+4. **PREFER BLUE COLOR**: Default to blue (#2563EB) for high contrast against light fondant, unless the cake has blue tones (then use pink #D4687A)
+5. **FOR TOP-DOWN VIEWS**: Text must be ON the cake surface (y: 0.35-0.50), NOT on labels or stands below
 
 Analyze this cake and determine:
-1. View type: Is this front, side, top-down, or diagonal view?
-2. Available space: Where is the largest flat fondant surface?
-3. Decorations: Identify characters, patterns to avoid
-4. Optimal placement: Where should text go to be clearly visible?
+1. Where is the LARGEST area of plain, blank, white/cream fondant?
+2. Are there any decorations, characters, or patterns to avoid?
+3. What color provides the best contrast against the fondant?
+4. What's the view type (front, side, top-down, diagonal)?
 
 The name to be written is: "${recipientName}"
 
-SPECIFIC GUIDANCE BY VIEW:
-- FRONT VIEW: Center text on middle tier (y: 0.60-0.70), fontSize 38-48px if space available
-- SIDE VIEW: Center on visible tier (y: 0.55-0.65), fontSize 35-45px, slight rotation if cake is angled
-- TOP-DOWN VIEW: ON the top surface of cake (y: 0.35-0.50), below any top decorations, fontSize 38-48px
-- DIAGONAL VIEW: Adjust for perspective (y: 0.65-0.75), fontSize 40-50px on visible tier
+PLACEMENT STRATEGY BY VIEW:
+- FRONT VIEW: Find blank fondant on middle/bottom tier (y: 0.60-0.75), fontSize 42-48px
+- SIDE VIEW: Look for undecorated tier side (y: 0.55-0.70), fontSize 40-48px
+- TOP-DOWN VIEW: Center on blank top surface (y: 0.40-0.55), AVOID borders/edges, fontSize 42-50px
+- DIAGONAL VIEW: Target visible blank fondant tier (y: 0.65-0.75), fontSize 42-50px
 
-COLOR RULES:
-- Use colors that look like real frosting: pinks (#D4687A, #E8B4C8), chocolates (#5D3A1A, #8B4513), whites (#F5F5DC), creams (#FFE4B5)
-- Ensure contrast with cake color
-- Match or complement existing cake colors
+COLOR PRIORITY:
+1. **BLUE (#2563EB)** - DEFAULT for white/cream/light fondant (best visibility)
+2. Pink (#D4687A, #E8B4C8) - If cake has blue tones or decorations
+3. Dark chocolate (#5D3A1A, #8B4513) - Only if fondant is very light and blue doesn't fit theme
+4. White (#F5F5DC) - Only if cake is dark colored
 
 Return ONLY valid JSON (no markdown, no explanation):
 {
   "x": 0.5,
   "y": 0.65,
-  "fontSize": 42,
-  "color": "#D4687A",
+  "fontSize": 45,
+  "color": "#2563EB",
   "rotation": 0,
   "fontStyle": "elegant"
 }
 
 Where:
-- x: horizontal position (0-1, 0.5 is center)
-- y: vertical position (0-1) - REMEMBER: top-down views need y: 0.35-0.50 to be ON the cake!
-- fontSize: 35-50 pixels (use larger sizes when space allows!)
-- color: hex color for frosting-like appearance
-- rotation: -15 to 15 degrees for natural look
+- x: horizontal position (0-1, 0.5 is center on blank fondant)
+- y: vertical position (0-1) - CENTER of the blank fondant area
+- fontSize: 40-50 pixels (maximize size on blank areas!)
+- color: hex color - prioritize BLUE (#2563EB) for visibility
+- rotation: -10 to 10 degrees for natural look (keep minimal)
 - fontStyle: "elegant" (formal/wedding), "playful" (children's), "classic" (traditional)`;
 
     console.log('Analyzing cake image for recipient:', recipientName);
@@ -148,7 +151,7 @@ Where:
       
       // Ensure color is a valid hex
       if (!textParams.color || !/^#[0-9A-Fa-f]{6}$/.test(textParams.color)) {
-        textParams.color = '#D4687A';
+        textParams.color = '#2563EB';
       }
 
       // Ensure fontStyle is valid
@@ -164,8 +167,8 @@ Where:
       textParams = {
         x: 0.5,
         y: 0.65,
-        fontSize: 32,
-        color: '#D4687A',
+        fontSize: 42,
+        color: '#2563EB',
         rotation: 0,
         fontStyle: 'elegant'
       };
@@ -184,8 +187,8 @@ Where:
         // Return safe defaults on error
         x: 0.5,
         y: 0.65,
-        fontSize: 32,
-        color: '#D4687A',
+        fontSize: 42,
+        color: '#2563EB',
         rotation: 0,
         fontStyle: 'elegant'
       }),
