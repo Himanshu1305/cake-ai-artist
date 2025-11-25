@@ -15,7 +15,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
     x: 0.5, 
     y: 0.65, 
     fontSize: 32, 
-    color: '#D4687A',
+    color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
   },
@@ -23,7 +23,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
     x: 0.5, 
     y: 0.60, 
     fontSize: 28, 
-    color: '#D4687A',
+    color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
   },
@@ -31,7 +31,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
     x: 0.5, 
     y: 0.50, 
     fontSize: 30, 
-    color: '#D4687A',
+    color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
   },
@@ -39,7 +39,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
     x: 0.5, 
     y: 0.70, 
     fontSize: 34, 
-    color: '#D4687A',
+    color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
   }
@@ -75,7 +75,7 @@ const analyzeImageForText = async (
       x: params.x || 0.5,
       y: params.y || 0.65,
       fontSize: params.fontSize || 32,
-      color: params.color || '#D4687A',
+      color: params.color || '#2563EB',
       rotation: params.rotation || 0,
       fontStyle: params.fontStyle || 'elegant'
     };

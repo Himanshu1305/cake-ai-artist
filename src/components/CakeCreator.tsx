@@ -403,16 +403,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         setGeneratedImages(processedImages);
         setSelectedImages(new Set([0]));
         
-        // Save images if user is logged in
-        if (isLoggedIn && user && images.length > 0) {
-          const selectedUrls = [images[0]]; // Initially save first image
-          await saveGeneratedImage(selectedUrls);
-        }
-        
         toast({
           title: "Cake created successfully!",
           description: isLoggedIn 
-            ? `Your personalized cake for ${name} is ready and saved!` 
+            ? `Your personalized cake for ${name} is ready! Click "Save to Gallery" to save it.` 
             : `Your personalized cake for ${name} is ready! Login to save it.`,
         });
 
