@@ -213,6 +213,15 @@ All colors MUST be HSL.
     }
   }
 
+  /* Carousel dot indicators */
+  .carousel-dot {
+    @apply w-2 h-2 rounded-full bg-muted transition-all duration-300;
+  }
+  
+  .carousel-dot.active {
+    @apply w-8 bg-primary;
+  }
+
   /* Prevent Radix scroll lock from adding body margin on mobile portrait mode */
   @media (max-width: 767px) {
     :root {

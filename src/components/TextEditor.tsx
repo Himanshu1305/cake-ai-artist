@@ -6,6 +6,7 @@ import { Label } from "./ui/label";
 import { X, RotateCw, Type } from "lucide-react";
 import { addTextToCake, getFontFamily } from "@/utils/cakeTextOverlay";
 import { FontPreviewPicker } from "./FontPreviewPicker";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface TextEditorProps {
   imageUrl: string;
@@ -40,6 +41,7 @@ export const TextEditor = ({
   const [fontStyle, setFontStyle] = useState(initialFontStyle);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const haptic = useHapticFeedback();
 
   useEffect(() => {
     const img = new Image();
@@ -150,6 +152,7 @@ export const TextEditor = ({
   };
 
   const handleSave = async () => {
+    haptic.success(); // Success haptic on apply
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -199,7 +202,10 @@ export const TextEditor = ({
                   max={80}
                   step={1}
                   value={[fontSize]}
-                  onValueChange={(value) => setFontSize(value[0])}
+                  onValueChange={(value) => {
+                    haptic.light();
+                    setFontSize(value[0]);
+                  }}
                 />
               </div>
 
@@ -214,7 +220,10 @@ export const TextEditor = ({
                   max={45}
                   step={1}
                   value={[rotation]}
-                  onValueChange={(value) => setRotation(value[0])}
+                  onValueChange={(value) => {
+                    haptic.light();
+                    setRotation(value[0]);
+                  }}
                 />
               </div>
 
@@ -241,7 +250,10 @@ export const TextEditor = ({
               <FontPreviewPicker
                 selectedFontId={fontStyle}
                 recipientName={recipientName}
-                onFontChange={setFontStyle}
+                onFontChange={(font) => {
+                  haptic.light();
+                  setFontStyle(font);
+                }}
               />
 
               <div className="pt-4 space-y-2">

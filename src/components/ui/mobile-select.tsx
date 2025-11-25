@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIOSScrollLock } from "@/hooks/useIOSScrollLock";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export const MobileSelect = ({
 }: MobileSelectProps) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(false);
+  const haptic = useHapticFeedback();
   
   // Apply custom scroll lock on mobile to prevent layout shifts
   useIOSScrollLock(open && isMobile);
@@ -46,7 +48,14 @@ export const MobileSelect = ({
   // On mobile portrait: use bottom Sheet for better UX with custom scroll lock
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={setOpen} modal={false}>
+      <Sheet 
+        open={open} 
+        onOpenChange={(isOpen) => {
+          haptic.medium(); // Haptic on sheet open/close
+          setOpen(isOpen);
+        }} 
+        modal={false}
+      >
         <SheetTrigger asChild>
           <Button
             variant="outline"
@@ -71,10 +80,11 @@ export const MobileSelect = ({
               {options.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    onValueChange(option.value);
-                    setOpen(false);
-                  }}
+                    onClick={() => {
+                      haptic.light(); // Haptic on option selection
+                      onValueChange(option.value);
+                      setOpen(false);
+                    }}
                   className={cn(
                     "w-full text-left px-4 py-3 rounded-lg transition-colors",
                     "hover:bg-accent active:bg-accent/80",

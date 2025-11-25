@@ -19,6 +19,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareInstructions } from "@/components/ShareInstructions";
 import { processImageArray } from "@/utils/cakeTextOverlay";
 import { TextEditor } from "@/components/TextEditor";
+import { SwipeableImagePreview } from "@/components/SwipeableImagePreview";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface CakeCreatorProps {}
 
@@ -47,7 +49,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
   const [postGenRating, setPostGenRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -58,7 +59,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const haptic = useHapticFeedback();
 
   const PREMIUM_CHARACTERS = [
     "spider-man", "hulk", "captain-america", "peppa-pig", "doraemon", 
@@ -190,6 +193,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    haptic.medium(); // Haptic feedback on form submission
     
     if (!name.trim()) {
       toast({
@@ -404,6 +408,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         setGeneratedImages(processedImages);
         setSelectedImages(new Set([0]));
         
+        haptic.success(); // Success haptic on generation complete
         toast({
           title: "Cake created successfully!",
           description: isLoggedIn 
@@ -444,6 +449,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         }
       }
       
+      haptic.error(); // Error haptic on failure
       toast({
         title: "Failed to create cake",
         description: errorMessage,
@@ -673,6 +679,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   };
 
   const handleDownload = async () => {
+    haptic.medium(); // Haptic on download button
     if (selectedImages.size === 0) {
       toast({
         title: "No images selected",
@@ -1469,7 +1476,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     }`}
                   >
                     <div
-                      onClick={() => setPreviewImage(imageUrl)}
+                      onClick={() => {
+                        haptic.light();
+                        setPreviewImageIndex(index);
+                      }}
                       className="cursor-pointer hover:opacity-90 transition-opacity"
                     >
                       <img
@@ -1487,6 +1497,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
+                        haptic.light(); // Haptic on selection toggle
                         const newSelected = new Set(selectedImages);
                         if (newSelected.has(index)) {
                           newSelected.delete(index);
@@ -1734,30 +1745,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         </div>
       )}
 
-      {/* Image Preview Modal */}
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-4xl p-0 bg-surface-elevated border-party-pink/30">
-          {previewImage && (
-            <div className="relative">
-              <Button
-                onClick={() => setPreviewImage(null)}
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 z-50 bg-background/80 hover:bg-background"
-              >
-                <XIcon className="w-4 h-4" />
-              </Button>
-              
-              <div className="p-4">
-                <div className="relative flex items-center justify-center bg-background/50 rounded-lg overflow-hidden min-h-[400px]">
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="max-w-full max-h-[80vh] object-contain"
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Image Preview Dialog with Swipeable Gallery */}
+      <Dialog open={previewImageIndex !== null} onOpenChange={(open) => !open && setPreviewImageIndex(null)}>
+        <DialogContent className="max-w-4xl w-full p-0 h-[90vh]">
+          {previewImageIndex !== null && (
+            <SwipeableImagePreview
+              images={generatedImages}
+              initialIndex={previewImageIndex}
+              onClose={() => setPreviewImageIndex(null)}
+            />
           )}
         </DialogContent>
       </Dialog>
