@@ -498,9 +498,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             prompt: prompt,
             message: displayedMessage || null,
             message_type: useCustomMessage ? 'custom' : 'ai',
-            recipient_name: recipientName.trim() || null,
+            recipient_name: recipientName.trim() || name.trim(), // Smart fallback to main name
             occasion_type: occasion || null,
-            occasion_date: occasionDate || null,
+            occasion_date: occasionDate || new Date().toISOString().split('T')[0], // Default to today for tracking
           });
 
         if (imageError) throw imageError;
