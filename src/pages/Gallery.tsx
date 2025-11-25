@@ -209,20 +209,21 @@ const Gallery = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Feature Info Banner */}
-        <Card className="mb-6 p-6 bg-gradient-to-r from-gold/10 to-party-pink/10 border-2 border-gold/30">
-          <div className="flex items-start gap-4">
-            <Star className="w-8 h-8 text-gold fill-gold flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="text-lg font-bold text-foreground mb-2">
-                ⭐ Get Featured on Our Homepage!
-              </h3>
-              <p className="text-foreground/80 text-sm leading-relaxed">
-                Love one of your cake designs? Click the star icon ⭐ on any image to feature it on our homepage! 
-                Your creation will be displayed in the &quot;Recent Creations from Our Community&quot; carousel for everyone to see. 
-                Share your best work with the community and inspire others!
-              </p>
+        <Card className="mb-6 relative overflow-hidden shimmer bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-gold/40 shadow-party hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all duration-300 cursor-pointer group">
+          <div className="relative z-10 p-6">
+            <div className="flex items-start gap-4">
+              <Star className="w-10 h-10 text-party-gold fill-party-gold flex-shrink-0 mt-1 float animate-pulse drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+              <div>
+                <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-party-pink via-party-purple to-party-gold bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(251,191,36,0.5)]">
+                  ✨ Want to Show Off Your Creation? ✨
+                </h3>
+                <p className="text-foreground text-base font-medium leading-relaxed">
+                  Your cake could inspire <span className="text-party-gold font-bold text-lg">thousands</span>! Tap the <Star className="w-4 h-4 inline fill-party-gold text-party-gold animate-pulse mx-1" /> star on any image below to feature it on our homepage →
+                </p>
+              </div>
             </div>
           </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent group-hover:via-white/10 transition-all duration-500" />
         </Card>
 
         <div className="mb-6">
