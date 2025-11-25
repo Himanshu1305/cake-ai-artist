@@ -147,6 +147,20 @@ export default {
             boxShadow: "0 0 15px hsl(45 100% 60% / 0.7), 0 0 30px hsl(45 100% 60% / 0.4)",
           },
         },
+        sparkle: {
+          "0%, 100%": {
+            filter: "brightness(1) drop-shadow(0 0 2px rgba(251, 191, 36, 0.3))",
+          },
+          "25%": {
+            filter: "brightness(1.2) drop-shadow(0 0 8px rgba(251, 191, 36, 0.8))",
+          },
+          "50%": {
+            filter: "brightness(1) drop-shadow(0 0 2px rgba(251, 191, 36, 0.3))",
+          },
+          "75%": {
+            filter: "brightness(1.3) drop-shadow(0 0 10px rgba(236, 72, 153, 0.8))",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -154,6 +168,7 @@ export default {
         "flame-flicker": "flame-flicker 1.5s ease-in-out infinite",
         "flame-dance": "flame-dance 2s ease-in-out infinite",
         "candle-glow": "candle-glow 2s ease-in-out infinite",
+        sparkle: "sparkle 2s ease-in-out infinite",
       },
     },
   },

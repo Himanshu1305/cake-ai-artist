@@ -209,12 +209,12 @@ const Gallery = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Feature Info Banner */}
-        <Card className="mb-6 relative overflow-hidden shimmer bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-gold/40 shadow-party hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all duration-300 cursor-pointer group">
+        <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-gold/40 shadow-party hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all duration-300 cursor-pointer group">
           <div className="relative z-10 p-6">
             <div className="flex items-start gap-4">
               <Star className="w-10 h-10 text-party-gold fill-party-gold flex-shrink-0 mt-1 float animate-pulse drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
               <div>
-                <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-party-pink via-party-purple to-party-gold bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(251,191,36,0.5)]">
+                <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-party-pink via-party-purple to-party-gold bg-clip-text text-transparent animate-[sparkle_2s_ease-in-out_infinite]">
                   ✨ Want to Show Off Your Creation? ✨
                 </h3>
                 <p className="text-foreground text-base font-medium leading-relaxed">
