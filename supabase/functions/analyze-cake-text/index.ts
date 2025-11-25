@@ -30,28 +30,38 @@ serve(async (req) => {
       );
     }
 
-    // Prepare the vision analysis prompt
+    // Prepare the vision analysis prompt with detailed instructions
     const prompt = `You are an expert cake decorator analyzing a cake image to determine the optimal placement for a name decoration.
 
-Analyze this cake image and determine:
-1. Where is the largest flat fondant or frosting surface suitable for text?
-2. What color would contrast well with the cake's color scheme while looking like natural frosting?
-3. How large should the text be relative to the cake size and available space?
-4. Should the text be slightly angled to follow the cake's perspective or surface curvature?
+CRITICAL RULES:
+1. USE LARGE FONT SIZES: If there's blank fondant space, use fontSize 40-50px. Don't be conservative!
+2. FOR TOP-DOWN VIEWS: Text must be ON the cake surface (y: 0.35-0.50), NOT on labels or stands below
+3. MAXIMIZE SPACE: Use all available blank areas - bigger is better for readability
+
+Analyze this cake and determine:
+1. View type: Is this front, side, top-down, or diagonal view?
+2. Available space: Where is the largest flat fondant surface?
+3. Decorations: Identify characters, patterns to avoid
+4. Optimal placement: Where should text go to be clearly visible?
 
 The name to be written is: "${recipientName}"
 
-Consider:
-- Avoid placing text over detailed decorations, characters, or intricate patterns
-- Choose text color that looks like realistic frosting (pastel pinks, chocolates, whites, creams)
-- Ensure text fits comfortably in the available space without crowding
-- Slight rotation (-15 to 15 degrees) can make text look more hand-piped and natural
+SPECIFIC GUIDANCE BY VIEW:
+- FRONT VIEW: Center text on middle tier (y: 0.60-0.70), fontSize 38-48px if space available
+- SIDE VIEW: Center on visible tier (y: 0.55-0.65), fontSize 35-45px, slight rotation if cake is angled
+- TOP-DOWN VIEW: ON the top surface of cake (y: 0.35-0.50), below any top decorations, fontSize 38-48px
+- DIAGONAL VIEW: Adjust for perspective (y: 0.65-0.75), fontSize 40-50px on visible tier
 
-Return ONLY a valid JSON object with these exact fields (no markdown, no explanation):
+COLOR RULES:
+- Use colors that look like real frosting: pinks (#D4687A, #E8B4C8), chocolates (#5D3A1A, #8B4513), whites (#F5F5DC), creams (#FFE4B5)
+- Ensure contrast with cake color
+- Match or complement existing cake colors
+
+Return ONLY valid JSON (no markdown, no explanation):
 {
   "x": 0.5,
   "y": 0.65,
-  "fontSize": 32,
+  "fontSize": 42,
   "color": "#D4687A",
   "rotation": 0,
   "fontStyle": "elegant"
@@ -59,11 +69,11 @@ Return ONLY a valid JSON object with these exact fields (no markdown, no explana
 
 Where:
 - x: horizontal position (0-1, 0.5 is center)
-- y: vertical position (0-1, 0 is top, 1 is bottom)
-- fontSize: recommended size (20-50 pixels)
-- color: hex color that contrasts well and looks like frosting
-- rotation: angle in degrees (-15 to 15)
-- fontStyle: "elegant" for formal cakes, "playful" for children's cakes, "classic" for traditional`;
+- y: vertical position (0-1) - REMEMBER: top-down views need y: 0.35-0.50 to be ON the cake!
+- fontSize: 35-50 pixels (use larger sizes when space allows!)
+- color: hex color for frosting-like appearance
+- rotation: -15 to 15 degrees for natural look
+- fontStyle: "elegant" (formal/wedding), "playful" (children's), "classic" (traditional)`;
 
     console.log('Analyzing cake image for recipient:', recipientName);
 
