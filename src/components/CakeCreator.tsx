@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareInstructions } from "@/components/ShareInstructions";
+import { processImageArray } from "@/utils/cakeTextOverlay";
 
 interface CakeCreatorProps {}
 
@@ -390,8 +391,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           setDisplayedMessage(aiMessage);
         }
 
-        // Set images and select first by default
-        setGeneratedImages(images);
+        // Process images with text overlay and set them
+        const processedImages = await processImageArray(images, name.trim());
+        setGeneratedImages(processedImages);
         setSelectedImages(new Set([0]));
         
         // Save images if user is logged in
