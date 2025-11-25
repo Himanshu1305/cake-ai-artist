@@ -3,9 +3,9 @@ import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { X, RotateCw, Type } from "lucide-react";
 import { addTextToCake, getFontFamily } from "@/utils/cakeTextOverlay";
+import { FontPreviewPicker } from "./FontPreviewPicker";
 
 interface TextEditorProps {
   imageUrl: string;
@@ -26,7 +26,7 @@ export const TextEditor = ({
   initialFontSize = 42,
   initialColor = "#D4687A",
   initialRotation = 0,
-  initialFontStyle = "elegant",
+  initialFontStyle = "great-vibes",
   onSave,
   onCancel,
 }: TextEditorProps) => {
@@ -235,19 +235,11 @@ export const TextEditor = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="fontStyle">Font Style</Label>
-                <Select value={fontStyle} onValueChange={setFontStyle}>
-                  <SelectTrigger id="fontStyle">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="elegant">Elegant</SelectItem>
-                    <SelectItem value="playful">Playful</SelectItem>
-                    <SelectItem value="classic">Classic</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <FontPreviewPicker
+                selectedFontId={fontStyle}
+                recipientName={recipientName}
+                onFontChange={setFontStyle}
+              />
 
               <div className="pt-4 space-y-2">
                 <Button onClick={handleSave} className="w-full">
