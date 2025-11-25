@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Users, BarChart3, ImageIcon, Shield, Trash2, Star } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { format, subDays } from 'date-fns';
 
 interface Profile {
   id: string;
@@ -33,6 +35,18 @@ interface Analytics {
   foundingMembers: number;
   totalImages: number;
   featuredImages: number;
+  conversionRate: number;
+  avgImagesPerUser: number;
+  activeUsers: number;
+}
+
+interface ChartData {
+  userGrowth: { date: string; users: number }[];
+  imagesOverTime: { date: string; images: number }[];
+  occasionTypes: { name: string; value: number }[];
+  characters: { name: string; count: number }[];
+  topUsers: { email: string; imageCount: number }[];
+  relations: { name: string; count: number }[];
 }
 
 export default function Admin() {
@@ -47,7 +61,11 @@ export default function Admin() {
     foundingMembers: 0,
     totalImages: 0,
     featuredImages: 0,
+    conversionRate: 0,
+    avgImagesPerUser: 0,
+    activeUsers: 0,
   });
+  const [chartData, setChartData] = useState<ChartData | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -123,23 +141,134 @@ export default function Admin() {
     setImages(data || []);
   };
 
+  const extractCharacterFromPrompt = (prompt: string): string => {
+    const characterPatterns = [
+      /featuring ([\w\s]+?)(?:,|\.|$)/i,
+      /with ([\w\s]+?)(?:theme|design|,|\.|$)/i,
+      /([\w\s]+) themed/i,
+      /([\w\s]+) cake/i,
+    ];
+    
+    for (const pattern of characterPatterns) {
+      const match = prompt.match(pattern);
+      if (match) return match[1].trim();
+    }
+    return "Other";
+  };
+
   const loadAnalytics = async () => {
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('is_premium, is_founding_member');
+    try {
+      const { data: profilesData } = await supabase.from('profiles').select('*');
+      const { data: imagesData } = await supabase.from('generated_images').select('*');
 
-    const { data: imagesData } = await supabase
-      .from('generated_images')
-      .select('featured');
+      const totalUsers = profilesData?.length || 0;
+      const premiumUsers = profilesData?.filter(p => p.is_premium).length || 0;
+      const foundingMembers = profilesData?.filter(p => p.is_founding_member).length || 0;
+      const totalImages = imagesData?.length || 0;
+      const featuredImages = imagesData?.filter(img => img.featured).length || 0;
+      const conversionRate = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0;
+      const avgImagesPerUser = totalUsers > 0 ? totalImages / totalUsers : 0;
+      const activeUsers = profilesData?.filter(p => 
+        imagesData?.some(img => img.user_id === p.id)
+      ).length || 0;
 
-    if (profilesData && imagesData) {
       setAnalytics({
-        totalUsers: profilesData.length,
-        premiumUsers: profilesData.filter(p => p.is_premium).length,
-        foundingMembers: profilesData.filter(p => p.is_founding_member).length,
-        totalImages: imagesData.length,
-        featuredImages: imagesData.filter(i => i.featured).length,
+        totalUsers,
+        premiumUsers,
+        foundingMembers,
+        totalImages,
+        featuredImages,
+        conversionRate,
+        avgImagesPerUser,
+        activeUsers,
       });
+
+      // User growth over last 30 days
+      const last30Days = Array.from({ length: 30 }, (_, i) => {
+        const date = subDays(new Date(), 29 - i);
+        return format(date, "MMM dd");
+      });
+      
+      const userGrowth = last30Days.map((date, index) => ({
+        date,
+        users: profilesData?.filter((p) => {
+          const createdDate = new Date(p.created_at || "");
+          const targetDate = subDays(new Date(), 29 - index);
+          return createdDate <= targetDate;
+        }).length || 0,
+      }));
+
+      // Images over time (last 30 days)
+      const imagesOverTime = last30Days.map((date, index) => {
+        const targetDate = subDays(new Date(), 29 - index);
+        const count = imagesData?.filter((img) => {
+          const imgDate = new Date(img.created_at || "");
+          return format(imgDate, "MMM dd") === date;
+        }).length || 0;
+        return { date, images: count };
+      });
+
+      // Occasion types distribution
+      const occasionCounts = imagesData?.reduce((acc, img) => {
+        const type = img.occasion_type || "Other";
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+      
+      const occasionTypes = Object.entries(occasionCounts).map(([name, value]) => ({
+        name,
+        value,
+      }));
+
+      // Character popularity
+      const characterCounts = imagesData?.reduce((acc, img) => {
+        const character = extractCharacterFromPrompt(img.prompt);
+        acc[character] = (acc[character] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+      
+      const characters = Object.entries(characterCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Top users by image count
+      const userImageCounts = imagesData?.reduce((acc, img) => {
+        acc[img.user_id] = (acc[img.user_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+      
+      const topUsers = Object.entries(userImageCounts)
+        .map(([userId, imageCount]) => ({
+          email: profilesData?.find(p => p.id === userId)?.email || "Unknown",
+          imageCount,
+        }))
+        .sort((a, b) => b.imageCount - a.imageCount)
+        .slice(0, 5);
+
+      // Relation distribution (from message_type field)
+      const relationCounts = imagesData?.reduce((acc, img) => {
+        const relation = img.message_type || "Other";
+        acc[relation] = (acc[relation] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+      
+      const relations = Object.entries(relationCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      setChartData({
+        userGrowth,
+        imagesOverTime,
+        occasionTypes,
+        characters,
+        topUsers,
+        relations,
+      });
+    } catch (error) {
+      console.error("Error loading analytics:", error);
+      toast.error("Failed to load analytics");
     }
   };
 
@@ -209,6 +338,8 @@ export default function Admin() {
 
   if (!isAdmin) return null;
 
+  const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "hsl(var(--muted))", "#8884d8", "#82ca9d", "#ffc658", "#ff8042"];
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -231,7 +362,7 @@ export default function Admin() {
         </div>
 
         {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -241,6 +372,7 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{analytics.totalUsers}</div>
+              <p className="text-xs text-muted-foreground">{analytics.activeUsers} active</p>
             </CardContent>
           </Card>
 
@@ -250,15 +382,7 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{analytics.premiumUsers}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Founding Members</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{analytics.foundingMembers}</div>
+              <p className="text-xs text-muted-foreground">{analytics.conversionRate.toFixed(1)}% conversion</p>
             </CardContent>
           </Card>
 
@@ -271,6 +395,7 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{analytics.totalImages}</div>
+              <p className="text-xs text-muted-foreground">{analytics.avgImagesPerUser.toFixed(1)} avg/user</p>
             </CardContent>
           </Card>
 
@@ -280,16 +405,165 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{analytics.featuredImages}</div>
+              <p className="text-xs text-muted-foreground">{analytics.foundingMembers} founding members</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Tabs for different sections */}
-        <Tabs defaultValue="users" className="space-y-4">
+        <Tabs defaultValue="analytics" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="images">Community Moderation</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics" className="space-y-6">
+            {chartData && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>User Growth (Last 30 Days)</CardTitle>
+                      <CardDescription>Total registered users over time</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData.userGrowth}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="users" stroke="hsl(var(--primary))" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Images Generated (Last 30 Days)</CardTitle>
+                      <CardDescription>Daily cake creations</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData.imagesOverTime}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="images" fill="hsl(var(--primary))" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Occasion Types Distribution</CardTitle>
+                      <CardDescription>What occasions are most popular</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={chartData.occasionTypes}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {chartData.occasionTypes.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top 10 Popular Characters</CardTitle>
+                      <CardDescription>Most requested themes and characters</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData.characters} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="name" type="category" width={100} />
+                          <Tooltip />
+                          <Bar dataKey="count" fill="hsl(var(--accent))" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Most Active Users</CardTitle>
+                      <CardDescription>Top users by number of cakes created</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Email</TableHead>
+                            <TableHead className="text-right">Cakes Created</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {chartData.topUsers.map((user, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell className="text-right font-bold">{user.imageCount}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recipient Relations</CardTitle>
+                      <CardDescription>Who are cakes being made for</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Relation</TableHead>
+                            <TableHead className="text-right">Count</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {chartData.relations.map((relation, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="capitalize">{relation.name}</TableCell>
+                              <TableCell className="text-right font-bold">{relation.count}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
             <Card>
