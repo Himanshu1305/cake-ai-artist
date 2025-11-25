@@ -44,11 +44,6 @@ export const Footer = () => {
                   About
                 </Link>
               </li>
-              <li>
-                <Link to="/wall-of-founders" className="hover:underline opacity-90">
-                  Wall of Founders
-                </Link>
-              </li>
             </ul>
           </div>
           <div>

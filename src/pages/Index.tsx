@@ -126,12 +126,11 @@ const Index = () => {
                 </span>
               </Button>
             </Link>
-            <Link to="/wall-of-founders"><Button variant="ghost" size="sm">Founding Members</Button></Link>
             <Link to="/use-cases"><Button variant="ghost" size="sm">Examples</Button></Link>
             <Link to="/community"><Button variant="ghost" size="sm">Community</Button></Link>
             <Link to="/blog"><Button variant="ghost" size="sm">Blog</Button></Link>
             <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
-            {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="outline" size="sm">My Gallery</Button>}
+            {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm">My Gallery</Button>}
             {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm">Settings</Button>}
             {isLoggedIn ? (
               <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
