@@ -496,12 +496,37 @@ const Index = () => {
             Stop wasting time on generic designs. Start creating cakes that actually mean something.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Button size="lg" onClick={() => navigate(isLoggedIn ? "#creator" : "/auth")} className="text-lg px-8">
-              Get Started Free
-            </Button>
-            <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
-              View Pricing
-            </Button>
+            {!isLoggedIn ? (
+              <>
+                <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-8">
+                  Get Started Free
+                </Button>
+                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
+                  View Pricing
+                </Button>
+              </>
+            ) : isPremium ? (
+              <Button 
+                size="lg" 
+                onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
+                className="text-lg px-8"
+              >
+                Create Your Next Masterpiece
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  size="lg" 
+                  onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
+                  className="text-lg px-8"
+                >
+                  Create a Cake Now
+                </Button>
+                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
+                  Upgrade to Premium
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
