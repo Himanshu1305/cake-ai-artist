@@ -11,26 +11,26 @@ const TEXT_POSITIONS: Record<ViewType, TextPosition> = {
   'Front View': { 
     x: 0.5, 
     y: 0.65, 
-    fontSize: 52, 
-    color: '#8B0000' // Deep burgundy red for better readability
+    fontSize: 32, 
+    color: '#D4687A' // Soft frosting pink
   },
   'Side View': { 
     x: 0.5, 
     y: 0.60, 
-    fontSize: 48, 
-    color: '#8B0000' 
+    fontSize: 28, 
+    color: '#D4687A' 
   },
   'Top-Down View': { 
     x: 0.5, 
     y: 0.50, 
-    fontSize: 50, 
-    color: '#8B0000' 
+    fontSize: 30, 
+    color: '#D4687A' 
   },
   '3/4 View (Diagonal)': { 
     x: 0.5, 
     y: 0.70, 
-    fontSize: 54, 
-    color: '#8B0000' 
+    fontSize: 34, 
+    color: '#D4687A' 
   }
 };
 
@@ -76,29 +76,24 @@ export const addTextToCake = (
         const x = canvas.width * position.x;
         const y = canvas.height * position.y;
 
-        // Configure text styling
-        ctx.font = `bold ${position.fontSize}px Georgia, serif`;
+        // Configure text styling with cursive font for elegant frosting look
+        ctx.font = `italic bold ${position.fontSize}px 'Brush Script MT', cursive`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Add strong shadow for depth and readability
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 3;
-
-        // Draw thick white outline (stroke) first for better visibility
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 8;
-        ctx.strokeText(text, x, y);
-
-        // Remove shadow for fill
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-
-        // Draw burgundy fill
+        // First pass: Create depth with darker shadow underneath (embossed effect)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 2;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
         ctx.fillStyle = position.color;
+        ctx.fillText(text, x, y);
+
+        // Second pass: Add highlight on top for raised frosting appearance
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+        ctx.shadowBlur = 1;
+        ctx.shadowOffsetX = -1;
+        ctx.shadowOffsetY = -1;
         ctx.fillText(text, x, y);
 
         // Convert canvas to base64
