@@ -26,6 +26,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
 
@@ -35,6 +36,12 @@ const Index = () => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsLoggedIn(!!session);
+      if (session) {
+        checkAuth();
+      } else {
+        setIsAdmin(false);
+        setIsPremium(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -73,6 +80,16 @@ const Index = () => {
       if (profile) {
         setIsPremium(profile.is_premium);
       }
+
+      // Check if user is admin
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!roleData);
     }
   };
 
@@ -132,6 +149,7 @@ const Index = () => {
             <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
             {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm">My Gallery</Button>}
             {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm">Settings</Button>}
+            {isAdmin && <Button onClick={() => navigate("/admin")} variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">Admin</Button>}
             {isLoggedIn ? (
               <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
             ) : (
