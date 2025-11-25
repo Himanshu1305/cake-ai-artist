@@ -1659,8 +1659,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         await saveGeneratedImage(selectedUrls);
                         
                         toast({
-                          title: "Saved to Gallery!",
-                          description: `${selectedImages.size} image(s) saved successfully. Go to your gallery and click the star ⭐ to feature them on our homepage!`,
+                          title: "🎉 Woohoo! Saved to Your Gallery!",
+                          description: `${selectedImages.size} stunning cake${selectedImages.size > 1 ? 's' : ''} saved! ✨ Want to show off? Head to Gallery → Click the ⭐ star to feature your masterpiece on our HOMEPAGE!`,
+                          className: "bg-gradient-to-r from-party-purple via-party-pink to-party-orange border-2 border-party-gold text-white shadow-2xl",
                         });
                       }}
                       disabled={selectedImages.size === 0}
