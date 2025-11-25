@@ -215,11 +215,23 @@ All colors MUST be HSL.
 
   /* Prevent Radix scroll lock from adding body margin on mobile portrait mode */
   @media (max-width: 767px) {
-    html, body {
+    :root {
       --removed-body-scroll-bar-size: 0px !important;
     }
     
-    body[data-scroll-locked] {
+    /* Target any inline style manipulation by react-remove-scroll */
+    body[style*="margin-right"],
+    body[style*="padding-right"],
+    body[data-scroll-locked],
+    [data-radix-dialog-overlay] + * body,
+    [data-radix-popper-content-wrapper] {
+      margin-right: 0px !important;
+      padding-right: 0px !important;
+    }
+    
+    /* Ensure fixed elements don't shift */
+    [data-radix-dialog-overlay],
+    [data-radix-dialog-content] {
       margin-right: 0 !important;
       padding-right: 0 !important;
     }
