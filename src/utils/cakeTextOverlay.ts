@@ -88,7 +88,7 @@ const analyzeImageForText = async (
 /**
  * Gets the appropriate font based on style
  */
-const getFontFamily = (style: string = 'elegant'): string => {
+export const getFontFamily = (style: string = 'elegant'): string => {
   switch (style) {
     case 'playful':
       return "'Comic Sans MS', 'Brush Script MT', cursive";

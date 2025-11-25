@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareInstructions } from "@/components/ShareInstructions";
 import { processImageArray } from "@/utils/cakeTextOverlay";
+import { TextEditor } from "@/components/TextEditor";
 
 interface CakeCreatorProps {}
 
@@ -54,6 +55,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [showShareInstructions, setShowShareInstructions] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const isMobile = useIsMobile();
 
   const PREMIUM_CHARACTERS = [
@@ -1599,6 +1601,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
                       {["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`}
                     </div>
+                    
+                    {/* Edit Text Button */}
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingImageIndex(index);
+                      }}
+                      size="sm"
+                      className="absolute bottom-2 right-2 bg-party-pink/90 hover:bg-party-pink text-white text-xs py-1 px-2 h-auto"
+                    >
+                      <Type className="w-3 h-3 mr-1" />
+                      Edit Text
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -1842,6 +1857,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         open={showShareInstructions} 
         onOpenChange={setShowShareInstructions}
       />
+
+      {/* Text Editor Modal */}
+      {editingImageIndex !== null && (
+        <TextEditor
+          imageUrl={generatedImages[editingImageIndex]}
+          recipientName={name}
+          onSave={(editedImageUrl) => {
+            const newImages = [...generatedImages];
+            newImages[editingImageIndex] = editedImageUrl;
+            setGeneratedImages(newImages);
+            setEditingImageIndex(null);
+            toast({
+              title: "Text updated!",
+              description: "Your cake text has been customized successfully.",
+            });
+          }}
+          onCancel={() => setEditingImageIndex(null)}
+        />
+      )}
     </div>
   );
 };
