@@ -222,6 +222,16 @@ All colors MUST be HSL.
     @apply w-8 bg-primary;
   }
 
+  /* Zoomable image touch handling */
+  .touch-none {
+    touch-action: none;
+  }
+
+  .select-none {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   /* Prevent Radix scroll lock from adding body margin on mobile portrait mode */
   @media (max-width: 767px) {
     :root {
