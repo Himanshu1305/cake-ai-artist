@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star, Calendar, Clock } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface GeneratedImage {
   id: string;
@@ -168,6 +169,27 @@ const Gallery = () => {
     }
   };
 
+  // Calculate upcoming occasions
+  const upcomingOccasions = useMemo(() => {
+    const today = new Date();
+    const next30Days = new Date(today);
+    next30Days.setDate(today.getDate() + 30);
+    
+    return images
+      .filter(img => img.occasion_date)
+      .map(img => {
+        const occasionDate = new Date(img.occasion_date!);
+        const daysUntil = Math.ceil((occasionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return { ...img, daysUntil };
+      })
+      .filter(img => img.daysUntil >= 0 && img.daysUntil <= 30)
+      .sort((a, b) => a.daysUntil - b.daysUntil);
+  }, [images]);
+
+  const regularImages = useMemo(() => {
+    return images.filter(img => !upcomingOccasions.some(upcoming => upcoming.id === img.id));
+  }, [images, upcomingOccasions]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
@@ -226,10 +248,152 @@ const Gallery = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent group-hover:via-white/10 transition-all duration-500" />
         </Card>
 
+        {/* Upcoming Occasions Section */}
+        {upcomingOccasions.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Calendar className="w-6 h-6 text-party-pink" />
+              <h2 className="text-2xl font-bold text-foreground">Upcoming Occasions</h2>
+              <Badge variant="secondary" className="bg-party-pink/20 text-party-pink">
+                {upcomingOccasions.length} coming soon
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingOccasions.map((image) => (
+                <Card
+                  key={image.id}
+                  className="overflow-hidden bg-gradient-to-br from-party-pink/10 to-party-purple/10 backdrop-blur-sm border-2 border-party-pink hover:border-party-gold transition-all hover:shadow-[0_0_30px_rgba(251,191,36,0.4)]"
+                >
+                  <div className="relative">
+                    <Badge 
+                      className="absolute top-2 left-2 z-10 bg-party-gold text-background font-bold shadow-lg animate-pulse"
+                    >
+                      <Clock className="w-3 h-3 mr-1" />
+                      {image.daysUntil === 0 ? 'Today!' : image.daysUntil === 1 ? 'Tomorrow!' : `In ${image.daysUntil} days`}
+                    </Badge>
+                    <div 
+                      className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(image)}
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={image.prompt}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="mb-3 p-3 bg-gradient-party/20 rounded-lg border-2 border-party-gold/30">
+                      <p className="text-sm font-bold text-foreground mb-1">
+                        🎉 {image.recipient_name}
+                      </p>
+                      <p className="text-xs text-foreground/80">
+                        📅 {new Date(image.occasion_date!).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                        {image.occasion_type && ` • ${image.occasion_type.charAt(0).toUpperCase() + image.occasion_type.slice(1)}`}
+                      </p>
+                    </div>
+                    
+                    <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
+                      {image.prompt}
+                    </p>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-xs text-foreground/50">
+                        Created {new Date(image.created_at).toLocaleDateString()}
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant={image.featured ? "default" : "outline"}
+                          onClick={() => toggleFeatured(image.id, image.featured)}
+                          className={image.featured 
+                            ? "bg-gold hover:bg-gold/90 border-gold" 
+                            : "border-gold/30 hover:border-gold"
+                          }
+                          title={image.featured ? "Remove from homepage" : "⭐ Feature on homepage"}
+                        >
+                          <Star className={`w-4 h-4 ${image.featured ? "fill-current" : ""}`} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDownload(image.image_url, image.prompt)}
+                          className="border-party-purple/30 hover:border-party-purple"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-party-pink/30 hover:border-party-pink"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-surface-elevated border-party-pink/30">
+                            <DropdownMenuItem 
+                              onClick={() => handleShare("facebook", image.prompt)}
+                              className="cursor-pointer hover:bg-party-pink/10"
+                            >
+                              <Facebook className="w-4 h-4 mr-2" />
+                              Facebook
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleShare("x", image.prompt)}
+                              className="cursor-pointer hover:bg-party-pink/10"
+                            >
+                              <XIcon className="w-4 h-4 mr-2" />
+                              X
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleShare("whatsapp", image.prompt)}
+                              className="cursor-pointer hover:bg-party-pink/10"
+                            >
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleShare("instagram", image.prompt)}
+                              className="cursor-pointer hover:bg-party-pink/10"
+                            >
+                              <Instagram className="w-4 h-4 mr-2" />
+                              Instagram
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteImage(image.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Cakes Section */}
         <div className="mb-6">
-          <p className="text-foreground/70">
-            You have {images.length} saved images (max 20)
-          </p>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-foreground">
+              {upcomingOccasions.length > 0 ? 'All Your Cakes' : 'Your Cake Memories'}
+            </h2>
+            <p className="text-foreground/70">
+              {images.length} saved images (max 20)
+            </p>
+          </div>
         </div>
 
         {images.length === 0 ? (
@@ -246,7 +410,7 @@ const Gallery = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image) => (
+            {regularImages.map((image) => (
               <Card
                 key={image.id}
                 className="overflow-hidden bg-surface-elevated/80 backdrop-blur-sm border-2 border-party-pink/30 hover:border-party-pink transition-all"
