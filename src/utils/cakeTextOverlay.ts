@@ -10,27 +10,27 @@ type ViewType = 'Front View' | 'Side View' | 'Top-Down View' | '3/4 View (Diagon
 const TEXT_POSITIONS: Record<ViewType, TextPosition> = {
   'Front View': { 
     x: 0.5, 
-    y: 0.87, 
-    fontSize: 38, 
-    color: '#D4AF37' // Elegant gold
+    y: 0.65, 
+    fontSize: 52, 
+    color: '#8B0000' // Deep burgundy red for better readability
   },
   'Side View': { 
     x: 0.5, 
-    y: 0.83, 
-    fontSize: 34, 
-    color: '#D4AF37' 
+    y: 0.60, 
+    fontSize: 48, 
+    color: '#8B0000' 
   },
   'Top-Down View': { 
     x: 0.5, 
-    y: 0.15, 
-    fontSize: 36, 
-    color: '#D4AF37' 
+    y: 0.50, 
+    fontSize: 50, 
+    color: '#8B0000' 
   },
   '3/4 View (Diagonal)': { 
     x: 0.5, 
-    y: 0.90, 
-    fontSize: 40, 
-    color: '#D4AF37' 
+    y: 0.70, 
+    fontSize: 54, 
+    color: '#8B0000' 
   }
 };
 
@@ -81,15 +81,15 @@ export const addTextToCake = (
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Add shadow for depth (makes text look more realistic on cake)
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
+        // Add strong shadow for depth and readability
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
 
-        // Draw white outline (stroke) first
+        // Draw thick white outline (stroke) first for better visibility
         ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 8;
         ctx.strokeText(text, x, y);
 
         // Remove shadow for fill
@@ -97,7 +97,7 @@ export const addTextToCake = (
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
-        // Draw gold fill
+        // Draw burgundy fill
         ctx.fillStyle = position.color;
         ctx.fillText(text, x, y);
 
