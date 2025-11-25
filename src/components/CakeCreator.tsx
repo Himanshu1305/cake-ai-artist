@@ -950,7 +950,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <SelectTrigger className="bg-background border-border">
                         <SelectValue placeholder="Select occasion" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-50">
+                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
                         <SelectItem value="birthday">Birthday</SelectItem>
                         <SelectItem value="anniversary">Anniversary</SelectItem>
                         <SelectItem value="graduation">Graduation</SelectItem>
@@ -972,7 +972,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <SelectTrigger className="bg-background border-border">
                         <SelectValue placeholder="Select relation" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-50">
+                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
                         <SelectItem value="brother">Brother</SelectItem>
                         <SelectItem value="sister">Sister</SelectItem>
                         <SelectItem value="father">Father</SelectItem>
@@ -999,7 +999,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <SelectTrigger className="bg-background border-border">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-50">
+                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
@@ -1016,7 +1016,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <SelectTrigger className="bg-background border-border">
                         <SelectValue placeholder="Select character (optional)" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-50 max-h-[300px]">
+                      <SelectContent className="bg-background border-border z-[100] max-h-[300px]" sideOffset={4}>
                         <SelectItem value="mickey-minnie" className="flex items-center gap-2">
                           Mickey Mouse and Minnie Mouse
                         </SelectItem>

@@ -212,4 +212,17 @@ All colors MUST be HSL.
       background-position: 200% 0;
     }
   }
+
+  /* Mobile select dropdown fixes */
+  body.select-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* Better touch handling for selects on mobile */
+  [data-radix-select-content] {
+    touch-action: none;
+    -webkit-overflow-scrolling: touch;
+  }
 }
