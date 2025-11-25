@@ -35,6 +35,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [colors, setColors] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [originalImages, setOriginalImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState<string>("");
@@ -240,6 +241,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     setIsLoading(true);
     setGeneratedImages([]);
+    setOriginalImages([]);
     setSelectedImages(new Set());
     setGeneratedMessage(null);
 
@@ -393,6 +395,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           setDisplayedMessage(aiMessage);
         }
 
+        // Store original images (without text) for later editing
+        setOriginalImages([...images]);
+        
         // Process images with text overlay and set them
         const processedImages = await processImageArray(images, name.trim());
         setGeneratedImages(processedImages);
@@ -1861,7 +1866,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       {/* Text Editor Modal */}
       {editingImageIndex !== null && (
         <TextEditor
-          imageUrl={generatedImages[editingImageIndex]}
+          imageUrl={originalImages[editingImageIndex]}
           recipientName={name}
           onSave={(editedImageUrl) => {
             const newImages = [...generatedImages];
