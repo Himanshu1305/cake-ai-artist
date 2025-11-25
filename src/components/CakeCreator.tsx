@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MobileSelect } from "@/components/ui/mobile-select";
 import { toast } from "@/hooks/use-toast";
 import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -946,21 +947,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <Calendar className="w-4 h-4" />
                       Occasion
                     </Label>
-                    <Select value={occasion} onValueChange={setOccasion} disabled={isLoading}>
-                      <SelectTrigger className="bg-background border-border">
-                        <SelectValue placeholder="Select occasion" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
-                        <SelectItem value="birthday">Birthday</SelectItem>
-                        <SelectItem value="anniversary">Anniversary</SelectItem>
-                        <SelectItem value="graduation">Graduation</SelectItem>
-                        <SelectItem value="wedding">Wedding</SelectItem>
-                        <SelectItem value="celebration">Celebration</SelectItem>
-                        <SelectItem value="farewell">Farewell</SelectItem>
-                        <SelectItem value="congratulations">Congratulations</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect
+                      value={occasion}
+                      onValueChange={setOccasion}
+                      disabled={isLoading}
+                      label="Select Occasion"
+                      placeholder="Select occasion"
+                      triggerClassName="bg-background border-border"
+                      options={[
+                        { value: "birthday", label: "Birthday" },
+                        { value: "anniversary", label: "Anniversary" },
+                        { value: "graduation", label: "Graduation" },
+                        { value: "wedding", label: "Wedding" },
+                        { value: "celebration", label: "Celebration" },
+                        { value: "farewell", label: "Farewell" },
+                        { value: "congratulations", label: "Congratulations" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -968,26 +972,29 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <Users className="w-4 h-4" />
                       Relation
                     </Label>
-                    <Select value={relation} onValueChange={setRelation} disabled={isLoading}>
-                      <SelectTrigger className="bg-background border-border">
-                        <SelectValue placeholder="Select relation" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
-                        <SelectItem value="brother">Brother</SelectItem>
-                        <SelectItem value="sister">Sister</SelectItem>
-                        <SelectItem value="father">Father</SelectItem>
-                        <SelectItem value="mother">Mother</SelectItem>
-                        <SelectItem value="daughter">Daughter</SelectItem>
-                        <SelectItem value="son">Son</SelectItem>
-                        <SelectItem value="husband">Husband</SelectItem>
-                        <SelectItem value="wife">Wife</SelectItem>
-                        <SelectItem value="friend">Friend</SelectItem>
-                        <SelectItem value="in-laws">In-laws</SelectItem>
-                        <SelectItem value="partner">Partner</SelectItem>
-                        <SelectItem value="colleague">Colleague</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect
+                      value={relation}
+                      onValueChange={setRelation}
+                      disabled={isLoading}
+                      label="Select Relation"
+                      placeholder="Select relation"
+                      triggerClassName="bg-background border-border"
+                      options={[
+                        { value: "brother", label: "Brother" },
+                        { value: "sister", label: "Sister" },
+                        { value: "father", label: "Father" },
+                        { value: "mother", label: "Mother" },
+                        { value: "daughter", label: "Daughter" },
+                        { value: "son", label: "Son" },
+                        { value: "husband", label: "Husband" },
+                        { value: "wife", label: "Wife" },
+                        { value: "friend", label: "Friend" },
+                        { value: "in-laws", label: "In-laws" },
+                        { value: "partner", label: "Partner" },
+                        { value: "colleague", label: "Colleague" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -995,16 +1002,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <User className="w-4 h-4" />
                       Gender
                     </Label>
-                    <Select value={gender} onValueChange={setGender} disabled={isLoading}>
-                      <SelectTrigger className="bg-background border-border">
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-[100]" sideOffset={4}>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect
+                      value={gender}
+                      onValueChange={setGender}
+                      disabled={isLoading}
+                      label="Select Gender"
+                      placeholder="Select gender"
+                      triggerClassName="bg-background border-border"
+                      options={[
+                        { value: "male", label: "Male" },
+                        { value: "female", label: "Female" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -1012,156 +1022,56 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <Sparkles className="w-4 h-4" />
                       Character
                     </Label>
-                    <Select value={character} onValueChange={setCharacter} disabled={isLoading}>
-                      <SelectTrigger className="bg-background border-border">
-                        <SelectValue placeholder="Select character (optional)" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-border z-[100] max-h-[300px]" sideOffset={4}>
-                        <SelectItem value="mickey-minnie" className="flex items-center gap-2">
-                          Mickey Mouse and Minnie Mouse
-                        </SelectItem>
-                        <SelectItem value="spider-man" disabled={!isPremium} className="flex items-center gap-2">
-                          <span className="flex items-center gap-2">
-                            Spider-Man {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="hulk" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Hulk {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="captain-america" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Captain America {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="peppa-pig" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Peppa Pig {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="doraemon" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Doraemon {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="shinchan" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Shinchan {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="minions" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Minions {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="hello-kitty" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Hello Kitty {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="chhota-bheem" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Chhota Bheem {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="motu-patlu" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Motu Patlu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="pikachu" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Pikachu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="totoro" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Totoro {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="sailor-moon" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Sailor Moon {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="tom-and-jerry" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Tom and Jerry {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="gojo-satoru" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Gojo Satoru {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="inosuke" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Inosuke {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="zenitsu" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Zenitsu {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="todoroki-shoto" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Todoroki Shoto {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="anya-forger" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Anya Forger {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="loid-forger" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Loid Forger {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="goku" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Goku {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="naruto" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Naruto {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="masha-and-bear" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Masha and the Bear {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="anna" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Anna {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="elsa" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Elsa {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="olaf" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Olaf {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="sven" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Sven {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="barbie" disabled={!isPremium}>
-                          <span className="flex items-center gap-2">
-                            Barbie {!isPremium && <Crown className="w-3 h-3 text-yellow-500" />}
-                          </span>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect
+                      value={character}
+                      onValueChange={(value) => {
+                        // Check if character is premium and user is not premium
+                        if (PREMIUM_CHARACTERS.includes(value) && !isPremium) {
+                          toast({
+                            title: "Premium character",
+                            description: "This character requires Premium. Upgrade to unlock!",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setCharacter(value);
+                      }}
+                      disabled={isLoading}
+                      label="Select Character (Optional)"
+                      placeholder="Select character (optional)"
+                      triggerClassName="bg-background border-border"
+                      options={[
+                        { value: "mickey-minnie", label: "Mickey Mouse and Minnie Mouse" },
+                        { value: "spider-man", label: `Spider-Man ${!isPremium ? '👑' : ''}` },
+                        { value: "hulk", label: `Hulk ${!isPremium ? '👑' : ''}` },
+                        { value: "captain-america", label: `Captain America ${!isPremium ? '👑' : ''}` },
+                        { value: "peppa-pig", label: `Peppa Pig ${!isPremium ? '👑' : ''}` },
+                        { value: "doraemon", label: `Doraemon ${!isPremium ? '👑' : ''}` },
+                        { value: "shinchan", label: `Shinchan ${!isPremium ? '👑' : ''}` },
+                        { value: "minions", label: `Minions ${!isPremium ? '👑' : ''}` },
+                        { value: "hello-kitty", label: `Hello Kitty ${!isPremium ? '👑' : ''}` },
+                        { value: "chhota-bheem", label: `Chhota Bheem ${!isPremium ? '👑' : ''}` },
+                        { value: "motu-patlu", label: `Motu Patlu ${!isPremium ? '👑' : ''}` },
+                        { value: "pikachu", label: `Pikachu ${!isPremium ? '👑' : ''}` },
+                        { value: "totoro", label: `Totoro ${!isPremium ? '👑' : ''}` },
+                        { value: "sailor-moon", label: `Sailor Moon ${!isPremium ? '👑' : ''}` },
+                        { value: "tom-and-jerry", label: `Tom and Jerry ${!isPremium ? '👑' : ''}` },
+                        { value: "gojo-satoru", label: `Gojo Satoru ${!isPremium ? '👑' : ''}` },
+                        { value: "inosuke", label: `Inosuke ${!isPremium ? '👑' : ''}` },
+                        { value: "zenitsu", label: `Zenitsu ${!isPremium ? '👑' : ''}` },
+                        { value: "todoroki-shoto", label: `Todoroki Shoto ${!isPremium ? '👑' : ''}` },
+                        { value: "anya-forger", label: `Anya Forger ${!isPremium ? '👑' : ''}` },
+                        { value: "loid-forger", label: `Loid Forger ${!isPremium ? '👑' : ''}` },
+                        { value: "goku", label: `Goku ${!isPremium ? '👑' : ''}` },
+                        { value: "naruto", label: `Naruto ${!isPremium ? '👑' : ''}` },
+                        { value: "masha-and-bear", label: `Masha and the Bear ${!isPremium ? '👑' : ''}` },
+                        { value: "anna", label: `Anna ${!isPremium ? '👑' : ''}` },
+                        { value: "elsa", label: `Elsa ${!isPremium ? '👑' : ''}` },
+                        { value: "olaf", label: `Olaf ${!isPremium ? '👑' : ''}` },
+                        { value: "sven", label: `Sven ${!isPremium ? '👑' : ''}` },
+                        { value: "barbie", label: `Barbie ${!isPremium ? '👑' : ''}` },
+                      ]}
+                    />
                   </div>
                 </div>
 

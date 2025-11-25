@@ -213,6 +213,18 @@ All colors MUST be HSL.
     }
   }
 
+  /* Prevent Radix scroll lock from adding body margin on mobile portrait mode */
+  @media (max-width: 767px) {
+    html, body {
+      --removed-body-scroll-bar-size: 0px !important;
+    }
+    
+    body[data-scroll-locked] {
+      margin-right: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
   /* iOS-safe scroll lock for mobile select dropdowns */
   html.scroll-locked {
     position: fixed;
@@ -229,7 +241,7 @@ All colors MUST be HSL.
 
   /* Better touch handling for selects on mobile */
   [data-radix-select-content] {
-    touch-action: none;
+    touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
   }
 }
