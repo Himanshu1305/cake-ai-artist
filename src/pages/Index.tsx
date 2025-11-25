@@ -402,7 +402,7 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-2">
             Real cakes made by real people. Yours could be here next!
           </p>
-          <p className="text-base text-gold font-semibold">
+          <p className="inline-block text-base font-bold bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 px-4 py-2 rounded-full border border-party-gold/40 text-foreground animate-sparkle">
             ⭐ Create an account and star your favorite designs to feature them here
           </p>
         </div>
@@ -499,7 +499,7 @@ const Index = () => {
             <Button size="lg" onClick={() => navigate(isLoggedIn ? "#creator" : "/auth")} className="text-lg px-8">
               Get Started Free
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/pricing")} className="text-lg px-8">
+            <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
               View Pricing
             </Button>
           </div>
