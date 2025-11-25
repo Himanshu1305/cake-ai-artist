@@ -1,1 +1,10 @@
 project_id = "ozgghjbvhveswqplzegd"
+
+[functions.save-image-to-storage]
+verify_jwt = false
+
+[functions.send-anniversary-reminders]
+verify_jwt = false
+
+[functions.analyze-cake-text]
+verify_jwt = false
