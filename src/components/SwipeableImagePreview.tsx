@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ZoomableImage } from "./ZoomableImage";
 
 interface SwipeableImagePreviewProps {
   images: string[];
@@ -15,6 +16,7 @@ const VIEW_LABELS = ["Front View", "Side View", "Top-Down View", "3/4 View (Diag
 export const SwipeableImagePreview = ({ images, initialIndex = 0, onClose }: SwipeableImagePreviewProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [api, setApi] = useState<CarouselApi>();
+  const [isZoomed, setIsZoomed] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -53,19 +55,19 @@ export const SwipeableImagePreview = ({ images, initialIndex = 0, onClose }: Swi
           opts={{
             align: "center",
             loop: true,
+            watchDrag: !isZoomed, // Disable carousel swiping when image is zoomed
           }}
           className="w-full max-w-4xl"
         >
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index}>
-                <div className="flex items-center justify-center">
-                  <img
-                    src={image}
-                    alt={`Cake ${VIEW_LABELS[index]}`}
-                    className="max-w-full max-h-[70vh] object-contain rounded-lg"
-                  />
-                </div>
+                <ZoomableImage
+                  src={image}
+                  alt={`Cake ${VIEW_LABELS[index]}`}
+                  onZoomChange={setIsZoomed}
+                  resetTrigger={currentIndex}
+                />
               </CarouselItem>
             ))}
           </CarouselContent>
