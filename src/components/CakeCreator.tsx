@@ -19,8 +19,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareInstructions } from "@/components/ShareInstructions";
 import { processImageArray } from "@/utils/cakeTextOverlay";
 import { TextEditor } from "@/components/TextEditor";
+import { PhotoEditor } from "@/components/PhotoEditor";
 import { SwipeableImagePreview } from "@/components/SwipeableImagePreview";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { processCakeWithPhoto, FALLBACK_PHOTO_POSITIONS } from "@/utils/cakePhotoOverlay";
+import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
 
 interface CakeCreatorProps {}
 
@@ -60,6 +63,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+  const [userPhotoForCake, setUserPhotoForCake] = useState<File | null>(null);
+  const [userPhotoPreview, setUserPhotoPreview] = useState<string | null>(null);
+  const [editingPhotoOnCakeIndex, setEditingPhotoOnCakeIndex] = useState<number | null>(null);
+  const [photoPosition, setPhotoPosition] = useState<PhotoPosition | null>(null);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
@@ -1598,6 +1605,147 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
           </Card>
 
+          {/* Photo on Cake Feature - NEW */}
+          <Card className="p-5 bg-gradient-to-r from-party-mint/20 to-party-coral/20 border-2 border-party-mint/30 animate-fade-in relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-32 h-32 bg-party-coral/10 rounded-full -ml-16 -mt-16 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+            <div className="relative space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="text-5xl animate-bounce" style={{ animationDelay: '0.2s' }}>📸</div>
+                <div className="flex-1 space-y-2">
+                  <h4 className="font-bold text-foreground text-lg flex items-center gap-2 flex-wrap">
+                    Add a Photo to Your Cake! 
+                    <span className="text-party-coral animate-pulse">Perfect for edible prints!</span>
+                    <span className="inline-block animate-sparkle">✨</span>
+                  </h4>
+                  <p className="text-sm text-foreground/90 leading-relaxed">
+                    Upload a photo and AI will find the perfect spot on your cake. Best for <strong>Top-Down View</strong> cakes!
+                  </p>
+                </div>
+              </div>
+
+              {!userPhotoPreview ? (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (!file.type.startsWith('image/')) {
+                        toast({
+                          title: "Invalid file",
+                          description: "Please upload an image file",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      if (file.size > 10 * 1024 * 1024) {
+                        toast({
+                          title: "File too large",
+                          description: "Maximum file size is 10MB",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      setUserPhotoForCake(file);
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setUserPhotoPreview(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+
+                      toast({
+                        title: "Photo uploaded!",
+                        description: "Click 'Add Photo to Cake' to place it",
+                      });
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="border-2 border-dashed border-party-mint/50 rounded-lg p-6 hover:border-party-mint transition-colors cursor-pointer bg-surface/50">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <Upload className="w-8 h-8 text-party-mint" />
+                      <p className="text-sm font-medium text-foreground">
+                        Upload a photo to place on cake
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Works best with portraits and square photos
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <img
+                      src={userPhotoPreview}
+                      alt="Photo to add"
+                      className="w-32 h-32 object-cover rounded-full border-4 border-party-mint/50 mx-auto"
+                    />
+                    <Button
+                      onClick={() => {
+                        setUserPhotoForCake(null);
+                        setUserPhotoPreview(null);
+                      }}
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <Button
+                    onClick={async () => {
+                      if (!userPhotoPreview || generatedImages.length === 0) return;
+                      
+                      toast({
+                        title: "Adding photo to cake...",
+                        description: "AI is finding the perfect spot!",
+                      });
+                      
+                      try {
+                        // Best for top-down view (index 2)
+                        const topDownIndex = 2;
+                        const cakeImage = originalImages[topDownIndex] || generatedImages[topDownIndex];
+                        
+                        const processedImage = await processCakeWithPhoto(
+                          cakeImage,
+                          userPhotoPreview,
+                          'top'
+                        );
+                        
+                        // Update the image at top-down index
+                        const newImages = [...generatedImages];
+                        newImages[topDownIndex] = processedImage;
+                        setGeneratedImages(newImages);
+                        
+                        toast({
+                          title: "Photo added successfully!",
+                          description: "Check the Top-Down View. Click 'Edit Photo' to adjust.",
+                        });
+                      } catch (error) {
+                        console.error("Error adding photo:", error);
+                        toast({
+                          title: "Failed to add photo",
+                          description: "Please try again or use a different image",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="w-full bg-party-coral hover:bg-party-coral/90"
+                    disabled={!userPhotoPreview}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Add Photo to Top-Down View Cake
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+
           {/* Action Buttons */}
           <Card className="p-6 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party">
             <div className="space-y-4">
@@ -1834,6 +1982,26 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             });
           }}
           onCancel={() => setEditingImageIndex(null)}
+        />
+      )}
+
+      {/* Photo Editor Modal */}
+      {editingPhotoOnCakeIndex !== null && userPhotoPreview && (
+        <PhotoEditor
+          cakeImageUrl={originalImages[editingPhotoOnCakeIndex] || generatedImages[editingPhotoOnCakeIndex]}
+          userPhotoUrl={userPhotoPreview}
+          initialPosition={photoPosition || FALLBACK_PHOTO_POSITIONS.top}
+          onSave={(processedImageUrl) => {
+            const newImages = [...generatedImages];
+            newImages[editingPhotoOnCakeIndex] = processedImageUrl;
+            setGeneratedImages(newImages);
+            setEditingPhotoOnCakeIndex(null);
+            toast({
+              title: "Photo updated!",
+              description: "Your photo placement has been updated.",
+            });
+          }}
+          onCancel={() => setEditingPhotoOnCakeIndex(null)}
         />
       )}
     </div>
