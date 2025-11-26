@@ -8,6 +8,7 @@ import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
+import { CursorSparkles } from "@/components/CursorSparkles";
 import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -124,6 +125,7 @@ const Index = () => {
       </Helmet>
       
       <FloatingEmojis />
+      <CursorSparkles />
       <AdminSaleReminder />
       <UrgencyBanner />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
