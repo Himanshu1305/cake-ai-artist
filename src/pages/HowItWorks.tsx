@@ -147,6 +147,57 @@ const HowItWorks = () => {
 
           <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
             <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-coral to-party-mint rounded-full flex items-center justify-center">
+                <span className="text-4xl">📸</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 3.6: Add Photos to Your Cake
+                  <span className="text-sm font-normal text-party-coral">(New!)</span>
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  <strong>Make it extra special!</strong> Upload a photo and let AI intelligently place it on your cake—perfect 
+                  for creating <strong>edible photo prints</strong>. Best results on the <strong>Top-Down View</strong>. 
+                  After AI places the photo, you can:
+                </p>
+                <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-coral font-bold">📍</span>
+                    <span><strong>Drag to reposition</strong> the photo on the cake surface</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-mint font-bold">📏</span>
+                    <span><strong>Resize</strong> the photo to fit perfectly (25-60% of cake width)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-purple font-bold">🔄</span>
+                    <span><strong>Rotate</strong> for the perfect angle (-15° to 15°)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-pink font-bold">⭕</span>
+                    <span><strong>Choose shape:</strong> Circular (edible print style) or rectangular</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold font-bold">🎨</span>
+                    <span><strong>Customize border:</strong> Pick color and thickness for elegant framing</span>
+                  </li>
+                </ul>
+                <div className="bg-party-coral/10 p-4 rounded-lg border border-party-coral/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Pro tip: Edible Photo Prints
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    This feature is designed for cake decorators who want to add edible photo prints. The AI finds blank 
+                    fondant areas and applies circular masking with customizable borders—just like a real edible print! 
+                    Works best with portrait photos or square images on top-down view cakes. 🎂✨
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-yellow to-party-purple rounded-full flex items-center justify-center">
                 <Share2 className="h-8 w-8 text-white" />
               </div>
