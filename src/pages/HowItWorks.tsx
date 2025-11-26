@@ -156,9 +156,9 @@ const HowItWorks = () => {
                   <span className="text-sm font-normal text-party-coral">(New!)</span>
                 </h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  <strong>Make it extra special!</strong> Upload a photo and let AI intelligently place it on your cake—perfect 
-                  for creating <strong>edible photo prints</strong>. Best results on the <strong>Top-Down View</strong>. 
-                  After AI places the photo, you can:
+                  <strong>Upload your photo during cake creation!</strong> Simply upload a photo in the form before clicking "Create My Cake," 
+                  and our AI will automatically place it on the <strong>Top-Down View</strong> after generation—perfect 
+                  for creating <strong>edible photo prints</strong>. Once the cake is generated with your photo, you can refine it:
                 </p>
                 <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
                   <li className="flex items-start gap-2">
@@ -184,12 +184,13 @@ const HowItWorks = () => {
                 </ul>
                 <div className="bg-party-coral/10 p-4 rounded-lg border border-party-coral/30">
                   <p className="text-sm text-foreground font-semibold mb-1">
-                    💡 Pro tip: Edible Photo Prints
+                    💡 Pro tip: Automatic Placement, Easy Refinement
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    This feature is designed for cake decorators who want to add edible photo prints. The AI finds blank 
-                    fondant areas and applies circular masking with customizable borders—just like a real edible print! 
-                    Works best with portrait photos or square images on top-down view cakes. 🎂✨
+                    Upload your photo during cake creation, and the AI automatically places it on the Top-Down View after generation. 
+                    The AI finds blank fondant areas and applies circular masking with borders—just like a real edible print! 
+                    If you want to adjust it, use the "Edit Photo Position" button to fine-tune placement, size, rotation, and styling. 
+                    Works best with portrait photos or square images! 🎂✨
                   </p>
                 </div>
               </div>
