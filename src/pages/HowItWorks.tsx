@@ -95,6 +95,56 @@ const HowItWorks = () => {
             </div>
           </Card>
 
+          <Card className="p-8 bg-gradient-to-r from-party-purple/20 to-party-pink/20 border-2 border-party-purple/30 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-pink to-party-purple rounded-full flex items-center justify-center animate-pulse">
+                <Type className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 3.5: Customize Your Text ✨
+                  <span className="text-sm font-normal text-party-pink">(New!)</span>
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  <strong>Don't like where the name appears? No problem!</strong> After your cakes are generated, 
+                  click the <strong>"Edit Text"</strong> button on any image to:
+                </p>
+                <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-pink font-bold">📍</span>
+                    <span><strong>Drag to reposition</strong> the name anywhere on the cake</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-purple font-bold">🔤</span>
+                    <span><strong>Change the font</strong> from 15+ beautiful styles (Script, Decorative, Classic)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold font-bold">🎨</span>
+                    <span><strong>Pick any color</strong> that matches the cake design perfectly</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-coral font-bold">🔄</span>
+                    <span><strong>Rotate the text</strong> for creative angles and dynamic layouts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-mint font-bold">📐</span>
+                    <span><strong>Adjust the size</strong> to make it pop or keep it subtle</span>
+                  </li>
+                </ul>
+                <div className="bg-party-purple/10 p-4 rounded-lg border border-party-purple/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Pro tip: Full Creative Control
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    The AI places text automatically based on the cake design, but you can always fine-tune it! 
+                    Click "Edit Text" on any generated image to drag, resize, rotate, change fonts, and pick colors 
+                    until it's absolutely perfect. Make it uniquely yours! 🎨
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-yellow to-party-purple rounded-full flex items-center justify-center">

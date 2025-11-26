@@ -213,6 +213,77 @@ All colors MUST be HSL.
     }
   }
 
+  /* Celebration Animations */
+  @keyframes float-up {
+    0% {
+      transform: translateY(100vh) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes rainbow-shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-10vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-float-up {
+    animation: float-up 10s ease-in-out infinite;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+
+  .animate-rainbow-shimmer {
+    background: linear-gradient(90deg, hsl(var(--party-pink)), hsl(var(--party-purple)), hsl(var(--gold)), hsl(var(--party-pink)));
+    background-size: 200% 100%;
+    animation: rainbow-shimmer 3s linear infinite;
+  }
+
+  .animate-confetti {
+    animation: confetti-fall 4s ease-in-out infinite;
+  }
+
+  .bounce-slow {
+    animation: bounce 3s ease-in-out infinite;
+  }
+
   /* Carousel dot indicators */
   .carousel-dot {
     @apply w-2 h-2 rounded-full bg-muted transition-all duration-300;
