@@ -1337,9 +1337,18 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  AI will generate a personalized message based on the details you've provided
-                </p>
+                <div className="flex items-center gap-3 p-3 bg-gradient-celebration/20 rounded-lg border border-party-purple/20">
+                  <span className="text-3xl animate-bounce">🎉</span>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground font-semibold flex items-center gap-2">
+                      ✨ AI Magic Activated!
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Our AI will craft a heartfelt, personalized message just for <span className="font-semibold text-party-pink">{name || "your special someone"}</span>! 
+                      Based on the occasion, relationship & more - it'll feel like YOU wrote it! 💝
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -1541,6 +1550,51 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <p className="text-xs text-muted-foreground text-center">
                 Click images to preview • Click checkmark to select for download/share
               </p>
+            </div>
+          </Card>
+
+          {/* Text Customization Prompt - NEW */}
+          <Card className="p-5 bg-gradient-to-r from-party-purple/20 to-party-pink/20 border-2 border-party-purple/30 animate-fade-in relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-party-pink/10 rounded-full -mr-16 -mt-16 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-party-purple/10 rounded-full -ml-12 -mb-12 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="relative flex items-start gap-4">
+              <div className="text-5xl animate-bounce">✏️</div>
+              <div className="flex-1 space-y-2">
+                <h4 className="font-bold text-foreground text-lg flex items-center gap-2 flex-wrap">
+                  Not loving the text placement? 
+                  <span className="text-party-pink animate-pulse">Customize it!</span> 
+                  <span className="inline-block animate-sparkle">✨</span>
+                </h4>
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  Click <strong className="text-party-pink">"Edit Text"</strong> on any cake to:
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-1.5 ml-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-pink font-bold">📍</span>
+                    <span><strong>Drag</strong> the name to any position</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-purple font-bold">📏</span>
+                    <span><strong>Resize</strong> with the slider</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold font-bold">🔤</span>
+                    <span><strong>Choose</strong> from 15+ beautiful fonts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-coral font-bold">🎨</span>
+                    <span><strong>Pick</strong> any color you want</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-mint font-bold">🔄</span>
+                    <span><strong>Rotate</strong> for creative angles</span>
+                  </li>
+                </ul>
+                <div className="pt-2 flex items-center gap-2 text-xs text-party-purple font-medium">
+                  <span className="animate-bounce">👆</span>
+                  <span>Make it uniquely yours with full creative control!</span>
+                </div>
+              </div>
             </div>
           </Card>
 

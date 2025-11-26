@@ -7,6 +7,7 @@ import { LivePurchaseNotifications } from "@/components/LivePurchaseNotification
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -114,7 +115,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-celebration">
+    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>Best AI Cake Designer - Best Virtual Cake Creator | Cake AI Artist</title>
         <meta name="description" content="The best AI cake designer and best virtual cake creator. Create stunning personalized cake designs in seconds. Best virtual cakes for birthdays, celebrations, and special occasions. No design skills needed!" />
@@ -122,6 +123,7 @@ const Index = () => {
         <link rel="canonical" href="https://cakeaiartist.com/" />
       </Helmet>
       
+      <FloatingEmojis />
       <AdminSaleReminder />
       <UrgencyBanner />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
@@ -173,10 +175,10 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block"
+              className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
             >
               <p className="text-white font-bold text-lg">
-                🎊 FOUNDING MEMBER SALE ENDS IN:
+                <span className="inline-block animate-bounce">🎊</span> FOUNDING MEMBER SALE ENDS IN:
               </p>
             </motion.div>
             
@@ -231,10 +233,11 @@ const Index = () => {
               
               <Button
                 size="lg"
-                className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow"
+                className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow animate-rainbow-shimmer relative overflow-hidden group"
                 onClick={() => navigate('/pricing')}
               >
-                Claim Your Founding Spot Now →
+                <span className="relative z-10">Claim Your Founding Spot Now →</span>
+                <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </Button>
               
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
@@ -296,9 +299,9 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + idx * 0.1 }}
-              className="text-center"
+              className="text-center group"
             >
-              <div className="text-5xl mb-4">{feature.icon}</div>
+              <div className="text-5xl mb-4 transition-transform duration-300 group-hover:scale-125 group-hover:animate-bounce">{feature.icon}</div>
               <h3 className="text-xl font-bold mb-2 text-foreground">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.desc}</p>
             </motion.div>
