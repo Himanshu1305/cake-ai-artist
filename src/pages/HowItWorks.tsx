@@ -153,12 +153,46 @@ const HowItWorks = () => {
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-3 text-foreground">Step 4: Share & Celebrate</h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  Now the fun part. Share your cake image on social media, print it for decorations, add it to digital invitations, 
-                  or use it however you want. The image is yours to keep forever.
+                  Now the fun part! When you download or share, you get a beautiful <strong>Cake Card</strong>—a professionally 
+                  designed card featuring your stunning cake image along with the AI-generated personalized message. 
+                  It's perfect for sharing on Instagram, WhatsApp, Facebook, or any social platform. Print it for decorations, 
+                  add it to digital invitations, or use it however you want. The card is yours to keep forever.
                 </p>
+
+                {/* Platform-specific callouts */}
+                <div className="space-y-3 mb-4">
+                  {/* Mobile callout */}
+                  <div className="bg-party-mint/10 p-4 rounded-lg border border-party-mint/30">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl flex-shrink-0">📱</span>
+                      <div>
+                        <p className="font-semibold text-foreground mb-1">On Mobile (Easy Direct Share)</p>
+                        <p className="text-sm text-muted-foreground">
+                          Tap the <strong>"Share"</strong> button and share directly to any app—no download needed! 
+                          Goes straight to WhatsApp, Instagram Stories, Messages, and more. The native share sheet opens automatically.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop callout */}
+                  <div className="bg-party-purple/10 p-4 rounded-lg border border-party-purple/30">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl flex-shrink-0">💻</span>
+                      <div>
+                        <p className="font-semibold text-foreground mb-1">On Desktop (Download First)</p>
+                        <p className="text-sm text-muted-foreground">
+                          Click <strong>"Download"</strong> to save the Cake Card to your computer, then upload it to your 
+                          preferred social media platform. Perfect for high-quality prints or adding to digital invitations.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-background/50 p-4 rounded-lg border border-border/50">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Pro tip:</strong> Free users can use images for personal purposes. If you're planning to use them commercially 
+                    <strong>Pro tip:</strong> Free users can use Cake Cards for personal purposes. If you're planning to use them commercially 
                     (for your business, client work, etc.), you'll need a premium subscription for the commercial license.
                   </p>
                 </div>
