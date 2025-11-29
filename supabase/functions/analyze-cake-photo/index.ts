@@ -1,3 +1,8 @@
+// ============================================
+// FALLBACK: Used by original N8N + overlay solution
+// This edge function is preserved for fallback purposes
+// ============================================
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {

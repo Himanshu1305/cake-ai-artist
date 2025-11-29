@@ -1,3 +1,8 @@
+// ============================================
+// FALLBACK: Used by original N8N + overlay solution
+// This utility is preserved for fallback purposes
+// ============================================
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface PhotoPosition {
