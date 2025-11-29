@@ -112,31 +112,49 @@ export default {
         },
         "flame-flicker": {
           "0%, 100%": {
-            transform: "scale(1) rotate(-1deg)",
+            transform: "scale(1) rotate(-1deg) scaleY(1)",
             opacity: "1",
           },
-          "25%": {
-            transform: "scale(1.05) rotate(1deg)",
+          "15%": {
+            transform: "scale(1.03) rotate(0.5deg) scaleY(1.05)",
+            opacity: "0.95",
+          },
+          "30%": {
+            transform: "scale(0.97) rotate(-0.5deg) scaleY(0.95)",
             opacity: "0.9",
           },
-          "50%": {
-            transform: "scale(0.95) rotate(-0.5deg)",
-            opacity: "1",
+          "45%": {
+            transform: "scale(1.01) rotate(1deg) scaleY(1.02)",
+            opacity: "0.98",
+          },
+          "60%": {
+            transform: "scale(0.99) rotate(-0.3deg) scaleY(0.98)",
+            opacity: "0.93",
           },
           "75%": {
-            transform: "scale(1.02) rotate(0.5deg)",
+            transform: "scale(1.02) rotate(0.8deg) scaleY(1.03)",
+            opacity: "0.97",
+          },
+          "90%": {
+            transform: "scale(0.98) rotate(-0.6deg) scaleY(0.97)",
             opacity: "0.95",
           },
         },
         "flame-dance": {
           "0%, 100%": {
-            transform: "translateY(0) scale(1)",
+            transform: "translateY(0) scale(1) rotate(0deg)",
           },
-          "33%": {
-            transform: "translateY(-2px) scale(1.02)",
+          "20%": {
+            transform: "translateY(-1px) scale(1.01) rotate(-1deg)",
           },
-          "66%": {
-            transform: "translateY(-1px) scale(0.98)",
+          "40%": {
+            transform: "translateY(-2px) scale(1.02) rotate(0.5deg)",
+          },
+          "60%": {
+            transform: "translateY(-1.5px) scale(0.99) rotate(-0.5deg)",
+          },
+          "80%": {
+            transform: "translateY(-0.5px) scale(1.01) rotate(0.3deg)",
           },
         },
         "candle-glow": {
@@ -165,8 +183,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "flame-flicker": "flame-flicker 1.5s ease-in-out infinite",
-        "flame-dance": "flame-dance 2s ease-in-out infinite",
+        "flame-flicker": "flame-flicker 3.5s ease-in-out infinite",
+        "flame-dance": "flame-dance 4s ease-in-out infinite",
         "candle-glow": "candle-glow 2s ease-in-out infinite",
         sparkle: "sparkle 2s ease-in-out infinite",
       },
