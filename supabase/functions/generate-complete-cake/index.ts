@@ -49,8 +49,8 @@ serve(async (req) => {
       { 
         name: 'top', 
         description: 'Professional food photography of a luxurious cake from DIRECTLY ABOVE (bird\'s eye view), showing the entire circular top surface',
-        namePosition: 'elegantly arched along the outer edge of the top fondant surface',
-        photoPosition: 'in the exact center of the top surface, as a large circular edible print covering most of the fondant'
+        namePosition: 'written clearly and prominently in the CENTER of the top fondant surface, spelled out in large, easily readable fondant letters',
+        photoPosition: 'in a decorative circular frame around the centered name text, or positioned elegantly near the edge'
       },
       { 
         name: 'diagonal', 
@@ -69,7 +69,9 @@ serve(async (req) => {
       // Build prompt with name as fondant lettering
       let prompt = `${view.description}.
 
-The cake MUST prominently display beautiful fondant lettering spelling "${name}" ${view.namePosition}, piped in an elegant script font that looks naturally integrated into the smooth fondant as if professionally decorated by a master cake artist. The name should be clearly readable, large, and in a complementary color (deep blue #2563EB, pink #D4687A, or gold) that contrasts beautifully with the fondant.`;
+The cake MUST prominently display beautiful fondant lettering spelling "${name}" ${view.namePosition}, piped in an elegant script font that looks naturally integrated into the smooth fondant as if professionally decorated by a master cake artist. The name should be clearly readable, large, and in a complementary color (deep blue #2563EB, pink #D4687A, or gold) that contrasts beautifully with the fondant.
+
+CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter: ${name.split('').join('-')}. Ensure every letter is clearly visible and readable.`;
 
       // Add photo if provided
       if (userPhotoBase64) {
@@ -149,23 +151,92 @@ The cake MUST prominently display beautiful fondant lettering spelling "${name}"
       }
     }
 
+    // Helper function to get inverse relationship (who is writing to whom)
+    const getInverseRelation = (rel: string): string => {
+      const inverses: Record<string, string> = {
+        'daughter': 'parent', 'son': 'parent',
+        'mother': 'child', 'father': 'child',
+        'sister': 'sibling', 'brother': 'sibling',
+        'wife': 'husband', 'husband': 'wife',
+        'friend': 'friend', 'colleague': 'colleague',
+        'partner': 'partner', 'in-laws': 'family member',
+        'other': 'loved one'
+      };
+      return inverses[rel] || 'loved one';
+    };
+
+    // Helper function to provide relationship-specific emotional guidance
+    const getRelationshipGuidance = (rel: string, gen: string): string => {
+      if (rel === 'daughter') {
+        return `GUIDANCE: Write as a loving parent to their daughter. Express pride, unconditional love, and hopes for her future. Use warm, affectionate language like "my beautiful daughter", "my princess" (if age-appropriate), or "watching you grow". Focus on parental pride and love.`;
+      }
+      if (rel === 'son') {
+        return `GUIDANCE: Write as a proud parent to their son. Express how proud you are of him, your belief in him, and your unwavering support. Use terms like "my son", "my boy", "watching you become the man you are". Focus on parental pride and encouragement.`;
+      }
+      if (rel === 'mother') {
+        return `GUIDANCE: Write as a ${gen === 'male' ? 'son' : gen === 'female' ? 'daughter' : 'child'} to their mother. Express gratitude, love, and appreciation for everything she does. Use terms like "Mom", "the best mom", "everything you do for me/us". Focus on appreciation and love.`;
+      }
+      if (rel === 'father') {
+        return `GUIDANCE: Write as a ${gen === 'male' ? 'son' : gen === 'female' ? 'daughter' : 'child'} to their father. Express gratitude, admiration, and appreciation. Use terms like "Dad", "my hero", "everything you've taught me". Focus on respect and appreciation.`;
+      }
+      if (rel === 'sister') {
+        return `GUIDANCE: Write as a sibling to their sister. Express the special bond between siblings, shared memories, and sisterly love. Use affectionate terms like "${gen === 'female' ? 'sis' : 'my sister'}", "best friend", "partner in crime". Keep it warm and playful.`;
+      }
+      if (rel === 'brother') {
+        return `GUIDANCE: Write as a sibling to their brother. Express the brotherly bond, camaraderie, and love. Use terms like "${gen === 'male' ? 'bro' : 'my brother'}", "best buddy", "my protector". Keep it affectionate yet casual.`;
+      }
+      if (rel === 'wife') {
+        return `GUIDANCE: Write as a husband to his wife. Express deep romantic love, partnership, and gratitude. Use terms like "my love", "my beautiful wife", "my partner in life". Focus on romance and commitment.`;
+      }
+      if (rel === 'husband') {
+        return `GUIDANCE: Write as a wife to her husband. Express deep romantic love, partnership, and appreciation. Use terms like "my love", "my amazing husband", "my rock". Focus on romance and partnership.`;
+      }
+      if (rel === 'friend') {
+        return `GUIDANCE: Write as a friend. Express appreciation for their friendship, shared memories, and support. Use casual yet heartfelt language. Focus on friendship bonds and good times together.`;
+      }
+      return `GUIDANCE: Write with warmth and genuine affection appropriate for a ${rel} relationship.`;
+    };
+
+    // Helper function to provide example messages for context
+    const getExampleMessages = (rel: string, occ: string, gen: string): string => {
+      if (rel === 'daughter' && occ === 'birthday') {
+        return `- "My dearest ${name}, watching you blossom into such an incredible young woman fills my heart with so much pride! Happy Birthday, my beautiful daughter – may this year bring you endless joy and all the dreams your heart desires!"
+- "To my princess ${name}, another year of watching you grow and shine! Happy Birthday, sweetheart – you are and always will be my greatest blessing."`;
+      }
+      if (rel === 'son' && occ === 'birthday') {
+        return `- "Happy Birthday, ${name}! Watching you grow into such an amazing ${gen === 'male' ? 'young man' : 'person'} has been my greatest joy. I'm so proud of everything you've become, my son. Here's to another incredible year!"
+- "To my wonderful son ${name}, Happy Birthday! You make me proud every single day. May this year bring you success, happiness, and all the adventures you dream of!"`;
+      }
+      if (rel === 'mother' && occ === 'birthday') {
+        return `- "Happy Birthday, Mom! Everything I am is because of you. Thank you for your endless love, wisdom, and support. You're not just the best mom – you're my hero. Love you more than words can say!"
+- "To the most amazing mother, ${name}, Happy Birthday! Your love has shaped my life in countless beautiful ways. Thank you for everything you do. Here's to celebrating YOU today!"`;
+      }
+      return '';
+    };
+
     // Generate personalized greeting message
     console.log('Generating greeting message...');
-    const messagePrompt = `Create a warm, personalized birthday or celebration message for ${name}.
+    const inverseRel = getInverseRelation(relation);
+    const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
 
-Context:
-- Occasion: ${occasion || 'birthday'}
-- Relationship: ${relation || 'friend'}
+RECIPIENT DETAILS:
+- Name: ${name}
+- Relationship to sender: ${relation} (meaning the sender is the ${inverseRel})
 - Gender: ${gender || 'other'}
-${character ? `- Theme: ${character}` : ''}
+- Occasion: ${occasion || 'birthday'}
 
-Write a heartfelt 2-3 sentence message that:
-1. Addresses ${name} directly
-2. References the ${occasion || 'occasion'} appropriately
-3. Is warm, genuine, and celebratory
-4. Matches the relationship (${relation || 'friend'})
+YOUR TASK:
+Write a 2-3 sentence message that:
+1. Speaks AS the ${inverseRel} writing TO their ${relation}
+2. Uses ${gender === 'female' ? 'feminine' : gender === 'male' ? 'masculine' : 'neutral'} language appropriate for ${name}
+3. Captures the emotional depth and warmth of the ${relation} relationship from the ${inverseRel}'s perspective
+4. Feels deeply personal, genuine, and emotionally resonant – NOT generic or AI-like
 
-Return ONLY the message text, no quotes, no extra formatting.`;
+${getRelationshipGuidance(relation, gender)}
+
+${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the emotional tone and perspective:\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}
+
+Return ONLY the message text. Make it feel like it came from the heart, not from AI. Do NOT mention the character theme unless it creates a meaningful, natural message.`;
 
     const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
