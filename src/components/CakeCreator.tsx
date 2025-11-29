@@ -1568,7 +1568,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <img
                         src={imageUrl || '/placeholder.svg'}
                         alt={`Cake angle ${index + 1}`}
-                        className="w-full h-full object-cover aspect-square"
+                        className="w-full object-contain max-h-[400px]"
                         onError={(e) => {
                           console.error('Failed to load image:', imageUrl);
                           e.currentTarget.src = '/placeholder.svg';
