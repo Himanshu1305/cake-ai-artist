@@ -60,6 +60,8 @@ const Index = () => {
 
       if (error) throw error;
       
+      console.log("Featured cakes loaded:", data?.length || 0, "cakes", data);
+      
       if (data && data.length > 0) {
         setFeaturedCakes(data);
       }
@@ -259,7 +261,7 @@ const Index = () => {
             <img
               src={celebrationCake}
               alt="Beautiful celebration cake"
-              className="relative w-full h-64 object-cover rounded-2xl shadow-party transition-transform duration-500 hover:scale-105"
+              className="relative w-full h-80 md:h-96 object-contain rounded-2xl shadow-party transition-transform duration-500 hover:scale-105"
             />
           </div>
           <div className="space-y-6">
@@ -458,6 +460,28 @@ const Index = () => {
                       <img
                         src={heroCake}
                         alt="Example cake design"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
+                      <img
+                        src={celebrationCake}
+                        alt="Beautiful celebration cake"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
+                      <img
+                        src={partyHero}
+                        alt="Vibrant party celebration"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
                     </div>
