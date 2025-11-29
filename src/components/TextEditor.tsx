@@ -1,3 +1,8 @@
+// ============================================
+// FALLBACK: Used by original N8N + overlay solution
+// This component is preserved for fallback purposes
+// ============================================
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";

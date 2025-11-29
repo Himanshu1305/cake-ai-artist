@@ -1,3 +1,8 @@
+// ============================================
+// FALLBACK: Used by original N8N + overlay solution
+// This utility is preserved for fallback purposes
+// ============================================
+
 interface TextPosition {
   x: number;  // 0 to 1 (percentage of canvas width)
   y: number;  // 0 to 1 (percentage of canvas height)
