@@ -16,7 +16,7 @@ export interface PhotoPosition {
 export const FALLBACK_PHOTO_POSITIONS: Record<string, PhotoPosition> = {
   'front': { x: 0.5, y: 0.4, size: 0.35, shape: 'circle', rotation: 0, borderColor: '#ffffff', borderWidth: 4 },
   'side': { x: 0.5, y: 0.45, size: 0.3, shape: 'circle', rotation: 0, borderColor: '#ffffff', borderWidth: 4 },
-  'top': { x: 0.5, y: 0.5, size: 0.45, shape: 'circle', rotation: 0, borderColor: '#ffffff', borderWidth: 4 },
+  'top': { x: 0.5, y: 0.5, size: 0.65, shape: 'circle', rotation: 0, borderColor: '#ffffff', borderWidth: 4 },
   'diagonal': { x: 0.5, y: 0.45, size: 0.35, shape: 'circle', rotation: -5, borderColor: '#ffffff', borderWidth: 4 },
 };
 
@@ -30,7 +30,7 @@ export async function analyzeImageForPhoto(
 ): Promise<PhotoPosition> {
   try {
     const { data, error } = await supabase.functions.invoke('analyze-cake-photo', {
-      body: { cakeImageUrl, userPhotoUrl }
+      body: { cakeImageUrl, userPhotoUrl, viewType }
     });
 
     if (error) {

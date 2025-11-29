@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cakeImageUrl, userPhotoUrl } = await req.json();
+    const { cakeImageUrl, userPhotoUrl, viewType } = await req.json();
     
     if (!cakeImageUrl || !userPhotoUrl) {
       throw new Error('Both cakeImageUrl and userPhotoUrl are required');
@@ -22,27 +22,45 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Analyzing cake for photo placement...');
+    console.log('Analyzing cake for photo placement, view type:', viewType);
+
+    // View-specific instructions for better AI placement
+    const viewSpecificInstructions = viewType === 'top' 
+      ? `**TOP-DOWN VIEW DETECTED**:
+- The cake is shown from DIRECTLY ABOVE
+- The ENTIRE CIRCULAR TOP SURFACE is your target area
+- Photo MUST be CENTERED at x: 0.5, y: 0.5 (exact center)
+- Photo MUST COVER THE ENTIRE TOP FONDANT (size: 0.60-0.75)
+- This is an edible photo print that will cover the whole cake top
+- DO NOT place photo near edges - it should fill the center area completely`
+      : `**FRONT/SIDE/DIAGONAL VIEW DETECTED**:
+- Look for the largest blank fondant surface area
+- Position photo prominently (size: 0.35-0.50)
+- Center horizontally (x: 0.5) and position on visible tier`;
 
     const prompt = `You are an expert cake decorator analyzing a cake image to determine the optimal placement for a user's photo on the cake surface.
 
+${viewSpecificInstructions}
+
 CRITICAL RULES:
-1. PRIORITIZE BLANK FONDANT AREAS - Look for large, smooth, light-colored (white/cream/light pink) fondant surfaces
-2. AVOID DECORATIONS - Never place photo over characters, patterns, flowers, piped decorations, or busy areas
-3. CENTER PLACEMENT - For top-down views, favor center placement; for front views, favor upper-center areas
-4. SIZE APPROPRIATELY - Photo should be prominent but not overwhelm the cake (typically 30-50% of visible surface)
-5. CIRCULAR SHAPE PREFERRED - Most edible photo prints are circular for aesthetic appeal
-6. ENSURE CONTRAST - Choose position where photo won't blend with background decorations
+1. **PRIORITIZE BLANK FONDANT AREAS** - Look for large, smooth, light-colored (white/cream/light pink) fondant surfaces
+2. **AVOID DECORATIONS** - Never place photo over characters, patterns, flowers, piped decorations, or busy areas
+3. **SIZE APPROPRIATELY** - Photo should be prominent:
+   - TOP-DOWN VIEW: 0.60-0.75 to COVER ENTIRE TOP
+   - OTHER VIEWS: 0.35-0.50 for balanced appearance
+4. **CENTER POSITIONING** - For top-down views, ALWAYS use x: 0.5, y: 0.5 (exact center)
+5. **CIRCULAR SHAPE PREFERRED** - Most edible photo prints are circular for aesthetic appeal
+6. **ENSURE CONTRAST** - Choose position where photo won't blend with background decorations
 
 ANALYZE THE CAKE IMAGE AND RETURN ONLY A JSON OBJECT with these exact keys:
 {
-  "x": <number between 0 and 1 representing horizontal position, 0.5 is center>,
-  "y": <number between 0 and 1 representing vertical position, 0.5 is center>,
-  "size": <number between 0.25 and 0.6 representing photo size as percentage of cake width>,
+  "x": <number 0-1, horizontal position - 0.5 is CENTER (use 0.5 for top-down views!)>,
+  "y": <number 0-1, vertical position - 0.5 is CENTER (use 0.5 for top-down views!)>,
+  "size": <number 0.30-0.80 - USE 0.60-0.75 for top-down, 0.35-0.50 for other views>,
   "shape": <"circle" or "rectangle", prefer circle for edible prints>,
-  "rotation": <number between -15 and 15 for slight rotation in degrees, usually 0>,
-  "borderColor": <hex color for decorative border around photo, usually "#ffffff" or a complementary color>,
-  "borderWidth": <number between 2 and 8 for border thickness in pixels>
+  "rotation": <number -15 to 15 degrees, usually 0>,
+  "borderColor": <hex color for decorative border, usually "#ffffff">,
+  "borderWidth": <number 2-8 for border thickness in pixels>
 }
 
 IMPORTANT: Return ONLY the JSON object, no other text or explanation.`;
@@ -94,10 +112,10 @@ IMPORTANT: Return ONLY the JSON object, no other text or explanation.`;
         photoParams = JSON.parse(aiResponse);
       }
 
-      // Validate and constrain values
+      // Validate and constrain values with larger size range
       photoParams.x = Math.max(0.2, Math.min(0.8, photoParams.x || 0.5));
       photoParams.y = Math.max(0.2, Math.min(0.8, photoParams.y || 0.5));
-      photoParams.size = Math.max(0.25, Math.min(0.6, photoParams.size || 0.4));
+      photoParams.size = Math.max(0.30, Math.min(0.80, photoParams.size || 0.5));
       photoParams.shape = ['circle', 'rectangle'].includes(photoParams.shape) ? photoParams.shape : 'circle';
       photoParams.rotation = Math.max(-15, Math.min(15, photoParams.rotation || 0));
       photoParams.borderColor = photoParams.borderColor || '#ffffff';
@@ -110,7 +128,7 @@ IMPORTANT: Return ONLY the JSON object, no other text or explanation.`;
       photoParams = {
         x: 0.5,
         y: 0.5,
-        size: 0.4,
+        size: viewType === 'top' ? 0.65 : 0.4,
         shape: 'circle',
         rotation: 0,
         borderColor: '#ffffff',
@@ -127,10 +145,11 @@ IMPORTANT: Return ONLY the JSON object, no other text or explanation.`;
     console.error('Error in analyze-cake-photo:', error);
     
     // Return default safe parameters on error
+    const { viewType } = await req.json().catch(() => ({ viewType: 'top' }));
     const defaultParams = {
       x: 0.5,
       y: 0.5,
-      size: 0.4,
+      size: viewType === 'top' ? 0.65 : 0.4,
       shape: 'circle',
       rotation: 0,
       borderColor: '#ffffff',

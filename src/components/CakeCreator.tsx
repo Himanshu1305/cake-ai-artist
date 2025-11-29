@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileSelect } from "@/components/ui/mobile-select";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -67,6 +67,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [userPhotoPreview, setUserPhotoPreview] = useState<string | null>(null);
   const [editingPhotoOnCakeIndex, setEditingPhotoOnCakeIndex] = useState<number | null>(null);
   const [photoPosition, setPhotoPosition] = useState<PhotoPosition | null>(null);
+  const [isSavingToGallery, setIsSavingToGallery] = useState(false);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
@@ -1691,88 +1692,118 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
           </Card>
 
-          {/* Text Customization Prompt - NEW */}
-          <Card className="p-5 bg-gradient-to-r from-party-purple/20 to-party-pink/20 border-2 border-party-purple/30 animate-fade-in relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-party-pink/10 rounded-full -mr-16 -mt-16 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-party-purple/10 rounded-full -ml-12 -mb-12 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="relative flex items-start gap-4">
-              <div className="text-5xl animate-bounce">✏️</div>
-              <div className="flex-1 space-y-2">
-                <h4 className="font-bold text-foreground text-lg flex items-center gap-2 flex-wrap">
-                  Not loving the text placement? 
-                  <span className="text-party-pink animate-pulse">Customize it!</span> 
-                  <span className="inline-block animate-sparkle">✨</span>
-                </h4>
-                <p className="text-sm text-foreground/90 leading-relaxed">
-                  Click <strong className="text-party-pink">"Edit Text"</strong> on any cake to:
+          {/* Combined Customization Card - Text & Photo Editing */}
+          <Card className="p-6 bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-coral/10 border-2 border-party-purple/30 shadow-party">
+            <div className="space-y-4">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
+                  ✨ Customize Your Cake
+                  <span className="inline-block animate-sparkle">🎨</span>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Fine-tune text placement and photo position to make your cake perfect!
                 </p>
-                <ul className="text-sm text-muted-foreground space-y-1.5 ml-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-party-pink font-bold">📍</span>
-                    <span><strong>Drag</strong> the name to any position</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-party-purple font-bold">📏</span>
-                    <span><strong>Resize</strong> with the slider</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gold font-bold">🔤</span>
-                    <span><strong>Choose</strong> from 15+ beautiful fonts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-party-coral font-bold">🎨</span>
-                    <span><strong>Pick</strong> any color you want</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-party-mint font-bold">🔄</span>
-                    <span><strong>Rotate</strong> for creative angles</span>
-                  </li>
-                </ul>
-                <div className="pt-2 flex items-center gap-2 text-xs text-party-purple font-medium">
-                  <span className="animate-bounce">👆</span>
-                  <span>Make it uniquely yours with full creative control!</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Edit Text Section */}
+                <div className="bg-gradient-to-br from-party-purple/10 to-party-pink/10 p-4 rounded-lg border-2 border-party-purple/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-gradient-to-br from-party-purple to-party-pink rounded-full flex items-center justify-center flex-shrink-0">
+                      <Type className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-foreground">Edit Text Placement</h4>
+                      <p className="text-xs text-muted-foreground">Customize name on any view</p>
+                    </div>
+                  </div>
+                  
+                  <ul className="text-xs text-muted-foreground space-y-1.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-party-pink">📍</span>
+                      <span><strong>Drag</strong> the name anywhere</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-party-purple">📏</span>
+                      <span><strong>Resize</strong> with slider</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gold">🔤</span>
+                      <span><strong>Choose</strong> from 15+ fonts</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-party-coral">🎨</span>
+                      <span><strong>Pick</strong> any color</span>
+                    </li>
+                  </ul>
+
+                  <p className="text-xs text-center text-muted-foreground pt-2">
+                    👆 Click "Edit Text" button on any cake view above
+                  </p>
                 </div>
+
+                {/* Edit Photo Section (conditionally shown) */}
+                {userPhotoPreview && (
+                  <div className="bg-gradient-to-br from-party-coral/10 to-party-mint/10 p-4 rounded-lg border-2 border-party-coral/20 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 bg-gradient-to-br from-party-coral to-party-mint rounded-full flex items-center justify-center flex-shrink-0">
+                        <ImageIcon className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground">Edit Photo Position</h4>
+                        <p className="text-xs text-muted-foreground">Adjust photo on Top-Down View</p>
+                      </div>
+                    </div>
+
+                    <ul className="text-xs text-muted-foreground space-y-1.5">
+                      <li className="flex items-start gap-2">
+                        <span className="text-party-coral">🎯</span>
+                        <span><strong>Position</strong> anywhere on cake</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-party-mint">📐</span>
+                        <span><strong>Resize</strong> to perfect size</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-gold">🔄</span>
+                        <span><strong>Rotate</strong> for best angle</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-party-purple">⭕</span>
+                        <span><strong>Shape</strong> circle or rectangle</span>
+                      </li>
+                    </ul>
+
+                    <Button
+                      onClick={() => {
+                        setEditingPhotoOnCakeIndex(2); // Top-down view
+                        setPhotoPosition(FALLBACK_PHOTO_POSITIONS.top);
+                        haptic.light();
+                      }}
+                      className="w-full bg-gradient-to-r from-party-coral to-party-mint hover:from-party-coral/90 hover:to-party-mint/90"
+                      size="sm"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Edit Photo on Top-Down View
+                    </Button>
+                  </div>
+                )}
+
+                {/* Placeholder when no photo uploaded */}
+                {!userPhotoPreview && (
+                  <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center text-center space-y-2">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">
+                      <strong>No photo uploaded</strong>
+                    </p>
+                    <p className="text-xs text-muted-foreground/80">
+                      Upload a photo in the form above to add it to your cake!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
-
-          {/* Edit Photo Position Card (Only shown if photo was uploaded and processed) */}
-          {generatedImages.length > 0 && userPhotoPreview && (
-            <Card className="p-6 bg-gradient-to-r from-party-coral/10 to-party-mint/10 border-2 border-party-coral/30">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-party-coral to-party-mint rounded-full flex items-center justify-center">
-                    <Type className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold">Edit Photo Position</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Adjust how your photo appears on the Top-Down View cake
-                    </p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => {
-                    setEditingPhotoOnCakeIndex(2); // Top-down view
-                    setPhotoPosition(FALLBACK_PHOTO_POSITIONS.top);
-                    haptic.light();
-                  }}
-                  className="w-full bg-gradient-to-r from-party-coral to-party-mint hover:from-party-coral/90 hover:to-party-mint/90"
-                >
-                  <Type className="h-4 w-4 mr-2" />
-                  Edit Photo on Top-Down View
-                </Button>
-
-                <div className="bg-party-coral/10 p-3 rounded-lg border border-party-coral/30">
-                  <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">💡 Pro tip:</strong> Click to adjust position, size, rotation, shape (circle/rectangle), 
-                    and border styling to make your photo look perfect on the cake!
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
 
           {/* Action Buttons */}
           <Card className="p-6 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party">
@@ -1797,6 +1828,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <div className="space-y-2">
                     <Button
                       onClick={async () => {
+                        if (isSavingToGallery) return; // Prevent double-clicks
+                        
                         if (selectedImages.size === 0) {
                           toast({
                             title: "No images selected",
@@ -1806,8 +1839,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           return;
                         }
                         
+                        setIsSavingToGallery(true);
+                        haptic.medium();
+                        
+                        toast({
+                          title: "💾 Saving to Gallery...",
+                          description: "Please wait while we save your cakes",
+                        });
+                        
                         const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
                         await saveGeneratedImage(selectedUrls);
+                        
+                        setIsSavingToGallery(false);
+                        haptic.success();
                         
                         toast({
                           title: "🎉 Woohoo! Saved to Your Gallery!",
@@ -1815,11 +1859,20 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           className: "bg-gradient-to-r from-party-purple via-party-pink to-party-orange border-2 border-party-gold text-white shadow-2xl",
                         });
                       }}
-                      disabled={selectedImages.size === 0}
+                      disabled={selectedImages.size === 0 || isSavingToGallery}
                       className="w-full py-6 bg-party-purple hover:bg-party-purple/90 transition-all duration-300 text-white font-semibold"
                     >
-                      <Save className="w-5 h-5 mr-2" />
-                      Save to Gallery {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
+                      {isSavingToGallery ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-5 h-5 mr-2" />
+                          Save to Gallery {selectedImages.size > 0 ? `(${selectedImages.size})` : ""}
+                        </>
+                      )}
                     </Button>
                     <p className="text-xs text-center text-muted-foreground">
                       💡 Saved images can be starred ⭐ in your gallery to feature on our homepage!

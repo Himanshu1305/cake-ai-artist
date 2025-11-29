@@ -33,38 +33,49 @@ serve(async (req) => {
     // Prepare the vision analysis prompt with detailed instructions
     const prompt = `You are an expert cake decorator analyzing a cake image to determine the optimal placement for a name decoration.
 
-CRITICAL RULES - READ CAREFULLY:
-1. **FIND BLANK FONDANT FIRST**: Look for the LARGEST area of plain, smooth, WHITE/CREAM/LIGHT-COLORED fondant with NO decorations, NO characters, NO patterns. This is your PRIMARY target!
-2. **AVOID BUSY AREAS**: NEVER place text on decorations, characters, flowers, patterns, or textured areas
-3. **USE LARGE FONT SIZES**: On blank fondant, use fontSize 42-50px for maximum readability
-4. **PREFER BLUE COLOR**: Default to blue (#2563EB) for high contrast against light fondant, unless the cake has blue tones (then use pink #D4687A)
-5. **FOR TOP-DOWN VIEWS**: Text must be ON the cake surface (y: 0.35-0.50), NOT on labels or stands below
+CRITICAL RULES - READ CAREFULLY AND FOLLOW EXACTLY:
 
-Analyze this cake and determine:
-1. Where is the LARGEST area of plain, blank, white/cream fondant?
-2. Are there any decorations, characters, or patterns to avoid?
-3. What color provides the best contrast against the fondant?
-4. What's the view type (front, side, top-down, diagonal)?
+**STEP 1: FIND WHITE/CREAM FONDANT**
+- SCAN the entire image SYSTEMATICALLY from TOP to BOTTOM, LEFT to RIGHT
+- IDENTIFY the LARGEST continuous area of WHITE, CREAM, or LIGHT-COLORED fondant
+- This fondant area MUST be PLAIN, SMOOTH, with NO decorations, NO characters, NO patterns, NO textures
+- If NO clear white/cream fondant exists, use the LIGHTEST tier at y: 0.70
+
+**STEP 2: ANALYZE BACKGROUND COLOR**
+- Look at the TARGET AREA you identified in Step 1
+- Determine the EXACT color of that fondant area
+- This will determine your text color choice
+
+**STEP 3: CHOOSE TEXT COLOR FOR MAXIMUM CONTRAST**
+Based on the TARGET AREA background color:
+- **WHITE/CREAM/LIGHT FONDANT** → Use BLUE (#2563EB) or DEEP PURPLE (#4C1D95)
+- **BLUE/TEAL FONDANT** → Use PINK (#D4687A) or CORAL (#F97316)
+- **DARK COLORED CAKE** → Use WHITE (#FFFFFF)
+- DEFAULT if unsure → BLUE (#2563EB)
+
+**STEP 4: MAXIMIZE FONT SIZE**
+- Use LARGE fonts for readability: 45-55px for front/diagonal, 42-50px for side/top
+- The blank fondant allows for BIGGER text = better visibility
+
+**NEGATIVE EXAMPLES (NEVER DO THIS):**
+❌ Placing text on colorful Mickey Mouse decorations
+❌ Placing text on patterned areas or busy backgrounds
+❌ Using small fonts (under 40px) when space allows larger
+❌ Placing text at edges or borders of the cake
 
 The name to be written is: "${recipientName}"
 
-PLACEMENT STRATEGY BY VIEW:
-- FRONT VIEW: Find blank fondant on middle/bottom tier (y: 0.60-0.75), fontSize 42-48px
-- SIDE VIEW: Look for undecorated tier side (y: 0.55-0.70), fontSize 40-48px
-- TOP-DOWN VIEW: Center on blank top surface (y: 0.40-0.55), AVOID borders/edges, fontSize 42-50px
-- DIAGONAL VIEW: Target visible blank fondant tier (y: 0.65-0.75), fontSize 42-50px
-
-COLOR PRIORITY:
-1. **BLUE (#2563EB)** - DEFAULT for white/cream/light fondant (best visibility)
-2. Pink (#D4687A, #E8B4C8) - If cake has blue tones or decorations
-3. Dark chocolate (#5D3A1A, #8B4513) - Only if fondant is very light and blue doesn't fit theme
-4. White (#F5F5DC) - Only if cake is dark colored
+**PLACEMENT STRATEGY BY VIEW:**
+- **FRONT VIEW**: Find blank fondant on middle/bottom tier (y: 0.60-0.75), fontSize 45-55px
+- **SIDE VIEW**: Look for undecorated tier side (y: 0.55-0.70), fontSize 42-50px, if no white fondant use y: 0.70
+- **TOP-DOWN VIEW**: Center on blank top surface (y: 0.40-0.55), fontSize 42-50px
+- **DIAGONAL VIEW**: Target visible blank fondant tier (y: 0.65-0.75), fontSize 45-55px
 
 Return ONLY valid JSON (no markdown, no explanation):
 {
   "x": 0.5,
   "y": 0.65,
-  "fontSize": 45,
+  "fontSize": 48,
   "color": "#2563EB",
   "rotation": 0,
   "fontStyle": "elegant"
@@ -73,8 +84,8 @@ Return ONLY valid JSON (no markdown, no explanation):
 Where:
 - x: horizontal position (0-1, 0.5 is center on blank fondant)
 - y: vertical position (0-1) - CENTER of the blank fondant area
-- fontSize: 40-50 pixels (maximize size on blank areas!)
-- color: hex color - prioritize BLUE (#2563EB) for visibility
+- fontSize: 42-55 pixels (LARGER is better for readability!)
+- color: hex color - MUST contrast with background (analyze fondant color first!)
 - rotation: -10 to 10 degrees for natural look (keep minimal)
 - fontStyle: "elegant" (formal/wedding), "playful" (children's), "classic" (traditional)`;
 
@@ -143,10 +154,10 @@ Where:
         textParams = JSON.parse(aiResponse);
       }
 
-      // Validate and constrain the parameters
+      // Validate and constrain the parameters with larger font sizes
       textParams.x = Math.max(0.1, Math.min(0.9, textParams.x || 0.5));
       textParams.y = Math.max(0.1, Math.min(0.9, textParams.y || 0.65));
-      textParams.fontSize = Math.max(20, Math.min(50, textParams.fontSize || 32));
+      textParams.fontSize = Math.max(20, Math.min(55, textParams.fontSize || 45));
       textParams.rotation = Math.max(-15, Math.min(15, textParams.rotation || 0));
       
       // Ensure color is a valid hex
@@ -167,7 +178,7 @@ Where:
       textParams = {
         x: 0.5,
         y: 0.65,
-        fontSize: 42,
+        fontSize: 48,
         color: '#2563EB',
         rotation: 0,
         fontStyle: 'elegant'
@@ -187,7 +198,7 @@ Where:
         // Return safe defaults on error
         x: 0.5,
         y: 0.65,
-        fontSize: 42,
+        fontSize: 48,
         color: '#2563EB',
         rotation: 0,
         fontStyle: 'elegant'
