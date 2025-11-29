@@ -15,6 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import featuredCake1 from "@/assets/featured-cake-1.jpg";
+import featuredCake2 from "@/assets/featured-cake-2.jpg";
+import featuredCake3 from "@/assets/featured-cake-3.jpg";
+import featuredCake4 from "@/assets/featured-cake-4.jpg";
+import featuredCake5 from "@/assets/featured-cake-5.jpg";
 
 interface GeneratedImage {
   id: string;
@@ -33,6 +38,20 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+
+  // Map local filenames to imported assets
+  const localImageMap: Record<string, string> = {
+    'featured-cake-1.jpg': featuredCake1,
+    'featured-cake-2.jpg': featuredCake2,
+    'featured-cake-3.jpg': featuredCake3,
+    'featured-cake-4.jpg': featuredCake4,
+    'featured-cake-5.jpg': featuredCake5,
+  };
+
+  // Resolve image URLs (local assets or Supabase storage URLs)
+  const resolveImageUrl = (url: string): string => {
+    return localImageMap[url] || url;
+  };
 
   useEffect(() => {
     checkUser();
@@ -276,7 +295,7 @@ const Gallery = () => {
                       onClick={() => handleImageClick(image)}
                     >
                       <img
-                        src={image.image_url}
+                        src={resolveImageUrl(image.image_url)}
                         alt={image.prompt}
                         className="w-full h-full object-cover"
                       />
@@ -320,7 +339,7 @@ const Gallery = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDownload(image.image_url, image.prompt)}
+                          onClick={() => handleDownload(resolveImageUrl(image.image_url), image.prompt)}
                           className="border-party-purple/30 hover:border-party-purple"
                         >
                           <Download className="w-4 h-4" />
@@ -420,7 +439,7 @@ const Gallery = () => {
                   onClick={() => handleImageClick(image)}
                 >
                   <img
-                    src={image.image_url}
+                    src={resolveImageUrl(image.image_url)}
                     alt={image.prompt}
                     className="w-full h-full object-cover"
                   />
@@ -470,7 +489,7 @@ const Gallery = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDownload(image.image_url, image.prompt)}
+                        onClick={() => handleDownload(resolveImageUrl(image.image_url), image.prompt)}
                         className="border-party-purple/30 hover:border-party-purple"
                       >
                         <Download className="w-4 h-4" />
@@ -551,7 +570,7 @@ const Gallery = () => {
               <div className="p-4">
                 <div className="relative flex items-center justify-center bg-background/50 rounded-lg overflow-hidden min-h-[400px]">
                   <img
-                    src={selectedImage.image_url}
+                    src={resolveImageUrl(selectedImage.image_url)}
                     alt={selectedImage.prompt}
                     className="max-w-full max-h-[70vh] object-contain"
                   />
@@ -581,7 +600,7 @@ const Gallery = () => {
                   
                   <div className="flex gap-2 justify-end">
                     <Button
-                      onClick={() => handleDownload(selectedImage.image_url, selectedImage.prompt)}
+                      onClick={() => handleDownload(resolveImageUrl(selectedImage.image_url), selectedImage.prompt)}
                       variant="outline"
                       size="sm"
                       className="border-party-pink/30 hover:border-party-pink bg-background"
