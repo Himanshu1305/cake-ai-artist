@@ -9,12 +9,12 @@ interface TextPosition {
 
 type ViewType = 'Front View' | 'Side View' | 'Top-Down View' | '3/4 View (Diagonal)';
 
-// Fallback positions if AI analysis fails
+// Fallback positions if AI analysis fails (updated with larger fonts)
 const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
   'Front View': { 
     x: 0.5, 
     y: 0.65, 
-    fontSize: 32, 
+    fontSize: 48, 
     color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
@@ -22,7 +22,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
   'Side View': { 
     x: 0.5, 
     y: 0.60, 
-    fontSize: 28, 
+    fontSize: 42, 
     color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
@@ -30,7 +30,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
   'Top-Down View': { 
     x: 0.5, 
     y: 0.50, 
-    fontSize: 30, 
+    fontSize: 44, 
     color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
@@ -38,7 +38,7 @@ const FALLBACK_POSITIONS: Record<ViewType, TextPosition> = {
   '3/4 View (Diagonal)': { 
     x: 0.5, 
     y: 0.70, 
-    fontSize: 34, 
+    fontSize: 46, 
     color: '#2563EB',
     rotation: 0,
     fontStyle: 'elegant'
