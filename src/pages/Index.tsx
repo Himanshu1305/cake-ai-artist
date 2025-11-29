@@ -16,6 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
 import heroCake from "@/assets/hero-cake.jpg";
+import featuredCake1 from "@/assets/featured-cake-1.jpg";
+import featuredCake2 from "@/assets/featured-cake-2.jpg";
+import featuredCake3 from "@/assets/featured-cake-3.jpg";
+import featuredCake4 from "@/assets/featured-cake-4.jpg";
+import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -458,10 +463,13 @@ const Index = () => {
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
                       <img
-                        src={heroCake}
-                        alt="Example cake design"
+                        src={featuredCake1}
+                        alt="Elegant birthday cake with roses"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
+                        <p className="text-sm font-semibold text-foreground">Elegant Birthday Cake</p>
+                      </div>
                     </div>
                   </div>
                 </CarouselItem>
@@ -469,10 +477,13 @@ const Index = () => {
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
                       <img
-                        src={celebrationCake}
-                        alt="Beautiful celebration cake"
+                        src={featuredCake2}
+                        alt="Anniversary cake with lace patterns"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
+                        <p className="text-sm font-semibold text-foreground">Romantic Anniversary</p>
+                      </div>
                     </div>
                   </div>
                 </CarouselItem>
@@ -480,10 +491,41 @@ const Index = () => {
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all">
                       <img
-                        src={partyHero}
-                        alt="Vibrant party celebration"
+                        src={featuredCake3}
+                        alt="Spider-Man superhero cake"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
+                        <p className="text-sm font-semibold text-foreground">Superhero Birthday</p>
+                      </div>
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
+                      <img
+                        src={featuredCake4}
+                        alt="Princess castle cake"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
+                        <p className="text-sm font-semibold text-foreground">Princess Dream Cake</p>
+                      </div>
+                    </div>
+                  </div>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-2">
+                    <div className="relative group overflow-hidden rounded-xl border-2 border-party-purple/30 hover:border-party-purple transition-all">
+                      <img
+                        src={featuredCake5}
+                        alt="Chocolate celebration cake"
+                        className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
+                        <p className="text-sm font-semibold text-foreground">Luxury Chocolate</p>
+                      </div>
                     </div>
                   </div>
                 </CarouselItem>
