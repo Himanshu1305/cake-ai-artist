@@ -49,8 +49,8 @@ serve(async (req) => {
       { 
         name: 'top', 
         description: 'Professional food photography of a luxurious cake from DIRECTLY ABOVE (bird\'s eye view), showing the entire circular top surface',
-        namePosition: 'written clearly and prominently in the CENTER of the top fondant surface, spelled out in large, easily readable fondant letters',
-        photoPosition: 'in a decorative circular frame around the centered name text, or positioned elegantly near the edge'
+        namePosition: 'written elegantly around the outer edge of the top surface or on a decorative banner/ribbon across the photo',
+        photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
       },
       { 
         name: 'diagonal', 
@@ -73,9 +73,9 @@ The cake MUST prominently display beautiful fondant lettering spelling "${name}"
 
 CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter: ${name.split('').join('-')}. Ensure every letter is clearly visible and readable.`;
 
-      // Add photo if provided
-      if (userPhotoBase64) {
-        prompt += `\n\nThe cake features a ${view.name === 'top' ? 'large circular' : 'circular'} edible photo print ${view.photoPosition}, showing the provided reference image. The photo should look like a professionally printed edible image with a subtle white border, seamlessly integrated into the smooth fondant surface.`;
+      // Add photo ONLY to TOP VIEW - photo should cover entire top surface
+      if (userPhotoBase64 && view.name === 'top') {
+        prompt += `\n\nThe ENTIRE top surface of the cake is covered with a large, circular edible photo print showing the provided reference image. The photo should completely fill the top of the cake from edge to edge, looking like a professionally printed edible image that covers the entire visible top fondant surface. The recipient's name "${name}" should be elegantly written on top of or around the photo in contrasting fondant lettering.`;
       }
 
       // Add cake specifications
