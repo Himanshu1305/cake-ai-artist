@@ -37,6 +37,20 @@ const Index = () => {
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
 
+  // Map local filenames to imported assets
+  const localImageMap: Record<string, string> = {
+    'featured-cake-1.jpg': featuredCake1,
+    'featured-cake-2.jpg': featuredCake2,
+    'featured-cake-3.jpg': featuredCake3,
+    'featured-cake-4.jpg': featuredCake4,
+    'featured-cake-5.jpg': featuredCake5,
+  };
+
+  // Resolve image URLs (local assets or Supabase storage URLs)
+  const resolveImageUrl = (url: string): string => {
+    return localImageMap[url] || url;
+  };
+
   useEffect(() => {
     checkAuth();
     loadFeaturedCakes();
@@ -446,7 +460,7 @@ const Index = () => {
                       onClick={() => setSelectedCarouselImage(cake)}
                     >
                       <img
-                        src={cake.image_url}
+                        src={resolveImageUrl(cake.image_url)}
                         alt="Featured user cake design"
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
@@ -543,7 +557,7 @@ const Index = () => {
           {selectedCarouselImage && (
             <div className="space-y-4">
               <img 
-                src={selectedCarouselImage.image_url} 
+                src={resolveImageUrl(selectedCarouselImage.image_url)} 
                 alt="Community creation" 
                 className="w-full h-auto rounded-lg"
               />
