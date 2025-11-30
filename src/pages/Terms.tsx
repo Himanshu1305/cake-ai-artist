@@ -24,7 +24,7 @@ const Terms = () => {
 
         <article className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
           <h1 className="text-4xl font-bold mb-6 text-foreground">Terms of Service</h1>
-          <p className="text-muted-foreground mb-8">Last updated: November 22, 2025</p>
+          <p className="text-muted-foreground mb-8">Last updated: January 2025</p>
 
           <div className="space-y-6 text-foreground">
             <section>
