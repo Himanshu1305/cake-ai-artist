@@ -60,12 +60,8 @@ serve(async (req) => {
       }
     ];
 
-    // Generate 4 cake images with name and photo baked in
-    const generatedImages: string[] = [];
-    
-    for (let i = 0; i < viewAngles.length; i++) {
-      const view = viewAngles[i];
-      
+    // Helper function to generate a single view
+    const generateView = async (view: typeof viewAngles[0]) => {
       // Build prompt with name as fondant lettering
       let prompt = `${view.description}.
 
@@ -92,11 +88,11 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
 
       console.log(`Generating ${view.name} view...`);
 
-      // Prepare messages for image generation
+      // Prepare messages - ONLY include photo for TOP view
       const messages: any[] = [
         {
           role: 'user',
-          content: userPhotoBase64 ? [
+          content: (userPhotoBase64 && view.name === 'top') ? [
             { type: 'text', text: prompt },
             { 
               type: 'image_url', 
@@ -126,10 +122,7 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
         
         // Handle rate limits gracefully
         if (imageResponse.status === 429) {
-          return new Response(
-            JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
-            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          throw new Error('RATE_LIMIT');
         }
         
         throw new Error(`Image generation failed: ${imageResponse.status}`);
@@ -142,13 +135,37 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
         throw new Error(`No image returned for ${view.name} view`);
       }
 
-      generatedImages.push(generatedImageBase64);
       console.log(`✓ Generated ${view.name} view`);
+      return generatedImageBase64;
+    };
 
-      // Small delay to avoid rate limits (only between images, not after last one)
-      if (i < viewAngles.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    // Generate images in parallel (2 at a time to avoid rate limits)
+    try {
+      console.log('Starting parallel batch 1 (front + side)...');
+      const batch1 = await Promise.all([
+        generateView(viewAngles[0]), // front
+        generateView(viewAngles[1])  // side
+      ]);
+      
+      // Brief pause between batches
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log('Starting parallel batch 2 (top + diagonal)...');
+      const batch2 = await Promise.all([
+        generateView(viewAngles[2]), // top
+        generateView(viewAngles[3])  // diagonal
+      ]);
+      
+      const generatedImages = [...batch1, ...batch2];
+    
+    } catch (error) {
+      if (error instanceof Error && error.message === 'RATE_LIMIT') {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
+      throw error;
     }
 
     // Helper function to get inverse relationship (who is writing to whom)
