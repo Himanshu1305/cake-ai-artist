@@ -8,6 +8,7 @@ import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
+import { ProductSchema } from "@/components/SEOSchema";
 import {
   Accordion,
   AccordionContent,
@@ -63,11 +64,21 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>Pricing - Best AI Cake Designer Plans | Cake AI Artist</title>
-        <meta name="description" content="Get lifetime access to the best AI cake designer and best virtual cake creator. Founding member special: $49 one-time payment for unlimited best virtual cakes. Limited spots available!" />
-        <meta name="keywords" content="best ai cake designer pricing, best virtual cake plans, affordable ai cake tool, lifetime cake access, best virtual cake subscription" />
+        <title>Pricing - Founding Member Lifetime Access | Cake AI Artist</title>
+        <meta name="description" content="Get lifetime access to Cake AI Artist for just $49. Limited to first 200 members. Create unlimited personalized cakes forever—no monthly fees." />
+        <meta name="keywords" content="cake AI pricing, virtual cake plans, lifetime cake access, founding member" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
+        <meta property="og:url" content="https://cakeaiartist.com/pricing" />
       </Helmet>
+      
+      <ProductSchema 
+        name="Cake AI Artist Founding Member - Tier 1"
+        description="Lifetime access to AI-powered personalized cake designs. First 50 members only."
+        price="49"
+        priceCurrency="USD"
+        availability="LimitedAvailability"
+        url="https://cakeaiartist.com/pricing"
+      />
       
       {/* Navigation */}
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">

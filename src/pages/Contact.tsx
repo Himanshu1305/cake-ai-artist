@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { LocalBusinessSchema } from "@/components/SEOSchema";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -37,11 +38,18 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Contact Us - Best AI Cake Designer Support | Cake AI Artist</title>
-        <meta name="description" content="Have questions about the best AI cake designer? Contact Cake AI Artist for support with the best virtual cake creator. We typically respond within 24-48 hours." />
-        <meta name="keywords" content="contact best ai cake designer, best virtual cake support, cake generator help, customer service" />
+        <title>Contact Us - Cake AI Artist Support</title>
+        <meta name="description" content="Have questions about Cake AI Artist? Contact our support team. We typically respond within 24-48 hours." />
+        <meta name="keywords" content="contact support, cake generator help, customer service" />
         <link rel="canonical" href="https://cakeaiartist.com/contact" />
+        <meta property="og:url" content="https://cakeaiartist.com/contact" />
       </Helmet>
+      
+      <LocalBusinessSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com"
+        email="support@cakeaiartist.com"
+      />
       
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <Link to="/">
@@ -53,9 +61,9 @@ const Contact = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-foreground">Contact the Best AI Cake Designer</h1>
+            <h1 className="text-4xl font-bold mb-4 text-foreground">Get in Touch</h1>
             <p className="text-muted-foreground text-lg mb-8">
-              Have a question about the best virtual cake creator? We&apos;d love to hear from you. 
+              Questions? Feedback? We&apos;d love to hear from you. 
               Drop us a message and we&apos;ll get back to you as soon as possible.
             </p>
 
@@ -64,7 +72,7 @@ const Contact = () => {
                 <Mail className="h-6 w-6 text-party-purple mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email Us</h3>
-                  <p className="text-muted-foreground">support@cakemagic.com</p>
+                  <p className="text-muted-foreground">support@cakeaiartist.com</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     For general inquiries and support
                   </p>

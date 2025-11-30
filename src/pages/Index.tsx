@@ -28,6 +28,7 @@ import { motion } from "framer-motion";
 import { Star, Download } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
+import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -139,11 +140,24 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer - Best Virtual Cake Creator | Cake AI Artist</title>
-        <meta name="description" content="The best AI cake designer and best virtual cake creator. Create stunning personalized cake designs in seconds. Best virtual cakes for birthdays, celebrations, and special occasions. No design skills needed!" />
-        <meta name="keywords" content="best ai cake designer, best virtual cake designer, best virtual cake, best ai cake creator, virtual cake designer, AI cake creator, custom cake design" />
+        <title>Cake AI Artist - Create Stunning Personalized Cakes in Seconds</title>
+        <meta name="description" content="Design beautiful, personalized cakes with AI. Perfect for birthdays, anniversaries, and celebrations. No design skills needed—get 4 unique designs in 20 seconds." />
+        <meta name="keywords" content="AI cake designer, virtual cake creator, custom cake design, personalized birthday cake" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
+        <meta property="og:url" content="https://cakeaiartist.com/" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+      
+      <OrganizationSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com"
+        description="AI-powered personalized cake design platform for birthdays, anniversaries, and celebrations"
+      />
+      
+      <WebSiteSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com"
+      />
       
       <FloatingEmojis />
       <CursorSparkles />
@@ -284,13 +298,13 @@ const Index = () => {
             />
           </div>
           <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-foreground">
-              The Best AI Cake Designer
-            </h2>
+            <h1 className="text-4xl font-bold text-foreground">
+              Create Beautiful Personalized Cakes in Seconds
+            </h1>
             <p className="text-xl text-foreground/80 leading-relaxed">
               Here&apos;s the thing about celebrations—they&apos;re only as special as the thought you put into them. 
               But when you&apos;re juggling everything else, who has three hours to browse stock photos? 
-              That&apos;s where we come in. The best virtual cake creator delivers beautiful, personalized designs in the time it takes to make coffee.
+              That&apos;s where we come in. Get gorgeous, personalized cake designs in the time it takes to make coffee.
             </p>
           </div>
         </div>

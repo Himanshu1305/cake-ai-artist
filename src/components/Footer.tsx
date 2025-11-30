@@ -63,7 +63,7 @@ export const Footer = () => {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/20 text-center text-sm text-white opacity-90">
-          <p>&copy; 2024 Cake AI Artist. All rights reserved.</p>
+          <p>&copy; 2025 Cake AI Artist. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -89,10 +89,11 @@ const CommunityGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>Community Gallery - Best Virtual Cake Designs | Cake AI Artist</title>
-        <meta name="description" content="Explore amazing best virtual cakes created by our community with the best AI cake designer. Get inspired by featured cake creations from users worldwide." />
-        <meta name="keywords" content="best virtual cakes, community gallery, featured designs, best ai cake inspiration, cake examples" />
+        <title>Community Gallery - Featured Cake Designs | Cake AI Artist</title>
+        <meta name="description" content="Explore amazing cakes created by our community. Get inspired by featured cake creations from users worldwide." />
+        <meta name="keywords" content="cake gallery, featured designs, cake inspiration, cake examples" />
         <link rel="canonical" href="https://cakeaiartist.com/community" />
+        <meta property="og:url" content="https://cakeaiartist.com/community" />
       </Helmet>
       
       {/* Navigation Header */}

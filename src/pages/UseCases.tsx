@@ -9,10 +9,11 @@ const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Use Cases - Best Virtual Cake for Every Celebration | Cake AI Artist</title>
-        <meta name="description" content="Discover how the best AI cake designer creates the best virtual cakes for birthdays, anniversaries, graduations, and more. Perfect AI-generated cake designs for every celebration." />
-        <meta name="keywords" content="best virtual cake, best ai cake designs, birthday cake ideas, anniversary cake, best virtual cake examples, celebration designs" />
+        <title>Use Cases - Cake Designs for Every Celebration | Cake AI Artist</title>
+        <meta name="description" content="Discover how to create stunning cakes for birthdays, anniversaries, graduations, and more. Perfect AI-generated designs for every celebration." />
+        <meta name="keywords" content="virtual cake examples, cake designs, birthday cake ideas, anniversary cake, celebration designs" />
         <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
+        <meta property="og:url" content="https://cakeaiartist.com/use-cases" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -24,9 +25,9 @@ const UseCases = () => {
         </Link>
 
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Best Virtual Cake for Every Celebration</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Designs for Every Celebration</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-            Whether it&apos;s a milestone moment or a simple &quot;just because,&quot; the best AI cake designer helps you make it special.
+            Whether it&apos;s a milestone moment or a simple &quot;just because,&quot; create something special for any occasion.
           </p>
         </div>
 

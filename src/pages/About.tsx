@@ -9,10 +9,11 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>About - Best AI Cake Designer Platform | Cake AI Artist</title>
-        <meta name="description" content="Learn about Cake AI Artist, the best AI cake designer and best virtual cake creator. Discover how we create the best virtual cakes for birthdays, celebrations, and special occasions." />
-        <meta name="keywords" content="best ai cake designer, best virtual cake designer, about cake AI artist, AI cake technology, best virtual cake platform" />
+        <title>About Cake AI Artist - AI Cake Design Platform</title>
+        <meta name="description" content="Learn about Cake AI Artist. Discover how we help people celebrate with personalized, AI-generated cake designs for birthdays, anniversaries, and special occasions." />
+        <meta name="keywords" content="about cake AI artist, AI cake technology, virtual cake platform" />
         <link rel="canonical" href="https://cakeaiartist.com/about" />
+        <meta property="og:url" content="https://cakeaiartist.com/about" />
       </Helmet>
       
       {/* Header */}
@@ -30,11 +31,11 @@ const About = () => {
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground">
             <span className="bg-gradient-party bg-clip-text text-transparent">
-              About the Best AI Cake Designer
+              About Cake AI Artist
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto">
-            Bringing joy to celebrations with the best virtual cake creator - AI-powered personalized cakes! <span className="floating-flame">🎂</span>
+            Bringing joy to celebrations with AI-powered personalized cakes! <span className="floating-flame">🎂</span>
           </p>
         </div>
 
