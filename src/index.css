@@ -151,12 +151,25 @@ All colors MUST be HSL.
     @apply animate-flame-flicker;
     display: inline-block;
     transform-origin: center bottom;
+    filter: drop-shadow(0 0 8px hsl(45 100% 60% / 0.4)) drop-shadow(0 0 15px hsl(45 100% 60% / 0.3));
+    animation: flame-flicker 3.5s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;
   }
 
   .dancing-flame {
     @apply animate-flame-dance;
     display: inline-block;
     transform-origin: center bottom;
+    filter: drop-shadow(0 0 8px hsl(280 80% 60% / 0.4)) drop-shadow(0 0 15px hsl(280 80% 60% / 0.3));
+    animation: flame-dance 4s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 8px hsl(45 100% 60% / 0.4)) drop-shadow(0 0 15px hsl(45 100% 60% / 0.3));
+    }
+    50% {
+      filter: drop-shadow(0 0 12px hsl(45 100% 60% / 0.7)) drop-shadow(0 0 25px hsl(45 100% 60% / 0.5));
+    }
   }
 
   /* Bouncing elements */
