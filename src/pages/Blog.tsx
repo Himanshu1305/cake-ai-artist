@@ -60,10 +60,11 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Blog - Best AI Cake Designer Tips & Ideas | Cake AI Artist</title>
-        <meta name="description" content="Explore our best AI cake designer blog for birthday ideas, best virtual cake trends, celebration planning tips, and creative inspiration for every special occasion." />
-        <meta name="keywords" content="best ai cake designer blog, best virtual cake ideas, birthday tips, cake trends, best virtual cake inspiration" />
+        <title>Blog - Cake Design Ideas & Celebration Tips | Cake AI Artist</title>
+        <meta name="description" content="Explore our blog for birthday ideas, cake trends, celebration planning tips, and creative inspiration for every special occasion." />
+        <meta name="keywords" content="cake design blog, birthday tips, cake trends, celebration inspiration" />
         <link rel="canonical" href="https://cakeaiartist.com/blog" />
+        <meta property="og:url" content="https://cakeaiartist.com/blog" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -75,9 +76,9 @@ const Blog = () => {
         </Link>
 
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Best AI Cake Designer Blog</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Design Ideas & Tips</h1>
           <p className="text-muted-foreground text-xl max-w-2xl">
-            Ideas, tips, and inspiration for creating the best virtual cakes. 
+            Ideas, tips, and inspiration for creating beautiful cakes. 
             From design trends to party planning hacks, we&apos;ve got you covered.
           </p>
         </div>

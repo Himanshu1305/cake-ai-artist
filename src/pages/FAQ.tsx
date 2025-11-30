@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { FAQSchema } from "@/components/SEOSchema";
 import {
   Accordion,
   AccordionContent,
@@ -14,11 +15,49 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>FAQ - Best AI Cake Designer Questions | Cake AI Artist</title>
-        <meta name="description" content="Frequently asked questions about the best AI cake designer and best virtual cake creator. Learn about creating the best virtual cakes, pricing, and premium features." />
-        <meta name="keywords" content="best ai cake designer FAQ, best virtual cake questions, AI cake generator help, best cake design support" />
+        <title>FAQ - Cake AI Artist Questions & Answers</title>
+        <meta name="description" content="Frequently asked questions about Cake AI Artist. Learn how to create personalized cakes, understand pricing, and explore premium features." />
+        <meta name="keywords" content="cake AI FAQ, virtual cake questions, cake generator help, design support" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
+        <meta property="og:url" content="https://cakeaiartist.com/faq" />
       </Helmet>
+      
+      <FAQSchema 
+        faqs={[
+          {
+            question: "How do I create my first cake?",
+            answer: "It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), and hit the 'Create My Cake' button. In about 20 seconds, you'll get four unique designs to choose from. Pick your favorite and download it. No design skills needed."
+          },
+          {
+            question: "Do I need to create an account?",
+            answer: "Nope! You can try the service without signing up. However, creating a free account lets you save your creations, access your generation history, and track your daily limit. Plus, if you ever upgrade to premium, your account will have all your past designs ready to go."
+          },
+          {
+            question: "Is it really free?",
+            answer: "Yes! Free users can generate up to 3 personalized cakes per day. That's perfect for most people. If you're planning multiple events or want unlimited creations, our premium plan removes all limits and adds priority processing."
+          },
+          {
+            question: "Can I change the message after generating?",
+            answer: "Currently, each generation creates four variations with slightly different messages and designs. If you don't love what you see, simply hit generate again. Premium users can regenerate as many times as they want until they find the perfect message."
+          },
+          {
+            question: "What's included in the Premium subscription?",
+            answer: "Premium gets you unlimited cake generations (no daily limits), priority processing (faster generation), access to advanced customization options, commercial use license for your images, and early access to new features."
+          },
+          {
+            question: "How many cakes can I generate with Premium?",
+            answer: "Unlimited. Seriously. Generate as many as you want, whenever you want. Planning 50 different birthday parties? Go for it. Want to experiment with different messages until you find the perfect one? Have at it."
+          },
+          {
+            question: "Can I use this for my business?",
+            answer: "Free accounts are limited to personal, non-commercial use. If you want to use the images for business purposes (event planning, social media marketing, client gifts, etc.), you'll need a premium subscription, which includes a commercial use license."
+          },
+          {
+            question: "What image format do you provide?",
+            answer: "All images are provided in high-quality PNG format with transparent backgrounds where appropriate. This makes them perfect for sharing on social media, printing, or using in digital invitations. The resolution is optimized for both screen display and printing."
+          }
+        ]}
+      />
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link to="/">
@@ -29,9 +68,9 @@ const FAQ = () => {
         </Link>
 
         <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
-          <h1 className="text-4xl font-bold mb-4 text-foreground">Best AI Cake Designer - Frequently Asked Questions</h1>
+          <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Got questions about the best virtual cake creator? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
+            Got questions? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
           </p>
 
           <Accordion type="single" collapsible className="w-full space-y-4">
@@ -150,8 +189,8 @@ const FAQ = () => {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 First, check your internet connection. If that's fine, try refreshing the page. 
-                Still having issues? It might be a temporary server hiccup. Wait a minute and try again. 
-                If problems persist, reach out to our support team at support@cakemagic.com and we'll sort it out.
+                 Still having issues? It might be a temporary server hiccup. Wait a minute and try again. 
+                 If problems persist, reach out to our support team at support@cakeaiartist.com and we'll sort it out.
               </AccordionContent>
             </AccordionItem>
 
@@ -171,9 +210,9 @@ const FAQ = () => {
                 Are there bulk options for businesses?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Currently, our premium plan handles most business needs with unlimited generations. 
-                If you're an enterprise with specific requirements (custom branding, API access, white-label solutions), 
-                contact us at support@cakemagic.com to discuss custom arrangements.
+                 Currently, our premium plan handles most business needs with unlimited generations. 
+                 If you're an enterprise with specific requirements (custom branding, API access, white-label solutions), 
+                 contact us at support@cakeaiartist.com to discuss custom arrangements.
               </AccordionContent>
             </AccordionItem>
 
