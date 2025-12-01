@@ -54,6 +54,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
+  const [dailyGenerations, setDailyGenerations] = useState(0);
+  const [monthlyGenerations, setMonthlyGenerations] = useState(0);
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
   const [postGenRating, setPostGenRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -83,9 +85,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     "inosuke", "zenitsu", "todoroki-shoto", "anya-forger", "loid-forger",
     "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven", "barbie"
   ];
-  const FREE_GENERATION_LIMIT = 5;
-  const PREMIUM_GENERATION_LIMIT = 100;  // For regular premium users
-  const ADMIN_GENERATION_LIMIT = 500;    // For admins only
+  const FREE_DAILY_LIMIT = 3;            // 3 generations per day for free users
+  const FREE_MONTHLY_LIMIT = 12;         // 12 generations per month for free users
+  const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
+  const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
   // Simulated progress during generation
   useEffect(() => {
@@ -97,11 +100,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     const steps = [
       { progress: 15, step: "🎨 Preparing your design...", delay: 500 },
-      { progress: 30, step: "📸 Generating Front & Side views...", delay: 3000 },
-      { progress: 50, step: "🔄 Processing first batch...", delay: 6000 },
-      { progress: 70, step: "📸 Generating Top & Diagonal views...", delay: 9000 },
-      { progress: 85, step: "✨ Adding finishing touches...", delay: 14000 },
-      { progress: 95, step: "🎉 Almost ready...", delay: 18000 },
+      { progress: 35, step: "📸 Generating Front & Side views...", delay: 3000 },
+      { progress: 60, step: "🔄 Processing first batch...", delay: 6000 },
+      { progress: 80, step: "📸 Generating Top view...", delay: 10000 },
+      { progress: 95, step: "🎉 Almost ready...", delay: 14000 },
     ];
 
     const timers: NodeJS.Timeout[] = [];
@@ -119,7 +121,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Regenerate specific view
   const handleRegenerateView = async (viewIndex: number) => {
-    const viewNames = ['front', 'side', 'top', 'diagonal'];
+    const viewNames = ['front', 'side', 'top'];
     const viewName = viewNames[viewIndex];
     
     setRegeneratingView(viewIndex);
@@ -150,7 +152,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         setGeneratedImages(newImages);
         toast({
           title: "Success!",
-          description: `${["Front", "Side", "Top-Down", "3/4"][viewIndex]} view regenerated!`
+          description: `${["Front", "Side", "Top-Down"][viewIndex]} view regenerated!`
         });
         haptic.success();
       }
@@ -267,18 +269,44 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       // Get generation count for current year (for premium users)
       const currentYear = new Date().getFullYear();
-      const { data: tracking } = await supabase
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const { data: yearlyTracking } = await supabase
         .from("generation_tracking")
         .select("count")
         .eq("user_id", userId)
         .eq("year", currentYear)
-        .single();
+        .is("month", null)
+        .maybeSingle();
 
-      if (tracking) {
-        setGenerationCount(tracking.count);
+      if (yearlyTracking) {
+        setGenerationCount(yearlyTracking.count || 0);
       }
 
-      // Get total generation count (for free users)
+      // Get monthly generation count (for free users)
+      const { data: monthlyTracking } = await supabase
+        .from("generation_tracking")
+        .select("count")
+        .eq("user_id", userId)
+        .eq("year", currentYear)
+        .eq("month", currentMonth)
+        .maybeSingle();
+
+      if (monthlyTracking) {
+        setMonthlyGenerations(monthlyTracking.count || 0);
+      }
+
+      // Get daily generation count (for free users) - count images created today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: dailyImages } = await supabase
+        .from("generated_images")
+        .select("id", { count: 'exact' })
+        .eq("user_id", userId)
+        .gte("created_at", `${today}T00:00:00`)
+        .lte("created_at", `${today}T23:59:59`);
+
+      setDailyGenerations(dailyImages?.length || 0);
+
+      // Get total generation count (for free users display)
       const { data: allTracking } = await supabase
         .from("generation_tracking")
         .select("count")
@@ -317,24 +345,37 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     // Check generation limits for logged-in users
     if (isLoggedIn) {
-      const premiumLimit = isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT;
-      
-      if (isPremium && generationCount >= premiumLimit) {
-        toast({
-          title: "Generation limit reached",
-          description: `You've reached your limit of ${premiumLimit} generations for this year.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!isPremium && totalGenerations >= FREE_GENERATION_LIMIT) {
-        toast({
-          title: "Free limit reached",
-          description: `You've used all ${FREE_GENERATION_LIMIT} free generations. Upgrade to Premium for unlimited cakes!`,
-          variant: "destructive",
-        });
-        return;
+      if (isPremium) {
+        const premiumLimit = isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT;
+        
+        if (generationCount >= premiumLimit) {
+          toast({
+            title: "Generation limit reached",
+            description: `You've reached your limit of ${premiumLimit} generations for this year.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        // Check daily limit for free users
+        if (dailyGenerations >= FREE_DAILY_LIMIT) {
+          toast({
+            title: "Daily limit reached",
+            description: `You've used all ${FREE_DAILY_LIMIT} free generations today. Come back tomorrow or upgrade to Premium for ${PREMIUM_GENERATION_LIMIT}/year!`,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Check monthly limit for free users
+        if (monthlyGenerations >= FREE_MONTHLY_LIMIT) {
+          toast({
+            title: "Monthly limit reached",
+            description: `You've used all ${FREE_MONTHLY_LIMIT} free generations this month. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT}/year!`,
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
 
@@ -416,7 +457,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       try {
         toast({
           title: "Creating your cake...",
-          description: "AI is generating 4 beautiful views with your personalization!",
+          description: "AI is generating 3 beautiful views with your personalization!",
         });
 
         const { data, error } = await supabase.functions.invoke('generate-complete-cake', {
@@ -573,31 +614,67 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       // Update generation tracking
       const currentYear = new Date().getFullYear();
-      const { data: existing } = await supabase
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      
+      // Update yearly tracking
+      const { data: existingYearly } = await supabase
         .from("generation_tracking")
         .select("*")
         .eq("user_id", user.id)
         .eq("year", currentYear)
-        .single();
+        .is("month", null)
+        .maybeSingle();
 
-      if (existing) {
+      if (existingYearly) {
         await supabase
           .from("generation_tracking")
-          .update({ count: existing.count + 1 })
-          .eq("id", existing.id);
-        setGenerationCount(existing.count + 1);
-        setTotalGenerations(totalGenerations + 1);
+          .update({ count: existingYearly.count + 1 })
+          .eq("id", existingYearly.id);
+        setGenerationCount(existingYearly.count + 1);
       } else {
         await supabase
           .from("generation_tracking")
           .insert({
             user_id: user.id,
             year: currentYear,
+            month: null,
             count: 1,
           });
         setGenerationCount(1);
-        setTotalGenerations(totalGenerations + 1);
       }
+
+      // Update monthly tracking (for free users)
+      if (!isPremium) {
+        const { data: existingMonthly } = await supabase
+          .from("generation_tracking")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("year", currentYear)
+          .eq("month", currentMonth)
+          .maybeSingle();
+
+        if (existingMonthly) {
+          await supabase
+            .from("generation_tracking")
+            .update({ count: existingMonthly.count + 1 })
+            .eq("id", existingMonthly.id);
+          setMonthlyGenerations(existingMonthly.count + 1);
+        } else {
+          await supabase
+            .from("generation_tracking")
+            .insert({
+              user_id: user.id,
+              year: currentYear,
+              month: currentMonth,
+              count: 1,
+            });
+          setMonthlyGenerations(1);
+        }
+      }
+
+      // Update daily count
+      setDailyGenerations(dailyGenerations + 1);
+      setTotalGenerations(totalGenerations + 1);
     } catch (error) {
       console.error("Error saving image:", error);
     }
@@ -940,7 +1017,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <p className="text-xs text-foreground/70">
                 {isPremium 
                   ? `${generationCount} / ${isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT} generations used this year`
-                  : `${totalGenerations} / ${FREE_GENERATION_LIMIT} free generations used`}
+                  : `${dailyGenerations}/${FREE_DAILY_LIMIT} today • ${monthlyGenerations}/${FREE_MONTHLY_LIMIT} this month`}
               </p>
             </div>
             <div className="flex gap-2">

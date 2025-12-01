@@ -199,6 +199,7 @@ export type Database = {
           count: number | null
           created_at: string | null
           id: string
+          month: number | null
           updated_at: string | null
           user_id: string
           year: number
@@ -207,6 +208,7 @@ export type Database = {
           count?: number | null
           created_at?: string | null
           id?: string
+          month?: number | null
           updated_at?: string | null
           user_id: string
           year: number
@@ -215,6 +217,7 @@ export type Database = {
           count?: number | null
           created_at?: string | null
           id?: string
+          month?: number | null
           updated_at?: string | null
           user_id?: string
           year?: number
