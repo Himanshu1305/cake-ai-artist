@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const occasionText = getOccasionText(occasion || 'birthday');
 
-    // Build view-specific prompts with name and photo baked in
+    // Build view-specific prompts with name and photo baked in (3 views only)
     const viewAngles = [
       { 
         name: 'front', 
@@ -73,13 +73,6 @@ serve(async (req) => {
         namePosition: 'elegantly around the outer edge or on a decorative banner',
         occasionPosition: 'prominently on the top surface in elegant fondant letters (even when photo is present)',
         photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
-      },
-      { 
-        name: 'diagonal', 
-        description: 'Professional food photography of ONE SINGLE luxurious cake photographed from a 45-degree angle. This is NOT a comparison image. This is NOT a collage. Generate ONE cake only, positioned center-frame on a marble pedestal. The camera is positioned at 45 degrees to show both the front face and top surface of this ONE cake. The ENTIRE cake must be visible - all tiers from top decorations to cake stand base. NO CROPPING.',
-        namePosition: 'on a visible fondant plaque at the cake base',
-        occasionPosition: 'on the most visible tier face in prominent lettering',
-        photoPosition: 'on the most visible tier face'
       }
     ];
 
@@ -270,23 +263,20 @@ Cake specifications:
         );
       }
       
-      // Generate all views in parallel (2 at a time to avoid rate limits)
+      // Generate all 3 views in parallel (front + side first, then top)
       console.log('Starting parallel batch 1 (front + side)...');
       const batch1 = await Promise.all([
         generateView(viewAngles[0]), // front
         generateView(viewAngles[1])  // side
       ]);
       
-      // Brief pause between batches (reduced from 2000ms for faster generation)
+      // Brief pause between batches
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      console.log('Starting parallel batch 2 (top + diagonal)...');
-      const batch2 = await Promise.all([
-        generateView(viewAngles[2]), // top
-        generateView(viewAngles[3])  // diagonal
-      ]);
+      console.log('Starting batch 2 (top view)...');
+      const batch2 = await generateView(viewAngles[2]); // top
       
-      generatedImages = [...batch1, ...batch2];
+      generatedImages = [...batch1, batch2];
     
     } catch (error) {
       if (error instanceof Error && error.message === 'RATE_LIMIT') {
