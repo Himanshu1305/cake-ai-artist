@@ -237,58 +237,7 @@ Cake specifications:
       return generatedImageBase64;
     };
 
-    // Generate images - either specific view or all views
-    let generatedImages: string[] = [];
-    
-    try {
-      if (specificView) {
-        // Regenerate only the specified view
-        console.log(`Regenerating only ${specificView} view...`);
-        const viewIndex = viewAngles.findIndex(v => v.name === specificView);
-        if (viewIndex === -1) {
-          throw new Error(`Invalid view name: ${specificView}`);
-        }
-        const regeneratedImage = await generateView(viewAngles[viewIndex]);
-        
-        return new Response(
-          JSON.stringify({ 
-            regeneratedImage,
-            viewIndex,
-            viewName: specificView
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
-        );
-      }
-      
-      // Generate all 3 views in parallel (front + side first, then top)
-      console.log('Starting parallel batch 1 (front + side)...');
-      const batch1 = await Promise.all([
-        generateView(viewAngles[0]), // front
-        generateView(viewAngles[1])  // side
-      ]);
-      
-      // Brief pause between batches
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      console.log('Starting batch 2 (top view)...');
-      const batch2 = await generateView(viewAngles[2]); // top
-      
-      generatedImages = [...batch1, batch2];
-    
-    } catch (error) {
-      if (error instanceof Error && error.message === 'RATE_LIMIT') {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      throw error;
-    }
-
-    // Helper function to get inverse relationship (who is writing to whom)
+    // Helper functions for message generation
     const getInverseRelation = (rel: string): string => {
       const inverses: Record<string, string> = {
         'daughter': 'parent', 'son': 'parent',
@@ -302,7 +251,6 @@ Cake specifications:
       return inverses[rel] || 'loved one';
     };
 
-    // Helper function to provide relationship-specific emotional guidance
     const getRelationshipGuidance = (rel: string, gen: string): string => {
       if (rel === 'daughter') {
         return `GUIDANCE: Write as a loving parent to their daughter. Express pride, unconditional love, and hopes for her future. Use warm, affectionate language like "my beautiful daughter", "my princess" (if age-appropriate), or "watching you grow". Focus on parental pride and love.`;
@@ -334,7 +282,6 @@ Cake specifications:
       return `GUIDANCE: Write with warmth and genuine affection appropriate for a ${rel} relationship.`;
     };
 
-    // Helper function to provide example messages for context
     const getExampleMessages = (rel: string, occ: string, gen: string): string => {
       if (rel === 'daughter' && occ === 'birthday') {
         return `- "My dearest ${name}, watching you blossom into such an incredible young woman fills my heart with so much pride! Happy Birthday, my beautiful daughter – may this year bring you endless joy and all the dreams your heart desires!"
@@ -351,10 +298,10 @@ Cake specifications:
       return '';
     };
 
-    // Generate personalized greeting message
-    console.log('Generating greeting message...');
-    const inverseRel = getInverseRelation(relation);
-    const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
+    // Message generation function
+    const generateMessageAsync = async (): Promise<string> => {
+      const inverseRel = getInverseRelation(relation);
+      const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
 
 RECIPIENT DETAILS:
 - Name: ${name}
@@ -375,28 +322,76 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
 
 Return ONLY the message text. Make it feel like it came from the heart, not from AI. Do NOT mention the character theme unless it creates a meaningful, natural message.`;
 
-    const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [{ role: 'user', content: messagePrompt }],
-      }),
-    });
+      const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: messagePrompt }],
+        }),
+      });
 
-    if (!messageResponse.ok) {
-      console.error('Message generation failed:', messageResponse.status);
-      throw new Error('Failed to generate greeting message');
+      if (!messageResponse.ok) {
+        console.error('Message generation failed:', messageResponse.status);
+        throw new Error('Failed to generate greeting message');
+      }
+
+      const messageData = await messageResponse.json();
+      return messageData.choices?.[0]?.message?.content?.trim() || 
+        `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
+    };
+
+    // Generate images - either specific view or all views
+    let generatedImages: string[] = [];
+    let greetingMessage = '';
+    
+    try {
+      if (specificView) {
+        // Regenerate only the specified view
+        console.log(`Regenerating only ${specificView} view...`);
+        const viewIndex = viewAngles.findIndex(v => v.name === specificView);
+        if (viewIndex === -1) {
+          throw new Error(`Invalid view name: ${specificView}`);
+        }
+        const regeneratedImage = await generateView(viewAngles[viewIndex]);
+        
+        return new Response(
+          JSON.stringify({ 
+            regeneratedImage,
+            viewIndex,
+            viewName: specificView
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+      
+      // Generate all 3 views AND message in parallel for maximum speed
+      console.log('Starting parallel generation of all 3 views and personalized message...');
+      [generatedImages, greetingMessage] = await Promise.all([
+        Promise.all([
+          generateView(viewAngles[0]), // front
+          generateView(viewAngles[1]), // side
+          generateView(viewAngles[2])  // top
+        ]),
+        generateMessageAsync()  // message generation in parallel
+      ]);
+      console.log('✓ All 3 views and message generated successfully');
+    
+    } catch (error) {
+      if (error instanceof Error && error.message === 'RATE_LIMIT') {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
     }
-
-    const messageData = await messageResponse.json();
-    const greetingMessage = messageData.choices?.[0]?.message?.content?.trim() || 
-      `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
-
-    console.log('✓ All images and message generated successfully');
 
     return new Response(
       JSON.stringify({
