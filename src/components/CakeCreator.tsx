@@ -324,6 +324,30 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
+  // Helper function with retry logic for network interruptions
+  const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke(functionName, { body });
+        if (error) throw error;
+        return { data, error: null };
+      } catch (err) {
+        lastError = err;
+        console.log(`Attempt ${attempt + 1} failed:`, err);
+        if (attempt < maxRetries) {
+          // Wait 2 seconds before retry
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          toast({
+            title: "Reconnecting...",
+            description: "Connection interrupted. Trying again...",
+          });
+        }
+      }
+    }
+    return { data: null, error: lastError };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     haptic.medium(); // Haptic feedback on form submission
@@ -463,19 +487,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           description: "AI is generating 3 beautiful views with your personalization!",
         });
 
-        const { data, error } = await supabase.functions.invoke('generate-complete-cake', {
-          body: {
-            name: name.trim(),
-            character: character || undefined,
-            occasion: occasion,
-            relation: relation,
-            gender: gender,
-            cakeType: cakeType || undefined,
-            layers: layers || undefined,
-            theme: theme || undefined,
-            colors: colors || undefined,
-            userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined
-          }
+        const { data, error } = await invokeWithRetry('generate-complete-cake', {
+          name: name.trim(),
+          character: character || undefined,
+          occasion: occasion,
+          relation: relation,
+          gender: gender,
+          cakeType: cakeType || undefined,
+          layers: layers || undefined,
+          theme: theme || undefined,
+          colors: colors || undefined,
+          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined
         });
 
         if (error) {
@@ -538,7 +560,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           if (error.message.includes('Rate limit')) {
             errorMessage = "You've hit the rate limit. Please wait a moment and try again.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-            errorMessage = "Cannot connect to generation service. Please check your internet connection.";
+            errorMessage = "Connection was interrupted during generation. Please try again - your internet may have briefly disconnected.";
           } else if (error.message.includes('No images')) {
             errorMessage = "No images were generated. Please try again.";
           } else {
