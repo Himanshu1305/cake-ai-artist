@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MobileSelect } from "@/components/ui/mobile-select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -71,6 +71,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isSavingToGallery, setIsSavingToGallery] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
+  const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
@@ -112,6 +113,56 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     return () => timers.forEach(clearTimeout);
   }, [isLoading]);
+
+  // Regenerate specific view
+  const handleRegenerateView = async (viewIndex: number) => {
+    const viewNames = ['front', 'side', 'top', 'diagonal'];
+    const viewName = viewNames[viewIndex];
+    
+    setRegeneratingView(viewIndex);
+    haptic.medium();
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-complete-cake', {
+        body: {
+          name,
+          character,
+          occasion,
+          relation,
+          gender,
+          cakeType,
+          layers,
+          theme,
+          colors,
+          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
+          specificView: viewName
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.regeneratedImage) {
+        const newImages = [...generatedImages];
+        newImages[viewIndex] = data.regeneratedImage;
+        setGeneratedImages(newImages);
+        toast({
+          title: "Success!",
+          description: `${["Front", "Side", "Top-Down", "3/4"][viewIndex]} view regenerated!`
+        });
+        haptic.success();
+      }
+    } catch (error) {
+      console.error('Error regenerating view:', error);
+      toast({
+        title: "Error",
+        description: 'Failed to regenerate view. Please try again.',
+        variant: "destructive"
+      });
+      haptic.error();
+    } finally {
+      setRegeneratingView(null);
+    }
+  };
 
   // Image compression utility
   const compressImage = async (file: File, maxWidth = 1024, quality = 0.75): Promise<string> => {
@@ -1592,7 +1643,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 {generatedImages.map((imageUrl, index) => (
                   <div
                     key={index}
-                    className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 ${
+                    className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 group ${
                       selectedImages.has(index)
                         ? "border-party-pink shadow-lg shadow-party-pink/50"
                         : "border-border hover:border-party-purple/50"
@@ -1644,6 +1695,30 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
                       {["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`}
                     </div>
+                    
+                    {/* Regenerate View Button */}
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRegenerateView(index);
+                      }}
+                      disabled={regeneratingView !== null}
+                      size="sm"
+                      variant="secondary"
+                      className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      {regeneratingView === index ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                          Regenerating...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3 h-3 mr-1" />
+                          Regenerate
+                        </>
+                      )}
+                    </Button>
                     
                     {/* Edit Text Button */}
                     <Button

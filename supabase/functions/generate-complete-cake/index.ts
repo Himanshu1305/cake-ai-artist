@@ -22,7 +22,8 @@ serve(async (req) => {
       layers, 
       theme, 
       colors, 
-      userPhotoBase64 
+      userPhotoBase64,
+      specificView // Optional: regenerate only this view (front, side, top, diagonal)
     } = await req.json();
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender });
@@ -61,16 +62,16 @@ serve(async (req) => {
       },
       { 
         name: 'side', 
-        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from the SIDE VIEW, camera perpendicular. The ENTIRE cake must be visible - from top to bottom including the cake stand. NO CROPPING. Show the depth of all layers and decorations.',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from the SIDE VIEW, camera perpendicular. CRITICAL: The ENTIRE cake must be visible including ALL decorations on top (flowers, figurines, candles, etc.), all tiers, and the cake stand at bottom. Frame the shot to show the complete height from the highest decoration point to the base of the stand. NO CROPPING of top decorations or bottom stand. Zoom out slightly if needed to capture the full cake height.',
         namePosition: 'on the visible tier side panel',
         occasionPosition: 'on another tier or fondant plaque on the side',
         photoPosition: 'on the visible side of the top tier'
       },
       { 
         name: 'top', 
-        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from DIRECTLY ABOVE (bird\'s eye view). Show the entire circular top surface AND the cake stand edge visible around the cake. The complete structure must be visible without cropping.',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from DIRECTLY ABOVE (bird\'s eye view). Frame the shot to FILL THE IMAGE with the cake - the cake should occupy most of the frame with minimal empty space. Show the entire circular top surface with just a hint of the cake stand edge. MINIMIZE BLANK SPACE above and below the cake. The cake should be the dominant element filling 80-90% of the frame.',
         namePosition: 'elegantly around the outer edge or on a decorative banner',
-        occasionPosition: 'centered on the top surface or on decorative ribbon (if no photo present)',
+        occasionPosition: 'prominently on the top surface in elegant fondant letters (even when photo is present)',
         photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
       },
       { 
@@ -98,10 +99,11 @@ CRITICAL COMPOSITION RULES:
 The top surface features a large, circular edible photo print that COVERS THE ENTIRE TOP of the cake from edge to edge, showing the provided reference image. The photo is the centerpiece surrounded by ${theme || 'elegant'} decorative borders.
 
 CRITICAL TEXT ON CAKE:
+- Display "${occasionText}" or "HBD" prominently ${view.occasionPosition} in elegant fondant letters
 - Display the name "${name}" elegantly ${view.namePosition} in beautiful fondant script
 - Text must be clearly readable and in a complementary color (gold, pink #D4687A, or blue #2563EB)
-- EXACT SPELLING: ${name.split('').join('-')}
-- DO NOT add occasion text on top when there's a photo - the photo IS the centerpiece
+- EXACT SPELLING for name: ${name.split('').join('-')}
+- The photo AND the text together create an inspiring, complete design
 
 Cake specifications:
 - Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
@@ -242,10 +244,33 @@ Cake specifications:
       return generatedImageBase64;
     };
 
-    // Generate images in parallel (2 at a time to avoid rate limits)
+    // Generate images - either specific view or all views
     let generatedImages: string[] = [];
     
     try {
+      if (specificView) {
+        // Regenerate only the specified view
+        console.log(`Regenerating only ${specificView} view...`);
+        const viewIndex = viewAngles.findIndex(v => v.name === specificView);
+        if (viewIndex === -1) {
+          throw new Error(`Invalid view name: ${specificView}`);
+        }
+        const regeneratedImage = await generateView(viewAngles[viewIndex]);
+        
+        return new Response(
+          JSON.stringify({ 
+            regeneratedImage,
+            viewIndex,
+            viewName: specificView
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+      
+      // Generate all views in parallel (2 at a time to avoid rate limits)
       console.log('Starting parallel batch 1 (front + side)...');
       const batch1 = await Promise.all([
         generateView(viewAngles[0]), // front
