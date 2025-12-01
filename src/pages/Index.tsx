@@ -73,19 +73,24 @@ const Index = () => {
 
   const loadFeaturedCakes = async () => {
     try {
+      // SECURITY: Only select non-sensitive fields for public display
       const { data, error } = await supabase
         .from("generated_images")
-        .select("image_url, prompt")
+        .select("image_url, created_at, occasion_type")
         .eq("featured", true)
         .order("created_at", { ascending: false })
         .limit(20);
 
       if (error) throw error;
       
-      console.log("Featured cakes loaded:", data?.length || 0, "cakes", data);
+      console.log("Featured cakes loaded:", data?.length || 0, "cakes");
       
       if (data && data.length > 0) {
-        setFeaturedCakes(data);
+        // Map to expected format with generic prompt
+        setFeaturedCakes(data.map(item => ({
+          image_url: item.image_url,
+          prompt: `${item.occasion_type || 'Celebration'} cake`
+        })));
       }
     } catch (error) {
       console.error("Error loading featured cakes:", error);
