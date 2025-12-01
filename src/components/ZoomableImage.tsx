@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ZoomableImageProps {
   src: string;
@@ -94,11 +96,11 @@ export const ZoomableImage = ({ src, alt, onZoomChange, resetTrigger }: Zoomable
       const scaleChange = currentDistance / initialDistanceRef.current;
       let newScale = initialScaleRef.current * scaleChange;
       
-      // Clamp scale between 1x and 3x
-      newScale = Math.max(1, Math.min(3, newScale));
+      // Clamp scale between 0.5x and 3x
+      newScale = Math.max(0.5, Math.min(3, newScale));
       
       // Haptic feedback at boundaries
-      if ((newScale >= 3 && scale < 3) || (newScale <= 1 && scale > 1)) {
+      if ((newScale >= 3 && scale < 3) || (newScale <= 0.5 && scale > 0.5)) {
         haptic.medium();
       }
       
@@ -129,13 +131,52 @@ export const ZoomableImage = ({ src, alt, onZoomChange, resetTrigger }: Zoomable
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 0) {
-      // All touches released
-      if (scale < 1) {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
-      }
+      // All touches released - no auto-reset, allow zoom out
     }
   }, [scale]);
+
+  // Mouse wheel zoom for desktop
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newScale = Math.max(0.5, Math.min(3, scale + delta));
+    setScale(newScale);
+    
+    if (newScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [scale]);
+
+  // Double-click zoom toggle for desktop
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    const newScale = scale > 1 ? 1 : 2;
+    setScale(newScale);
+    
+    if (newScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    } else {
+      // Zoom centered on click location
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = ((rect.width / 2 - e.clientX + rect.left) * (newScale - 1));
+        const y = ((rect.height / 2 - e.clientY + rect.top) * (newScale - 1));
+        setPosition({ x, y });
+      }
+    }
+    haptic.medium();
+  }, [scale, haptic]);
+
+  // Programmatic zoom control
+  const handleZoomChange = useCallback((newScale: number) => {
+    const clampedScale = Math.max(0.5, Math.min(3, newScale));
+    setScale(clampedScale);
+    
+    if (clampedScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+    
+    haptic.light();
+  }, [haptic]);
 
   return (
     <div 
@@ -144,6 +185,8 @@ export const ZoomableImage = ({ src, alt, onZoomChange, resetTrigger }: Zoomable
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
+      onDoubleClick={handleDoubleClick}
     >
       <motion.img
         src={src}
@@ -162,21 +205,46 @@ export const ZoomableImage = ({ src, alt, onZoomChange, resetTrigger }: Zoomable
         draggable={false}
       />
       
-      {/* Zoom indicator */}
-      {scale > 1 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm font-medium"
+      {/* Zoom controls */}
+      <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-black/70 rounded-full px-2 py-1.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-white hover:bg-white/20"
+          onClick={() => handleZoomChange(scale - 0.25)}
+          disabled={scale <= 0.5}
         >
-          {scale.toFixed(1)}x
-        </motion.div>
-      )}
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        
+        <span className="text-white text-xs min-w-[45px] text-center font-medium">
+          {Math.round(scale * 100)}%
+        </span>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-white hover:bg-white/20"
+          onClick={() => handleZoomChange(scale + 0.25)}
+          disabled={scale >= 3}
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-white hover:bg-white/20 ml-1"
+          onClick={() => handleZoomChange(1)}
+          title="Fit to view"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </Button>
+      </div>
       
-      {/* Pinch hint - shown briefly on first view */}
+      {/* Pinch hint - shown on mobile when at default zoom */}
       {scale === 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/50 px-3 py-1 rounded-full pointer-events-none">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/50 px-3 py-1 rounded-full pointer-events-none md:hidden">
           🤏 Pinch to zoom
         </div>
       )}
