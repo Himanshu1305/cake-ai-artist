@@ -1563,7 +1563,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         haptic.light();
                         setPreviewImageIndex(index);
                       }}
-                      className="cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center bg-muted/20 min-h-[200px] overflow-visible"
+                      className="cursor-pointer hover:opacity-90 transition-opacity bg-muted/20 overflow-visible"
                     >
                       <img
                         src={imageUrl || '/placeholder.svg'}

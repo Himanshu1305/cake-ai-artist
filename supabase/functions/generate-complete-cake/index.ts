@@ -75,7 +75,7 @@ serve(async (req) => {
       },
       { 
         name: 'diagonal', 
-        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from a 45-degree DIAGONAL VIEW. Show both the top and front details. The ENTIRE cake must be visible - all tiers from top decorations to cake stand. NO CROPPING. Cinematic composition.',
+        description: 'Professional food photography of ONE SINGLE luxurious cake photographed from a 45-degree angle. This is NOT a comparison image. This is NOT a collage. Generate ONE cake only, positioned center-frame on a marble pedestal. The camera is positioned at 45 degrees to show both the front face and top surface of this ONE cake. The ENTIRE cake must be visible - all tiers from top decorations to cake stand base. NO CROPPING.',
         namePosition: 'on a visible fondant plaque at the cake base',
         occasionPosition: 'on the most visible tier face in prominent lettering',
         photoPosition: 'on the most visible tier face'
@@ -89,9 +89,11 @@ serve(async (req) => {
         const topPrompt = `${view.description}
 
 CRITICAL COMPOSITION RULES:
-- Generate EXACTLY ONE CAKE in the image - no comparison, no multiple cakes
+- Generate EXACTLY ONE CAKE in the image
+- DO NOT generate a collage, comparison, side-by-side, or before/after image
+- DO NOT show multiple angles in one image - just ONE view of ONE cake
+- The single cake must be centered on a marble pedestal
 - The COMPLETE cake must be visible from top to bottom with adequate padding
-- Include the luxurious marble pedestal/cake stand in the frame
 
 The top surface features a large, circular edible photo print that COVERS THE ENTIRE TOP of the cake from edge to edge, showing the provided reference image. The photo is the centerpiece surrounded by ${theme || 'elegant'} decorative borders.
 
@@ -157,9 +159,11 @@ Cake specifications:
       let prompt = `${view.description}
 
 CRITICAL COMPOSITION RULES:
-- Generate EXACTLY ONE CAKE in the image - no comparison, no multiple cakes
+- Generate EXACTLY ONE CAKE in the image
+- DO NOT generate a collage, comparison, side-by-side, or before/after image
+- DO NOT show multiple angles in one image - just ONE view of ONE cake
+- The single cake must be centered on a marble pedestal
 - The COMPLETE cake must be visible from top to bottom with adequate padding
-- Include the luxurious marble pedestal/cake stand in the frame
 
 CRITICAL TEXT ON CAKE:
 - Display "${occasionText}" prominently ${view.occasionPosition} in elegant fondant/icing lettering
@@ -182,8 +186,12 @@ Cake specifications:
 
       console.log(`Generating ${view.name} view...`);
 
-      // Prepare messages
+      // Prepare messages with system instruction
       const messages: any[] = [
+        {
+          role: 'system',
+          content: 'You are a professional food photographer. Generate a single high-quality photograph of ONE cake. Never generate collages, comparisons, or multiple cakes in one image.'
+        },
         {
           role: 'user',
           content: prompt
