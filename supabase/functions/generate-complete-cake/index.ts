@@ -32,73 +32,161 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Get occasion-specific text for the cake
+    const getOccasionText = (occ: string): string => {
+      const texts: Record<string, string> = {
+        'birthday': 'Happy Birthday',
+        'anniversary': 'Happy Anniversary',
+        'wedding': 'Congratulations',
+        'graduation': 'Congratulations',
+        'baby-shower': 'Welcome Baby',
+        'engagement': 'Congratulations',
+        'promotion': 'Congratulations',
+        'retirement': 'Happy Retirement',
+        'other': 'Celebrations'
+      };
+      return texts[occ] || 'Happy Birthday';
+    };
+
+    const occasionText = getOccasionText(occasion || 'birthday');
+
     // Build view-specific prompts with name and photo baked in
     const viewAngles = [
       { 
         name: 'front', 
-        description: 'Professional food photography of a luxurious cake from the FRONT VIEW, camera at eye level facing the cake directly',
-        namePosition: 'on the bottom tier front face, centered horizontally',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from the FRONT VIEW, camera at eye level. The ENTIRE cake must be visible in frame - from the top decorations down to the cake stand/pedestal base. NO CROPPING. Full view of all cake tiers.',
+        namePosition: 'on the bottom tier front face or cake board, centered horizontally',
+        occasionPosition: 'prominently on the middle or top tier in large, elegant letters',
         photoPosition: 'on the middle tier center face' 
       },
       { 
         name: 'side', 
-        description: 'Professional food photography of a luxurious cake from the SIDE VIEW, camera perpendicular to the cake',
-        namePosition: 'on the middle tier side panel, running along the tier',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from the SIDE VIEW, camera perpendicular. The ENTIRE cake must be visible - from top to bottom including the cake stand. NO CROPPING. Show the depth of all layers and decorations.',
+        namePosition: 'on the visible tier side panel',
+        occasionPosition: 'on another tier or fondant plaque on the side',
         photoPosition: 'on the visible side of the top tier'
       },
       { 
         name: 'top', 
-        description: 'Professional food photography of a luxurious cake from DIRECTLY ABOVE (bird\'s eye view), showing the entire circular top surface',
-        namePosition: 'written elegantly around the outer edge of the top surface or on a decorative banner/ribbon across the photo',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from DIRECTLY ABOVE (bird\'s eye view). Show the entire circular top surface AND the cake stand edge visible around the cake. The complete structure must be visible without cropping.',
+        namePosition: 'elegantly around the outer edge or on a decorative banner',
+        occasionPosition: 'centered on the top surface or on decorative ribbon (if no photo present)',
         photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
       },
       { 
         name: 'diagonal', 
-        description: 'Professional food photography of a luxurious cake from a 45-degree DIAGONAL VIEW, camera positioned at 45° angle showing multiple sides',
-        namePosition: 'on a visible fondant plaque at the cake base or bottom tier',
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from a 45-degree DIAGONAL VIEW. Show both the top and front details. The ENTIRE cake must be visible - all tiers from top decorations to cake stand. NO CROPPING. Cinematic composition.',
+        namePosition: 'on a visible fondant plaque at the cake base',
+        occasionPosition: 'on the most visible tier face in prominent lettering',
         photoPosition: 'on the most visible tier face'
       }
     ];
 
     // Helper function to generate a single view with retry logic
     const generateView = async (view: typeof viewAngles[0], retries = 2): Promise<string> => {
-      // Build prompt with name as fondant lettering
-      let prompt = `${view.description}.
-
-The cake MUST prominently display beautiful fondant lettering spelling "${name}" ${view.namePosition}, piped in an elegant script font that looks naturally integrated into the smooth fondant as if professionally decorated by a master cake artist. The name should be clearly readable, large, and in a complementary color (deep blue #2563EB, pink #D4687A, or gold) that contrasts beautifully with the fondant.
-
-CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter: ${name.split('').join('-')}. Ensure every letter is clearly visible and readable.`;
-
-      // Add photo ONLY to TOP VIEW - photo should cover entire top surface
+      // Special handling for top-down view with photo
       if (userPhotoBase64 && view.name === 'top') {
-        prompt += `\n\nThe ENTIRE top surface of the cake is covered with a large, circular edible photo print showing the provided reference image. The photo should completely fill the top of the cake from edge to edge, looking like a professionally printed edible image that covers the entire visible top fondant surface. The recipient's name "${name}" should be elegantly written on top of or around the photo in contrasting fondant lettering.`;
+        const topPrompt = `${view.description}
+
+CRITICAL COMPOSITION RULES:
+- Generate EXACTLY ONE CAKE in the image - no comparison, no multiple cakes
+- The COMPLETE cake must be visible from top to bottom with adequate padding
+- Include the luxurious marble pedestal/cake stand in the frame
+
+The top surface features a large, circular edible photo print that COVERS THE ENTIRE TOP of the cake from edge to edge, showing the provided reference image. The photo is the centerpiece surrounded by ${theme || 'elegant'} decorative borders.
+
+CRITICAL TEXT ON CAKE:
+- Display the name "${name}" elegantly ${view.namePosition} in beautiful fondant script
+- Text must be clearly readable and in a complementary color (gold, pink #D4687A, or blue #2563EB)
+- EXACT SPELLING: ${name.split('').join('-')}
+- DO NOT add occasion text on top when there's a photo - the photo IS the centerpiece
+
+Cake specifications:
+- Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
+- Theme: ${theme || 'elegant celebration'}
+- Color scheme: ${colors || 'soft pastels with white base'}`;
+
+        const topMessages: any[] = [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: topPrompt },
+              { 
+                type: 'image_url', 
+                image_url: { url: `data:image/jpeg;base64,${userPhotoBase64}` } 
+              }
+            ]
+          }
+        ];
+
+        console.log(`Generating ${view.name} view...`);
+
+        const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-3-pro-image-preview',
+            messages: topMessages,
+            modalities: ['image', 'text']
+          }),
+        });
+
+        if (!imageResponse.ok) {
+          const errorText = await imageResponse.text();
+          console.error(`Image generation failed for ${view.name}:`, imageResponse.status, errorText);
+          if (imageResponse.status === 429) throw new Error('RATE_LIMIT');
+          if (imageResponse.status === 503 && retries > 0) {
+            console.log(`Retrying ${view.name} view after 503 error (${retries} retries left)...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return generateView(view, retries - 1);
+          }
+          throw new Error(`Image generation failed: ${imageResponse.status}`);
+        }
+
+        const imageData = await imageResponse.json();
+        const generatedImageBase64 = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (!generatedImageBase64) throw new Error(`No image returned for ${view.name} view`);
+        console.log(`✓ Generated ${view.name} view`);
+        return generatedImageBase64;
       }
 
-      // Add cake specifications
-      prompt += `\n\nCake specifications:
+      // Standard prompt for all non-photo views
+      let prompt = `${view.description}
+
+CRITICAL COMPOSITION RULES:
+- Generate EXACTLY ONE CAKE in the image - no comparison, no multiple cakes
+- The COMPLETE cake must be visible from top to bottom with adequate padding
+- Include the luxurious marble pedestal/cake stand in the frame
+
+CRITICAL TEXT ON CAKE:
+- Display "${occasionText}" prominently ${view.occasionPosition} in elegant fondant/icing lettering
+- Display the name "${name}" ${view.namePosition} in beautiful script
+- Text must be clearly readable, large, and in complementary colors (gold, pink #D4687A, or blue #2563EB)
+- EXACT SPELLING for name: ${name.split('').join('-')}
+- DO NOT repeat any text - show each text element ONCE only
+
+Cake specifications:
 - Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
 - Theme: ${theme || 'elegant celebration'}
 - Color scheme: ${colors || 'soft pastels with white base'}`;
 
       if (character) {
-        prompt += `\n- Character decorations: ${character} themed fondant decorations and figurines tastefully placed around the tiers`;
+        prompt += `\n- Character: ${character} themed decorations and figurines placed tastefully`;
       }
 
-      prompt += `\n\nThe cake sits on a luxurious marble pedestal with soft studio lighting, shallow depth of field, hyper-realistic detail, cinematic composition, 8K resolution, award-winning pastry photography aesthetic.`;
+      prompt += `\n\nStandard photography specifications: luxurious marble pedestal, soft studio lighting, shallow depth of field, hyper-realistic detail, cinematic composition, 8K resolution, professional food photography, award-winning pastry art aesthetic.`;
+
 
       console.log(`Generating ${view.name} view...`);
 
-      // Prepare messages - ONLY include photo for TOP view
+      // Prepare messages
       const messages: any[] = [
         {
           role: 'user',
-          content: (userPhotoBase64 && view.name === 'top') ? [
-            { type: 'text', text: prompt },
-            { 
-              type: 'image_url', 
-              image_url: { url: `data:image/jpeg;base64,${userPhotoBase64}` } 
-            }
-          ] : prompt
+          content: prompt
         }
       ];
 
