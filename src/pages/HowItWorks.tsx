@@ -10,7 +10,7 @@ const HowItWorks = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
         <title>How to Create a Personalized Cake in 30 Seconds | Cake AI Artist</title>
-        <meta name="description" content="Learn how easy it is to create stunning personalized cakes. Enter a name, choose an occasion, and let AI generate 4 beautiful designs. Step-by-step guide." />
+        <meta name="description" content="Learn how easy it is to create stunning personalized cakes. Enter a name, choose an occasion, and let AI generate 3 beautiful views. Step-by-step guide." />
         <meta name="keywords" content="how to create virtual cake, cake design tutorial, AI cake generator guide" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
         <meta property="og:url" content="https://cakeaiartist.com/how-it-works" />
@@ -82,14 +82,21 @@ const HowItWorks = () => {
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-3 text-foreground">Step 3: Generate & Download</h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  Hit that "Create My Cake" button and wait about 20 seconds. Our AI will generate four unique cake designs, 
-                  each with slightly different styles, colors, and messages. Pick your favorite, download it in high quality, 
-                  and you're done.
+                  Hit that "Create My Cake" button and wait about 30 seconds. Our AI will generate <strong>three unique cake views</strong> 
+                  (Front View, Side View, and Top-Down View), each showing your cake from a different angle. Pick your favorite, 
+                  download it in high quality, and you're done.
                 </p>
-                <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                <div className="bg-background/50 p-4 rounded-lg border border-border/50 space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Pro tip:</strong> Don't love what you see? Just hit generate again. Each generation gives you completely new designs. 
-                    Premium users can do this unlimited times until they find the perfect one.
+                    <strong>Pro tip:</strong> Don't love what you see? Just hit generate again. Each generation gives you completely new designs.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>✨ Special for Founding Members:</strong> Our 200 founding members get <strong>unlimited generations forever</strong>—they'll never pay another cent. 
+                    Regular premium subscribers get 150 generations per year.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>💡 New Feature:</strong> Don't love one specific view? Click the <strong>"Regenerate"</strong> button on any image 
+                    to regenerate just that angle without redoing all three!
                   </p>
                 </div>
               </div>
@@ -98,48 +105,43 @@ const HowItWorks = () => {
 
           <Card className="p-8 bg-gradient-to-r from-party-purple/20 to-party-pink/20 border-2 border-party-purple/30 backdrop-blur-sm hover:shadow-xl transition-all">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-pink to-party-purple rounded-full flex items-center justify-center animate-pulse">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-pink to-party-purple rounded-full flex items-center justify-center">
                 <Type className="h-8 w-8 text-white" />
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
-                  Step 3.5: Customize Your Text ✨
-                  <span className="text-sm font-normal text-party-pink">(New!)</span>
+                  Step 3.5: Your Name Appears Automatically! ✨
                 </h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  <strong>Don't like where the name appears? No problem!</strong> After your cakes are generated, 
-                  click the <strong>"Edit Text"</strong> button on any image to:
+                  <strong>No editing needed!</strong> Our AI intelligently places the recipient's name directly on the cake 
+                  as beautiful fondant/icing lettering during generation. The AI analyzes each cake design and positions the text 
+                  for optimal visibility and style—just like a real custom cake decorator would.
                 </p>
                 <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
                   <li className="flex items-start gap-2">
-                    <span className="text-party-pink font-bold">📍</span>
-                    <span><strong>Drag to reposition</strong> the name anywhere on the cake</span>
+                    <span className="text-party-pink font-bold">🎂</span>
+                    <span>Text is rendered <strong>as part of the cake</strong>, not overlaid afterward</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-party-purple font-bold">🔤</span>
-                    <span><strong>Change the font</strong> from 15+ beautiful styles (Script, Decorative, Classic)</span>
+                    <span className="text-party-purple font-bold">🎨</span>
+                    <span>AI chooses fonts and colors that <strong>complement the design</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-gold font-bold">🎨</span>
-                    <span><strong>Pick any color</strong> that matches the cake design perfectly</span>
+                    <span className="text-gold font-bold">📍</span>
+                    <span>Text placement is <strong>optimized per view</strong> (front, side, top-down)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-party-coral font-bold">🔄</span>
-                    <span><strong>Rotate the text</strong> for creative angles and dynamic layouts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-party-mint font-bold">📐</span>
-                    <span><strong>Adjust the size</strong> to make it pop or keep it subtle</span>
+                    <span className="text-party-coral font-bold">✨</span>
+                    <span>Includes both <strong>occasion greetings</strong> ("Happy Birthday") and the <strong>recipient's name</strong></span>
                   </li>
                 </ul>
                 <div className="bg-party-purple/10 p-4 rounded-lg border border-party-purple/30">
                   <p className="text-sm text-foreground font-semibold mb-1">
-                    💡 Pro tip: Full Creative Control
+                    💡 Pro tip: Short Names Work Best
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    The AI places text automatically based on the cake design, but you can always fine-tune it! 
-                    Click "Edit Text" on any generated image to drag, resize, rotate, change fonts, and pick colors 
-                    until it's absolutely perfect. Make it uniquely yours! 🎨
+                    While you can use longer messages, shorter names (1-3 words) tend to look more elegant and readable on the cake. 
+                    Think "Jessica" rather than "Jessica Marie Thompson." The AI renders them as realistic fondant lettering!
                   </p>
                 </div>
               </div>
@@ -154,43 +156,37 @@ const HowItWorks = () => {
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
                   Step 3.6: Add Photos to Your Cake
-                  <span className="text-sm font-normal text-party-coral">(New!)</span>
                 </h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
                   <strong>Upload your photo during cake creation!</strong> Simply upload a photo in the form before clicking "Create My Cake," 
-                  and our AI will automatically place it on the <strong>Top-Down View</strong> after generation—perfect 
-                  for creating <strong>edible photo prints</strong>. Once the cake is generated with your photo, you can refine it:
+                  and our AI will automatically integrate it as an <strong>edible photo print on the Top-Down View</strong> during generation.
                 </p>
                 <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
                   <li className="flex items-start gap-2">
-                    <span className="text-party-coral font-bold">📍</span>
-                    <span><strong>Drag to reposition</strong> the photo on the cake surface</span>
+                    <span className="text-party-coral font-bold">🎂</span>
+                    <span>Photo is <strong>baked into the design</strong> during AI generation</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-party-mint font-bold">📏</span>
-                    <span><strong>Resize</strong> the photo to fit perfectly (25-60% of cake width)</span>
+                    <span className="text-party-mint font-bold">⭕</span>
+                    <span>Automatically formatted as a <strong>circular edible print</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-party-purple font-bold">🔄</span>
-                    <span><strong>Rotate</strong> for the perfect angle (-15° to 15°)</span>
+                    <span className="text-party-purple font-bold">📍</span>
+                    <span>Placed on the <strong>Top-Down View only</strong> to showcase the photo prominently</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-party-pink font-bold">⭕</span>
-                    <span><strong>Choose shape:</strong> Circular (edible print style) or rectangular</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gold font-bold">🎨</span>
-                    <span><strong>Customize border:</strong> Pick color and thickness for elegant framing</span>
+                    <span className="text-party-pink font-bold">✨</span>
+                    <span>Name appears on a decorative <strong>ribbon or banner</strong> across the photo</span>
                   </li>
                 </ul>
                 <div className="bg-party-coral/10 p-4 rounded-lg border border-party-coral/30">
                   <p className="text-sm text-foreground font-semibold mb-1">
-                    💡 Pro tip: Automatic Placement, Easy Refinement
+                    💡 Pro tip: Photos Integrated During Generation
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Upload your photo during cake creation, and the AI automatically places it on the Top-Down View after generation. 
-                    The AI finds blank fondant areas and applies circular masking with borders—just like a real edible print! 
-                    If you want to adjust it, use the "Edit Photo Position" button to fine-tune placement, size, rotation, and styling. 
+                    Upload your photo during cake creation, and the AI automatically integrates it as a beautiful edible print 
+                    covering the entire top surface—just like a real custom cake! The photo appears as a large circular print 
+                    that fills the top view, with the recipient's name elegantly placed on a decorative banner. 
                     Works best with portrait photos or square images! 🎂✨
                   </p>
                 </div>

@@ -26,7 +26,7 @@ const FAQ = () => {
         faqs={[
           {
             question: "How do I create my first cake?",
-            answer: "It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), and hit the 'Create My Cake' button. In about 20 seconds, you'll get four unique designs to choose from. Pick your favorite and download it. No design skills needed."
+            answer: "It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), and hit the 'Create My Cake' button. In about 30 seconds, you'll get three unique views (Front, Side, and Top-Down) to choose from. Pick your favorite and download it. No design skills needed."
           },
           {
             question: "Do I need to create an account?",
@@ -38,7 +38,7 @@ const FAQ = () => {
           },
           {
             question: "Can I change the message after generating?",
-            answer: "Currently, each generation creates four variations with slightly different messages and designs. If you don't love what you see, simply hit generate again. Premium users can regenerate as many times as they want until they find the perfect message."
+            answer: "Currently, each generation creates three views with slightly different perspectives. If you don't love what you see, simply hit generate again. Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! Founding members can do this unlimited times, regular premium users get 150 generations per year."
           },
           {
             question: "What's included in the Premium subscription?",
@@ -46,7 +46,11 @@ const FAQ = () => {
           },
           {
             question: "How many cakes can I generate with Premium?",
-            answer: "Unlimited. Seriously. Generate as many as you want, whenever you want. Planning 50 different birthday parties? Go for it. Want to experiment with different messages until you find the perfect one? Have at it."
+            answer: "It depends on your membership type! Founding members (the first 200) get unlimited generations forever—they'll never pay again and can create as many cakes as they want. Regular premium subscribers get 150 generations per year, which is plenty for most users. Free users get 3 per day with a 12/month cap."
+          },
+          {
+            question: "What's special about Founding Members?",
+            answer: "Our 200 founding members are locked in for life. They paid a one-time fee ($49 or $99) and will never pay anything else—ever. They get unlimited generations, priority support, exclusive badges, and all future features at no additional cost. Once these 200 spots are filled, this offer will never be available again."
           },
           {
             question: "Can I use this for my business?",
@@ -80,7 +84,7 @@ const FAQ = () => {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), 
-                and hit the "Create My Cake" button. In about 20 seconds, you'll get four unique designs to choose from. 
+                and hit the "Create My Cake" button. In about 30 seconds, you'll get three unique views (Front, Side, and Top-Down) to choose from. 
                 Pick your favorite and download it. No design skills needed.
               </AccordionContent>
             </AccordionItem>
@@ -112,9 +116,10 @@ const FAQ = () => {
                 Can I change the message after generating?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Currently, each generation creates four variations with slightly different messages and designs. 
+                Currently, each generation creates three views with slightly different perspectives. 
                 If you don't love what you see, simply hit generate again—it counts as one of your daily generations. 
-                Premium users can regenerate as many times as they want until they find the perfect message.
+                Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! 
+                Founding members can do this unlimited times, regular premium users get 150 generations per year.
               </AccordionContent>
             </AccordionItem>
 
@@ -134,7 +139,7 @@ const FAQ = () => {
                 What's included in the Premium subscription?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Premium gets you unlimited cake generations (no daily limits), priority processing (faster generation), 
+                Premium gets you 150 generations per year (or unlimited if you're a founding member), priority processing (faster generation), 
                 access to advanced customization options, commercial use license for your images, and early access to new features. 
                 Plus, you support us in making the service even better!
               </AccordionContent>
@@ -145,8 +150,9 @@ const FAQ = () => {
                 How many cakes can I generate with Premium?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Unlimited. Seriously. Generate as many as you want, whenever you want. Planning 50 different birthday parties? Go for it. 
-                Want to experiment with different messages until you find the perfect one? Have at it.
+                It depends on your membership type! <strong>Founding members</strong> (the first 200) get <strong>unlimited generations forever</strong>—they'll 
+                never pay again and can create as many cakes as they want. Regular premium subscribers get <strong>150 generations per year</strong>, 
+                which is plenty for most users. Free users get 3 per day with a 12/month cap.
               </AccordionContent>
             </AccordionItem>
 
@@ -207,10 +213,21 @@ const FAQ = () => {
 
             <AccordionItem value="item-13" className="bg-background/50 px-6 rounded-lg border border-border/50">
               <AccordionTrigger className="text-left font-semibold">
+                What's special about Founding Members?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Our 200 founding members are locked in for life. They paid a one-time fee ($49 or $99) and will <strong>never pay anything else—ever</strong>. 
+                They get unlimited generations, priority support, exclusive badges, and all future features at no additional cost. 
+                Once these 200 spots are filled, this offer will never be available again.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-17" className="bg-background/50 px-6 rounded-lg border border-border/50">
+              <AccordionTrigger className="text-left font-semibold">
                 Are there bulk options for businesses?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                 Currently, our premium plan handles most business needs with unlimited generations. 
+                 Currently, our premium plan handles most business needs with 150 generations per year. 
                  If you're an enterprise with specific requirements (custom branding, API access, white-label solutions), 
                  contact us at support@cakeaiartist.com to discuss custom arrangements.
               </AccordionContent>
