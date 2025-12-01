@@ -143,7 +143,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>Cake AI Artist - Create Stunning Personalized Cakes in Seconds</title>
-        <meta name="description" content="Design beautiful, personalized cakes with AI. Perfect for birthdays, anniversaries, and celebrations. No design skills needed—get 4 unique designs in 20 seconds." />
+        <meta name="description" content="Design beautiful, personalized cakes with AI. Perfect for birthdays, anniversaries, and celebrations. No design skills needed—get 3 unique views in 30 seconds." />
         <meta name="keywords" content="AI cake designer, virtual cake creator, custom cake design, personalized birthday cake" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
         <meta property="og:url" content="https://cakeaiartist.com/" />
