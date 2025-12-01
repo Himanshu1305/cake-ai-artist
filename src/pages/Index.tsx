@@ -35,6 +35,7 @@ const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
 
@@ -162,14 +163,14 @@ const Index = () => {
       <FloatingEmojis />
       <CursorSparkles />
       <AdminSaleReminder />
-      <UrgencyBanner />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
       <LivePurchaseNotifications />
       <FeedbackWidget />
       
       {/* Navigation Header */}
-      <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-16 z-40 border-b border-border/30">
+      <nav className={`container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky ${isBannerVisible ? 'top-16' : 'top-0'} z-40 border-b border-border/30 transition-all duration-300`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-foreground">Cake AI Artist</Link>
           <div className="flex gap-3">

@@ -6,10 +6,21 @@ import { SpotsRemainingCounter } from './SpotsRemainingCounter';
 import { Button } from './ui/button';
 
 const BANNER_DISMISSED_KEY = 'urgency_banner_dismissed';
+const DISMISS_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
-export const UrgencyBanner = () => {
+interface UrgencyBannerProps {
+  onVisibilityChange?: (visible: boolean) => void;
+}
+
+export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
   const [isDismissed, setIsDismissed] = useState(() => {
-    return sessionStorage.getItem(BANNER_DISMISSED_KEY) === 'true';
+    const dismissedAt = localStorage.getItem(BANNER_DISMISSED_KEY);
+    if (dismissedAt) {
+      const timeSinceDismissed = Date.now() - parseInt(dismissedAt, 10);
+      // Show again after 1 hour
+      return timeSinceDismissed < DISMISS_DURATION;
+    }
+    return false;
   });
   const navigate = useNavigate();
 
@@ -22,9 +33,13 @@ export const UrgencyBanner = () => {
 
   useEffect(() => {
     if (isDismissed) {
-      sessionStorage.setItem(BANNER_DISMISSED_KEY, 'true');
+      localStorage.setItem(BANNER_DISMISSED_KEY, Date.now().toString());
     }
   }, [isDismissed]);
+
+  useEffect(() => {
+    onVisibilityChange?.(!(isDismissed || !isSaleActive));
+  }, [isDismissed, isSaleActive, onVisibilityChange]);
 
   if (isDismissed || !isSaleActive) {
     return null;
@@ -36,6 +51,7 @@ export const UrgencyBanner = () => {
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
+    localStorage.setItem(BANNER_DISMISSED_KEY, Date.now().toString());
     setIsDismissed(true);
   };
 
