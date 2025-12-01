@@ -67,10 +67,10 @@ export const AdminSaleReminder = () => {
               <div className="flex-1 space-y-4">
                 <div>
                   <h3 className="text-lg font-bold text-secondary-foreground mb-2">
-                    🔔 FOUNDING MEMBER SALE DECISION REQUIRED
+                    🔔 NEW YEAR LIFETIME DEAL DECISION REQUIRED
                   </h3>
                   <p className="text-secondary-foreground/90">
-                    The founding member sale ended on December 31st. Choose what to do:
+                    The New Year Lifetime Deal ended on December 31st. Choose what to do:
                   </p>
                 </div>
 

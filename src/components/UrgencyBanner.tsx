@@ -70,7 +70,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
               <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                <span>🚨 FOUNDING MEMBER SALE -</span>
+                <span>🎉 NEW YEAR LIFETIME DEAL -</span>
                 <SpotsRemainingCounter className="flex-shrink-0" />
                 <span className="hidden sm:inline">SPOTS LEFT AT $49 - ENDS DEC 31</span>
                 <span className="sm:hidden">LEFT - ENDS DEC 31</span>

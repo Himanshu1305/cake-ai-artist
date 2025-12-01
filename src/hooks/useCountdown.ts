@@ -19,12 +19,12 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
     
     if (now >= janFirst2026 && !hasShownWarning) {
       console.warn(
-        '%c⚠️ FOUNDING MEMBER SALE DECISION NEEDED ⚠️',
+        '%c⚠️ NEW YEAR LIFETIME DEAL DECISION NEEDED ⚠️',
         'color: #ff6b6b; font-size: 16px; font-weight: bold;',
-        '\n\nThe sale ended on Dec 31, 2025.',
+        '\n\nThe deal ended on Dec 31, 2025.',
         '\n\nOptions:',
-        '\n1. Extend Sale: Update date in UrgencyBanner.tsx and CountdownTimer.tsx',
-        '\n2. Close Sale: Follow steps in FOUNDING_MEMBER_CLEANUP_INSTRUCTIONS.md',
+        '\n1. Extend Deal: Update date in UrgencyBanner.tsx and CountdownTimer.tsx',
+        '\n2. Close Deal: Follow steps in FOUNDING_MEMBER_CLEANUP_INSTRUCTIONS.md',
         '\n\nCheck AdminSaleReminder component at top of homepage for quick actions.'
       );
       sessionStorage.setItem('jan1_sale_warning_shown', 'true');

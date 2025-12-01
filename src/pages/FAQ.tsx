@@ -38,7 +38,7 @@ const FAQ = () => {
           },
           {
             question: "Can I change the message after generating?",
-            answer: "Currently, each generation creates three views with slightly different perspectives. If you don't love what you see, simply hit generate again. Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! Founding members can do this unlimited times, regular premium users get 150 generations per year."
+            answer: "Currently, each generation creates three views with slightly different perspectives. If you don't love what you see, simply hit generate again. Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! First 200 members (New Year Lifetime Deal) can do this unlimited times, regular premium users get 150 generations per year."
           },
           {
             question: "What's included in the Premium subscription?",
@@ -46,11 +46,11 @@ const FAQ = () => {
           },
           {
             question: "How many cakes can I generate with Premium?",
-            answer: "It depends on your membership type! Founding members (the first 200) get unlimited generations forever—they'll never pay again and can create as many cakes as they want. Regular premium subscribers get 150 generations per year, which is plenty for most users. Free users get 3 per day with a 12/month cap."
+            answer: "It depends on your membership type! First 200 members (New Year Lifetime Deal) get unlimited generations forever—they'll never pay again and can create as many cakes as they want. Regular premium subscribers get 150 generations per year, which is plenty for most users. Free users get 3 per day with a 12/month cap."
           },
           {
-            question: "What's special about Founding Members?",
-            answer: "Our 200 founding members are locked in for life. They paid a one-time fee ($49 or $99) and will never pay anything else—ever. They get unlimited generations, priority support, exclusive badges, and all future features at no additional cost. Once these 200 spots are filled, this offer will never be available again."
+            question: "What's special about the New Year Lifetime Deal?",
+            answer: "The first 200 members who claim this New Year deal are locked in for life. They pay a one-time fee ($49 or $99) and will never pay anything else—ever. They get unlimited generations, priority support, exclusive 2025 badges, and all future features at no additional cost. Once these 200 spots are filled or December 31st passes, this offer will never be available again."
           },
           {
             question: "Can I use this for my business?",
@@ -119,7 +119,7 @@ const FAQ = () => {
                 Currently, each generation creates three views with slightly different perspectives. 
                 If you don't love what you see, simply hit generate again—it counts as one of your daily generations. 
                 Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! 
-                Founding members can do this unlimited times, regular premium users get 150 generations per year.
+                First 200 members (New Year Lifetime Deal) can do this unlimited times, regular premium users get 150 generations per year.
               </AccordionContent>
             </AccordionItem>
 
@@ -139,7 +139,7 @@ const FAQ = () => {
                 What's included in the Premium subscription?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Premium gets you 150 generations per year (or unlimited if you're a founding member), priority processing (faster generation), 
+                Premium gets you 150 generations per year (or unlimited if you grabbed the New Year Lifetime Deal), priority processing (faster generation), 
                 access to advanced customization options, commercial use license for your images, and early access to new features. 
                 Plus, you support us in making the service even better!
               </AccordionContent>
@@ -150,7 +150,7 @@ const FAQ = () => {
                 How many cakes can I generate with Premium?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                It depends on your membership type! <strong>Founding members</strong> (the first 200) get <strong>unlimited generations forever</strong>—they'll 
+                It depends on your membership type! <strong>First 200 members</strong> (New Year Lifetime Deal) get <strong>unlimited generations forever</strong>—they'll 
                 never pay again and can create as many cakes as they want. Regular premium subscribers get <strong>150 generations per year</strong>, 
                 which is plenty for most users. Free users get 3 per day with a 12/month cap.
               </AccordionContent>
@@ -213,12 +213,12 @@ const FAQ = () => {
 
             <AccordionItem value="item-13" className="bg-background/50 px-6 rounded-lg border border-border/50">
               <AccordionTrigger className="text-left font-semibold">
-                What's special about Founding Members?
+                What's special about the New Year Lifetime Deal?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Our 200 founding members are locked in for life. They paid a one-time fee ($49 or $99) and will <strong>never pay anything else—ever</strong>. 
-                They get unlimited generations, priority support, exclusive badges, and all future features at no additional cost. 
-                Once these 200 spots are filled, this offer will never be available again.
+                The first 200 members who claim this New Year deal are locked in for life. They pay a one-time fee ($49 or $99) and will <strong>never pay anything else—ever</strong>. 
+                They get unlimited generations, priority support, exclusive 2025 badges, and all future features at no additional cost. 
+                Once these 200 spots are filled or December 31st passes, this offer will never be available again.
               </AccordionContent>
             </AccordionItem>
 
