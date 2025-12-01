@@ -50,7 +50,7 @@ function showPurchaseNotification(member: any) {
   const isTier1 = member.tier === 'tier_1_49';
   
   toast.success(
-    `${isTier1 ? '👑' : '⭐'} Someone just became Founding Member #${member.member_number}!`,
+    `${isTier1 ? '👑' : '⭐'} Someone just claimed Lifetime Deal #${member.member_number}!`,
     {
       duration: 5000,
       className: 'bg-gradient-party text-white border-party-pink',
@@ -63,7 +63,7 @@ function showSimulatedNotification() {
   const isTier1 = Math.random() > 0.5;
   
   toast.success(
-    `${isTier1 ? '👑' : '⭐'} Someone just claimed Founding Member spot!`,
+    `${isTier1 ? '👑' : '⭐'} Someone just claimed their Lifetime Deal!`,
     {
       duration: 5000,
       className: 'bg-gradient-party text-white border-party-pink',

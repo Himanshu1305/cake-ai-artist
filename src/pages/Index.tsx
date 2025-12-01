@@ -217,7 +217,7 @@ const Index = () => {
               className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
             >
               <p className="text-white font-bold text-lg">
-                <span className="inline-block animate-bounce">🎊</span> FOUNDING MEMBER SALE ENDS IN:
+                <span className="inline-block animate-bounce">🎊</span> NEW YEAR LIFETIME DEAL ENDS IN:
               </p>
             </motion.div>
             
@@ -275,7 +275,7 @@ const Index = () => {
                 className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow animate-rainbow-shimmer relative overflow-hidden group"
                 onClick={() => navigate('/pricing')}
               >
-                <span className="relative z-10">Claim Your Founding Spot Now →</span>
+                <span className="relative z-10">Claim Your Lifetime Deal Now →</span>
                 <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </Button>
               

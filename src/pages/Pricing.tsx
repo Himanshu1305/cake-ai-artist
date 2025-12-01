@@ -21,35 +21,34 @@ const Pricing = () => {
 
   const foundingFeatures = [
     "Everything in Premium",
-    "Founding Member Badge (displayed on your profile)",
-    "Featured on Wall of Founders",
+    "2025 Member Badge (displayed on your profile)",
     "Lifetime updates & all future features",
     "Priority support forever",
     "Early access to all new characters",
-    "Exclusive founding member perks",
+    "Exclusive lifetime member perks",
     "Never pay again - locked in for life",
   ];
 
   const faqItems = [
     {
       question: "What happens after December 31st?",
-      answer: "After December 31, 2025, the founding member offer closes forever. New users will only be able to subscribe at $9.99/month. If you purchase founding member access, you'll have lifetime access regardless of future price changes."
+      answer: "After December 31, 2025, this New Year Lifetime Deal closes forever. New users will only be able to subscribe at $9.99/month. If you claim this lifetime deal, you'll have lifetime access regardless of future price changes."
     },
     {
-      question: "Can I upgrade from free to founding member later?",
-      answer: "No, this is a one-time offer. Once the 200 founding member spots are filled or December 31st passes (whichever comes first), this offer will never be available again."
+      question: "Can I upgrade from free to lifetime later?",
+      answer: "No, this is a one-time offer. Once the 200 spots are filled or December 31st passes (whichever comes first), this offer will never be available again."
     },
     {
       question: "Is this really lifetime access?",
-      answer: "Yes! As long as Cake AI Artist exists, your founding member access will remain active. You'll never be charged again and will receive all future updates and features at no additional cost."
+      answer: "Yes! As long as Cake AI Artist exists, your lifetime membership will remain active. You'll never be charged again and will receive all future updates and features at no additional cost."
     },
     {
       question: "What if the service shuts down?",
-      answer: "We're committed to Cake AI Artist for the long term. However, if we ever need to shut down, we'll provide 90 days notice and offer full refunds to all founding members."
+      answer: "We're committed to Cake AI Artist for the long term. However, if we ever need to shut down, we'll provide 90 days notice and offer full refunds to all lifetime members."
     },
     {
       question: "Can I get a refund?",
-      answer: "Yes! We offer a 7-day money-back guarantee. If you're not satisfied with your founding member purchase within 7 days, we'll provide a full refund, no questions asked."
+      answer: "Yes! We offer a 7-day money-back guarantee. If you're not satisfied with your lifetime membership within 7 days, we'll provide a full refund, no questions asked."
     },
     {
       question: "What's the difference between Tier 1 and Tier 2?",
@@ -64,15 +63,15 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>Pricing - Founding Member Lifetime Access | Cake AI Artist</title>
+        <title>Pricing - New Year Lifetime Deal | Cake AI Artist</title>
         <meta name="description" content="Get lifetime access to Cake AI Artist for just $49. Limited to first 200 members. Create unlimited personalized cakes forever—no monthly fees." />
-        <meta name="keywords" content="cake AI pricing, virtual cake plans, lifetime cake access, founding member" />
+        <meta name="keywords" content="cake AI pricing, virtual cake plans, lifetime cake access, new year deal" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
         <meta property="og:url" content="https://cakeaiartist.com/pricing" />
       </Helmet>
       
       <ProductSchema 
-        name="Cake AI Artist Founding Member - Tier 1"
+        name="Cake AI Artist New Year Special - Tier 1"
         description="Lifetime access to AI-powered personalized cake designs. First 50 members only."
         price="49"
         priceCurrency="USD"
@@ -104,7 +103,7 @@ const Pricing = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
-              🚨 FOUNDING MEMBER SALE - ENDS DECEMBER 31ST 🚨
+              🎉 NEW YEAR LIFETIME DEAL - ENDS DECEMBER 31ST 🎉
             </h2>
             <CountdownTimer className="justify-center" />
           </motion.div>
@@ -141,7 +140,7 @@ const Pricing = () => {
                 <CardHeader className="pt-8">
                   <CardTitle className="text-2xl flex items-center justify-center gap-2">
                     <Crown className="w-6 h-6 text-gold" />
-                    Founding Member
+                    New Year Special
                   </CardTitle>
                   <CardDescription>First 50 Members Only</CardDescription>
                   <div className="mt-4">
@@ -172,7 +171,7 @@ const Pricing = () => {
                     disabled
                   >
                     <Crown className="w-4 h-4 mr-2" />
-                    Claim Founding Spot (Stripe TBD)
+                    Claim Lifetime Deal (Stripe TBD)
                   </Button>
                   <p className="text-xs text-muted-foreground">One-time payment • Never expires</p>
                 </CardFooter>
@@ -329,7 +328,7 @@ const Pricing = () => {
             Don't Miss This Once-in-a-Lifetime Offer
           </h2>
           <p className="text-xl text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join the first 200 founding members and lock in lifetime access at the lowest price ever.
+            Join the first 200 members and lock in lifetime access at the lowest price ever.
           </p>
           <div className="flex flex-col items-center gap-4 mb-8">
             <SpotsRemainingCounter />
@@ -340,7 +339,7 @@ const Pricing = () => {
             className="bg-gradient-party hover:shadow-party text-lg px-8 py-6 font-bold"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            Claim Your Founding Member Spot →
+            Claim Your Lifetime Deal →
           </Button>
         </div>
       </section>
