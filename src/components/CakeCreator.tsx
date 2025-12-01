@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import confetti from "canvas-confetti";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -324,6 +325,51 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
+  // Confetti celebration animation
+  const triggerConfetti = () => {
+    const count = 200;
+    const defaults = {
+      origin: { y: 0.7 },
+      zIndex: 9999,
+    };
+
+    function fire(particleRatio: number, opts: confetti.Options) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio),
+      });
+    }
+
+    // Fire multiple bursts for a grand celebration
+    fire(0.25, {
+      spread: 26,
+      startVelocity: 55,
+    });
+
+    fire(0.2, {
+      spread: 60,
+    });
+
+    fire(0.35, {
+      spread: 100,
+      decay: 0.91,
+      scalar: 0.8,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 25,
+      decay: 0.92,
+      scalar: 1.2,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 45,
+    });
+  };
+
   // Helper function with retry logic for network interruptions
   const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
     let lastError;
@@ -538,6 +584,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         setGeneratedImages(images);
         setOriginalImages(images); // Same as generated since no post-processing needed
         setSelectedImages(new Set([0]));
+        
+        // Trigger celebration confetti after a brief delay
+        setTimeout(() => triggerConfetti(), 400);
         
         haptic.success();
         toast({
