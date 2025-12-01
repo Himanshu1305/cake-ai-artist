@@ -99,12 +99,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
 
     const steps = [
-      { progress: 10, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 25, step: "✨ Adding magical decorations...", delay: 4000 },
-      { progress: 45, step: "🌈 Mixing the perfect colors...", delay: 8000 },
-      { progress: 65, step: "🎀 Perfecting the details...", delay: 15000 },
-      { progress: 85, step: "💖 Putting the finishing touches...", delay: 25000 },
-      { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 35000 },
+      { progress: 5, step: "🎂 Baking something special...", delay: 500 },
+      { progress: 15, step: "✨ Adding magical decorations...", delay: 3000 },
+      { progress: 30, step: "🌈 Mixing the perfect colors...", delay: 8000 },
+      { progress: 45, step: "🎀 Perfecting the details...", delay: 15000 },
+      { progress: 60, step: "💖 Sprinkling some magic...", delay: 22000 },
+      { progress: 75, step: "🌟 Creating something beautiful...", delay: 30000 },
+      { progress: 85, step: "✨ Adding final sparkles...", delay: 38000 },
+      { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 48000 },
     ];
 
     const timers: NodeJS.Timeout[] = [];
