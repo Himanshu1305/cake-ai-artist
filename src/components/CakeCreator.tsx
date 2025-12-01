@@ -1548,11 +1548,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {generatedImages.map((imageUrl, index) => (
                   <div
                     key={index}
-                    className={`relative rounded-lg border-4 transition-all duration-300 ${
+                    className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 ${
                       selectedImages.has(index)
                         ? "border-party-pink shadow-lg shadow-party-pink/50"
                         : "border-border hover:border-party-purple/50"
@@ -1563,12 +1563,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         haptic.light();
                         setPreviewImageIndex(index);
                       }}
-                      className="cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center bg-muted/20 min-h-[200px] rounded-md"
+                      className="cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center bg-muted/20 min-h-[200px] overflow-visible"
                     >
                       <img
                         src={imageUrl || '/placeholder.svg'}
                         alt={`Cake ${["Front View", "Side View", "Top-Down View", "3/4 View"][index]}`}
-                        className="w-full h-auto max-h-[450px] object-contain"
+                        className="w-full h-auto object-contain rounded-lg"
                         onError={(e) => {
                           console.error('Failed to load image:', imageUrl);
                           e.currentTarget.src = '/placeholder.svg';
