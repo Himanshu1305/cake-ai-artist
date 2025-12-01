@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileSelect } from "@/components/ui/mobile-select";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -68,6 +69,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [editingPhotoOnCakeIndex, setEditingPhotoOnCakeIndex] = useState<number | null>(null);
   const [photoPosition, setPhotoPosition] = useState<PhotoPosition | null>(null);
   const [isSavingToGallery, setIsSavingToGallery] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStep, setGenerationStep] = useState("");
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
@@ -79,6 +82,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven", "barbie"
   ];
   const FREE_GENERATION_LIMIT = 5;
+
+  // Simulated progress during generation
+  useEffect(() => {
+    if (!isLoading) {
+      setGenerationProgress(0);
+      setGenerationStep("");
+      return;
+    }
+
+    const steps = [
+      { progress: 15, step: "🎨 Preparing your design...", delay: 500 },
+      { progress: 30, step: "📸 Generating Front & Side views...", delay: 3000 },
+      { progress: 50, step: "🔄 Processing first batch...", delay: 6000 },
+      { progress: 70, step: "📸 Generating Top & Diagonal views...", delay: 9000 },
+      { progress: 85, step: "✨ Adding finishing touches...", delay: 14000 },
+      { progress: 95, step: "🎉 Almost ready...", delay: 18000 },
+    ];
+
+    const timers: NodeJS.Timeout[] = [];
+    
+    steps.forEach(({ progress, step, delay }) => {
+      const timer = setTimeout(() => {
+        setGenerationProgress(progress);
+        setGenerationStep(step);
+      }, delay);
+      timers.push(timer);
+    });
+
+    return () => timers.forEach(clearTimeout);
+  }, [isLoading]);
 
   // Image compression utility
   const compressImage = async (file: File, maxWidth = 1024, quality = 0.75): Promise<string> => {
@@ -1451,15 +1484,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       {isLoading && (
         <Card className="p-8 bg-gradient-party/10 border-party-purple/40 border-2 shadow-party">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 border-4 border-party-pink border-t-transparent rounded-full animate-spin mx-auto" />
             <div className="space-y-2">
               <h3 className="text-2xl font-bold text-foreground">🎂 Crafting Your Magical Cake ✨</h3>
-              <p className="text-foreground/80 text-lg">Our AI is designing the perfect celebration cake for {name}... 🎉</p>
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <span className="animate-bounce floating-flame">🎈</span>
-                <span className="animate-bounce dancing-flame" style={{ animationDelay: '0.1s' }}>🎊</span>
-                <span className="animate-bounce floating-flame" style={{ animationDelay: '0.2s' }}>✨</span>
-              </div>
+              <p className="text-foreground/80 text-lg">Creating the perfect celebration cake for {name}... 🎉</p>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="w-full max-w-md mx-auto space-y-2">
+              <Progress value={generationProgress} className="h-3" />
+              <p className="text-sm text-muted-foreground">{generationStep || "Starting..."}</p>
+              <p className="text-xs text-muted-foreground">{generationProgress}%</p>
+            </div>
+            
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <span className="animate-bounce">🎈</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🎊</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
             </div>
           </div>
         </Card>
@@ -1563,12 +1603,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         haptic.light();
                         setPreviewImageIndex(index);
                       }}
-                      className="cursor-pointer hover:opacity-90 transition-opacity bg-muted/20 overflow-visible"
+                      className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
                     >
                       <img
                         src={imageUrl || '/placeholder.svg'}
                         alt={`Cake ${["Front View", "Side View", "Top-Down View", "3/4 View"][index]}`}
-                        className="w-full h-auto object-contain rounded-lg"
+                        className="w-full h-full object-cover rounded-lg"
                         onError={(e) => {
                           console.error('Failed to load image:', imageUrl);
                           e.currentTarget.src = '/placeholder.svg';
