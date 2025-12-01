@@ -24,6 +24,7 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
 import { Star, Download } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -464,7 +465,20 @@ const Index = () => {
             ⭐ Create an account and star your favorite designs to feature them here
           </p>
         </div>
-        <Carousel className="w-full max-w-5xl mx-auto">
+        <Carousel 
+          className="w-full max-w-5xl mx-auto"
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({
+              delay: 3000,
+              stopOnInteraction: true,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+        >
           <CarouselContent>
             {featuredCakes.length > 0 ? (
               featuredCakes.map((cake, index) => (
