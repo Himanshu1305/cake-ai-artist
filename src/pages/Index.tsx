@@ -364,7 +364,20 @@ const Index = () => {
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
           What People Actually Say
         </h2>
-        <Carousel className="w-full max-w-5xl mx-auto mb-12">
+        <Carousel 
+          className="w-full max-w-5xl mx-auto mb-12"
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({
+              delay: 4000,
+              stopOnInteraction: true,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+        >
           <CarouselContent>
             {[
               {
@@ -591,7 +604,9 @@ const Index = () => {
                 className="w-full h-auto rounded-lg"
               />
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground italic">{selectedCarouselImage.prompt}</p>
+                <p className="text-sm text-muted-foreground italic">
+                  A beautiful cake creation from our community
+                </p>
                 <div className="flex gap-2">
                   <Button 
                     onClick={() => handleDownloadCarouselImage(selectedCarouselImage.image_url, selectedCarouselImage.prompt)}
