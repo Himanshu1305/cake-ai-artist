@@ -52,6 +52,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [totalGenerations, setTotalGenerations] = useState(0);
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
   const [postGenRating, setPostGenRating] = useState(0);
@@ -83,6 +84,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     "goku", "naruto", "masha-and-bear", "anna", "elsa", "olaf", "sven", "barbie"
   ];
   const FREE_GENERATION_LIMIT = 5;
+  const PREMIUM_GENERATION_LIMIT = 100;  // For regular premium users
+  const ADMIN_GENERATION_LIMIT = 500;    // For admins only
 
   // Simulated progress during generation
   useEffect(() => {
@@ -255,6 +258,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         console.log("Premium status set to:", profile.is_premium);
       }
 
+      // Check if user is admin using has_role function
+      const { data: adminCheck } = await supabase
+        .rpc('has_role', { _user_id: userId, _role: 'admin' });
+      
+      setIsAdmin(adminCheck === true);
+      console.log("Admin status:", adminCheck);
+
       // Get generation count for current year (for premium users)
       const currentYear = new Date().getFullYear();
       const { data: tracking } = await supabase
@@ -307,10 +317,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     // Check generation limits for logged-in users
     if (isLoggedIn) {
-      if (isPremium && generationCount >= 100) {
+      const premiumLimit = isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT;
+      
+      if (isPremium && generationCount >= premiumLimit) {
         toast({
           title: "Generation limit reached",
-          description: "You've reached your limit of 100 generations for this year.",
+          description: `You've reached your limit of ${premiumLimit} generations for this year.`,
           variant: "destructive",
         });
         return;
@@ -927,7 +939,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </p>
               <p className="text-xs text-foreground/70">
                 {isPremium 
-                  ? `${generationCount} / 100 generations used this year`
+                  ? `${generationCount} / ${isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT} generations used this year`
                   : `${totalGenerations} / ${FREE_GENERATION_LIMIT} free generations used`}
               </p>
             </div>
