@@ -60,8 +60,8 @@ serve(async (req) => {
       }
     ];
 
-    // Helper function to generate a single view
-    const generateView = async (view: typeof viewAngles[0]) => {
+    // Helper function to generate a single view with retry logic
+    const generateView = async (view: typeof viewAngles[0], retries = 2): Promise<string> => {
       // Build prompt with name as fondant lettering
       let prompt = `${view.description}.
 
@@ -125,6 +125,13 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
           throw new Error('RATE_LIMIT');
         }
         
+        // Retry on 503 errors (upstream connection issues)
+        if (imageResponse.status === 503 && retries > 0) {
+          console.log(`Retrying ${view.name} view after 503 error (${retries} retries left)...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return generateView(view, retries - 1);
+        }
+        
         throw new Error(`Image generation failed: ${imageResponse.status}`);
       }
 
@@ -140,6 +147,8 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
     };
 
     // Generate images in parallel (2 at a time to avoid rate limits)
+    let generatedImages: string[] = [];
+    
     try {
       console.log('Starting parallel batch 1 (front + side)...');
       const batch1 = await Promise.all([
@@ -147,8 +156,8 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
         generateView(viewAngles[1])  // side
       ]);
       
-      // Brief pause between batches
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Brief pause between batches (reduced from 2000ms for faster generation)
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       console.log('Starting parallel batch 2 (top + diagonal)...');
       const batch2 = await Promise.all([
@@ -156,7 +165,7 @@ CRITICAL: The name "${name}" must be spelled EXACTLY as shown - letter by letter
         generateView(viewAngles[3])  // diagonal
       ]);
       
-      const generatedImages = [...batch1, ...batch2];
+      generatedImages = [...batch1, ...batch2];
     
     } catch (error) {
       if (error instanceof Error && error.message === 'RATE_LIMIT') {
