@@ -45,9 +45,10 @@ export const LiveActivityFeed = () => {
   }, []);
 
   const loadActivities = async () => {
+    // SECURITY: Only select needed fields, not user_id
     const { data } = await supabase
       .from("activity_feed")
-      .select("*")
+      .select("id, message, created_at")
       .order("created_at", { ascending: false })
       .limit(5);
 

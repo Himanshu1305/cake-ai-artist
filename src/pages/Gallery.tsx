@@ -71,9 +71,10 @@ const Gallery = () => {
 
   const loadImages = async (userId: string) => {
     try {
+      // SECURITY: Explicitly select only needed fields instead of *
       const { data, error } = await supabase
         .from("generated_images")
-        .select("*")
+        .select("id, image_url, prompt, created_at, featured, recipient_name, occasion_type, occasion_date, user_id")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -166,6 +167,22 @@ const Gallery = () => {
 
   const toggleFeatured = async (imageId: string, currentFeatured: boolean) => {
     try {
+      // SECURITY: Warn users about privacy when featuring images
+      const image = images.find(img => img.id === imageId);
+      
+      if (!currentFeatured && image) {
+        // Check if image contains personal data
+        const hasPersonalData = image.recipient_name || image.prompt?.includes('name') || 
+                                image.occasion_date;
+        
+        if (hasPersonalData) {
+          toast.warning(
+            "Note: Featured images are visible to everyone. Consider privacy when featuring images with personal details.",
+            { duration: 5000 }
+          );
+        }
+      }
+
       const { error } = await supabase
         .from("generated_images")
         .update({ featured: !currentFeatured })
