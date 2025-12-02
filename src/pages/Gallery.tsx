@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star, Calendar, Clock } from "lucide-react";
+import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star, Calendar, Clock, Gift, Check } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { PartyPackGenerator } from "@/components/PartyPackGenerator";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
 import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
@@ -38,6 +39,11 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  
+  // Party Pack Mode states
+  const [partyPackMode, setPartyPackMode] = useState(false);
+  const [selectedCakeForPartyPack, setSelectedCakeForPartyPack] = useState<GeneratedImage | null>(null);
+  const [showPartyPackModal, setShowPartyPackModal] = useState(false);
 
   // Map local filenames to imported assets
   const localImageMap: Record<string, string> = {
@@ -158,7 +164,11 @@ const Gallery = () => {
   };
 
   const handleImageClick = (image: GeneratedImage) => {
-    setSelectedImage(image);
+    if (partyPackMode) {
+      setSelectedCakeForPartyPack(image);
+    } else {
+      setSelectedImage(image);
+    }
   };
 
   const handleCloseModal = () => {
@@ -248,6 +258,20 @@ const Gallery = () => {
           <h1 className="text-3xl font-bold text-foreground">My Gallery</h1>
           <div className="flex gap-4">
             <Button
+              onClick={() => {
+                setPartyPackMode(!partyPackMode);
+                setSelectedCakeForPartyPack(null);
+              }}
+              variant={partyPackMode ? "default" : "outline"}
+              className={partyPackMode 
+                ? "bg-party-gold hover:bg-party-gold/90 text-background" 
+                : "border-party-gold/30 hover:border-party-gold"
+              }
+            >
+              <Gift className="w-4 h-4 mr-2" />
+              Party Pack
+            </Button>
+            <Button
               onClick={() => navigate("/")}
               variant="outline"
               className="border-party-purple/30 hover:border-party-purple"
@@ -266,8 +290,28 @@ const Gallery = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Party Pack Mode Banner */}
+        {partyPackMode && (
+          <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-gold/30 via-party-pink/30 to-party-purple/30 border-2 border-party-gold shadow-party">
+            <div className="relative z-10 p-6">
+              <div className="flex items-start gap-4">
+                <Gift className="w-10 h-10 text-party-gold flex-shrink-0 mt-1 animate-pulse" />
+                <div>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
+                    🎉 Party Pack Mode Active
+                  </h3>
+                  <p className="text-foreground/80 text-base font-medium leading-relaxed">
+                    Click any cake below to select it, then generate matching party items (invitations, banners, thank you cards, and more!)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Feature Info Banner */}
-        <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-gold/40 shadow-party hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all duration-300 cursor-pointer group">
+        {!partyPackMode && (
+          <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-gold/40 shadow-party hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all duration-300 cursor-pointer group">
           <div className="relative z-10 p-6">
             <div className="flex items-start gap-4">
               <Star className="w-10 h-10 text-party-gold fill-party-gold flex-shrink-0 mt-1 float animate-pulse drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
@@ -283,6 +327,7 @@ const Gallery = () => {
           </div>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent group-hover:via-white/10 transition-all duration-500" />
         </Card>
+        )}
 
         {/* Upcoming Occasions Section */}
         {upcomingOccasions.length > 0 && (
@@ -298,7 +343,11 @@ const Gallery = () => {
               {upcomingOccasions.map((image) => (
                 <Card
                   key={image.id}
-                  className="overflow-hidden bg-gradient-to-br from-party-pink/10 to-party-purple/10 backdrop-blur-sm border-2 border-party-pink hover:border-party-gold transition-all hover:shadow-[0_0_30px_rgba(251,191,36,0.4)]"
+                  className={`overflow-hidden bg-gradient-to-br from-party-pink/10 to-party-purple/10 backdrop-blur-sm border-2 transition-all hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] ${
+                    partyPackMode && selectedCakeForPartyPack?.id === image.id
+                      ? 'ring-4 ring-party-gold border-party-gold'
+                      : 'border-party-pink hover:border-party-gold'
+                  }`}
                 >
                   <div className="relative">
                     <Badge 
@@ -307,6 +356,12 @@ const Gallery = () => {
                       <Clock className="w-3 h-3 mr-1" />
                       {image.daysUntil === 0 ? 'Today!' : image.daysUntil === 1 ? 'Tomorrow!' : `In ${image.daysUntil} days`}
                     </Badge>
+                    {partyPackMode && selectedCakeForPartyPack?.id === image.id && (
+                      <Badge className="absolute top-2 right-2 z-10 bg-party-gold text-background font-bold shadow-lg">
+                        <Check className="w-3 h-3 mr-1" />
+                        Selected
+                      </Badge>
+                    )}
                     <div 
                       className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(image)}
@@ -449,12 +504,22 @@ const Gallery = () => {
             {regularImages.map((image) => (
               <Card
                 key={image.id}
-                className="overflow-hidden bg-surface-elevated/80 backdrop-blur-sm border-2 border-party-pink/30 hover:border-party-pink transition-all"
+                className={`overflow-hidden bg-surface-elevated/80 backdrop-blur-sm border-2 transition-all ${
+                  partyPackMode && selectedCakeForPartyPack?.id === image.id
+                    ? 'ring-4 ring-party-gold border-party-gold'
+                    : 'border-party-pink/30 hover:border-party-pink'
+                }`}
               >
                 <div 
                   className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => handleImageClick(image)}
                 >
+                  {partyPackMode && selectedCakeForPartyPack?.id === image.id && (
+                    <Badge className="absolute top-2 right-2 z-10 bg-party-gold text-background font-bold shadow-lg">
+                      <Check className="w-3 h-3 mr-1" />
+                      Selected
+                    </Badge>
+                  )}
                   <img
                     src={resolveImageUrl(image.image_url)}
                     alt={image.prompt}
@@ -569,6 +634,53 @@ const Gallery = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Action Button for Party Pack */}
+      {partyPackMode && selectedCakeForPartyPack && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-4">
+          <Button
+            onClick={() => setShowPartyPackModal(true)}
+            size="lg"
+            className="bg-party-gold hover:bg-party-gold/90 text-background font-bold shadow-2xl hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all hover:scale-105"
+          >
+            <Gift className="w-5 h-5 mr-2" />
+            Generate Party Pack for {selectedCakeForPartyPack.recipient_name || 'This Cake'}
+          </Button>
+        </div>
+      )}
+
+      {/* Party Pack Modal */}
+      <Dialog open={showPartyPackModal} onOpenChange={setShowPartyPackModal}>
+        <DialogContent className="max-w-2xl bg-surface-elevated border-party-gold/30">
+          {selectedCakeForPartyPack && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Gift className="w-8 h-8 text-party-gold" />
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">Create Party Pack</h2>
+                  <p className="text-sm text-foreground/70">
+                    Generate matching party items for {selectedCakeForPartyPack.recipient_name || 'this cake'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <img
+                  src={resolveImageUrl(selectedCakeForPartyPack.image_url)}
+                  alt="Selected cake"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
+              
+              <PartyPackGenerator
+                cakeImageId={selectedCakeForPartyPack.id}
+                name={selectedCakeForPartyPack.recipient_name || 'Celebration'}
+                occasion={selectedCakeForPartyPack.occasion_type || 'celebration'}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Image Preview Modal */}
       <Dialog open={!!selectedImage} onOpenChange={handleCloseModal}>
