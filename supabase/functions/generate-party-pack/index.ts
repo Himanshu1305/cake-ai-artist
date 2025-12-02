@@ -139,14 +139,26 @@ Style: Elegant, sophisticated, matching party theme`
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`AI generation failed: ${response.status} - ${errorText}`);
-        throw new Error(`Failed to generate image: ${response.status}`);
+        
+        // Handle rate limits and payment errors
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Please try again in a few moments.");
+        }
+        if (response.status === 402) {
+          throw new Error("AI credits depleted. Please add funds to your Lovable workspace.");
+        }
+        
+        throw new Error(`Failed to generate image: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log("AI Response structure:", JSON.stringify(data, null, 2));
+      
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (!imageUrl) {
-        throw new Error("No image returned from AI");
+        console.error("No image in response. Full response:", JSON.stringify(data, null, 2));
+        throw new Error(`No image returned from AI. Response: ${JSON.stringify(data)}`);
       }
 
       return imageUrl;
