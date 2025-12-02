@@ -26,6 +26,20 @@ import { SwipeableImagePreview } from "@/components/SwipeableImagePreview";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { processCakeWithPhoto, FALLBACK_PHOTO_POSITIONS } from "@/utils/cakePhotoOverlay";
 import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
+import { z } from "zod";
+
+// Input validation schema
+const cakeFormSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(50, "Name must be 50 characters or less"),
+  occasion: z.string().min(1, "Occasion is required"),
+  relation: z.string().min(1, "Relation is required"),
+  gender: z.string().min(1, "Gender is required"),
+  character: z.string().max(50, "Character name too long").optional(),
+  cakeType: z.string().max(30, "Cake type too long").optional(),
+  layers: z.string().max(20, "Layers value too long").optional(),
+  theme: z.string().max(100, "Theme too long").optional(),
+  colors: z.string().max(100, "Colors value too long").optional(),
+});
 
 interface CakeCreatorProps {}
 
@@ -398,22 +412,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     e.preventDefault();
     haptic.medium(); // Haptic feedback on form submission
     
-    if (!name.trim()) {
-      toast({
-        title: "Please enter a name",
-        description: "We need a name to create your personalized cake!",
-        variant: "destructive",
+    // SECURITY: Validate all inputs with zod schema
+    try {
+      cakeFormSchema.parse({
+        name,
+        occasion,
+        relation,
+        gender,
+        character: character || undefined,
+        cakeType: cakeType || undefined,
+        layers: layers || undefined,
+        theme: theme || undefined,
+        colors: colors || undefined,
       });
-      return;
-    }
-
-    if (!occasion || !relation || !gender) {
-      toast({
-        title: "Please complete all fields",
-        description: "When using AI, please select occasion, relation, and gender for better personalized messages!",
-        variant: "destructive",
-      });
-      return;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Invalid input",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // Check generation limits for logged-in users
