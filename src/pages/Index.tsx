@@ -73,11 +73,10 @@ const Index = () => {
 
   const loadFeaturedCakes = async () => {
     try {
-      // SECURITY: Only select non-sensitive fields for public display
+      // SECURITY: Use secure view that only exposes non-sensitive fields
       const { data, error } = await supabase
-        .from("generated_images")
-        .select("image_url, created_at, occasion_type")
-        .eq("featured", true)
+        .from("public_featured_images")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(20);
 

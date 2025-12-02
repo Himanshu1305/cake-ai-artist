@@ -364,6 +364,13 @@ export type Database = {
             referencedRelation: "generated_images"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reminder_logs_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "public_featured_images"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -430,7 +437,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_featured_images: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          occasion_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          occasion_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          occasion_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_activity_feed: {
