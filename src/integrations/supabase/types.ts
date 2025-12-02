@@ -232,6 +232,57 @@ export type Database = {
           },
         ]
       }
+      party_packs: {
+        Row: {
+          banner_url: string
+          cake_image_id: string
+          cake_topper_url: string
+          created_at: string
+          id: string
+          invitation_url: string
+          place_cards_url: string
+          thank_you_card_url: string
+          user_id: string
+        }
+        Insert: {
+          banner_url: string
+          cake_image_id: string
+          cake_topper_url: string
+          created_at?: string
+          id?: string
+          invitation_url: string
+          place_cards_url: string
+          thank_you_card_url: string
+          user_id: string
+        }
+        Update: {
+          banner_url?: string
+          cake_image_id?: string
+          cake_topper_url?: string
+          created_at?: string
+          id?: string
+          invitation_url?: string
+          place_cards_url?: string
+          thank_you_card_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_packs_cake_image_id_fkey"
+            columns: ["cake_image_id"]
+            isOneToOne: false
+            referencedRelation: "generated_images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "party_packs_cake_image_id_fkey"
+            columns: ["cake_image_id"]
+            isOneToOne: false
+            referencedRelation: "public_featured_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null

@@ -27,6 +27,7 @@ import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { processCakeWithPhoto, FALLBACK_PHOTO_POSITIONS } from "@/utils/cakePhotoOverlay";
 import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
 import { z } from "zod";
+import { PartyPackGenerator } from "@/components/PartyPackGenerator";
 
 // Input validation schema
 const cakeFormSchema = z.object({
@@ -90,6 +91,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
   const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
+  const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
@@ -690,7 +692,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         console.log('Permanent URL:', permanentUrl);
 
         // Save image with permanent URL and message
-        const { error: imageError } = await supabase
+        const { data: insertedImage, error: imageError } = await supabase
           .from("generated_images")
           .insert({
             user_id: user.id,
@@ -701,9 +703,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             recipient_name: recipientName.trim() || name.trim(), // Smart fallback to main name
             occasion_type: occasion || null,
             occasion_date: occasionDate || new Date().toISOString().split('T')[0], // Default to today for tracking
-          });
+          })
+          .select()
+          .single();
 
         if (imageError) throw imageError;
+        
+        // Store the first saved image ID for party pack generation
+        if (insertedImage && !savedCakeImageId) {
+          setSavedCakeImageId(insertedImage.id);
+        }
       }
 
       // Update generation tracking
@@ -2110,6 +2119,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <p className="text-xs text-center text-muted-foreground">
                       💡 Saved images can be starred ⭐ in your gallery to feature on our homepage!
                     </p>
+                  </div>
+                )}
+
+                {/* Party Pack Generator - Show after saving to gallery */}
+                {isLoggedIn && savedCakeImageId && (
+                  <div className="pt-4 border-t border-muted">
+                    <div className="space-y-2 mb-4 text-center">
+                      <h4 className="font-semibold text-foreground flex items-center justify-center gap-2">
+                        🎁 Want the Complete Party Experience?
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Generate matching invitations, thank you cards, banner, cake topper & place cards!
+                      </p>
+                    </div>
+                    <PartyPackGenerator
+                      cakeImageId={savedCakeImageId}
+                      name={name}
+                      occasion={occasion}
+                      theme={theme}
+                      colors={colors}
+                      character={character}
+                    />
                   </div>
                 )}
               </div>
