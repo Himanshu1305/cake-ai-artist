@@ -16,22 +16,29 @@ export const FloatingEmojis = () => {
     
     const generateEmojis = () => {
       const newEmojis: Emoji[] = [];
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 12; i++) {
         newEmojis.push({
           id: i,
           emoji: celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)],
           left: Math.random() * 100,
           delay: Math.random() * 5,
-          duration: 8 + Math.random() * 4,
+          duration: 10 + Math.random() * 4,
         });
       }
       setEmojis(newEmojis);
     };
 
-    generateEmojis();
-    const interval = setInterval(generateEmojis, 12000);
+    // Delay initial emoji generation to let page settle
+    const initialDelay = setTimeout(() => {
+      generateEmojis();
+    }, 1500);
+    
+    const interval = setInterval(generateEmojis, 15000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
