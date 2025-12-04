@@ -264,12 +264,12 @@ const Gallery = () => {
               }}
               variant={partyPackMode ? "default" : "outline"}
               className={partyPackMode 
-                ? "bg-party-gold hover:bg-party-gold/90 text-background" 
-                : "border-party-gold/30 hover:border-party-gold"
+                ? "bg-gradient-to-r from-party-purple to-party-pink text-white font-bold shadow-lg" 
+                : "border-party-purple hover:border-party-pink hover:bg-party-purple/10"
               }
             >
               <Gift className="w-4 h-4 mr-2" />
-              Party Pack
+              {partyPackMode ? "Exit Party Pack Mode" : "Party Pack"}
             </Button>
             <Button
               onClick={() => navigate("/")}
@@ -290,19 +290,48 @@ const Gallery = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Party Pack Mode Banner */}
+        {/* Party Pack Mode Banner with Instructions */}
         {partyPackMode && (
-          <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-gold/30 via-party-pink/30 to-party-purple/30 border-2 border-party-gold shadow-party">
+          <Card className="mb-6 relative overflow-hidden bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-purple shadow-party">
             <div className="relative z-10 p-6">
               <div className="flex items-start gap-4">
-                <Gift className="w-10 h-10 text-party-gold flex-shrink-0 mt-1 animate-pulse" />
-                <div>
-                  <h3 className="text-xl font-bold mb-2 text-foreground">
-                    🎉 Party Pack Mode Active
+                <Gift className="w-12 h-12 text-party-purple flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-3 text-foreground">
+                    🎉 Party Pack Mode - Create Matching Party Items
                   </h3>
-                  <p className="text-foreground/80 text-base font-medium leading-relaxed">
-                    Click any cake below to select it, then generate matching party items (invitations, banners, thank you cards, and more!)
-                  </p>
+                  
+                  {/* Step-by-step instructions */}
+                  <div className="grid gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-party-purple text-white font-bold flex items-center justify-center text-sm">1</span>
+                      <p className="text-foreground/90">
+                        <strong>Select a cake</strong> - Click any cake image below to choose it
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-party-pink text-white font-bold flex items-center justify-center text-sm">2</span>
+                      <p className="text-foreground/90">
+                        <strong>Add party details</strong> - Enter date, time & location (optional)
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-party-gold text-background font-bold flex items-center justify-center text-sm">3</span>
+                      <p className="text-foreground/90">
+                        <strong>Generate & download</strong> - Get invitations, banners, thank you cards & more!
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {selectedCakeForPartyPack ? (
+                    <p className="text-party-purple font-semibold">
+                      ✓ Cake selected! Click the purple button below to continue.
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground italic">
+                      👇 Click any cake below to get started
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -641,10 +670,10 @@ const Gallery = () => {
           <Button
             onClick={() => setShowPartyPackModal(true)}
             size="lg"
-            className="bg-party-gold hover:bg-party-gold/90 text-background font-bold shadow-2xl hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] transition-all hover:scale-105"
+            className="bg-gradient-to-r from-party-purple via-party-pink to-party-gold text-white font-bold text-lg px-8 py-6 shadow-2xl hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all hover:scale-105 animate-pulse"
           >
-            <Gift className="w-5 h-5 mr-2" />
-            Generate Party Pack for {selectedCakeForPartyPack.recipient_name || 'This Cake'}
+            <Gift className="w-6 h-6 mr-3 animate-bounce" />
+            Create Party Pack for "{selectedCakeForPartyPack.recipient_name || 'This Cake'}"
           </Button>
         </div>
       )}

@@ -248,6 +248,60 @@ const HowItWorks = () => {
               </div>
             </div>
           </Card>
+
+          {/* Step 5: Party Pack */}
+          <Card className="p-8 bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 border-2 border-party-purple/30 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-gold to-party-orange rounded-full flex items-center justify-center">
+                <span className="text-4xl">🎁</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 5: Generate a Complete Party Pack 🎉
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  <strong>Turn your cake into a full celebration kit!</strong> Our Party Pack feature automatically generates 
+                  matching party items from your cake design—saving you hours of design work and ensuring everything looks cohesive.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-3 mb-4">
+                  <div className="flex items-start gap-2">
+                    <span className="text-party-pink font-bold">💌</span>
+                    <span className="text-muted-foreground"><strong>Invitation Cards</strong> - With your party details</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-party-purple font-bold">🎊</span>
+                    <span className="text-muted-foreground"><strong>Party Banners</strong> - Ready to print & hang</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-gold font-bold">💝</span>
+                    <span className="text-muted-foreground"><strong>Thank You Cards</strong> - For after the party</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-party-coral font-bold">🎂</span>
+                    <span className="text-muted-foreground"><strong>Cake Toppers</strong> - Printable designs</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-party-mint font-bold">🏷️</span>
+                    <span className="text-muted-foreground"><strong>Place Cards</strong> - For table settings</span>
+                  </div>
+                </div>
+
+                <div className="bg-party-purple/10 p-4 rounded-lg border border-party-purple/30">
+                  <p className="text-sm text-foreground font-semibold mb-2">
+                    💡 How to Use Party Pack:
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>Go to your <strong>Gallery</strong> after creating a cake</li>
+                    <li>Click the <strong>"Party Pack"</strong> button in the top navigation</li>
+                    <li>Select any cake image you want to use</li>
+                    <li>Add your event details (date, time, location)</li>
+                    <li>Click generate and preview all your party items!</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Tips & Tricks Section */}
