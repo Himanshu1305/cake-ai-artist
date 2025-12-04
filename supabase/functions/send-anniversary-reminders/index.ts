@@ -118,7 +118,7 @@ serve(async (req) => {
         const recipientName = image.recipient_name || 'someone special';
 
         const { error: emailError } = await resend.emails.send({
-          from: 'CakeWish Reminders <reminders@resend.dev>',
+          from: 'Cake AI Artist <reminders@cakeaiartist.com>',
           to: [email],
           subject: `Reminder: ${recipientName}'s ${occasionType} is coming up!`,
           html: `
