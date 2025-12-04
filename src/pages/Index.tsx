@@ -26,10 +26,11 @@ import { Card } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
-import { Star, Download } from "lucide-react";
+import { Star, Download, Menu } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -179,10 +180,12 @@ const Index = () => {
       <nav className={`sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-party-pink via-party-coral to-party-gold bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+            <Link to="/" className="text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
               🎂 Cake AI Artist
             </Link>
-            <div className="flex gap-2 items-center">
+            
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex gap-2 items-center">
               <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
               <Link to="/pricing">
                 <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
@@ -205,6 +208,60 @@ const Index = () => {
                 <Button onClick={() => navigate("/auth")} size="sm" className="bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
               )}
             </div>
+
+            {/* Mobile Hamburger Menu */}
+            <Sheet>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="ghost" size="icon" className="text-foreground hover:bg-party-pink/10">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
+                <div className="flex flex-col gap-2 mt-8">
+                  <Link to="/how-it-works">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button>
+                  </Link>
+                  <Link to="/pricing">
+                    <Button variant="ghost" className="w-full justify-start relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
+                      Pricing
+                      <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span>
+                    </Button>
+                  </Link>
+                  <Link to="/use-cases">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button>
+                  </Link>
+                  <Link to="/community">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button>
+                  </Link>
+                  <Link to="/blog">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Blog</Button>
+                  </Link>
+                  <Link to="/faq">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button>
+                  </Link>
+                  
+                  {isLoggedIn && (
+                    <>
+                      <div className="border-t border-party-pink/20 my-2" />
+                      <Button onClick={() => navigate("/gallery")} variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>
+                      <Button onClick={() => navigate("/settings")} variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>
+                    </>
+                  )}
+                  
+                  {isAdmin && (
+                    <Button onClick={() => navigate("/admin")} variant="ghost" className="w-full justify-start text-party-gold hover:text-party-gold/80 hover:bg-party-gold/10">Admin Dashboard</Button>
+                  )}
+                  
+                  <div className="border-t border-party-pink/20 my-2" />
+                  
+                  {isLoggedIn ? (
+                    <Button onClick={handleLogout} variant="outline" className="w-full border-party-pink/30 hover:bg-party-pink/10">Logout</Button>
+                  ) : (
+                    <Button onClick={() => navigate("/auth")} className="w-full bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
