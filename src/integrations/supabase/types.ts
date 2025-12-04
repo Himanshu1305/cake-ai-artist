@@ -281,12 +281,14 @@ export type Database = {
           created_at: string | null
           current_streak: number | null
           email: string
+          first_name: string | null
           founding_member_number: number | null
           founding_tier: string | null
           id: string
           is_founding_member: boolean | null
           is_premium: boolean | null
           last_generation_date: string | null
+          last_name: string | null
           lifetime_access: boolean | null
           premium_until: string | null
           purchased_date: string | null
@@ -296,12 +298,14 @@ export type Database = {
           created_at?: string | null
           current_streak?: number | null
           email: string
+          first_name?: string | null
           founding_member_number?: number | null
           founding_tier?: string | null
           id: string
           is_founding_member?: boolean | null
           is_premium?: boolean | null
           last_generation_date?: string | null
+          last_name?: string | null
           lifetime_access?: boolean | null
           premium_until?: string | null
           purchased_date?: string | null
@@ -311,12 +315,14 @@ export type Database = {
           created_at?: string | null
           current_streak?: number | null
           email?: string
+          first_name?: string | null
           founding_member_number?: number | null
           founding_tier?: string | null
           id?: string
           is_founding_member?: boolean | null
           is_premium?: boolean | null
           last_generation_date?: string | null
+          last_name?: string | null
           lifetime_access?: boolean | null
           premium_until?: string | null
           purchased_date?: string | null
