@@ -44,9 +44,12 @@ serve(async (req) => {
         'engagement': 'Congratulations',
         'promotion': 'Congratulations',
         'retirement': 'Happy Retirement',
-        'other': 'Celebrations'
+        'farewell': 'Farewell',
+        'celebration': 'Celebrate',
+        'congratulations': 'Congratulations',
+        'other': 'Best Wishes'
       };
-      return texts[occ] || 'Happy Birthday';
+      return texts[occ] || 'Celebrate';
     };
 
     const occasionText = getOccasionText(occasion || 'birthday');
