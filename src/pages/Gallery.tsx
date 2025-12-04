@@ -31,6 +31,7 @@ interface GeneratedImage {
   recipient_name?: string | null;
   occasion_type?: string | null;
   occasion_date?: string | null;
+  message?: string | null;
 }
 
 const Gallery = () => {
@@ -80,7 +81,7 @@ const Gallery = () => {
       // SECURITY: Explicitly select only needed fields instead of *
       const { data, error } = await supabase
         .from("generated_images")
-        .select("id, image_url, prompt, created_at, featured, recipient_name, occasion_type, occasion_date, user_id")
+        .select("id, image_url, prompt, created_at, featured, recipient_name, occasion_type, occasion_date, user_id, message")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -417,9 +418,14 @@ const Gallery = () => {
                       </p>
                     </div>
                     
-                    <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
-                      {image.prompt}
-                    </p>
+                    {image.message && (
+                      <div className="mb-3 p-2 bg-foreground/5 rounded-lg border border-foreground/10">
+                        <p className="text-xs text-foreground/60 mb-1">💌 Message:</p>
+                        <p className="text-sm text-foreground/80 line-clamp-3 italic">
+                          "{image.message}"
+                        </p>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center gap-2">
                       <span className="text-xs text-foreground/50">
                         Created {new Date(image.created_at).toLocaleDateString()}
@@ -577,9 +583,14 @@ const Gallery = () => {
                     </div>
                   )}
                   
-                  <p className="text-sm text-foreground/70 line-clamp-2 mb-3">
-                    {image.prompt}
-                  </p>
+                  {image.message && (
+                    <div className="mb-3 p-2 bg-foreground/5 rounded-lg border border-foreground/10">
+                      <p className="text-xs text-foreground/60 mb-1">💌 Message:</p>
+                      <p className="text-sm text-foreground/80 line-clamp-3 italic">
+                        "{image.message}"
+                      </p>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center gap-2">
                     <span className="text-xs text-foreground/50">
                       Created {new Date(image.created_at).toLocaleDateString()}
