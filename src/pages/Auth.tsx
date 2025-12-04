@@ -10,7 +10,14 @@ import { z } from "zod";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 
-const authSchema = z.object({
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const signupSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50, "First name too long"),
+  lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
@@ -20,6 +27,8 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -31,12 +40,36 @@ const Auth = () => {
     });
   }, [navigate]);
 
+  const sendWelcomeEmail = async (userEmail: string, userFirstName: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-welcome-email', {
+        body: { 
+          email: userEmail, 
+          firstName: userFirstName,
+          isPremium: false 
+        }
+      });
+      
+      if (error) {
+        console.error("Failed to send welcome email:", error);
+      } else {
+        console.log("Welcome email sent successfully");
+      }
+    } catch (err) {
+      console.error("Error sending welcome email:", err);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate input
+    // Validate input based on mode
     try {
-      authSchema.parse({ email, password });
+      if (isLogin) {
+        loginSchema.parse({ email, password });
+      } else {
+        signupSchema.parse({ firstName, lastName, email, password });
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -62,12 +95,24 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+            }
           },
         });
 
         if (error) throw error;
+        
+        // Send welcome email
+        await sendWelcomeEmail(email, firstName.trim());
+        
         toast.success("Account created successfully! You can now log in.");
         setIsLogin(true);
+        // Clear signup fields
+        setFirstName("");
+        setLastName("");
+        setPassword("");
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -96,7 +141,36 @@ const Auth = () => {
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-6">
+        <form onSubmit={handleAuth} className="space-y-4">
+          {!isLogin && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required={!isLogin}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required={!isLogin}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -123,7 +197,7 @@ const Auth = () => {
 
           <Button
             type="submit"
-            className="w-full bg-party-pink hover:bg-party-pink/90"
+            className="w-full bg-party-pink hover:bg-party-pink/90 mt-2"
             disabled={loading}
           >
             {loading ? "Loading..." : isLogin ? "Log In" : "Sign Up"}
