@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, Download, Loader2 } from "lucide-react";
+import { Gift, Download, Loader2, Calendar, Clock, MapPin } from "lucide-react";
 import { PartyPackPreview } from "./PartyPackPreview";
 import { generatePartyPackPDF } from "@/utils/partyPackPDF";
 
@@ -38,6 +40,11 @@ export function PartyPackGenerator({
   const [showPreview, setShowPreview] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
+  
+  // Event details state
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
 
   const generatePartyPack = async () => {
     try {
@@ -61,7 +68,10 @@ export function PartyPackGenerator({
           occasion,
           theme,
           colors,
-          character
+          character,
+          eventDate,
+          eventTime,
+          eventLocation
         }
       });
 
@@ -121,11 +131,69 @@ export function PartyPackGenerator({
   return (
     <>
       <div className="space-y-4">
+        {/* Event Details Form */}
+        {!partyPack && (
+          <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Gift className="w-4 h-4 text-party-gold" />
+              Party Details (Optional)
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Add event details to include on your invitation card
+            </p>
+            
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="eventDate" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Event Date
+                </Label>
+                <Input
+                  id="eventDate"
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="eventTime" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Event Time
+                </Label>
+                <Input
+                  id="eventTime"
+                  type="time"
+                  value={eventTime}
+                  onChange={(e) => setEventTime(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="eventLocation" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Event Location
+                </Label>
+                <Input
+                  id="eventLocation"
+                  type="text"
+                  placeholder="e.g., 123 Party Street, City"
+                  value={eventLocation}
+                  onChange={(e) => setEventLocation(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {!partyPack && (
           <Button
             onClick={generatePartyPack}
             disabled={isGenerating}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-party-purple to-party-pink hover:from-party-purple/90 hover:to-party-pink/90 text-white font-bold"
             size="lg"
           >
             {isGenerating ? (
@@ -146,7 +214,7 @@ export function PartyPackGenerator({
           <div className="space-y-2">
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
               <div 
-                className="h-full bg-primary transition-all duration-500"
+                className="h-full bg-gradient-to-r from-party-purple to-party-pink transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -161,16 +229,16 @@ export function PartyPackGenerator({
             <Button
               onClick={() => setShowPreview(true)}
               variant="outline"
-              className="w-full"
+              className="w-full border-party-purple text-party-purple hover:bg-party-purple/10"
               size="lg"
             >
               <Gift className="mr-2 h-5 w-5" />
-              View Party Pack
+              View All Party Items
             </Button>
 
             <Button
               onClick={downloadAll}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-party-gold to-party-orange text-background font-bold"
               size="lg"
             >
               <Download className="mr-2 h-5 w-5" />

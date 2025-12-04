@@ -28,7 +28,7 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const { cakeImageId, name, occasion, theme, colors, character } = await req.json();
+    const { cakeImageId, name, occasion, theme, colors, character, eventDate, eventTime, eventLocation } = await req.json();
 
     if (!cakeImageId || !name || !occasion) {
       throw new Error("Missing required fields");
@@ -43,12 +43,22 @@ serve(async (req) => {
 
     const themeDesc = theme || character || "elegant celebration";
     const colorDesc = colors || "gold, white, and pastel";
+    
+    // Format event details for invitation
+    const formattedDate = eventDate ? new Date(eventDate).toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : "Date TBD";
+    const formattedTime = eventTime || "Time TBD";
+    const formattedLocation = eventLocation || "Location TBD";
 
     // Simplified, direct prompts for image generation
     const items = [
       {
         type: "invitation",
-        prompt: `Generate a party invitation card image. ${occasion} party for ${name}. ${themeDesc} theme with ${colorDesc} colors. Include placeholder text for Date, Time, Location, RSVP. 5x7 inch format, professional print quality.`
+        prompt: `Generate a party invitation card image. ${occasion} party for ${name}. ${themeDesc} theme with ${colorDesc} colors. Include these details on the card: "Date: ${formattedDate}", "Time: ${formattedTime}", "Location: ${formattedLocation}", "RSVP". 5x7 inch format, professional print quality, elegant typography.`
       },
       {
         type: "thank_you_card",
