@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Type, Sparkles, Download, Share2, Star } from "lucide-react";
+import { ArrowLeft, Type, Sparkles, Download, Share2, Star, Heart, Palette, Layers, Users, Crown, MessageSquare, Calendar, Cake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -53,6 +53,67 @@ const HowItWorks = () => {
             </div>
           </Card>
 
+          {/* Step 1.5: Personalization Fields */}
+          <Card className="p-8 bg-gradient-to-r from-party-coral/10 to-party-mint/10 border-2 border-party-coral/20 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-coral to-party-mint rounded-full flex items-center justify-center">
+                <Heart className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 1.5: Add Personal Details 💝
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Tell us about your relationship with the recipient and their gender. This helps our AI craft 
+                  <strong> deeply personalized messages</strong> that feel like they're coming from your heart, not a computer.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-party-coral" />
+                      Relationship
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Select your relationship to the recipient:
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Brother', 'Sister', 'Father', 'Mother', 'Daughter', 'Son', 'Husband', 'Wife', 'Friend', 'Partner', 'Colleague', 'In-laws', 'Other'].map((rel) => (
+                        <span key={rel} className="bg-party-coral/10 text-party-coral px-2 py-0.5 rounded-full">{rel}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <span className="text-party-mint">👤</span>
+                      Gender
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Select the recipient's gender for appropriate pronouns:
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Male', 'Female', 'Other'].map((g) => (
+                        <span key={g} className="bg-party-mint/10 text-party-mint px-2 py-0.5 rounded-full">{g}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-party-coral/10 p-4 rounded-lg border border-party-coral/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Why This Matters
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    When you say the cake is for your "daughter" and she's "female," the AI generates messages like 
+                    "To my beautiful princess..." rather than generic "Happy Birthday!" messages. It understands the inverse relationship too—
+                    if she's your daughter, you're her parent, so the message sounds like it's from Mom or Dad.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-pink to-party-orange rounded-full flex items-center justify-center">
@@ -64,10 +125,280 @@ const HowItWorks = () => {
                   Tell us what you're celebrating—birthday, anniversary, graduation, or just because. This helps our AI pick the right style, 
                   colors, and message tone. A kids' birthday cake should look different from a 50th wedding anniversary, right?
                 </p>
+                <div className="flex flex-wrap gap-2 mb-4 text-sm">
+                  {['Birthday', 'Anniversary', 'Wedding', 'Graduation', 'Baby Shower', 'Engagement', 'Promotion', 'Retirement', 'Valentine\'s Day', 'Mother\'s Day', 'Father\'s Day', 'Other'].map((occ) => (
+                    <span key={occ} className="bg-party-pink/10 text-party-pink px-3 py-1 rounded-full">{occ}</span>
+                  ))}
+                </div>
                 <div className="bg-background/50 p-4 rounded-lg border border-border/50">
                   <p className="text-sm text-muted-foreground">
                     <strong>Pro tip:</strong> The AI considers age appropriateness too. A cake for "Emma's 5th Birthday" will have a more playful design 
                     than "Emma's 30th Birthday." Feel free to be specific in your input.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Step 2.5: Character Selection */}
+          <Card className="p-8 bg-gradient-to-r from-party-purple/20 to-party-gold/20 border-2 border-party-purple/30 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-purple to-party-gold rounded-full flex items-center justify-center">
+                <Crown className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 2.5: Add a Character to Your Cake 🎭
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Want Spider-Man swinging across the cake? Or maybe Elsa from Frozen? Choose from our collection of 
+                  <strong> 28+ popular characters</strong> to make the cake extra special for kids (or kids at heart!).
+                </p>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <span className="text-party-pink">🆓</span>
+                      Free Characters
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Mickey Mouse</span>
+                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Minnie Mouse</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gold/5 p-4 rounded-lg border border-gold/30">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-gold" />
+                      Premium Characters
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <p className="font-medium text-muted-foreground mb-1">Disney</p>
+                        <div className="flex flex-wrap gap-1">
+                          {['Elsa/Anna', 'Moana', 'Cinderella', 'Ariel'].map((c) => (
+                            <span key={c} className="bg-party-purple/10 text-party-purple px-2 py-0.5 rounded">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-medium text-muted-foreground mb-1">Superheroes</p>
+                        <div className="flex flex-wrap gap-1">
+                          {['Spider-Man', 'Batman', 'Superman', 'Iron Man'].map((c) => (
+                            <span key={c} className="bg-party-coral/10 text-party-coral px-2 py-0.5 rounded">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-medium text-muted-foreground mb-1">Cartoons</p>
+                        <div className="flex flex-wrap gap-1">
+                          {['Peppa Pig', 'Paw Patrol', 'Bluey', 'Cocomelon'].map((c) => (
+                            <span key={c} className="bg-party-orange/10 text-party-orange px-2 py-0.5 rounded">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-medium text-muted-foreground mb-1">Anime</p>
+                        <div className="flex flex-wrap gap-1">
+                          {['Pikachu', 'Naruto', 'Goku', 'Totoro'].map((c) => (
+                            <span key={c} className="bg-party-pink/10 text-party-pink px-2 py-0.5 rounded">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-party-purple/10 p-4 rounded-lg border border-party-purple/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Pro tip: Characters are Optional
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Not every cake needs a character! For elegant occasions like weddings or milestone anniversaries, 
+                    skip the character selection for a more sophisticated design. Characters work best for kids' birthdays and fun celebrations.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Step 2.6: Cake Design Customization */}
+          <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-mint to-party-purple rounded-full flex items-center justify-center">
+                <Palette className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 2.6: Customize Your Cake Design 🎨
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Fine-tune every detail of your cake! These options help the AI understand exactly what kind of cake you're envisioning.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Cake className="w-4 h-4 text-party-coral" />
+                      Cake Type (Flavor)
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Choose the visual flavor appearance:
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Chocolate', 'Vanilla', 'Strawberry', 'Red Velvet', 'Funfetti', 'Carrot'].map((t) => (
+                        <span key={t} className="bg-party-coral/10 text-party-coral px-2 py-0.5 rounded-full">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-party-purple" />
+                      Number of Layers
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      How tall should your cake be?
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Single Layer', 'Double Layer', 'Triple Layer', 'Tiered (Wedding Style)'].map((l) => (
+                        <span key={l} className="bg-party-purple/10 text-party-purple px-2 py-0.5 rounded-full">{l}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-party-pink" />
+                      Theme/Style
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Set the overall aesthetic:
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Classic', 'Modern', 'Rustic', 'Elegant', 'Fun/Cartoon', 'Minimalist'].map((s) => (
+                        <span key={s} className="bg-party-pink/10 text-party-pink px-2 py-0.5 rounded-full">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <span className="text-party-mint">🎨</span>
+                      Color Palette
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Pick your preferred colors:
+                    </p>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {['Pink', 'Blue', 'White', 'Multicolor', 'Gold/Silver', 'Pastel', 'Rainbow'].map((c) => (
+                        <span key={c} className="bg-party-mint/10 text-party-mint px-2 py-0.5 rounded-full">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-party-mint/10 p-4 rounded-lg border border-party-mint/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Pro tip: Mix & Match
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Try "Elegant" theme with "Gold/Silver" colors for a luxurious wedding cake, or "Fun/Cartoon" theme 
+                    with "Rainbow" colors for an epic kids' birthday! The AI combines your choices intelligently.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Step 2.7: Message Options */}
+          <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-orange to-party-yellow rounded-full flex items-center justify-center">
+                <MessageSquare className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 2.7: Personalized Message Options 💌
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Every cake comes with a heartfelt message. Choose between AI-generated or write your own!
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-party-purple" />
+                      AI-Generated (Default)
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Let our AI craft a unique, personalized message based on the recipient's name, your relationship, 
+                      and the occasion. Messages feel genuine—like you wrote them yourself!
+                    </p>
+                  </div>
+                  
+                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                    <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Type className="w-4 h-4 text-party-coral" />
+                      Custom Message
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Toggle "Custom Message" on to write your own greeting. Perfect when you have a specific 
+                      inside joke or personal message in mind. <strong>Max 250 characters.</strong>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-party-orange/10 p-4 rounded-lg border border-party-orange/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 When to Use Each
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Use AI:</strong> When you want a touching, occasion-appropriate message without writer's block.<br/>
+                    <strong>Use Custom:</strong> When you have something specific to say, like an inside joke or a quote they love.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Step 2.8: Save Occasion Date */}
+          <Card className="p-8 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-party-pink to-party-coral rounded-full flex items-center justify-center">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 text-foreground flex items-center gap-2">
+                  Step 2.8: Save the Date 📅
+                </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Add the occasion date to your cake creation! This helps you remember special moments and 
+                  enables future features like <strong>anniversary reminders</strong>.
+                </p>
+                
+                <ul className="space-y-2 text-muted-foreground mb-4 ml-4">
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-pink font-bold">📁</span>
+                    <span>Dates are saved with your cake in your <strong>Gallery</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-coral font-bold">🔔</span>
+                    <span><strong>Coming Soon:</strong> Get email reminders a week before the anniversary!</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-party-purple font-bold">🎂</span>
+                    <span>Perfect for tracking recurring celebrations like birthdays and anniversaries</span>
+                  </li>
+                </ul>
+                
+                <div className="bg-party-pink/10 p-4 rounded-lg border border-party-pink/30">
+                  <p className="text-sm text-foreground font-semibold mb-1">
+                    💡 Pro tip: Build Your Celebration Calendar
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Create cakes for all your important people and save the dates. Your Gallery becomes a personal 
+                    celebration calendar—never forget a birthday again!
                   </p>
                 </div>
               </div>
@@ -333,10 +664,34 @@ const HowItWorks = () => {
             </Card>
 
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-semibold text-lg mb-2 text-foreground">Match Characters to Age</h3>
+              <p className="text-muted-foreground">
+                Cocomelon and Bluey work great for toddlers, Paw Patrol for preschoolers, Spider-Man for older kids, 
+                and skip characters entirely for teen/adult celebrations for a more sophisticated look.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-semibold text-lg mb-2 text-foreground">Use Relationship for Better Messages</h3>
+              <p className="text-muted-foreground">
+                Don't skip the relationship field! A message "from a parent to daughter" sounds completely different 
+                from "friend to friend." This small detail makes messages feel genuinely personal.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-semibold text-lg mb-2 text-foreground">Color & Theme Combos</h3>
+              <p className="text-muted-foreground">
+                Try "Elegant + Gold/Silver" for weddings, "Fun/Cartoon + Rainbow" for kids, "Minimalist + Pastel" 
+                for baby showers, or "Rustic + White" for outdoor celebrations.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-semibold text-lg mb-2 text-foreground">Download in High Quality</h3>
               <p className="text-muted-foreground">
-                Always download the full-resolution image. It&apos;s optimized for both digital sharing and printing, 
-                so you won&apos;t lose quality no matter how you use it.
+                Always download the full-resolution image. It's optimized for both digital sharing and printing, 
+                so you won't lose quality no matter how you use it.
               </p>
             </Card>
 
