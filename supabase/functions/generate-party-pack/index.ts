@@ -41,83 +41,36 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    // Generate all 5 party items in parallel
+    const themeDesc = theme || character || "elegant celebration";
+    const colorDesc = colors || "gold, white, and pastel";
+
+    // Simplified, direct prompts for image generation
     const items = [
       {
         type: "invitation",
-        prompt: `Create a beautiful party invitation card with these specifications:
-- Occasion: ${occasion}
-- Recipient: ${name}
-- Theme: ${theme || character || "celebration"}
-- Colors: ${colors || "festive colors"}
-- Include text areas for: Date, Time, Location, RSVP
-- Design should match a ${character || "elegant"} theme
-- Print-ready format: 5x7 inches, 300 DPI
-- Include 0.125" bleed margin
-- Professional graphic design quality
-- Leave space at bottom for custom text
-Style: Modern, elegant, festive, suitable for printing`
+        prompt: `Generate a party invitation card image. ${occasion} party for ${name}. ${themeDesc} theme with ${colorDesc} colors. Include placeholder text for Date, Time, Location, RSVP. 5x7 inch format, professional print quality.`
       },
       {
         type: "thank_you_card",
-        prompt: `Create a beautiful thank you card with these specifications:
-- Occasion: ${occasion}
-- From: ${name}
-- Theme: ${theme || character || "celebration"}
-- Colors: ${colors || "festive colors"}
-- Include "Thank You" text prominently
-- Design should match a ${character || "elegant"} theme
-- Print-ready format: 4.25x5.5 inches (folded card), 300 DPI
-- Include 0.125" bleed margin
-- Leave space for personal message inside
-- Professional graphic design quality
-Style: Warm, grateful, matching the party theme`
+        prompt: `Generate a thank you card image. "Thank You" prominently displayed. From ${name}, ${occasion} theme. ${themeDesc} style with ${colorDesc} colors. Folded card format, elegant design.`
       },
       {
         type: "banner",
-        prompt: `Create a festive party banner with these specifications:
-- Text: "Happy ${occasion}" and "${name}"
-- Theme: ${theme || character || "celebration"}
-- Colors: ${colors || "festive colors"}
-- Design should match a ${character || "elegant"} theme
-- Print-ready format: 11x8.5 inches per letter/section, 300 DPI
-- Letters should be bold and visible from distance
-- Include decorative elements between letters
-- Professional quality for home printing and stringing together
-Style: Bold, festive, celebration-themed, easy to cut out`
+        prompt: `Generate a party banner image with the text "Happy ${occasion} ${name}" in large decorative letters. ${themeDesc} theme, ${colorDesc} colors. Festive, bold letters suitable for cutting out.`
       },
       {
         type: "cake_topper",
-        prompt: `Create a printable cake topper design with these specifications:
-- Text: "${name}" and small "${occasion}" text
-- Theme: ${theme || character || "celebration"}
-- Colors: ${colors || "festive colors"}
-- Character theme: ${character || "elegant celebration"}
-- Print-ready format: 8.5x11 inches, 300 DPI
-- Include clear cut lines and fold lines
-- Design should fit on a standard toothpick or skewer
-- Include assembly instructions visually
-- Double-sided design (front and back identical)
-- Professional quality with 0.125" border for cutting
-Style: Whimsical, celebratory, perfect for cake decoration`
+        prompt: `Generate a cake topper design image with "${name}" text and "${occasion}" label. ${themeDesc} theme, ${colorDesc} colors. Circular or flag shape, printable with cut lines shown.`
       },
       {
         type: "place_cards",
-        prompt: `Create elegant place card templates with these specifications:
-- Occasion: ${occasion}
-- Theme: ${theme || character || "celebration"}
-- Colors: ${colors || "festive colors"}
-- Design should match a ${character || "elegant"} theme
-- Print-ready format: 2x3.5 inches folded, 300 DPI
-- Include 6 place cards per sheet (8.5x11)
-- Space for writing guest names
-- Include fold line and cut lines
-- Professional tent-card design
-Style: Elegant, sophisticated, matching party theme`
+        prompt: `Generate a set of 6 place card templates on one sheet. ${occasion} theme for ${name}'s party. ${themeDesc} style, ${colorDesc} colors. Tent-fold cards with space for guest names.`
       }
     ];
 
-    const generateImage = async (itemPrompt: string) => {
+    const generateImage = async (itemPrompt: string, itemType: string) => {
+      console.log(`Generating ${itemType}...`);
+      
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -125,7 +78,7 @@ Style: Elegant, sophisticated, matching party theme`
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-pro-image-preview",
+          model: "google/gemini-2.5-flash-image-preview",
           messages: [
             {
               role: "user",
@@ -138,9 +91,8 @@ Style: Elegant, sophisticated, matching party theme`
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`AI generation failed: ${response.status} - ${errorText}`);
+        console.error(`AI generation failed for ${itemType}: ${response.status} - ${errorText}`);
         
-        // Handle rate limits and payment errors
         if (response.status === 429) {
           throw new Error("Rate limit exceeded. Please try again in a few moments.");
         }
@@ -148,26 +100,25 @@ Style: Elegant, sophisticated, matching party theme`
           throw new Error("AI credits depleted. Please add funds to your Lovable workspace.");
         }
         
-        throw new Error(`Failed to generate image: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to generate ${itemType}: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("AI Response structure:", JSON.stringify(data, null, 2));
-      
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (!imageUrl) {
-        console.error("No image in response. Full response:", JSON.stringify(data, null, 2));
-        throw new Error(`No image returned from AI. Response: ${JSON.stringify(data)}`);
+        console.error(`No image returned for ${itemType}. Content:`, data.choices?.[0]?.message?.content?.substring(0, 200));
+        throw new Error(`No image returned for ${itemType}`);
       }
 
+      console.log(`Successfully generated ${itemType}`);
       return imageUrl;
     };
 
     // Generate all items in parallel
     console.log("Starting parallel generation of all 5 party items...");
     const generatedImages = await Promise.all(
-      items.map(item => generateImage(item.prompt))
+      items.map(item => generateImage(item.prompt, item.type))
     );
 
     // Upload all images to storage
