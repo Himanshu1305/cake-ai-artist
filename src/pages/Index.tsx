@@ -176,31 +176,35 @@ const Index = () => {
       <FeedbackWidget />
       
       {/* Navigation Header */}
-      <nav className={`container mx-auto px-4 py-6 bg-background/95 backdrop-blur-sm sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 border-b border-border/50 transition-all duration-300`}>
-        <div className="flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold text-foreground">Cake AI Artist</Link>
-          <div className="flex gap-3">
-            <Link to="/how-it-works"><Button variant="ghost" size="sm">How It Works</Button></Link>
-            <Link to="/pricing">
-              <Button variant="ghost" size="sm" className="relative">
-                Pricing
-                <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                  🔥
-                </span>
-              </Button>
+      <nav className={`sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-party-pink via-party-coral to-party-gold bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+              🎂 Cake AI Artist
             </Link>
-            <Link to="/use-cases"><Button variant="ghost" size="sm">Examples</Button></Link>
-            <Link to="/community"><Button variant="ghost" size="sm">Community</Button></Link>
-            <Link to="/blog"><Button variant="ghost" size="sm">Blog</Button></Link>
-            <Link to="/faq"><Button variant="ghost" size="sm">FAQ</Button></Link>
-            {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm">My Gallery</Button>}
-            {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm">Settings</Button>}
-            {isAdmin && <Button onClick={() => navigate("/admin")} variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">Admin</Button>}
-            {isLoggedIn ? (
-              <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
-            ) : (
-              <Button onClick={() => navigate("/auth")} size="sm">Sign In</Button>
-            )}
+            <div className="flex gap-2 items-center">
+              <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
+              <Link to="/pricing">
+                <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
+                  Pricing
+                  <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
+                    🔥
+                  </span>
+                </Button>
+              </Link>
+              <Link to="/use-cases"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button></Link>
+              <Link to="/community"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button></Link>
+              <Link to="/blog"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Blog</Button></Link>
+              <Link to="/faq"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button></Link>
+              {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>}
+              {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>}
+              {isAdmin && <Button onClick={() => navigate("/admin")} variant="ghost" size="sm" className="text-party-gold hover:text-party-gold/80 hover:bg-party-gold/10">Admin</Button>}
+              {isLoggedIn ? (
+                <Button onClick={handleLogout} variant="outline" size="sm" className="border-party-pink/30 hover:bg-party-pink/10">Logout</Button>
+              ) : (
+                <Button onClick={() => navigate("/auth")} size="sm" className="bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
+              )}
+            </div>
           </div>
         </div>
       </nav>
