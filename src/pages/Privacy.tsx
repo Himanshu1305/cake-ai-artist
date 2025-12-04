@@ -211,7 +211,10 @@ const Privacy = () => {
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-bold text-foreground">Questions?</h2>
               <p className="text-foreground/80 text-lg">
-                If you have any questions or concerns about our privacy policy, please contact our support team.
+                If you have any questions or concerns about our privacy policy, please contact us at{' '}
+                <a href="mailto:support@cakeaiartist.com" className="text-party-pink hover:underline font-medium">
+                  support@cakeaiartist.com
+                </a>
               </p>
               <Link to="/">
                 <Button size="lg" className="mt-4 bg-gradient-party text-white hover:opacity-90 transition-opacity">

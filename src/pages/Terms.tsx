@@ -91,7 +91,7 @@ const Terms = () => {
               <h2 className="text-2xl font-semibold mb-3">6. Refund and Cancellation Policy</h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
                 We offer a 7-day money-back guarantee for new premium subscribers. If you're not satisfied within the first 7 days, 
-                contact us at support@cakemagic.com for a full refund.
+                contact us at support@cakeaiartist.com for a full refund.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 After the 7-day period, no refunds will be issued for partial months. You may cancel anytime to prevent future charges.
@@ -149,7 +149,7 @@ const Terms = () => {
                 If you have questions about these Terms of Service, please contact us at:
               </p>
               <p className="text-muted-foreground leading-relaxed mt-3">
-                Email: support@cakemagic.com<br />
+                Email: support@cakeaiartist.com<br />
                 Response time: Within 24-48 hours
               </p>
             </section>
