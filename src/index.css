@@ -8,57 +8,57 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Vibrant party theme */
-    --background: 340 100% 98%;
-    --foreground: 345 15% 15%;
+    /* Warm cream party theme - premium celebratory feel */
+    --background: 35 50% 98%;
+    --foreground: 35 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 345 15% 15%;
+    --card-foreground: 35 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 345 15% 15%;
+    --popover-foreground: 35 15% 15%;
 
-    --primary: 315 100% 65%;
+    --primary: 315 88% 62%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 100% 60%;
-    --secondary-foreground: 345 15% 15%;
+    --secondary: 45 90% 58%;
+    --secondary-foreground: 35 15% 15%;
 
-    --muted: 340 15% 95%;
-    --muted-foreground: 345 10% 45%;
+    --muted: 35 20% 95%;
+    --muted-foreground: 35 12% 45%;
 
-    --accent: 270 100% 75%;
+    --accent: 270 85% 72%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 340 20% 90%;
-    --input: 340 20% 90%;
-    --ring: 315 100% 65%;
+    --border: 35 25% 90%;
+    --input: 35 25% 90%;
+    --ring: 315 88% 62%;
 
-    /* Custom tokens for vibrant cake theme */
-    --gold: 45 100% 60%;
-    --gold-muted: 45 70% 50%;
+    /* Custom tokens for warm cake theme */
+    --gold: 45 90% 58%;
+    --gold-muted: 45 65% 48%;
     --silver: 0 0% 75%;
     --silver-muted: 0 0% 65%;
-    --party-pink: 315 100% 65%;
-    --party-purple: 270 100% 75%;
-    --party-coral: 15 100% 70%;
-    --party-mint: 150 60% 70%;
-    --surface: 340 50% 97%;
+    --party-pink: 315 88% 62%;
+    --party-purple: 270 85% 72%;
+    --party-coral: 15 90% 68%;
+    --party-mint: 150 55% 68%;
+    --surface: 35 40% 97%;
     --surface-elevated: 0 0% 100%;
     
-    /* Vibrant gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(45 100% 60%), hsl(30 100% 65%));
-    --gradient-surface: linear-gradient(135deg, hsl(340 50% 97%), hsl(340 30% 95%));
-    --gradient-party: linear-gradient(135deg, hsl(315 100% 65%), hsl(270 100% 75%), hsl(45 100% 60%));
-    --gradient-celebration: linear-gradient(45deg, hsl(315 100% 85%), hsl(270 100% 85%), hsl(45 100% 85%));
+    /* Premium gradients with softer tones */
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 58%), hsl(30 90% 63%));
+    --gradient-surface: linear-gradient(135deg, hsl(35 40% 97%), hsl(35 30% 95%));
+    --gradient-party: linear-gradient(135deg, hsl(315 88% 62%), hsl(270 85% 72%), hsl(45 90% 58%));
+    --gradient-celebration: linear-gradient(45deg, hsl(315 88% 82%), hsl(270 85% 82%), hsl(45 90% 82%));
     
-    /* Colorful shadows */
-    --shadow-elegant: 0 20px 40px -12px hsl(315 50% 70% / 0.3);
-    --shadow-gold: 0 8px 32px hsl(45 100% 60% / 0.4);
-    --shadow-party: 0 12px 40px hsl(315 80% 70% / 0.35);
+    /* Refined shadows */
+    --shadow-elegant: 0 20px 40px -12px hsl(315 45% 65% / 0.25);
+    --shadow-gold: 0 8px 32px hsl(45 90% 55% / 0.35);
+    --shadow-party: 0 12px 40px hsl(315 75% 65% / 0.3);
 
     --radius: 0.75rem;
 
