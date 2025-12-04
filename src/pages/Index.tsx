@@ -176,7 +176,7 @@ const Index = () => {
       <FeedbackWidget />
       
       {/* Navigation Header */}
-      <nav className={`container mx-auto px-4 py-6 backdrop-blur-md bg-gradient-to-b from-background/30 via-background/20 to-transparent sticky ${isBannerVisible ? 'top-16' : 'top-0'} z-40 border-b border-white/10 transition-all duration-300 shadow-lg`}>
+      <nav className={`container mx-auto px-4 py-6 bg-background/95 backdrop-blur-sm sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 border-b border-border/50 transition-all duration-300`}>
         <div className="flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-foreground">Cake AI Artist</Link>
           <div className="flex gap-3">
