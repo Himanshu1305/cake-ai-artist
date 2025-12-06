@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, TrendingUp, Users } from "lucide-react";
@@ -13,10 +13,12 @@ interface Activity {
 export const LiveActivityFeed = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [visible, setVisible] = useState(true);
+  const isMountedRef = useRef(true);
   // Memoize random "online now" count to prevent re-render issues
   const [onlineCount] = useState(() => Math.floor(Math.random() * 500) + 100);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadActivities();
 
     // Subscribe to real-time updates
@@ -30,17 +32,22 @@ export const LiveActivityFeed = () => {
           table: "activity_feed",
         },
         (payload) => {
-          setActivities((prev) => [payload.new as Activity, ...prev].slice(0, 5));
+          if (isMountedRef.current) {
+            setActivities((prev) => [payload.new as Activity, ...prev].slice(0, 5));
+          }
         }
       )
       .subscribe();
 
     // Rotation effect - show/hide periodically (increased to 15s to reduce timer load)
     const interval = setInterval(() => {
-      setVisible((v) => !v);
+      if (isMountedRef.current) {
+        setVisible((v) => !v);
+      }
     }, 15000);
 
     return () => {
+      isMountedRef.current = false;
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
@@ -54,7 +61,7 @@ export const LiveActivityFeed = () => {
       .order("created_at", { ascending: false })
       .limit(5);
 
-    if (data) setActivities(data);
+    if (data && isMountedRef.current) setActivities(data);
   };
 
   if (activities.length === 0) return null;
