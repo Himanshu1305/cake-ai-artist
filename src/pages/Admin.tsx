@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
@@ -58,6 +58,8 @@ interface ChartData {
   topUsers: { email: string; imageCount: number }[];
   relations: { name: string; count: number }[];
   subscriberGrowth: { date: string; subscribers: number }[];
+  pageVisits: { page: string; visits: number; uniqueVisitors: number }[];
+  pageVisitsOverTime: { date: string; visits: number }[];
 }
 
 export default function Admin() {
@@ -123,7 +125,59 @@ export default function Admin() {
       loadImages(),
       loadAnalytics(),
       loadSubscribers(),
+      loadPageVisits(),
     ]);
+  };
+
+  const loadPageVisits = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('page_visits')
+        .select('page_path, session_id, visited_at, country_code')
+        .order('visited_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading page visits:', error);
+        return;
+      }
+
+      // Calculate page visits by path
+      const visitsByPage = (data || []).reduce((acc, visit) => {
+        const page = visit.page_path;
+        if (!acc[page]) {
+          acc[page] = { visits: 0, sessions: new Set() };
+        }
+        acc[page].visits++;
+        if (visit.session_id) {
+          acc[page].sessions.add(visit.session_id);
+        }
+        return acc;
+      }, {} as Record<string, { visits: number; sessions: Set<string> }>);
+
+      const pageVisits = Object.entries(visitsByPage).map(([page, data]) => ({
+        page,
+        visits: data.visits,
+        uniqueVisitors: data.sessions.size,
+      })).sort((a, b) => b.visits - a.visits);
+
+      // Page visits over last 30 days
+      const last30Days = Array.from({ length: 30 }, (_, i) => {
+        const date = subDays(new Date(), 29 - i);
+        return format(date, "MMM dd");
+      });
+
+      const pageVisitsOverTime = last30Days.map((date) => {
+        const count = (data || []).filter((v) => {
+          const visitDate = new Date(v.visited_at);
+          return format(visitDate, "MMM dd") === date;
+        }).length;
+        return { date, visits: count };
+      });
+
+      setChartData(prev => prev ? { ...prev, pageVisits, pageVisitsOverTime } : null);
+    } catch (error) {
+      console.error('Error loading page visits:', error);
+    }
   };
 
   const loadSubscribers = async () => {
@@ -299,7 +353,7 @@ export default function Admin() {
         }).length || 0,
       }));
 
-      setChartData({
+      setChartData(prev => ({
         userGrowth,
         imagesOverTime,
         occasionTypes,
@@ -307,7 +361,9 @@ export default function Admin() {
         topUsers,
         relations,
         subscriberGrowth,
-      });
+        pageVisits: prev?.pageVisits || [],
+        pageVisitsOverTime: prev?.pageVisitsOverTime || [],
+      }));
     } catch (error) {
       console.error("Error loading analytics:", error);
       toast.error("Failed to load analytics");
@@ -454,10 +510,14 @@ export default function Admin() {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="analytics" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="analytics">
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="page-visits">
+              <Globe className="w-4 h-4 mr-2" />
+              Page Visits
             </TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="images">Community Moderation</TabsTrigger>
@@ -607,6 +667,126 @@ export default function Admin() {
                     </CardContent>
                   </Card>
                 </div>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="page-visits" className="space-y-6">
+            {chartData && (
+              <>
+                {/* Page Visits Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        Total Page Views
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {chartData.pageVisits.reduce((sum, p) => sum + p.visits, 0)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  {['/', '/uk', '/canada', '/australia'].map((path) => {
+                    const pageData = chartData.pageVisits.find(p => p.page === path);
+                    const label = path === '/' ? 'US (Home)' : path.replace('/', '').toUpperCase();
+                    return (
+                      <Card key={path}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{pageData?.visits || 0}</div>
+                          <p className="text-xs text-muted-foreground">
+                            {pageData?.uniqueVisitors || 0} unique visitors
+                          </p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Page Views (Last 30 Days)</CardTitle>
+                      <CardDescription>Total daily page views across all pages</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData.pageVisitsOverTime}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="visits" fill="hsl(var(--primary))" name="Page Views" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Visits by Page</CardTitle>
+                      <CardDescription>Distribution of traffic across landing pages</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={chartData.pageVisits.filter(p => ['/', '/uk', '/canada', '/australia'].includes(p.page))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ page, percent }) => {
+                              const label = page === '/' ? 'US' : page.replace('/', '').toUpperCase();
+                              return `${label} ${(percent * 100).toFixed(0)}%`;
+                            }}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="visits"
+                            nameKey="page"
+                          >
+                            {chartData.pageVisits.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>All Page Visits</CardTitle>
+                    <CardDescription>Complete breakdown of page traffic</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Page</TableHead>
+                          <TableHead className="text-right">Total Views</TableHead>
+                          <TableHead className="text-right">Unique Visitors</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {chartData.pageVisits.map((page, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{page.page}</TableCell>
+                            <TableCell className="text-right">{page.visits}</TableCell>
+                            <TableCell className="text-right">{page.uniqueVisitors}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
               </>
             )}
           </TabsContent>

@@ -34,6 +34,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 // Lazy load TrustBadges to prevent render blocking
 // Lazy load TrustBadges - disabled for now to fix blank screen
@@ -47,6 +48,9 @@ const Index = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+
+  // Track page visits
+  usePageTracking('/', 'US');
 
   // Map local filenames to imported assets
   const localImageMap: Record<string, string> = {

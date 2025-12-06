@@ -23,12 +23,16 @@ import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 const UKLanding = () => {
   const navigate = useNavigate();
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+
+  // Track page visits
+  usePageTracking('/uk', 'UK');
 
   const localImageMap: Record<string, string> = {
     'featured-cake-1.jpg': featuredCake1,
