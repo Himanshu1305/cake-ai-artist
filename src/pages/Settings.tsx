@@ -6,14 +6,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, Trash2, AlertTriangle } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [settings, setSettings] = useState({
     email_reminders: true,
     birthday_reminders: true,
@@ -98,6 +111,112 @@ export default function Settings() {
     }
   };
 
+  // GDPR: Export user data
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const userId = session.user.id;
+      const userEmail = session.user.email;
+
+      // Fetch all user data from different tables
+      const [profileRes, imagesRes, settingsRes, partyPacksRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", userId).single(),
+        supabase.from("generated_images").select("*").eq("user_id", userId),
+        supabase.from("user_settings").select("*").eq("user_id", userId).single(),
+        supabase.from("party_packs").select("*").eq("user_id", userId),
+      ]);
+
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        user: {
+          email: userEmail,
+          id: userId,
+        },
+        profile: profileRes.data || null,
+        settings: settingsRes.data || null,
+        generatedImages: imagesRes.data || [],
+        partyPacks: partyPacksRes.data || [],
+      };
+
+      // Create and download JSON file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cake-ai-artist-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export Complete",
+        description: "Your data has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export your data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // GDPR: Delete user account and all data
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const userId = session.user.id;
+
+      // Delete user data from all tables (in order to respect foreign keys)
+      await Promise.all([
+        supabase.from("party_packs").delete().eq("user_id", userId),
+        supabase.from("generated_images").delete().eq("user_id", userId),
+        supabase.from("generation_tracking").delete().eq("user_id", userId),
+        supabase.from("achievements").delete().eq("user_id", userId),
+        supabase.from("referrals").delete().eq("referrer_id", userId),
+        supabase.from("user_settings").delete().eq("user_id", userId),
+      ]);
+
+      // Delete profile
+      await supabase.from("profiles").delete().eq("id", userId);
+
+      // Sign out the user
+      await supabase.auth.signOut();
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all associated data have been permanently deleted.",
+      });
+
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Deletion Failed",
+        description: "Failed to delete your account. Please contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
@@ -125,7 +244,8 @@ export default function Settings() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-12 max-w-2xl">
+      <div className="container mx-auto px-4 py-12 max-w-2xl space-y-6">
+        {/* Notification Preferences */}
         <Card>
           <CardHeader>
             <CardTitle>Notification Preferences</CardTitle>
@@ -213,6 +333,92 @@ export default function Settings() {
                   "Save Settings"
                 )}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* GDPR Data Rights */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Data Rights (GDPR)</CardTitle>
+            <CardDescription>
+              Access, export, or delete your personal data
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Export Data */}
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+              <div className="space-y-0.5">
+                <Label className="text-base font-medium">Export Your Data</Label>
+                <p className="text-sm text-muted-foreground">
+                  Download all your personal data in JSON format
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleExportData}
+                disabled={exporting}
+              >
+                {exporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Delete Account */}
+            <div className="flex items-center justify-between p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+              <div className="space-y-0.5">
+                <Label className="text-base font-medium text-destructive">Delete Account</Label>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all data
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={deleting}>
+                    {deleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      Delete Your Account?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-2">
+                      <p>This action <strong>cannot be undone</strong>. This will permanently delete:</p>
+                      <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                        <li>Your profile and account information</li>
+                        <li>All your generated cake images</li>
+                        <li>Your party packs and designs</li>
+                        <li>Your settings and preferences</li>
+                        <li>Any premium membership (non-refundable)</li>
+                      </ul>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, Delete Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>
