@@ -493,8 +493,8 @@ const Index = () => {
           }}
           plugins={[
             Autoplay({
-              delay: 25000,
-              stopOnInteraction: true,
+              delay: 30000,
+              stopOnInteraction: false,
               stopOnMouseEnter: true,
             }),
           ]}
@@ -685,8 +685,8 @@ const Index = () => {
           }}
           plugins={[
             Autoplay({
-              delay: 20000,
-              stopOnInteraction: true,
+              delay: 30000,
+              stopOnInteraction: false,
               stopOnMouseEnter: true,
             }),
           ]}
