@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { safeGetItem, safeSetItem } from "@/utils/storage";
 
 export const FeedbackWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +17,8 @@ export const FeedbackWidget = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    // Check if already submitted today
-    const lastSubmission = localStorage.getItem('last_feedback_submission');
+    // Check if already submitted today using safe storage access
+    const lastSubmission = safeGetItem('last_feedback_submission');
     if (lastSubmission) {
       const lastDate = new Date(lastSubmission);
       const now = new Date();
@@ -67,7 +68,7 @@ export const FeedbackWidget = () => {
 
       if (error) throw error;
 
-      localStorage.setItem('last_feedback_submission', new Date().toISOString());
+      safeSetItem('last_feedback_submission', new Date().toISOString());
 
       toast({
         title: "Thank you for your feedback!",
