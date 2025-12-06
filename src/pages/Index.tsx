@@ -33,16 +33,8 @@ import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Lazy load TrustBadges to prevent render blocking
-const TrustBadges = lazy(() => import("@/components/TrustBadges").then(mod => ({ default: mod.TrustBadges })));
-
-// Safe wrapper for SEO components
-const SafeSEO: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  try {
-    return <>{children}</>;
-  } catch {
-    return null;
-  }
-};
+// Lazy load TrustBadges - disabled for now to fix blank screen
+// const TrustBadges = lazy(() => import("@/components/TrustBadges").then(mod => ({ default: mod.TrustBadges })));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -187,48 +179,46 @@ const Index = () => {
         url="https://cakeaiartist.com"
       />
       
-      <SafeSEO>
-        <AggregateRatingSchema
-          itemName="Cake AI Artist - AI Cake Designer"
-          ratingValue={4.9}
-          ratingCount={847}
-          reviewCount={847}
-          bestRating={5}
-          worstRating={1}
-        />
-      </SafeSEO>
+      {/* SEO schemas temporarily disabled to fix blank screen
+      <AggregateRatingSchema
+        itemName="Cake AI Artist - AI Cake Designer"
+        ratingValue={4.9}
+        ratingCount={847}
+        reviewCount={847}
+        bestRating={5}
+        worstRating={1}
+      />
       
-      <SafeSEO>
-        <ReviewSchema
-          itemName="Cake AI Artist - AI Cake Designer"
-          reviews={[
-            {
-              author: "Sarah M.",
-              reviewBody: "Absolutely love this tool! Created the perfect birthday cake design for my daughter in minutes. The AI suggestions were spot on!",
-              ratingValue: 5,
-              datePublished: "2024-11-15"
-            },
-            {
-              author: "Michael T.",
-              reviewBody: "Game changer for party planning. The party pack feature saved me hours of design work. Highly recommend!",
-              ratingValue: 5,
-              datePublished: "2024-11-28"
-            },
-            {
-              author: "Jessica L.",
-              reviewBody: "Beautiful cake designs every time. The character options are fantastic and my kids love seeing their favorite characters on their cakes!",
-              ratingValue: 5,
-              datePublished: "2024-12-01"
-            },
-            {
-              author: "David R.",
-              reviewBody: "Worth every penny! The lifetime deal was a no-brainer. Already created cakes for multiple family events.",
-              ratingValue: 5,
-              datePublished: "2024-12-05"
-            }
-          ]}
-        />
-      </SafeSEO>
+      <ReviewSchema
+        itemName="Cake AI Artist - AI Cake Designer"
+        reviews={[
+          {
+            author: "Sarah M.",
+            reviewBody: "Absolutely love this tool! Created the perfect birthday cake design for my daughter in minutes. The AI suggestions were spot on!",
+            ratingValue: 5,
+            datePublished: "2024-11-15"
+          },
+          {
+            author: "Michael T.",
+            reviewBody: "Game changer for party planning. The party pack feature saved me hours of design work. Highly recommend!",
+            ratingValue: 5,
+            datePublished: "2024-11-28"
+          },
+          {
+            author: "Jessica L.",
+            reviewBody: "Beautiful cake designs every time. The character options are fantastic and my kids love seeing their favorite characters on their cakes!",
+            ratingValue: 5,
+            datePublished: "2024-12-01"
+          },
+          {
+            author: "David R.",
+            reviewBody: "Worth every penny! The lifetime deal was a no-brainer. Already created cakes for multiple family events.",
+            ratingValue: 5,
+            datePublished: "2024-12-05"
+          }
+        ]}
+      />
+      */}
       
       <FloatingEmojis />
       <CursorSparkles />
@@ -666,10 +656,11 @@ const Index = () => {
         </motion.div>
       </div>
 
-      {/* Trust Badges Section - Lazy loaded */}
+      {/* Trust Badges - temporarily disabled to fix blank screen
       <Suspense fallback={null}>
         <TrustBadges />
       </Suspense>
+      */}
 
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
