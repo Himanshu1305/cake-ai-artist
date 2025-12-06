@@ -16,7 +16,8 @@ export const FloatingEmojis = () => {
     
     const generateEmojis = () => {
       const newEmojis: Emoji[] = [];
-      for (let i = 0; i < 12; i++) {
+      // Reduced from 12 to 8 emojis to decrease render load
+      for (let i = 0; i < 8; i++) {
         newEmojis.push({
           id: i,
           emoji: celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)],
@@ -31,9 +32,10 @@ export const FloatingEmojis = () => {
     // Delay initial emoji generation to let page settle
     const initialDelay = setTimeout(() => {
       generateEmojis();
-    }, 1500);
+    }, 2000); // Increased delay from 1500ms to 2000ms
     
-    const interval = setInterval(generateEmojis, 15000);
+    // Increased interval from 15s to 30s to reduce timer frequency
+    const interval = setInterval(generateEmojis, 30000);
 
     return () => {
       clearTimeout(initialDelay);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Sparkle {
   id: number;
@@ -25,41 +25,39 @@ export const CursorSparkles = () => {
   const nextIdRef = useRef(0);
   const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
-  const createSparkle = useCallback((x: number, y: number) => {
-    const id = nextIdRef.current++;
-    const duration = Math.random() * 600 + 400;
-    const delay = Math.random() * 100;
-
-    const sparkle: Sparkle = {
-      id,
-      x,
-      y,
-      size: Math.random() * 8 + 4,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      duration,
-      delay,
-    };
-
-    setSparkles(prev => {
-      // Limit sparkles to prevent memory issues
-      const newSparkles = prev.length >= MAX_SPARKLES 
-        ? [...prev.slice(1), sparkle] 
-        : [...prev, sparkle];
-      return newSparkles;
-    });
-
-    // Remove sparkle after animation with proper cleanup tracking
-    const timeout = setTimeout(() => {
-      setSparkles(prev => prev.filter(s => s.id !== id));
-      timeoutsRef.current.delete(timeout);
-    }, duration + delay);
-    
-    timeoutsRef.current.add(timeout);
-  }, []);
-
   useEffect(() => {
     let lastSparkleTime = 0;
     const sparkleInterval = 50;
+
+    const createSparkle = (x: number, y: number) => {
+      const id = nextIdRef.current++;
+      const duration = Math.random() * 600 + 400;
+      const delay = Math.random() * 100;
+
+      const sparkle: Sparkle = {
+        id,
+        x,
+        y,
+        size: Math.random() * 8 + 4,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        duration,
+        delay,
+      };
+
+      setSparkles(prev => {
+        const newSparkles = prev.length >= MAX_SPARKLES 
+          ? [...prev.slice(1), sparkle] 
+          : [...prev, sparkle];
+        return newSparkles;
+      });
+
+      const timeout = setTimeout(() => {
+        setSparkles(prev => prev.filter(s => s.id !== id));
+        timeoutsRef.current.delete(timeout);
+      }, duration + delay);
+      
+      timeoutsRef.current.add(timeout);
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
       const now = Date.now();
@@ -75,11 +73,10 @@ export const CursorSparkles = () => {
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      // Clear all pending timeouts on unmount
       timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
       timeoutsRef.current.clear();
     };
-  }, [createSparkle]);
+  }, []); // Empty dependency array - no stale closure issues now
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">

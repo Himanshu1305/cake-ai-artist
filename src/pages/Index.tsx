@@ -9,7 +9,8 @@ import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
-import { CursorSparkles } from "@/components/CursorSparkles";
+// Temporarily disabled CursorSparkles to fix blank page issue
+// import { CursorSparkles } from "@/components/CursorSparkles";
 import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -221,7 +222,8 @@ const Index = () => {
       */}
       
       <FloatingEmojis />
-      <CursorSparkles />
+      {/* CursorSparkles temporarily disabled to fix blank page issue */}
+      {/* <CursorSparkles /> */}
       <AdminSaleReminder />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />

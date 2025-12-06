@@ -13,6 +13,8 @@ interface Activity {
 export const LiveActivityFeed = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [visible, setVisible] = useState(true);
+  // Memoize random "online now" count to prevent re-render issues
+  const [onlineCount] = useState(() => Math.floor(Math.random() * 500) + 100);
 
   useEffect(() => {
     loadActivities();
@@ -33,10 +35,10 @@ export const LiveActivityFeed = () => {
       )
       .subscribe();
 
-    // Rotation effect - show/hide periodically
+    // Rotation effect - show/hide periodically (increased to 15s to reduce timer load)
     const interval = setInterval(() => {
       setVisible((v) => !v);
-    }, 8000);
+    }, 15000);
 
     return () => {
       supabase.removeChannel(channel);
@@ -100,7 +102,7 @@ export const LiveActivityFeed = () => {
               <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Users className="h-3 w-3" />
-                  {Math.floor(Math.random() * 500) + 100} online now
+                  {onlineCount} online now
                 </span>
               </div>
             </Card>
