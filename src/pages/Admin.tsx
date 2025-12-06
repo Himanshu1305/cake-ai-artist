@@ -18,6 +18,7 @@ interface Profile {
   is_premium: boolean;
   is_founding_member: boolean;
   created_at: string;
+  country?: string;
 }
 
 interface CommunityImage {
@@ -69,6 +70,8 @@ export default function Admin() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [images, setImages] = useState<CommunityImage[]>([]);
   const [subscribers, setSubscribers] = useState<BlogSubscriber[]>([]);
+  const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
     premiumUsers: 0,
@@ -195,17 +198,62 @@ export default function Admin() {
   };
 
   const loadProfiles = async () => {
-    const { data, error } = await supabase
+    const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, email, is_premium, is_founding_member, created_at')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error loading profiles:', error);
+    if (profilesError) {
+      console.error('Error loading profiles:', profilesError);
       return;
     }
 
-    setProfiles(data || []);
+    // Fetch page visits to determine user countries
+    const { data: pageVisitsData, error: pageVisitsError } = await supabase
+      .from('page_visits')
+      .select('user_id, country_code')
+      .not('user_id', 'is', null);
+
+    if (pageVisitsError) {
+      console.error('Error loading page visits for countries:', pageVisitsError);
+    }
+
+    // Count visits per user per country to determine primary country
+    const userCountryCounts: Record<string, Record<string, number>> = {};
+    (pageVisitsData || []).forEach((visit) => {
+      if (visit.user_id && visit.country_code) {
+        if (!userCountryCounts[visit.user_id]) {
+          userCountryCounts[visit.user_id] = {};
+        }
+        userCountryCounts[visit.user_id][visit.country_code] = 
+          (userCountryCounts[visit.user_id][visit.country_code] || 0) + 1;
+      }
+    });
+
+    // Assign primary country to each profile
+    const profilesWithCountry = (profilesData || []).map((profile) => {
+      const countryCounts = userCountryCounts[profile.id];
+      let primaryCountry = 'Unknown';
+      if (countryCounts) {
+        const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]);
+        if (sortedCountries.length > 0) {
+          primaryCountry = sortedCountries[0][0];
+        }
+      }
+      return { ...profile, country: primaryCountry };
+    });
+
+    setProfiles(profilesWithCountry);
+
+    // Calculate country stats for pie chart
+    const countryStatsMap: Record<string, number> = {};
+    profilesWithCountry.forEach((profile) => {
+      countryStatsMap[profile.country || 'Unknown'] = (countryStatsMap[profile.country || 'Unknown'] || 0) + 1;
+    });
+    const countryStats = Object.entries(countryStatsMap)
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count);
+    setUserCountryStats(countryStats);
   };
 
   const loadImages = async () => {
@@ -792,48 +840,135 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Manage user accounts and premium status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {profiles.map((profile) => (
-                      <TableRow key={profile.id}>
-                        <TableCell className="font-medium">{profile.email}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            {profile.is_premium && <Badge variant="default">Premium</Badge>}
-                            {profile.is_founding_member && <Badge className="bg-amber-600">Founding</Badge>}
-                            {!profile.is_premium && !profile.is_founding_member && <Badge variant="secondary">Free</Badge>}
-                          </div>
-                        </TableCell>
-                        <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            variant={profile.is_premium ? "destructive" : "default"}
-                            onClick={() => togglePremium(profile.id, profile.is_premium)}
-                          >
-                            {profile.is_premium ? 'Remove Premium' : 'Grant Premium'}
-                          </Button>
-                        </TableCell>
+            {/* Country Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {[
+                { code: 'US', label: '🇺🇸 US', flag: '🇺🇸' },
+                { code: 'UK', label: '🇬🇧 UK', flag: '🇬🇧' },
+                { code: 'CA', label: '🇨🇦 Canada', flag: '🇨🇦' },
+                { code: 'AU', label: '🇦🇺 Australia', flag: '🇦🇺' },
+                { code: 'Unknown', label: '❓ Unknown', flag: '❓' },
+              ].map(({ code, label }) => {
+                const count = userCountryStats.find(s => s.country === code)?.count || 0;
+                return (
+                  <Card key={code} className={`cursor-pointer transition-all ${countryFilter === code ? 'ring-2 ring-primary' : ''}`} onClick={() => setCountryFilter(code)}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{count}</div>
+                      <p className="text-xs text-muted-foreground">users</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Users by Country Pie Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Users by Country</CardTitle>
+                  <CardDescription>Distribution of users across countries</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={userCountryStats}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ country, percent }) => `${country} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                        nameKey="country"
+                      >
+                        {userCountryStats.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* User Management Table */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>User Management</CardTitle>
+                      <CardDescription>Manage user accounts and premium status</CardDescription>
+                    </div>
+                    {/* Country Filter Tabs */}
+                    <div className="flex gap-1 flex-wrap">
+                      {['all', 'US', 'UK', 'CA', 'AU', 'Unknown'].map((filter) => (
+                        <Button
+                          key={filter}
+                          size="sm"
+                          variant={countryFilter === filter ? 'default' : 'outline'}
+                          onClick={() => setCountryFilter(filter)}
+                        >
+                          {filter === 'all' ? 'All' : filter}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Country</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {profiles
+                        .filter((profile) => countryFilter === 'all' || profile.country === countryFilter)
+                        .map((profile) => (
+                          <TableRow key={profile.id}>
+                            <TableCell className="font-medium">{profile.email}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {profile.country === 'US' && '🇺🇸 '}
+                                {profile.country === 'UK' && '🇬🇧 '}
+                                {profile.country === 'CA' && '🇨🇦 '}
+                                {profile.country === 'AU' && '🇦🇺 '}
+                                {profile.country === 'Unknown' && '❓ '}
+                                {profile.country}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {profile.is_premium && <Badge variant="default">Premium</Badge>}
+                                {profile.is_founding_member && <Badge className="bg-amber-600">Founding</Badge>}
+                                {!profile.is_premium && !profile.is_founding_member && <Badge variant="secondary">Free</Badge>}
+                              </div>
+                            </TableCell>
+                            <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant={profile.is_premium ? "destructive" : "default"}
+                                onClick={() => togglePremium(profile.id, profile.is_premium)}
+                              >
+                                {profile.is_premium ? 'Remove Premium' : 'Grant Premium'}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="images" className="space-y-4">
