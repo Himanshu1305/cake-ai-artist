@@ -2,56 +2,67 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://cakeaiartist.com/</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/pricing</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.9</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/how-it-works</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/use-cases</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.7</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/faq</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/community</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.6</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/about</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/contact</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.5</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/privacy</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.3</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/terms</loc>
+    <lastmod>2025-12-06</lastmod>
     <priority>0.3</priority>
     <changefreq>yearly</changefreq>
   </url>

@@ -9,9 +9,17 @@ const Terms = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
         <title>Terms of Service - User Agreement | Cake AI Artist</title>
-        <meta name="description" content="Read the terms of service for Cake AI Artist, the virtual cake designer. Understand your rights and responsibilities when using our platform." />
-        <meta name="keywords" content="terms of service, user agreement, cake ai artist terms, virtual cake designer policy" />
+        <meta name="description" content="Read the terms of service for Cake AI Artist, the best AI cake generator. Understand your rights and responsibilities when using our virtual cake designer platform." />
+        <meta name="keywords" content="terms of service, user agreement, cake ai artist terms, best AI cake generator policy" />
         <link rel="canonical" href="https://cakeaiartist.com/terms" />
+        <meta property="og:title" content="Terms of Service - User Agreement | Cake AI Artist" />
+        <meta property="og:description" content="Read the terms of service for Cake AI Artist, the best AI cake generator. Understand your rights and responsibilities." />
+        <meta property="og:url" content="https://cakeaiartist.com/terms" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Terms of Service - User Agreement | Cake AI Artist" />
+        <meta name="twitter:description" content="Read the terms of service for Cake AI Artist, the best AI cake generator." />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">

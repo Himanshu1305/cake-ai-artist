@@ -10,9 +10,17 @@ const Privacy = () => {
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Privacy Policy - Your Data Protection | Cake AI Artist</title>
-        <meta name="description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data and ensure secure use of our virtual cake designer platform." />
-        <meta name="keywords" content="privacy policy, data protection, cake ai artist privacy, secure cake designer" />
+        <meta name="description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data and ensure secure use of the best AI cake generator platform." />
+        <meta name="keywords" content="privacy policy, data protection, cake ai artist privacy, secure virtual cake designer" />
         <link rel="canonical" href="https://cakeaiartist.com/privacy" />
+        <meta property="og:title" content="Privacy Policy - Your Data Protection | Cake AI Artist" />
+        <meta property="og:description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data and ensure secure use of the best AI cake generator." />
+        <meta property="og:url" content="https://cakeaiartist.com/privacy" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Privacy Policy - Your Data Protection | Cake AI Artist" />
+        <meta name="twitter:description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data." />
       </Helmet>
       
       {/* Header */}

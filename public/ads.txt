@@ -1,0 +1,9 @@
+# Google AdSense - Replace pub-XXXXXXXXXX with your actual publisher ID after AdSense approval
+# Format: google.com, pub-XXXXXXXXXX, DIRECT, f08c47fec0942fa0
+#
+# Instructions:
+# 1. Apply for Google AdSense at https://www.google.com/adsense/
+# 2. Once approved, you'll receive a publisher ID starting with "pub-"
+# 3. Uncomment and update the line below with your publisher ID
+#
+# google.com, pub-XXXXXXXXXX, DIRECT, f08c47fec0942fa0

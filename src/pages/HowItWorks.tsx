@@ -9,11 +9,20 @@ const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>How to Create a Personalized Cake in 30 Seconds | Cake AI Artist</title>
-        <meta name="description" content="Learn how easy it is to create stunning personalized cakes. Enter a name, choose an occasion, and let AI generate 3 beautiful views. Step-by-step guide." />
-        <meta name="keywords" content="how to create virtual cake, cake design tutorial, AI cake generator guide" />
+        <title>How to Create a Personalized Cake in 30 Seconds | Best AI Cake Generator</title>
+        <meta name="description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator. Enter a name, choose an occasion, and get 3 beautiful views. Step-by-step guide." />
+        <meta name="keywords" content="how to create virtual cake, best AI cake generator tutorial, cake design guide, virtual cake designer steps" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
+        <meta property="og:title" content="How to Create a Personalized Cake in 30 Seconds | Best AI Cake Generator" />
+        <meta property="og:description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator. Enter a name, choose an occasion, and get 3 beautiful views." />
         <meta property="og:url" content="https://cakeaiartist.com/how-it-works" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="How to Create a Personalized Cake in 30 Seconds" />
+        <meta name="twitter:description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-5xl">

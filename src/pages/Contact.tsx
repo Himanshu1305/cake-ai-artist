@@ -38,11 +38,20 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Contact Us - Cake AI Artist Support</title>
-        <meta name="description" content="Have questions about Cake AI Artist? Contact our support team. We typically respond within 24-48 hours." />
-        <meta name="keywords" content="contact support, cake generator help, customer service" />
+        <title>Contact Us - Best AI Cake Generator Support | Cake AI Artist</title>
+        <meta name="description" content="Have questions about the best AI cake generator? Contact our support team at support@cakeaiartist.com. We typically respond within 24-48 hours." />
+        <meta name="keywords" content="contact support, best AI cake generator help, virtual cake customer service, cake artist support" />
         <link rel="canonical" href="https://cakeaiartist.com/contact" />
+        <meta property="og:title" content="Contact Us - Best AI Cake Generator Support | Cake AI Artist" />
+        <meta property="og:description" content="Have questions about the best AI cake generator? Contact our support team. We typically respond within 24-48 hours." />
         <meta property="og:url" content="https://cakeaiartist.com/contact" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Contact Us - Best AI Cake Generator Support" />
+        <meta name="twitter:description" content="Have questions about the best AI cake generator? Contact our support team." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <LocalBusinessSchema 

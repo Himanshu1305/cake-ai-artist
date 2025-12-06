@@ -249,9 +249,10 @@ const Gallery = () => {
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>My Gallery - Your Best Virtual Cakes | Cake AI Artist</title>
-        <meta name="description" content="View and manage your personalized best virtual cakes created with the best AI cake designer. Download, share, and organize your custom AI-generated cakes." />
-        <meta name="keywords" content="my cake designs, best virtual cakes, cake gallery, best ai cakes, share cake designs" />
+        <meta name="description" content="View and manage your personalized virtual cakes created with the best AI cake generator. Download, share, and organize your custom AI-generated cake designs." />
+        <meta name="keywords" content="my cake designs, best virtual cakes, cake gallery, best AI cakes, share cake designs" />
         <link rel="canonical" href="https://cakeaiartist.com/gallery" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       
       <nav className="container mx-auto px-4 py-6">

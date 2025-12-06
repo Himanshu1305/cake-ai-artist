@@ -148,12 +148,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Cake AI Artist - Create Stunning Personalized Cakes in Seconds</title>
-        <meta name="description" content="Design beautiful, personalized cakes with AI. Perfect for birthdays, anniversaries, and celebrations. No design skills needed—get 3 unique views in 30 seconds." />
-        <meta name="keywords" content="AI cake designer, virtual cake creator, custom cake design, personalized birthday cake" />
+        <title>Best AI Cake Generator - Create Stunning Personalized Cakes | Cake AI Artist</title>
+        <meta name="description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds—no design skills needed. Try free!" />
+        <meta name="keywords" content="best AI cake generator, best virtual cake designer, best virtual cake, AI cake designer, personalized birthday cake, custom cake design, virtual cake creator" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
+        <meta property="og:title" content="Best AI Cake Generator - Create Stunning Personalized Cakes | Cake AI Artist" />
+        <meta property="og:description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds—no design skills needed." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
+        <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Best AI Cake Generator - Create Stunning Personalized Cakes" />
+        <meta name="twitter:description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <OrganizationSchema 

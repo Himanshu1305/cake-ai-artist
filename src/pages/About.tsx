@@ -9,11 +9,20 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>About Cake AI Artist - AI Cake Design Platform</title>
-        <meta name="description" content="Learn about Cake AI Artist. Discover how we help people celebrate with personalized, AI-generated cake designs for birthdays, anniversaries, and special occasions." />
-        <meta name="keywords" content="about cake AI artist, AI cake technology, virtual cake platform" />
+        <title>About Cake AI Artist - The Best AI Cake Design Platform</title>
+        <meta name="description" content="Learn about Cake AI Artist, the best AI cake generator. Discover how we help people celebrate with personalized, AI-generated virtual cake designs for every occasion." />
+        <meta name="keywords" content="about cake AI artist, best AI cake generator, virtual cake platform, AI cake technology" />
         <link rel="canonical" href="https://cakeaiartist.com/about" />
+        <meta property="og:title" content="About Cake AI Artist - The Best AI Cake Design Platform" />
+        <meta property="og:description" content="Learn about Cake AI Artist, the best AI cake generator. Discover how we help people celebrate with personalized, AI-generated virtual cake designs." />
         <meta property="og:url" content="https://cakeaiartist.com/about" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="About Cake AI Artist - The Best AI Cake Design Platform" />
+        <meta name="twitter:description" content="Learn about Cake AI Artist, the best AI cake generator. Discover how we help people celebrate." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       {/* Header */}

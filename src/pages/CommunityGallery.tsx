@@ -89,11 +89,20 @@ const CommunityGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>Community Gallery - Featured Cake Designs | Cake AI Artist</title>
-        <meta name="description" content="Explore amazing cakes created by our community. Get inspired by featured cake creations from users worldwide." />
-        <meta name="keywords" content="cake gallery, featured designs, cake inspiration, cake examples" />
+        <title>Community Gallery - Best Virtual Cake Designs | Cake AI Artist</title>
+        <meta name="description" content="Explore amazing virtual cakes created with the best AI cake generator. Get inspired by featured cake creations from users worldwide." />
+        <meta name="keywords" content="best virtual cake gallery, featured AI cake designs, cake inspiration, best AI cake examples" />
         <link rel="canonical" href="https://cakeaiartist.com/community" />
+        <meta property="og:title" content="Community Gallery - Best Virtual Cake Designs | Cake AI Artist" />
+        <meta property="og:description" content="Explore amazing virtual cakes created with the best AI cake generator. Get inspired by featured cake creations from users worldwide." />
         <meta property="og:url" content="https://cakeaiartist.com/community" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Community Gallery - Best Virtual Cake Designs" />
+        <meta name="twitter:description" content="Explore amazing virtual cakes created with the best AI cake generator." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       {/* Navigation Header */}
