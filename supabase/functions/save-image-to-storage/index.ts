@@ -57,21 +57,8 @@ serve(async (req) => {
       );
     }
 
-    // Validate URL format
-    try {
-      const url = new URL(imageUrl);
-      if (!url.protocol.startsWith('https')) {
-        throw new Error('URL must use HTTPS');
-      }
-    } catch {
-      return new Response(
-        JSON.stringify({ error: 'Invalid imageUrl format - must be a valid HTTPS URL' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Validate prompt length
-    if (prompt.length > 1000) {
+    if (prompt && prompt.length > 1000) {
       return new Response(
         JSON.stringify({ error: 'Prompt exceeds maximum length of 1000 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -79,21 +66,62 @@ serve(async (req) => {
     }
 
     console.log('Saving image for authenticated user:', userId);
-    console.log('Original URL:', imageUrl.substring(0, 100));
+    console.log('Image source:', imageUrl.substring(0, 50) + '...');
 
-    // Download the image from Replicate
-    console.log('Downloading image...');
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+    let imageBuffer: ArrayBuffer;
+    let contentType = 'image/webp';
+
+    // Check if imageUrl is a base64 data URL
+    if (imageUrl.startsWith('data:')) {
+      console.log('Processing base64 data URL...');
+      // Extract base64 data from data URL
+      const matches = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid base64 data URL format' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      contentType = matches[1] || 'image/png';
+      const base64Data = matches[2];
+      
+      // Decode base64 to binary
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      imageBuffer = bytes.buffer;
+    } else {
+      // Validate HTTPS URL format
+      try {
+        const url = new URL(imageUrl);
+        if (!url.protocol.startsWith('https')) {
+          throw new Error('URL must use HTTPS');
+        }
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid imageUrl format - must be a valid HTTPS URL or base64 data URL' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Download the image from external URL
+      console.log('Downloading image from URL...');
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+      }
+
+      const imageBlob = await imageResponse.blob();
+      imageBuffer = await imageBlob.arrayBuffer();
     }
-
-    const imageBlob = await imageResponse.blob();
-    const imageBuffer = await imageBlob.arrayBuffer();
     
     // Generate unique filename using authenticated user ID
     const timestamp = new Date().getTime();
-    const fileName = `${userId}/${timestamp}.webp`;
+    // Determine file extension from content type
+    const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+    const fileName = `${userId}/${timestamp}.${extension}`;
 
     console.log('Uploading to storage bucket:', fileName);
 
@@ -101,7 +129,7 @@ serve(async (req) => {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('cake-images')
       .upload(fileName, imageBuffer, {
-        contentType: 'image/webp',
+        contentType: contentType,
         upsert: false,
       });
 
