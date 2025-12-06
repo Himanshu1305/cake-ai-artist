@@ -25,12 +25,9 @@ import Admin from "./pages/Admin";
 import AdminLogoGenerator from "./pages/AdminLogoGenerator";
 import NotFound from "./pages/NotFound";
 
-console.log("[App] Module loaded");
-
 const queryClient = new QueryClient();
 
 const App = () => {
-  console.log("[App] Rendering App component");
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
