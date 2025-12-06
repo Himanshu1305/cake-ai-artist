@@ -552,118 +552,6 @@ const Index = () => {
         </motion.div>
       </div>
 
-      {/* Real Testimonials - Carousel */}
-      <div className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
-          What People Actually Say
-        </h2>
-        <Carousel 
-          className="w-full max-w-5xl mx-auto mb-12"
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          plugins={[
-            Autoplay({
-              delay: 30000,
-              stopOnInteraction: false,
-              stopOnMouseEnter: true,
-            }),
-          ]}
-        >
-          <CarouselContent>
-            {[
-              {
-                quote: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
-                author: "Sarah M.",
-                role: "Perpetual Last-Minute Planner",
-                rating: 5
-              },
-              {
-                quote: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
-                author: "James K.",
-                role: "Dad of Two",
-                rating: 5
-              },
-              {
-                quote: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
-                author: "Maria G.",
-                role: "Event Coordinator",
-                rating: 5
-              },
-              {
-                quote: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
-                author: "Jessica T.",
-                role: "Bakery Owner",
-                rating: 5
-              },
-              {
-                quote: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
-                author: "Priya S.",
-                role: "Mom & Anime Fan",
-                rating: 5
-              },
-              {
-                quote: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
-                author: "David L.",
-                role: "Event Planner",
-                rating: 5
-              }
-            ].map((testimonial, idx) => (
-              <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-2">
-                  <Card className="p-6 bg-surface-elevated border-border h-full">
-                    <div className="flex gap-1 mb-3">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-gold text-gold" />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
-                    <div>
-                      <p className="font-semibold text-foreground">{testimonial.author}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
-
-      {/* Stats Section */}
-      <div className="container mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="bg-gradient-to-r from-party-purple/10 to-party-pink/10 rounded-lg p-8 mb-16"
-        >
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div>
-              <p className="text-4xl font-bold text-party-purple mb-2">10,247+</p>
-              <p className="text-muted-foreground">Cakes Created This Month</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-party-pink mb-2">4.9★</p>
-              <p className="text-muted-foreground">Average Rating</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-gold mb-2">20 sec</p>
-              <p className="text-muted-foreground">Average Creation Time</p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Trust Badges - temporarily disabled to fix blank screen
-      <Suspense fallback={null}>
-        <TrustBadges />
-      </Suspense>
-      */}
-
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-8">
@@ -830,6 +718,118 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Real Testimonials - Carousel */}
+      <div className="container mx-auto px-4 py-12">
+        <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
+          What People Actually Say
+        </h2>
+        <Carousel 
+          className="w-full max-w-5xl mx-auto mb-12"
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({
+              delay: 30000,
+              stopOnInteraction: false,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+        >
+          <CarouselContent>
+            {[
+              {
+                quote: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
+                author: "Sarah M.",
+                role: "Perpetual Last-Minute Planner",
+                rating: 5
+              },
+              {
+                quote: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
+                author: "James K.",
+                role: "Dad of Two",
+                rating: 5
+              },
+              {
+                quote: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
+                author: "Maria G.",
+                role: "Event Coordinator",
+                rating: 5
+              },
+              {
+                quote: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
+                author: "Jessica T.",
+                role: "Bakery Owner",
+                rating: 5
+              },
+              {
+                quote: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
+                author: "Priya S.",
+                role: "Mom & Anime Fan",
+                rating: 5
+              },
+              {
+                quote: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
+                author: "David L.",
+                role: "Event Planner",
+                rating: 5
+              }
+            ].map((testimonial, idx) => (
+              <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-2">
+                  <Card className="p-6 bg-surface-elevated border-border h-full">
+                    <div className="flex gap-1 mb-3">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-gold text-gold" />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
+                    <div>
+                      <p className="font-semibold text-foreground">{testimonial.author}</p>
+                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    </div>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+
+      {/* Stats Section */}
+      <div className="container mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="bg-gradient-to-r from-party-purple/10 to-party-pink/10 rounded-lg p-8 mb-16"
+        >
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <p className="text-4xl font-bold text-party-purple mb-2">10,247+</p>
+              <p className="text-muted-foreground">Cakes Created This Month</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-party-pink mb-2">4.9★</p>
+              <p className="text-muted-foreground">Average Rating</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-gold mb-2">20 sec</p>
+              <p className="text-muted-foreground">Average Creation Time</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Trust Badges - temporarily disabled to fix blank screen
+      <Suspense fallback={null}>
+        <TrustBadges />
+      </Suspense>
+      */}
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-16">
