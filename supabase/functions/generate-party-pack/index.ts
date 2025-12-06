@@ -1,10 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const partyPackSchema = z.object({
+  cakeImageId: z.string().uuid("Invalid cake image ID"),
+  name: z.string().min(1, "Name is required").max(50, "Name too long").trim(),
+  occasion: z.string().min(1, "Occasion is required").max(50),
+  theme: z.string().max(100).optional().nullable(),
+  colors: z.string().max(100).optional().nullable(),
+  character: z.string().max(50).optional().nullable(),
+  eventDate: z.string().optional().nullable(),
+  eventTime: z.string().max(20).optional().nullable(),
+  eventLocation: z.string().max(200).optional().nullable(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,7 +28,10 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      throw new Error("No authorization header");
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -25,14 +42,29 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     if (userError || !user) {
-      throw new Error("Unauthorized");
+      console.error("Auth error:", userError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const { cakeImageId, name, occasion, theme, colors, character, eventDate, eventTime, eventLocation } = await req.json();
+    // Parse and validate input
+    const rawInput = await req.json();
+    const validationResult = partyPackSchema.safeParse(rawInput);
 
-    if (!cakeImageId || !name || !occasion) {
-      throw new Error("Missing required fields");
+    if (!validationResult.success) {
+      console.error("Validation error:", validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid input", 
+          details: validationResult.error.errors.map(e => e.message).join(", ")
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const { cakeImageId, name, occasion, theme, colors, character, eventDate, eventTime, eventLocation } = validationResult.data;
 
     console.log(`Generating party pack for user ${user.id}, cake ${cakeImageId}`);
 

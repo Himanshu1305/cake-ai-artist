@@ -1,16 +1,16 @@
 project_id = "ozgghjbvhveswqplzegd"
 
 [functions.save-image-to-storage]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-anniversary-reminders]
 verify_jwt = false
 
 [functions.analyze-cake-text]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-cake-photo]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-complete-cake]
 verify_jwt = true
@@ -19,4 +19,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-welcome-email]
-verify_jwt = false
+verify_jwt = true
+
+[functions.generate-logo]
+verify_jwt = true
