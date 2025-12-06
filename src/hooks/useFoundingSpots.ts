@@ -16,13 +16,16 @@ const CACHE_DURATION = 30000; // 30 seconds
 
 export const useFoundingSpots = () => {
   const [spots, setSpots] = useState<FoundingSpots>(() => {
-    // Try to load from cache
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const { data, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < CACHE_DURATION) {
-        return { ...data, loading: true, error: null };
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          return { ...data, loading: true, error: null };
+        }
       }
+    } catch (e) {
+      console.error("Error reading founding spots cache:", e);
     }
     return {
       tier1Available: 50,
@@ -55,10 +58,14 @@ export const useFoundingSpots = () => {
       setSpots(spotsData);
 
       // Cache the result
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({ data: spotsData, timestamp: Date.now() })
-      );
+      try {
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data: spotsData, timestamp: Date.now() })
+        );
+      } catch (e) {
+        console.error("Error caching founding spots:", e);
+      }
     } catch (err) {
       console.error('Error fetching founding spots:', err);
       setSpots(prev => ({ ...prev, loading: false, error: 'Failed to load spots' }));

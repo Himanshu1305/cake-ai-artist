@@ -11,39 +11,51 @@ export const AdminSaleReminder = () => {
   const [isDismissed, setIsDismissed] = useState(true);
 
   useEffect(() => {
-    const now = new Date();
-    const janFirst2026 = new Date('2026-01-01T00:00:00');
-    
-    // Only show if we're past Jan 1, 2026
-    if (now < janFirst2026) {
-      return;
-    }
-
-    // Check if dismissed and when
-    const dismissedDate = localStorage.getItem(REMINDER_DISMISS_DATE_KEY);
-    if (dismissedDate) {
-      const dismissed = new Date(dismissedDate);
-      const tomorrow = new Date(dismissed);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+    try {
+      const now = new Date();
+      const janFirst2026 = new Date('2026-01-01T00:00:00');
       
-      // If it's been less than a day, stay dismissed
-      if (now < tomorrow) {
+      // Only show if we're past Jan 1, 2026
+      if (now < janFirst2026) {
         return;
       }
-    }
 
-    // Show the reminder
-    setIsDismissed(false);
+      // Check if dismissed and when
+      const dismissedDate = localStorage.getItem(REMINDER_DISMISS_DATE_KEY);
+      if (dismissedDate) {
+        const dismissed = new Date(dismissedDate);
+        const tomorrow = new Date(dismissed);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // If it's been less than a day, stay dismissed
+        if (now < tomorrow) {
+          return;
+        }
+      }
+
+      // Show the reminder
+      setIsDismissed(false);
+    } catch (e) {
+      console.error("Error checking admin reminder:", e);
+    }
   }, []);
 
   const handleDismissForDay = () => {
-    const now = new Date().toISOString();
-    localStorage.setItem(REMINDER_DISMISS_DATE_KEY, now);
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem(REMINDER_DISMISS_DATE_KEY, now);
+    } catch (e) {
+      console.error("Error saving dismiss date:", e);
+    }
     setIsDismissed(true);
   };
 
   const handleDismissPermanently = () => {
-    localStorage.setItem(REMINDER_DISMISSED_KEY, 'true');
+    try {
+      localStorage.setItem(REMINDER_DISMISSED_KEY, 'true');
+    } catch (e) {
+      console.error("Error saving permanent dismiss:", e);
+    }
     setIsDismissed(true);
   };
 
