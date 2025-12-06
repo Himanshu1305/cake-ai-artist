@@ -1,10 +1,27 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const cakeRequestSchema = z.object({
+  name: z.string().min(1, "Name is required").max(50, "Name too long").trim(),
+  occasion: z.string().min(1, "Occasion is required").max(50),
+  relation: z.string().min(1, "Relation is required").max(50),
+  gender: z.string().min(1, "Gender is required").max(20),
+  character: z.string().max(50).optional().nullable(),
+  cakeType: z.string().max(30).optional().nullable(),
+  layers: z.string().max(20).optional().nullable(),
+  theme: z.string().max(100).optional().nullable(),
+  colors: z.string().max(100).optional().nullable(),
+  userPhotoBase64: z.string().max(5000000).optional().nullable(), // ~3.75MB base64
+  specificView: z.enum(['front', 'side', 'top']).optional().nullable(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,6 +29,47 @@ serve(async (req) => {
   }
 
   try {
+    // Validate JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Authenticated user:', user.id);
+
+    // Parse and validate input
+    const rawInput = await req.json();
+    const validationResult = cakeRequestSchema.safeParse(rawInput);
+
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.errors.map(e => e.message).join(', ')
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { 
       name, 
       character, 
@@ -23,8 +81,8 @@ serve(async (req) => {
       theme, 
       colors, 
       userPhotoBase64,
-      specificView // Optional: regenerate only this view (front, side, top, diagonal)
-    } = await req.json();
+      specificView
+    } = validationResult.data;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender });
 

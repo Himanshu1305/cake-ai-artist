@@ -81,11 +81,10 @@ const Index = () => {
 
   const loadFeaturedCakes = async () => {
     try {
-      // SECURITY: Query generated_images directly with safe columns only, filtered by featured = true
+      // SECURITY: Query from secure view that only exposes safe columns
       const { data, error } = await supabase
-        .from("generated_images")
+        .from("public_featured_images" as any)
         .select("id, image_url, created_at, occasion_type")
-        .eq("featured", true)
         .order("created_at", { ascending: false })
         .limit(20);
 
@@ -95,7 +94,7 @@ const Index = () => {
       
       if (data && data.length > 0) {
         // Map to expected format with generic prompt
-        setFeaturedCakes(data.map(item => ({
+        setFeaturedCakes(data.map((item: any) => ({
           image_url: item.image_url,
           prompt: `${item.occasion_type || 'Celebration'} cake`
         })));

@@ -12,21 +12,77 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, userId, prompt } = await req.json();
-
-    if (!imageUrl || !userId || !prompt) {
-      throw new Error('Missing required fields: imageUrl, userId, or prompt');
+    // Extract and validate JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-
-    console.log('Saving image for user:', userId);
-    console.log('Original URL:', imageUrl);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Validate the JWT token and get the user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Use the authenticated user's ID instead of request body
+    const userId = user.id;
+
+    const { imageUrl, prompt } = await req.json();
+
+    // Input validation
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Missing or invalid imageUrl' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Missing or invalid prompt' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate URL format
+    try {
+      const url = new URL(imageUrl);
+      if (!url.protocol.startsWith('https')) {
+        throw new Error('URL must use HTTPS');
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid imageUrl format - must be a valid HTTPS URL' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate prompt length
+    if (prompt.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt exceeds maximum length of 1000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Saving image for authenticated user:', userId);
+    console.log('Original URL:', imageUrl.substring(0, 100));
+
     // Download the image from Replicate
-    console.log('Downloading image from Replicate...');
+    console.log('Downloading image...');
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Failed to download image: ${imageResponse.statusText}`);
@@ -35,7 +91,7 @@ serve(async (req) => {
     const imageBlob = await imageResponse.blob();
     const imageBuffer = await imageBlob.arrayBuffer();
     
-    // Generate unique filename
+    // Generate unique filename using authenticated user ID
     const timestamp = new Date().getTime();
     const fileName = `${userId}/${timestamp}.webp`;
 

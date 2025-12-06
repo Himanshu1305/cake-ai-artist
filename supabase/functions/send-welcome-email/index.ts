@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -7,12 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-interface WelcomeEmailRequest {
-  email: string;
-  firstName?: string;
-  isPremium?: boolean;
-}
 
 const getPremiumWelcomeEmail = (firstName: string) => `
 <!DOCTYPE html>
@@ -183,10 +178,54 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, isPremium }: WelcomeEmailRequest = await req.json();
+    // Extract and validate JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Validate the JWT token and get the user
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      console.error("Auth error:", userError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get email from authenticated user - SECURITY: Only send to the authenticated user's email
+    const email = user.email;
     if (!email) {
-      throw new Error("Email is required");
+      return new Response(
+        JSON.stringify({ error: "User has no email address" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { isPremium } = await req.json();
+
+    // Get first name from user metadata or profile
+    let firstName = user.user_metadata?.first_name;
+    
+    if (!firstName) {
+      // Try to get from profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", user.id)
+        .single();
+      
+      firstName = profile?.first_name;
     }
 
     const greeting = firstName || "there";
@@ -197,7 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
       ? getPremiumWelcomeEmail(greeting)
       : getFreeWelcomeEmail(greeting);
 
-    console.log(`Sending ${isPremium ? 'premium' : 'free'} welcome email to ${email}`);
+    console.log(`Sending ${isPremium ? "premium" : "free"} welcome email to authenticated user: ${email}`);
 
     const emailResponse = await resend.emails.send({
       from: "Cake AI Artist <welcome@cakeaiartist.com>",
