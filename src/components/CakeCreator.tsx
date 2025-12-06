@@ -1209,6 +1209,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       options={[
                         { value: "birthday", label: "Birthday" },
                         { value: "anniversary", label: "Anniversary" },
+                        { value: "christmas", label: "Christmas" },
+                        { value: "new-year", label: "New Year" },
                         { value: "graduation", label: "Graduation" },
                         { value: "wedding", label: "Wedding" },
                         { value: "celebration", label: "Celebration" },

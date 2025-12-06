@@ -96,6 +96,8 @@ serve(async (req) => {
       const texts: Record<string, string> = {
         'birthday': 'Happy Birthday',
         'anniversary': 'Happy Anniversary',
+        'christmas': 'Merry Christmas',
+        'new-year': 'Happy New Year',
         'wedding': 'Congratulations',
         'graduation': 'Congratulations',
         'baby-shower': 'Welcome Baby',
@@ -356,12 +358,42 @@ Cake specifications:
         return `- "Happy Birthday, Mom! Everything I am is because of you. Thank you for your endless love, wisdom, and support. You're not just the best mom – you're my hero. Love you more than words can say!"
 - "To the most amazing mother, ${name}, Happy Birthday! Your love has shaped my life in countless beautiful ways. Thank you for everything you do. Here's to celebrating YOU today!"`;
       }
+      // Christmas messages
+      if (occ === 'christmas') {
+        return `- "Merry Christmas, ${name}! May your holidays be filled with warmth, joy, and wonderful memories. Wishing you a season of love and happiness!"
+- "Merry Christmas to my dear ${rel}! May this festive season bring you peace, happiness, and all the blessings your heart can hold. Love you always!"`;
+      }
+      // New Year messages
+      if (occ === 'new-year') {
+        return `- "Happy New Year, ${name}! Here's to new beginnings, exciting adventures, and a year filled with happiness and success. Cheers to 2025!"
+- "Wishing you a wonderful New Year, ${name}! May this year bring you everything you've been dreaming of. Let's make it an amazing one together!"`;
+      }
+      return '';
+    };
+
+    // Get occasion-specific message guidance
+    const getOccasionGuidance = (occ: string): string => {
+      if (occ === 'christmas') {
+        return `CHRISTMAS MESSAGE GUIDELINES:
+- Use "Merry Christmas" greeting (NOT "Happy Birthday" or other greetings)
+- Include warm holiday wishes, festive spirit, and seasonal joy
+- Reference holiday themes: warmth, family togetherness, blessings, peace, joy
+- Make it feel cozy, loving, and celebratory of the Christmas season`;
+      }
+      if (occ === 'new-year') {
+        return `NEW YEAR MESSAGE GUIDELINES:
+- Use "Happy New Year" greeting (NOT "Happy Birthday" or other greetings)
+- Include wishes for the year ahead: new beginnings, success, happiness
+- Reference new year themes: fresh starts, hopes, dreams, exciting adventures
+- Make it feel optimistic, forward-looking, and celebratory of new opportunities`;
+      }
       return '';
     };
 
     // Message generation function
     const generateMessageAsync = async (): Promise<string> => {
       const inverseRel = getInverseRelation(relation);
+      const occasionGuidance = getOccasionGuidance(occasion || 'birthday');
       const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
 
 RECIPIENT DETAILS:
@@ -370,12 +402,15 @@ RECIPIENT DETAILS:
 - Gender: ${gender || 'other'}
 - Occasion: ${occasion || 'birthday'}
 
+${occasionGuidance}
+
 YOUR TASK:
 Write a 2-3 sentence message that:
 1. Speaks AS the ${inverseRel} writing TO their ${relation}
 2. Uses ${gender === 'female' ? 'feminine' : gender === 'male' ? 'masculine' : 'neutral'} language appropriate for ${name}
 3. Captures the emotional depth and warmth of the ${relation} relationship from the ${inverseRel}'s perspective
 4. Feels deeply personal, genuine, and emotionally resonant – NOT generic or AI-like
+5. Uses the CORRECT greeting for the occasion (e.g., "Merry Christmas" for Christmas, "Happy New Year" for New Year, "Happy Birthday" for Birthday)
 
 ${getRelationshipGuidance(relation, gender)}
 
