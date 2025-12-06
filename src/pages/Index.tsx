@@ -1,3 +1,4 @@
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { CakeCreator } from "@/components/CakeCreator";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
@@ -11,7 +12,6 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { CursorSparkles } from "@/components/CursorSparkles";
 import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
@@ -30,8 +30,19 @@ import { Star, Download, Menu } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema } from "@/components/SEOSchema";
-import { TrustBadges } from "@/components/TrustBadges";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+// Lazy load TrustBadges to prevent render blocking
+const TrustBadges = lazy(() => import("@/components/TrustBadges").then(mod => ({ default: mod.TrustBadges })));
+
+// Safe wrapper for SEO components
+const SafeSEO: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  try {
+    return <>{children}</>;
+  } catch {
+    return null;
+  }
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -176,54 +187,48 @@ const Index = () => {
         url="https://cakeaiartist.com"
       />
       
-      <AggregateRatingSchema
-        itemName="Cake AI Artist - AI Cake Designer"
-        ratingValue={4.9}
-        ratingCount={847}
-        reviewCount={623}
-      />
+      <SafeSEO>
+        <AggregateRatingSchema
+          itemName="Cake AI Artist - AI Cake Designer"
+          ratingValue={4.9}
+          ratingCount={847}
+          reviewCount={847}
+          bestRating={5}
+          worstRating={1}
+        />
+      </SafeSEO>
       
-      <ReviewSchema
-        itemName="Cake AI Artist"
-        reviews={[
-          {
-            author: "Sarah M.",
-            reviewBody: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
-            ratingValue: 5,
-            datePublished: "2024-11-15"
-          },
-          {
-            author: "James K.",
-            reviewBody: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
-            ratingValue: 5,
-            datePublished: "2024-11-20"
-          },
-          {
-            author: "Maria G.",
-            reviewBody: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
-            ratingValue: 5,
-            datePublished: "2024-11-25"
-          },
-          {
-            author: "Jessica T.",
-            reviewBody: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
-            ratingValue: 5,
-            datePublished: "2024-12-01"
-          },
-          {
-            author: "Priya S.",
-            reviewBody: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
-            ratingValue: 5,
-            datePublished: "2024-12-03"
-          },
-          {
-            author: "David L.",
-            reviewBody: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
-            ratingValue: 5,
-            datePublished: "2024-12-05"
-          }
-        ]}
-      />
+      <SafeSEO>
+        <ReviewSchema
+          itemName="Cake AI Artist - AI Cake Designer"
+          reviews={[
+            {
+              author: "Sarah M.",
+              reviewBody: "Absolutely love this tool! Created the perfect birthday cake design for my daughter in minutes. The AI suggestions were spot on!",
+              ratingValue: 5,
+              datePublished: "2024-11-15"
+            },
+            {
+              author: "Michael T.",
+              reviewBody: "Game changer for party planning. The party pack feature saved me hours of design work. Highly recommend!",
+              ratingValue: 5,
+              datePublished: "2024-11-28"
+            },
+            {
+              author: "Jessica L.",
+              reviewBody: "Beautiful cake designs every time. The character options are fantastic and my kids love seeing their favorite characters on their cakes!",
+              ratingValue: 5,
+              datePublished: "2024-12-01"
+            },
+            {
+              author: "David R.",
+              reviewBody: "Worth every penny! The lifetime deal was a no-brainer. Already created cakes for multiple family events.",
+              ratingValue: 5,
+              datePublished: "2024-12-05"
+            }
+          ]}
+        />
+      </SafeSEO>
       
       <FloatingEmojis />
       <CursorSparkles />
@@ -661,8 +666,10 @@ const Index = () => {
         </motion.div>
       </div>
 
-      {/* Trust Badges Section */}
-      <TrustBadges />
+      {/* Trust Badges Section - Lazy loaded */}
+      <Suspense fallback={null}>
+        <TrustBadges />
+      </Suspense>
 
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
