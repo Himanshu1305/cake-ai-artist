@@ -63,19 +63,19 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>Pricing - Best Virtual Cake Designer Lifetime Deal | Cake AI Artist</title>
-        <meta name="description" content="Get lifetime access to the best AI cake generator for just $49. Limited to first 200 members. Create unlimited personalized virtual cakes forever—no monthly fees." />
-        <meta name="keywords" content="best AI cake generator pricing, best virtual cake designer plans, lifetime cake access, new year deal, AI cake subscription" />
+        <title>Pricing - Lifetime Access for $49. Seriously. | Cake AI Artist</title>
+        <meta name="description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever. After that, it's $9.99/month. Your call." />
+        <meta name="keywords" content="cake AI pricing, lifetime cake access, new year deal, AI cake subscription" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
-        <meta property="og:title" content="Pricing - Best Virtual Cake Designer Lifetime Deal | Cake AI Artist" />
-        <meta property="og:description" content="Get lifetime access to the best AI cake generator for just $49. Limited to first 200 members. Create unlimited personalized virtual cakes forever." />
+        <meta property="og:title" content="Pricing - Lifetime Access for $49. Seriously. | Cake AI Artist" />
+        <meta property="og:description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever." />
         <meta property="og:url" content="https://cakeaiartist.com/pricing" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Pricing - Best Virtual Cake Designer Lifetime Deal" />
-        <meta name="twitter:description" content="Get lifetime access to the best AI cake generator for just $49. Limited to first 200 members." />
+        <meta name="twitter:title" content="Pricing - Lifetime Access for $49. Seriously." />
+        <meta name="twitter:description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       

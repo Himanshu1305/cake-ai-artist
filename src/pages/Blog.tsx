@@ -10,7 +10,7 @@ const Blog = () => {
     {
       id: "creative-cake-ideas-birthday",
       title: "10 Creative Cake Ideas for Birthday Celebrations",
-      excerpt: "Stuck on what kind of cake to create? Here are ten unique ideas that'll make any birthday unforgettable, from minimalist elegance to over-the-top extravagance.",
+      excerpt: "Stuck on what kind of cake to make? Same. Here are ten ideas that actually work, from minimalist elegance to rainbow chaos. Something for everyone.",
       date: "November 20, 2025",
       readTime: "5 min read",
       category: "Ideas & Inspiration"
@@ -18,39 +18,39 @@ const Blog = () => {
     {
       id: "cake-design-trends-2025",
       title: "Cake Design Trends: What's Popular in 2025",
-      excerpt: "The world of cake design is evolving. Discover the hottest trends from geometric patterns to vintage aesthetics that are dominating celebrations this year.",
+      excerpt: "Geometric patterns are still having a moment. Vintage is back. Minimalism refuses to die. Here's what we're seeing people create most.",
       date: "November 18, 2025",
       readTime: "7 min read",
       category: "Trends"
     },
     {
       id: "ai-vs-traditional-cake-design",
-      title: "AI vs Traditional Cake Design: The Future of Celebrations",
-      excerpt: "How is AI changing the way we think about cake design? Explore the benefits and limitations of technology-driven personalization versus traditional methods.",
+      title: "AI vs Traditional Cake Design: What Actually Changed",
+      excerpt: "A few years ago this wasn't even possible. Now it is. Here's an honest look at what AI does well and where it still falls short.",
       date: "November 15, 2025",
       readTime: "6 min read",
       category: "Technology"
     },
     {
       id: "perfect-birthday-messages",
-      title: "50 Birthday Message Ideas for Every Age and Relationship",
-      excerpt: "Finding the right words matters. Whether it's your boss, your best friend, or your grandmother, we've got message ideas that hit the right tone every time.",
+      title: "50 Birthday Message Ideas (Because 'HBD' Isn't Cutting It)",
+      excerpt: "Finding the right words is harder than it looks. Here are messages sorted by relationship—boss, grandma, best friend, that cousin you barely know.",
       date: "November 12, 2025",
       readTime: "8 min read",
       category: "Writing Tips"
     },
     {
       id: "virtual-party-guide",
-      title: "Planning a Virtual Birthday Party? Here's How to Make It Special",
-      excerpt: "Distance doesn't have to mean boring. Learn how to create meaningful virtual celebrations that feel just as special as in-person gatherings.",
+      title: "How to Make Virtual Birthday Parties Actually Fun",
+      excerpt: "Video call birthdays can feel awkward. They don't have to. Here's what works based on parties that didn't make everyone want to close their laptops.",
       date: "November 10, 2025",
       readTime: "6 min read",
       category: "Party Planning"
     },
     {
       id: "last-minute-birthday-solutions",
-      title: "Last-Minute Birthday Solutions: Create a Perfect Cake in Minutes",
-      excerpt: "Forgot someone's birthday? Don't panic. Here's your step-by-step guide to pulling together something thoughtful when you're short on time.",
+      title: "Last-Minute Birthday Saves: A Panic-Free Guide",
+      excerpt: "It's the day of. You forgot. Deep breaths. Here's exactly what to do in the next 10 minutes to not look like a terrible person.",
       date: "November 8, 2025",
       readTime: "4 min read",
       category: "Quick Tips"
@@ -60,19 +60,19 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Blog - Best AI Cake Design Ideas & Celebration Tips | Cake AI Artist</title>
-        <meta name="description" content="Explore our blog for the best virtual cake design ideas, birthday tips, cake trends, celebration planning tips, and creative inspiration for every special occasion." />
-        <meta name="keywords" content="best AI cake design blog, birthday cake tips, virtual cake trends, celebration inspiration, best virtual cake ideas" />
+        <title>Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist</title>
+        <meta name="description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us. Plus some AI cake nerding if you're into that." />
+        <meta name="keywords" content="cake design blog, birthday cake tips, virtual cake trends, celebration inspiration" />
         <link rel="canonical" href="https://cakeaiartist.com/blog" />
-        <meta property="og:title" content="Blog - Best AI Cake Design Ideas & Celebration Tips | Cake AI Artist" />
-        <meta property="og:description" content="Explore our blog for the best virtual cake design ideas, birthday tips, cake trends, and creative inspiration." />
+        <meta property="og:title" content="Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist" />
+        <meta property="og:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
         <meta property="og:url" content="https://cakeaiartist.com/blog" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Blog - Best AI Cake Design Ideas & Celebration Tips" />
-        <meta name="twitter:description" content="Explore our blog for the best virtual cake design ideas, birthday tips, and creative inspiration." />
+        <meta name="twitter:title" content="Blog - Cake Ideas, Tips & Actually Useful Stuff" />
+        <meta name="twitter:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
@@ -85,10 +85,10 @@ const Blog = () => {
         </Link>
 
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Design Ideas & Tips</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Ideas & Tips</h1>
           <p className="text-muted-foreground text-xl max-w-2xl">
-            Ideas, tips, and inspiration for creating beautiful cakes. 
-            From design trends to party planning hacks, we&apos;ve got you covered.
+            Stuff we've learned, trends we've noticed, and ideas worth stealing. 
+            No fluff, just useful things.
           </p>
         </div>
 
@@ -127,10 +127,10 @@ const Blog = () => {
 
         {/* Newsletter Signup */}
         <div className="mt-16 text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">
-          <h2 className="text-3xl font-bold mb-4 text-foreground">Stay Updated</h2>
+          <h2 className="text-3xl font-bold mb-4 text-foreground">Want More?</h2>
           <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
-            Get the latest tips, trends, and celebration ideas delivered to your inbox. 
-            No spam, just good stuff. Promise.
+            New ideas, tips, and the occasional discount code. We email like once a week max. 
+            Unsubscribe anytime—no hard feelings.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input

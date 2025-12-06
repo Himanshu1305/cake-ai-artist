@@ -15,19 +15,19 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>FAQ - Best AI Cake Generator Questions & Answers | Cake AI Artist</title>
-        <meta name="description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes, understand pricing, and explore premium features." />
-        <meta name="keywords" content="best AI cake generator FAQ, virtual cake questions, cake designer help, design support, best virtual cake" />
+        <title>FAQ - Got Questions? We've Got Answers | Cake AI Artist</title>
+        <meta name="description" content="Wondering how it all works? Here's the stuff people ask us most—from pricing to features to 'wait, is this actually free?' Yes. Yes it is." />
+        <meta name="keywords" content="cake AI FAQ, virtual cake questions, cake designer help, design support" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
-        <meta property="og:title" content="FAQ - Best AI Cake Generator Questions & Answers | Cake AI Artist" />
-        <meta property="og:description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes and explore features." />
+        <meta property="og:title" content="FAQ - Got Questions? We've Got Answers | Cake AI Artist" />
+        <meta property="og:description" content="Wondering how it all works? Here's the stuff people ask us most." />
         <meta property="og:url" content="https://cakeaiartist.com/faq" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="FAQ - Best AI Cake Generator Questions & Answers" />
-        <meta name="twitter:description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes." />
+        <meta name="twitter:title" content="FAQ - Got Questions? We've Got Answers" />
+        <meta name="twitter:description" content="Wondering how it all works? Here's the stuff people ask us most." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
@@ -35,39 +35,39 @@ const FAQ = () => {
         faqs={[
           {
             question: "How do I create my first cake?",
-            answer: "It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), and hit the 'Create My Cake' button. In about 30 seconds, you'll get three unique views (Front, Side, and Top-Down) to choose from. Pick your favorite and download it. No design skills needed."
+            answer: "Super simple. Type a name, pick an occasion, hit generate. About 30 seconds later you've got three different views of your cake. Pick your favorite, download it. Done."
           },
           {
             question: "Do I need to create an account?",
-            answer: "Nope! You can try the service without signing up. However, creating a free account lets you save your creations, access your generation history, and track your daily limit. Plus, if you ever upgrade to premium, your account will have all your past designs ready to go."
+            answer: "Nope! Try it without signing up first. But if you want to save your creations or track your daily limit, a free account helps with that."
           },
           {
             question: "Is it really free?",
-            answer: "Yes! Free users can generate up to 3 personalized cakes per day. That's perfect for most people. If you're planning multiple events or want unlimited creations, our premium plan removes all limits and adds priority processing."
+            answer: "Yes—3 cakes a day, no credit card, no strings. If you need more than that, premium's an option. But the free version works forever."
           },
           {
             question: "Can I change the message after generating?",
-            answer: "Currently, each generation creates three views with slightly different perspectives. If you don't love what you see, simply hit generate again. Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! First 200 members (New Year Lifetime Deal) can do this unlimited times, regular premium users get 150 generations per year."
+            answer: "Not exactly—but you can regenerate individual views without redoing all three. Just hit the Regenerate button on whichever one you don't love. First 200 members get unlimited tries, regular premium gets 150/year."
           },
           {
             question: "What's included in the Premium subscription?",
-            answer: "Premium gets you unlimited cake generations (no daily limits), priority processing (faster generation), access to advanced customization options, commercial use license for your images, and early access to new features."
+            answer: "More generations (150/year or unlimited for lifetime members), faster processing, advanced customization, commercial use license, and early access to new stuff. Plus you're supporting us, which is nice."
           },
           {
             question: "How many cakes can I generate with Premium?",
-            answer: "It depends on your membership type! First 200 members (New Year Lifetime Deal) get unlimited generations forever—they'll never pay again and can create as many cakes as they want. Regular premium subscribers get 150 generations per year, which is plenty for most users. Free users get 3 per day with a 12/month cap."
+            answer: "Lifetime members (first 200) = unlimited forever. Regular premium = 150/year. Free = 3/day with a 12/month cap. Most people find free is plenty, honestly."
           },
           {
             question: "What's special about the New Year Lifetime Deal?",
-            answer: "The first 200 members who claim this New Year deal are locked in for life. They pay a one-time fee ($49 or $99) and will never pay anything else—ever. They get unlimited generations, priority support, exclusive 2025 badges, and all future features at no additional cost. Once these 200 spots are filled or December 31st passes, this offer will never be available again."
+            answer: "First 200 people pay once ($49 or $99) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill or December 31st hits, this deal disappears."
           },
           {
             question: "Can I use this for my business?",
-            answer: "Free accounts are limited to personal, non-commercial use. If you want to use the images for business purposes (event planning, social media marketing, client gifts, etc.), you'll need a premium subscription, which includes a commercial use license."
+            answer: "Free = personal use only. Premium = commercial license included. Event planners, marketers, anyone using these for work—you'll want the premium plan."
           },
           {
             question: "What image format do you provide?",
-            answer: "All images are provided in high-quality PNG format with transparent backgrounds where appropriate. This makes them perfect for sharing on social media, printing, or using in digital invitations. The resolution is optimized for both screen display and printing."
+            answer: "High-quality PNG. Works great for social media, printing, digital invitations—pretty much anything you'd want to do with a cake image."
           }
         ]}
       />
@@ -83,7 +83,7 @@ const FAQ = () => {
         <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
           <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Got questions? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for? <Link to="/contact" className="text-party-purple hover:underline">Contact us</Link>.
+            Got questions? Cool. Here are the ones everyone asks. Still stuck? <Link to="/contact" className="text-party-purple hover:underline">Hit us up</Link>.
           </p>
 
           <Accordion type="single" collapsible className="w-full space-y-4">
@@ -92,9 +92,9 @@ const FAQ = () => {
                 How do I create my first cake?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                It's super simple. Just enter a name in the input field on the homepage, choose your occasion (birthday, anniversary, etc.), 
-                and hit the "Create My Cake" button. In about 30 seconds, you'll get three unique views (Front, Side, and Top-Down) to choose from. 
-                Pick your favorite and download it. No design skills needed.
+                Honestly, it's embarrassingly simple. Type a name in the box, pick what you're celebrating (birthday, anniversary, whatever), 
+                and hit the button. About 30 seconds later—I know, I know, we said "instant" but we're being real here—you'll have three views to choose from. 
+                Front, side, top-down. Pick your favorite, download it. That's literally it.
               </AccordionContent>
             </AccordionItem>
 
@@ -103,9 +103,9 @@ const FAQ = () => {
                 Do I need to create an account?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Nope! You can try the service without signing up. However, creating a free account lets you save your creations, 
-                access your generation history, and track your daily limit. Plus, if you ever upgrade to premium, 
-                your account will have all your past designs ready to go.
+                Short answer: no. You can make cakes right now without signing up for anything. 
+                But here's the thing—if you want to save your creations, see your history, or keep track of how many generations you've used, 
+                you'll want a free account. Takes 30 seconds. Up to you though.
               </AccordionContent>
             </AccordionItem>
 
@@ -114,9 +114,9 @@ const FAQ = () => {
                 Is it really free?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Yes! Free users can generate up to 3 personalized cakes per day. That's perfect for most people. 
-                If you're planning multiple events or want unlimited creations, our premium plan removes all limits 
-                and adds priority processing for just a few dollars a month.
+                Yep. Three cakes a day, zero credit card required, no "free trial" nonsense that charges you later. 
+                If you're making cakes for like... every person you know every day? Then yeah, premium makes sense. 
+                But for normal humans, free works just fine.
               </AccordionContent>
             </AccordionItem>
 
@@ -125,10 +125,9 @@ const FAQ = () => {
                 Can I change the message after generating?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Currently, each generation creates three views with slightly different perspectives. 
-                If you don't love what you see, simply hit generate again—it counts as one of your daily generations. 
-                Plus, you can regenerate individual views without redoing all three—just click the Regenerate button on any image! 
-                First 200 members (New Year Lifetime Deal) can do this unlimited times, regular premium users get 150 generations per year.
+                Okay, so here's the deal—the text gets baked into the image (pun intended). You can't edit it after. 
+                BUT you can regenerate individual views if one doesn't look right. See that little Regenerate button on each image? 
+                Just that one view, not all three. Saves time.
               </AccordionContent>
             </AccordionItem>
 
@@ -137,9 +136,9 @@ const FAQ = () => {
                 What cake styles are available?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Our AI generates various styles based on your inputs—from elegant multi-tiered cakes to fun single-layer designs. 
-                The style adapts to the occasion you select. Birthday cakes tend to be more colorful and playful, 
-                while anniversary cakes lean toward romantic and sophisticated designs.
+                The AI adapts based on what you tell it. Birthday for a 5-year-old? Colorful, playful, probably with some fun character vibes. 
+                50th anniversary? Elegant, sophisticated, maybe some gold accents. You can also specify—chocolate, vanilla, tiered, single layer, 
+                specific themes. Play around with it. Part of the fun, honestly.
               </AccordionContent>
             </AccordionItem>
 
@@ -148,9 +147,9 @@ const FAQ = () => {
                 What's included in the Premium subscription?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Premium gets you 150 generations per year (or unlimited if you grabbed the New Year Lifetime Deal), priority processing (faster generation), 
-                access to advanced customization options, commercial use license for your images, and early access to new features. 
-                Plus, you support us in making the service even better!
+                Real talk? More cakes. 150 generations per year (or unlimited if you grabbed the lifetime deal). 
+                Plus faster processing, advanced customization options, commercial use license if you're using these for work, 
+                and early access when we add new stuff. Oh, and you're helping us keep the lights on. That's nice of you.
               </AccordionContent>
             </AccordionItem>
 
@@ -159,9 +158,9 @@ const FAQ = () => {
                 How many cakes can I generate with Premium?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                It depends on your membership type! <strong>First 200 members</strong> (New Year Lifetime Deal) get <strong>unlimited generations forever</strong>—they'll 
-                never pay again and can create as many cakes as they want. Regular premium subscribers get <strong>150 generations per year</strong>, 
-                which is plenty for most users. Free users get 3 per day with a 12/month cap.
+                Depends which premium you got. <strong>Lifetime members</strong> (first 200 people) = unlimited. Forever. 
+                <strong>Regular premium</strong> = 150 per year. <strong>Free</strong> = 3 per day, capped at 12 per month. 
+                Math works out that free users can't just... out-generate premium by waiting. We thought about that.
               </AccordionContent>
             </AccordionItem>
 
@@ -170,9 +169,8 @@ const FAQ = () => {
                 Can I upgrade or downgrade anytime?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Absolutely. You can upgrade to premium anytime and start using unlimited generations immediately. 
-                If you decide to downgrade, your premium access continues until the end of your billing period, 
-                then you'll return to the free plan. No penalties, no hassle.
+                Upgrade whenever you want—immediate access. Downgrade? Your premium sticks around until your billing period ends, 
+                then you're back to free. No penalty fees, no drama. It's your call.
               </AccordionContent>
             </AccordionItem>
 
@@ -181,9 +179,8 @@ const FAQ = () => {
                 What image format do you provide?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                All images are provided in high-quality PNG format with transparent backgrounds where appropriate. 
-                This makes them perfect for sharing on social media, printing, or using in digital invitations. 
-                The resolution is optimized for both screen display and printing.
+                High-quality PNG. Good enough for printing, perfect for social media, works in pretty much any app. 
+                Resolution's optimized so it doesn't look pixelated when you zoom in or print it out.
               </AccordionContent>
             </AccordionItem>
 
@@ -192,9 +189,9 @@ const FAQ = () => {
                 Can I print the cake designs?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Yes! While these are AI-generated cake images (not actual cake designs for bakers), 
-                many people print them for party decorations, invitations, or digital displays. 
-                The image quality is suitable for standard photo printing.
+                Totally. Lots of people print them for party decorations, invitations, posters. 
+                Just to be clear though—these are images, not blueprints for an actual baker. 
+                Your local bakery probably can't recreate the exact AI design. But for decorations and digital stuff? Perfect.
               </AccordionContent>
             </AccordionItem>
 
@@ -203,9 +200,9 @@ const FAQ = () => {
                 What if the image doesn't load?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                First, check your internet connection. If that's fine, try refreshing the page. 
-                 Still having issues? It might be a temporary server hiccup. Wait a minute and try again. 
-                 If problems persist, reach out to our support team at support@cakeaiartist.com and we'll sort it out.
+                First—check your internet. Sounds obvious, but it's usually that. If that's fine, refresh the page. 
+                Still nothing? Wait a minute, try again. Servers sometimes get busy. 
+                If it's still broken after all that, email us at support@cakeaiartist.com and we'll figure it out.
               </AccordionContent>
             </AccordionItem>
 
@@ -214,9 +211,9 @@ const FAQ = () => {
                 Can I use this for my business?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Free accounts are limited to personal, non-commercial use. If you want to use the images for business purposes 
-                (event planning, social media marketing, client gifts, etc.), you'll need a premium subscription, 
-                which includes a commercial use license.
+                Free accounts = personal use only. Sorry, but we gotta draw the line somewhere. 
+                If you're an event planner, marketer, or anyone using these for actual business purposes, 
+                premium includes a commercial license. Worth it if you're making money off the cakes.
               </AccordionContent>
             </AccordionItem>
 
@@ -225,9 +222,9 @@ const FAQ = () => {
                 What's special about the New Year Lifetime Deal?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                The first 200 members who claim this New Year deal are locked in for life. They pay a one-time fee ($49 or $99) and will <strong>never pay anything else—ever</strong>. 
-                They get unlimited generations, priority support, exclusive 2025 badges, and all future features at no additional cost. 
-                Once these 200 spots are filled or December 31st passes, this offer will never be available again.
+                First 200 people to claim it pay <strong>once</strong>—$49 or $99—and never pay again. Not yearly, not monthly. Once. Done. 
+                Unlimited generations forever, all future features included, priority support, exclusive badges. 
+                After those 200 spots fill up or December 31st arrives (whichever happens first), this offer's gone. Like, actually gone. We're not bringing it back.
               </AccordionContent>
             </AccordionItem>
 
@@ -236,9 +233,8 @@ const FAQ = () => {
                 Are there bulk options for businesses?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                 Currently, our premium plan handles most business needs with 150 generations per year. 
-                 If you're an enterprise with specific requirements (custom branding, API access, white-label solutions), 
-                 contact us at support@cakeaiartist.com to discuss custom arrangements.
+                Most businesses are fine with premium's 150 generations. But if you need something custom—white-label, API access, 
+                custom branding, whatever—shoot us an email at support@cakeaiartist.com. We can probably work something out.
               </AccordionContent>
             </AccordionItem>
 
@@ -247,9 +243,9 @@ const FAQ = () => {
                 What's the license for commercial use?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Premium subscribers receive a commercial use license that allows them to use generated images for business purposes, 
-                including marketing, client presentations, social media, and commercial printing. 
-                You cannot resell the raw images themselves, but you can use them as part of your business services.
+                Premium includes a commercial license. Use the images in marketing, client work, social media, whatever. 
+                Only thing you can't do is resell the raw images themselves. Like, don't just download them and sell them as stock photos. 
+                Using them for your business? Totally fine.
               </AccordionContent>
             </AccordionItem>
 
@@ -258,9 +254,9 @@ const FAQ = () => {
                 How does the AI create personalized messages?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Our AI analyzes the name, occasion, and relationship context you provide to craft messages that feel genuinely personal. 
-                It considers factors like formality level, emotional tone, and cultural appropriateness. 
-                Every message is unique—no cookie-cutter templates here.
+                It looks at what you tell it—the name, the occasion, your relationship to the person. 
+                Then it writes something that fits. So if you say "daughter, birthday, female," you get messages that sound like they're from a parent. 
+                Not just generic "Happy Birthday!" stuff. It actually tries to sound... human.
               </AccordionContent>
             </AccordionItem>
 
@@ -269,45 +265,12 @@ const FAQ = () => {
                 How do I share my cake on social media?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                <p className="mb-3">
-                  Sharing works differently on mobile and desktop due to browser security restrictions:
-                </p>
-                <div className="space-y-3">
-                  <div>
-                    <p className="font-semibold text-foreground mb-1">📱 On Mobile:</p>
-                    <p>
-                      Tap a share button (Facebook, X, WhatsApp, or Instagram) and your cake card will download. 
-                      We'll try to open the app for you automatically. Then just select the downloaded image from your gallery and post!
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground mb-1">💻 On Desktop:</p>
-                    <p>
-                      Click a share button to download the card to your Downloads folder. 
-                      Then open the social media platform in your browser and upload the downloaded image manually. 
-                      For Instagram, you'll need to use your phone as desktop uploads aren't supported.
-                    </p>
-                  </div>
-                  <div className="bg-party-purple/10 p-3 rounded-lg border border-party-purple/20 mt-3">
-                    <p className="text-sm">
-                      💡 <span className="font-semibold text-foreground">Why this approach?</span> Most social platforms don't allow direct image uploads from websites for security reasons. 
-                      This two-step process gives you full control and ensures the best quality!
-                    </p>
-                  </div>
-                </div>
+                Mobile? Hit the share button, we'll open the app you pick. Super easy. 
+                Desktop? You'll need to download first, then upload to whatever platform. It's one extra step, 
+                but that's how desktop browsers work. Not our call unfortunately.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-
-          <div className="mt-12 p-6 bg-party-purple/10 rounded-lg border border-party-purple/20">
-            <h3 className="text-xl font-semibold mb-2 text-foreground">Still have questions?</h3>
-            <p className="text-muted-foreground mb-4">
-              Can't find the answer you're looking for? Our support team is here to help.
-            </p>
-            <Link to="/contact">
-              <Button>Contact Support</Button>
-            </Link>
-          </div>
         </div>
       </div>
       <Footer />

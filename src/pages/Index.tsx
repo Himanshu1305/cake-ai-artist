@@ -148,19 +148,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Generator - Create Stunning Personalized Cakes | Cake AI Artist</title>
-        <meta name="description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds—no design skills needed. Try free!" />
-        <meta name="keywords" content="best AI cake generator, best virtual cake designer, best virtual cake, AI cake designer, personalized birthday cake, custom cake design, virtual cake creator" />
+        <title>AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist</title>
+        <meta name="description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required. People keep telling us they can't believe this works." />
+        <meta name="keywords" content="AI cake designer, personalized birthday cake, custom cake design, virtual cake creator, cake design tool" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="Best AI Cake Generator - Create Stunning Personalized Cakes | Cake AI Artist" />
-        <meta property="og:description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds—no design skills needed." />
+        <meta property="og:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist" />
+        <meta property="og:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Generator - Create Stunning Personalized Cakes" />
-        <meta name="twitter:description" content="The best virtual cake designer for birthdays, anniversaries & celebrations. Create beautiful personalized cakes with AI in 30 seconds." />
+        <meta name="twitter:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds" />
+        <meta name="twitter:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
