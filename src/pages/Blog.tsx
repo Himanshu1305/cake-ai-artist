@@ -1,11 +1,50 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { toast } from "@/hooks/use-toast";
 
 const Blog = () => {
+  const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubscribing(true);
+    
+    // Simulate subscription (replace with actual newsletter service later)
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    toast({
+      title: "You're in!",
+      description: "Thanks for subscribing. We'll keep the good stuff coming.",
+    });
+    
+    setEmail("");
+    setIsSubscribing(false);
+  };
+
   const blogPosts = [
     {
       id: "creative-cake-ideas-birthday",
@@ -54,6 +93,46 @@ const Blog = () => {
       date: "November 8, 2025",
       readTime: "4 min read",
       category: "Quick Tips"
+    },
+    {
+      id: "personalized-cakes-psychology",
+      title: "Why Personalized Cakes Hit Different (The Psychology Behind It)",
+      excerpt: "There's actual science behind why seeing your name on a cake feels so good. Something about being seen. Here's what the research says.",
+      date: "November 5, 2025",
+      readTime: "6 min read",
+      category: "Psychology"
+    },
+    {
+      id: "anniversary-cake-ideas",
+      title: "Anniversary Cake Ideas Your Partner Won't Forget",
+      excerpt: "Birthdays get all the attention. But anniversary cakes? Underrated. Here's how to make yours memorable without going overboard.",
+      date: "November 3, 2025",
+      readTime: "5 min read",
+      category: "Anniversary"
+    },
+    {
+      id: "kids-birthday-cakes-guide",
+      title: "Kids' Birthday Cakes: What Actually Works (From Someone Who's Made 100+)",
+      excerpt: "Kids are honest. Brutally so. After years of trial and error, here's what consistently gets the 'wow' reaction.",
+      date: "October 30, 2025",
+      readTime: "7 min read",
+      category: "Party Planning"
+    },
+    {
+      id: "cake-message-writing-tips",
+      title: "How to Write a Cake Message That Doesn't Sound Generic",
+      excerpt: "Happy Birthday. Congrats. Best Wishes. Yawn. Here's how to write something they'll actually remember.",
+      date: "October 28, 2025",
+      readTime: "5 min read",
+      category: "Writing Tips"
+    },
+    {
+      id: "first-birthday-cake-ideas",
+      title: "First Birthday Cake Ideas (For Tired Parents)",
+      excerpt: "Your baby won't remember this. You will. Here's how to make it special without losing your mind.",
+      date: "October 25, 2025",
+      readTime: "5 min read",
+      category: "Ideas & Inspiration"
     }
   ];
 
@@ -62,7 +141,7 @@ const Blog = () => {
       <Helmet>
         <title>Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist</title>
         <meta name="description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us. Plus some AI cake nerding if you're into that." />
-        <meta name="keywords" content="cake design blog, birthday cake tips, virtual cake trends, celebration inspiration" />
+        <meta name="keywords" content="cake design blog, birthday cake tips, virtual cake trends, celebration inspiration, cake message ideas, anniversary cakes" />
         <link rel="canonical" href="https://cakeaiartist.com/blog" />
         <meta property="og:title" content="Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist" />
         <meta property="og:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
@@ -136,9 +215,18 @@ const Blog = () => {
             <input
               type="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
               className="flex-1 px-4 py-3 rounded-lg bg-background/50 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-party-purple"
             />
-            <Button size="lg">Subscribe</Button>
+            <Button 
+              size="lg" 
+              onClick={handleSubscribe}
+              disabled={isSubscribing}
+            >
+              {isSubscribing ? "Subscribing..." : "Subscribe"}
+            </Button>
           </div>
         </div>
       </div>
