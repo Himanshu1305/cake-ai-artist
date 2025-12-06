@@ -29,10 +29,8 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
-// Temporarily commented out to isolate blank screen issue
-// import { AggregateRatingSchema, ReviewSchema } from "@/components/SEOSchema";
-// import { TrustBadges } from "@/components/TrustBadges";
+import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema } from "@/components/SEOSchema";
+import { TrustBadges } from "@/components/TrustBadges";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Index = () => {
@@ -178,8 +176,7 @@ const Index = () => {
         url="https://cakeaiartist.com"
       />
       
-      {/* Temporarily commented out to isolate blank screen issue */}
-      {/* <AggregateRatingSchema
+      <AggregateRatingSchema
         itemName="Cake AI Artist - AI Cake Designer"
         ratingValue={4.9}
         ratingCount={847}
@@ -226,7 +223,7 @@ const Index = () => {
             datePublished: "2024-12-05"
           }
         ]}
-      /> */}
+      />
       
       <FloatingEmojis />
       <CursorSparkles />
@@ -665,7 +662,7 @@ const Index = () => {
       </div>
 
       {/* Trust Badges Section */}
-      {/* <TrustBadges /> */}
+      <TrustBadges />
 
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
