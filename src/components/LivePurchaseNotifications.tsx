@@ -41,8 +41,11 @@ function showSimulatedNotification() {
 export const LivePurchaseNotifications = () => {
   const notificationCountRef = useRef(0);
   const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
+    
     // Subscribe to real-time inserts
     const channel = supabase
       .channel('founding-members-channel')
@@ -54,7 +57,7 @@ export const LivePurchaseNotifications = () => {
           table: 'founding_members',
         },
         (payload) => {
-          if (notificationCountRef.current < MAX_NOTIFICATIONS) {
+          if (isMountedRef.current && notificationCountRef.current < MAX_NOTIFICATIONS) {
             showPurchaseNotification(payload.new);
             notificationCountRef.current++;
           }
@@ -64,10 +67,10 @@ export const LivePurchaseNotifications = () => {
 
     // Schedule simulated notifications with random intervals
     const scheduleNextNotification = () => {
-      if (notificationCountRef.current >= MAX_NOTIFICATIONS) return;
+      if (!isMountedRef.current || notificationCountRef.current >= MAX_NOTIFICATIONS) return;
       
       const timeout = setTimeout(() => {
-        if (notificationCountRef.current < MAX_NOTIFICATIONS) {
+        if (isMountedRef.current && notificationCountRef.current < MAX_NOTIFICATIONS) {
           showSimulatedNotification();
           notificationCountRef.current++;
           timeoutsRef.current.delete(timeout);
@@ -80,7 +83,7 @@ export const LivePurchaseNotifications = () => {
 
     // Start after initial delay
     const initialTimeout = setTimeout(() => {
-      if (notificationCountRef.current < MAX_NOTIFICATIONS) {
+      if (isMountedRef.current && notificationCountRef.current < MAX_NOTIFICATIONS) {
         showSimulatedNotification();
         notificationCountRef.current++;
         scheduleNextNotification();
@@ -90,6 +93,7 @@ export const LivePurchaseNotifications = () => {
     timeoutsRef.current.add(initialTimeout);
 
     return () => {
+      isMountedRef.current = false;
       supabase.removeChannel(channel);
       // Clear all pending timeouts on unmount
       timeoutsRef.current.forEach(timeout => clearTimeout(timeout));

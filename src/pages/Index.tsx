@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
-import { CakeCreator } from "@/components/CakeCreator";
+
+// Lazy load CakeCreator for better initial page performance
+const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
@@ -476,7 +478,9 @@ const Index = () => {
             <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
             <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
           </div>
-          <CakeCreator />
+          <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
+            <CakeCreator />
+          </Suspense>
         </div>
       </div>
 
