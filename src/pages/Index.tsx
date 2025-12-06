@@ -480,6 +480,78 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Party Pack Feature Highlight */}
+      <div className="container mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 rounded-2xl p-8 border-2 border-party-purple/30"
+        >
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-foreground mb-4 flex items-center gap-3">
+                <span className="text-4xl">🎁</span>
+                NEW: Party Pack Generator
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Transform your cake design into a <strong>complete celebration kit</strong>! Generate matching invitations, 
+                banners, thank you cards, cake toppers, and place cards—all with one click.
+              </p>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-center gap-3 text-foreground">
+                  <span className="w-6 h-6 rounded-full bg-party-purple text-white flex items-center justify-center text-sm font-bold">✓</span>
+                  Add your event date, time & location
+                </li>
+                <li className="flex items-center gap-3 text-foreground">
+                  <span className="w-6 h-6 rounded-full bg-party-pink text-white flex items-center justify-center text-sm font-bold">✓</span>
+                  Preview all items before downloading
+                </li>
+                <li className="flex items-center gap-3 text-foreground">
+                  <span className="w-6 h-6 rounded-full bg-party-gold text-background flex items-center justify-center text-sm font-bold">✓</span>
+                  Download as print-ready PDF
+                </li>
+              </ul>
+              <div className="flex gap-4">
+                <Button 
+                  onClick={() => navigate("/how-it-works")} 
+                  variant="outline"
+                  className="border-party-purple text-party-purple hover:bg-party-purple/10"
+                >
+                  Learn How It Works
+                </Button>
+                {isLoggedIn && (
+                  <Button 
+                    onClick={() => navigate("/gallery")}
+                    className="bg-gradient-to-r from-party-purple to-party-pink text-white"
+                  >
+                    Try Party Pack Now
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-purple/20">
+                <span className="text-3xl mb-2 block">💌</span>
+                <p className="font-semibold text-foreground">Invitations</p>
+              </div>
+              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-pink/20">
+                <span className="text-3xl mb-2 block">🎊</span>
+                <p className="font-semibold text-foreground">Banners</p>
+              </div>
+              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-gold/20">
+                <span className="text-3xl mb-2 block">💝</span>
+                <p className="font-semibold text-foreground">Thank You Cards</p>
+              </div>
+              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-coral/20">
+                <span className="text-3xl mb-2 block">🎂</span>
+                <p className="font-semibold text-foreground">Cake Toppers</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
@@ -559,78 +631,6 @@ const Index = () => {
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
-      </div>
-
-      {/* Party Pack Feature Highlight */}
-      <div className="container mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-party-purple/20 via-party-pink/20 to-party-gold/20 rounded-2xl p-8 border-2 border-party-purple/30"
-        >
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-4 flex items-center gap-3">
-                <span className="text-4xl">🎁</span>
-                NEW: Party Pack Generator
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                Transform your cake design into a <strong>complete celebration kit</strong>! Generate matching invitations, 
-                banners, thank you cards, cake toppers, and place cards—all with one click.
-              </p>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-6 h-6 rounded-full bg-party-purple text-white flex items-center justify-center text-sm font-bold">✓</span>
-                  Add your event date, time & location
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-6 h-6 rounded-full bg-party-pink text-white flex items-center justify-center text-sm font-bold">✓</span>
-                  Preview all items before downloading
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-6 h-6 rounded-full bg-party-gold text-background flex items-center justify-center text-sm font-bold">✓</span>
-                  Download as print-ready PDF
-                </li>
-              </ul>
-              <div className="flex gap-4">
-                <Button 
-                  onClick={() => navigate("/how-it-works")} 
-                  variant="outline"
-                  className="border-party-purple text-party-purple hover:bg-party-purple/10"
-                >
-                  Learn How It Works
-                </Button>
-                {isLoggedIn && (
-                  <Button 
-                    onClick={() => navigate("/gallery")}
-                    className="bg-gradient-to-r from-party-purple to-party-pink text-white"
-                  >
-                    Try Party Pack Now
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-purple/20">
-                <span className="text-3xl mb-2 block">💌</span>
-                <p className="font-semibold text-foreground">Invitations</p>
-              </div>
-              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-pink/20">
-                <span className="text-3xl mb-2 block">🎊</span>
-                <p className="font-semibold text-foreground">Banners</p>
-              </div>
-              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-gold/20">
-                <span className="text-3xl mb-2 block">💝</span>
-                <p className="font-semibold text-foreground">Thank You Cards</p>
-              </div>
-              <div className="bg-background/50 rounded-xl p-4 text-center border border-party-coral/20">
-                <span className="text-3xl mb-2 block">🎂</span>
-                <p className="font-semibold text-foreground">Cake Toppers</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
 
       {/* Stats Section */}
