@@ -49,6 +49,10 @@ export const useCookieConsent = () => {
           analytics: parsed.analytics ?? false,
           marketing: parsed.marketing ?? false,
         });
+      } else {
+        // No consent yet - show banner after delay
+        const timer = setTimeout(() => setShowBanner(true), 1000);
+        return () => clearTimeout(timer);
       }
     } catch {
       // Invalid consent data - ignore
