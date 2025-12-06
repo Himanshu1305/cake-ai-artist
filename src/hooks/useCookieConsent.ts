@@ -16,10 +16,25 @@ export const triggerCookieConsentOpen = () => {
 
 export const useCookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true,
-    analytics: false,
-    marketing: false,
+  const [preferences, setPreferences] = useState<CookiePreferences>(() => {
+    try {
+      const consent = localStorage.getItem("cookieConsent");
+      if (consent) {
+        const parsed = JSON.parse(consent);
+        return {
+          necessary: true,
+          analytics: parsed.analytics ?? false,
+          marketing: parsed.marketing ?? false,
+        };
+      }
+    } catch (e) {
+      console.error("Error reading cookie consent from localStorage:", e);
+    }
+    return {
+      necessary: true,
+      analytics: false,
+      marketing: false,
+    };
   });
 
   const openConsentModal = useCallback(() => {
@@ -42,20 +57,16 @@ export const useCookieConsent = () => {
   useEffect(() => {
     try {
       const consent = localStorage.getItem("cookieConsent");
-      if (consent) {
-        const parsed = JSON.parse(consent);
-        setPreferences({
-          necessary: true,
-          analytics: parsed.analytics ?? false,
-          marketing: parsed.marketing ?? false,
-        });
-      } else {
+      if (!consent) {
         // No consent yet - show banner after delay
         const timer = setTimeout(() => setShowBanner(true), 1000);
         return () => clearTimeout(timer);
       }
-    } catch {
-      // Invalid consent data - ignore
+    } catch (e) {
+      console.error("Error checking cookie consent:", e);
+      // Show banner anyway if localStorage fails
+      const timer = setTimeout(() => setShowBanner(true), 1000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
