@@ -702,6 +702,339 @@ const blogPostsContent: Record<string, BlogPostData> = {
       { id: "kids-birthday-cakes-guide", title: "Kids' Birthday Cakes: What Actually Works", readTime: "7 min read" },
       { id: "creative-cake-ideas-birthday", title: "10 Creative Cake Ideas for Birthday Celebrations", readTime: "5 min read" }
     ]
+  },
+
+  "fourth-of-july-cake-ideas": {
+    title: "4th of July Cake Ideas That'll Make Your BBQ the Talk of the Block",
+    date: "December 5, 2025",
+    dateISO: "2025-12-05",
+    readTime: "6 min read",
+    category: "Seasonal Celebrations",
+    metaDescription: "Red, white, and blue cakes that don't look like a craft project gone wrong. Patriotic cake ideas for Independence Day BBQs and parties across America.",
+    keywords: "4th of July cake, Independence Day cake, patriotic cake ideas, red white blue cake, American celebration cake, July 4th desserts",
+    content: `
+      <p>Look, we've all seen those Pinterest fails. The flag cake that looks like it went through a washing machine. 
+      The red velvet situation where the blue food coloring turned everything purple. Don't be that person at the BBQ.</p>
+
+      <p>Here's the thing about 4th of July cakes—they should be fun, not stressful. You're probably already 
+      dealing with whether Uncle Jerry is gonna start a political argument, so your cake shouldn't add to your 
+      worries.</p>
+
+      <h2>The Classic Star-Spangled Look</h2>
+      <p>Stars and stripes, but make it elegant. White frosting base, clean red stripes on the sides, and blue 
+      with white stars on top. Simple. Classic. Actually looks good in photos instead of making everyone squint 
+      and say "oh... it's very... patriotic."</p>
+      <p>Pro tip: use fresh berries for the red and blue instead of fighting with food coloring. Strawberries and 
+      blueberries arranged nicely? Chef's kiss. Plus you can tell everyone it's "healthier" while they eat cake.</p>
+
+      <h2>Fireworks Explosion (The Controlled Kind)</h2>
+      <p>Dark blue or black fondant background with exploding firework patterns in red, white, gold, and silver. 
+      This one photographs incredibly well after sunset. You know, during actual fireworks. Very Instagram-ready 
+      if that's your thing.</p>
+      <p>The trick is sparkle accents. A little edible glitter goes a long way. Too much and it looks like a 
+      craft store had an accident on your dessert.</p>
+
+      <h2>The Subtle Patriot</h2>
+      <p>Not everyone wants to scream "AMERICA!" with their dessert. And that's fine. Think ombre layers—deep 
+      blue fading to white fading to red. Or a sophisticated white cake with just a hint of red and blue in the 
+      decorations. Patriotic for grown-ups who drink wine at BBQs instead of Bud Light.</p>
+      <p>This works great for more formal July 4th parties. Yes, those exist. Usually in neighborhoods with HOAs.</p>
+
+      <h2>BBQ-Proof Sheet Cake</h2>
+      <p>Here's a practical consideration: if your cake is sitting outside in July heat, maybe skip the elaborate 
+      buttercream situation. A sheet cake with a simple design holds up better when it's 95 degrees and humid. 
+      Because nothing says "happy birthday America" like melted frosting sliding off the table.</p>
+      <p>Sheet cakes also feed more people. And trust me, at a BBQ, people will eat more cake than you expect. 
+      They always do.</p>
+
+      <h2>Regional Variations</h2>
+      <p><strong>Texas-sized:</strong> Go big. Multiple tiers. Maybe add a lone star somewhere. Texans appreciate 
+      both American pride AND Texas pride. It's a thing.</p>
+      <p><strong>California vibes:</strong> Think sunset colors with the red, white, and blue. Orange and pink 
+      gradients fading into the traditional colors. Very West Coast.</p>
+      <p><strong>NYC skyline:</strong> City silhouette in the design. Statue of Liberty. For the New Yorkers who 
+      want everyone to know where they're from. (As if they don't already.)</p>
+
+      <h2>Kid-Friendly Options</h2>
+      <p>If your party has kids, lean into the fun. Sparklers (the edible candy kind, not actual fire). Bright 
+      colors. Maybe a rocket ship or bald eagle theme. Kids don't care about "sophisticated design"—they want 
+      COOL. And they'll tell you honestly if your cake is boring.</p>
+
+      <h2>What To Actually Write On It</h2>
+      <p>Skip "Happy 4th of July"—everyone knows what day it is. Try:</p>
+      <ul>
+        <li>"Let Freedom Ring (and let's eat cake)"</li>
+        <li>"Land of the Free, Home of the Brave"</li>
+        <li>Just "USA" in bold letters—simple, effective</li>
+        <li>"[Your Last Name] Family BBQ 2025"</li>
+        <li>Or nothing at all. Sometimes the design speaks for itself.</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>The best 4th of July cake is one you didn't stress over. Seriously. It's a celebration. The fireworks 
+      are the main event. Your cake just needs to be tasty and not look like a Pinterest fail compilation.</p>
+      <p>Now go enjoy your long weekend. You've earned it.</p>
+    `,
+    relatedPosts: [
+      { id: "creative-cake-ideas-birthday", title: "10 Creative Cake Ideas for Birthday Celebrations", readTime: "5 min read" },
+      { id: "cake-design-trends-2025", title: "Cake Design Trends: What's Popular in 2025", readTime: "7 min read" }
+    ]
+  },
+
+  "british-jubilee-royal-cakes": {
+    title: "Royal Celebration Cakes: From Garden Parties to Jubilee Bashes",
+    date: "December 4, 2025",
+    dateISO: "2025-12-04",
+    readTime: "6 min read",
+    category: "Seasonal Celebrations",
+    metaDescription: "Elegant British celebration cakes for Jubilees, coronations, and garden parties. Union Jack designs that actually look sophisticated, not tacky.",
+    keywords: "Jubilee cake ideas, royal celebration cake, British cake designs, King coronation cake, UK celebration cake, Union Jack cake, British party cakes",
+    content: `
+      <p>Right, so you're planning a proper British celebration. Maybe it's a Jubilee. Maybe a coronation 
+      street party. Maybe you just really like the Royal Family and want an excuse to make a fancy cake. 
+      No judgement here.</p>
+
+      <p>The challenge with British-themed cakes is walking the line between "charmingly patriotic" and 
+      "looks like a tourist shop exploded." We've all seen the Union Jack designs that make you wince. 
+      Let's do better than that.</p>
+
+      <h2>The Elegant Union Jack</h2>
+      <p>Yes, you can put a Union Jack on a cake without it looking like you bought it from a petrol station. 
+      The trick is colour saturation and clean lines. Deep, rich reds and blues—not the bright primary colours 
+      that scream "cheap tea towel."</p>
+      <p>Consider doing just a portion of the flag, artfully cropped. Or abstract geometric shapes that suggest 
+      the flag without literally recreating it. Subtle. Sophisticated. Very British, really.</p>
+
+      <h2>Garden Party Aesthetic</h2>
+      <p>Forget the flag entirely. Go full English garden. Roses, hydrangeas, delicate florals in soft 
+      pastels. Think afternoon tea at a manor house, not a football supporters' meet-up.</p>
+      <p>This works brilliantly for garden parties. Pairs well with Pimm's, finger sandwiches, and at 
+      least one comment about the weather. Because there's always a comment about the weather.</p>
+
+      <h2>Royal-Inspired Elegance</h2>
+      <p>Crowns. Corgis. Buckingham Palace silhouettes. But tasteful, yeah? Gold accents on white or navy 
+      fondant. Royal purple with hints of gold. The coronation colour palette—rich, regal, very "one has 
+      taste."</p>
+      <p>A small crown topper can make any cake feel posh. Just don't overdo it or you'll end up with 
+      something that looks like it's cosplaying as the Crown Jewels.</p>
+
+      <h2>The British Icons Approach</h2>
+      <p>Red telephone boxes. Double-decker buses. Big Ben. The London Eye. These work surprisingly well 
+      on cakes, especially for expats feeling nostalgic or anyone celebrating anything British abroad.</p>
+      <p>Pro tip: silhouettes work better than detailed recreations. Black silhouettes against a Union 
+      Jack ombre background? Actually quite striking.</p>
+
+      <h2>Traditional British Cake Flavours</h2>
+      <p>If you're going British, why not go proper British? Victoria sponge. Lemon drizzle. Battenberg 
+      (though that's already pink and yellow, so might clash with your theme). A nice fruit cake for the 
+      traditionalists in your family who insist Christmas cake is the only real cake.</p>
+      <p>Even if you're using AI to design the look, remember the inside matters too. Nothing more 
+      disappointing than a gorgeous cake that tastes like cardboard.</p>
+
+      <h2>Street Party Considerations</h2>
+      <p>If this is for an actual street party, practicality matters. Cupcakes decorated with individual 
+      Union Jack designs are easier to serve than cutting slices while your neighbour's kids are running 
+      about. Mini Victoria sponges work brilliantly too.</p>
+      <p>Also consider: wind. British weather being what it is, anything with delicate decorations might 
+      not survive an outdoor celebration. Plan accordingly.</p>
+
+      <h2>What to Write on a Royal Cake</h2>
+      <p>Keep it simple and sincere:</p>
+      <ul>
+        <li>"Long Live the King" (or Queen, as appropriate)</li>
+        <li>"Happy Jubilee" with the year</li>
+        <li>"God Save the King" for the traditionalists</li>
+        <li>Your street name for community celebrations</li>
+        <li>Or just a beautiful crown design—sometimes less is more</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>The best British celebration cake captures the spirit without being heavy-handed. Elegance over 
+      excess. Quality over quantity. Very British values, when you think about it.</p>
+      <p>Now put the kettle on, you've earned a cuppa after all this planning.</p>
+    `,
+    relatedPosts: [
+      { id: "cake-design-trends-2025", title: "Cake Design Trends: What's Popular in 2025", readTime: "7 min read" },
+      { id: "anniversary-cake-ideas", title: "Anniversary Cake Ideas Your Partner Won't Forget", readTime: "5 min read" }
+    ]
+  },
+
+  "canada-day-cake-ideas": {
+    title: "Canada Day Cake Ideas: Beyond Just Maple Leaves (But Also Some Maple Leaves)",
+    date: "December 3, 2025",
+    dateISO: "2025-12-03",
+    readTime: "6 min read",
+    category: "Seasonal Celebrations",
+    metaDescription: "Canada Day cake ideas that go beyond the obvious maple leaf. Red and white designs, Canadian wildlife themes, and regional pride cakes for July 1st.",
+    keywords: "Canada Day cake, Canadian celebration cake, maple leaf cake, Canadian birthday cake, July 1st cake, Canadian party ideas, red and white cake",
+    content: `
+      <p>Happy Canada Day, eh? Look, we love maple leaves as much as the next Canadian, but maybe—just 
+      maybe—your cake can have a bit more personality than a flag replica. (No shade to flag cakes though. 
+      They're classics for a reason.)</p>
+
+      <p>Whether you're celebrating at the cottage, hosting a backyard BBQ in Toronto, or throwing a party 
+      in Vancouver, here are some cake ideas that actually capture what it means to be Canadian. Beyond the 
+      stereotypes. Mostly.</p>
+
+      <h2>The Classic Red and White</h2>
+      <p>You can't go wrong with the national colours. Red velvet cake with white cream cheese frosting? 
+      Iconic. Red and white ombre layers? Beautiful. Strawberries and cream on a white cake? Delicious AND 
+      patriotic.</p>
+      <p>The trick is making it look intentional, not like you just happened to pick red and white. Commit 
+      to the colour scheme. Make it look good.</p>
+
+      <h2>Maple Everything</h2>
+      <p>Okay fine, we're talking maple. Because honestly? Maple is delicious and we shouldn't apologize 
+      for it. Maple-flavoured cake, maple frosting, maybe some candied maple bacon on top if you're feeling 
+      adventurous. Toronto brunch vibes, but make it dessert.</p>
+      <p>Maple leaf decorations work best when they're elegant—think gold-accented leaves, not a million 
+      red felt cutouts stuck on with toothpicks.</p>
+
+      <h2>Canadian Wildlife (Tastefully)</h2>
+      <p>Moose. Beavers. Bears. Loons. Canada geese (the chaotic ones). These can actually look really cute 
+      on a cake when done right. The key word being "cute"—not "realistic taxidermy."</p>
+      <p>Cartoon-style animals work great for kids' parties. More artistic silhouettes work for adult 
+      celebrations. Either way, it's distinctly Canadian without being a flag.</p>
+
+      <h2>Regional Pride Cakes</h2>
+      <p><strong>Ontario:</strong> CN Tower silhouette, Niagara Falls, or just "Toronto" in big letters. 
+      Ontarians are proud like that.</p>
+      <p><strong>Quebec:</strong> Fleur-de-lis accent, or a gorgeous blue and white design. Montreal smoked 
+      meat on a cake is NOT recommended, despite what your weird uncle suggests.</p>
+      <p><strong>BC:</strong> Mountain ranges, ocean vibes, maybe some West Coast Indigenous art inspiration 
+      (done respectfully). Very Vancouver.</p>
+      <p><strong>Prairies:</strong> Wheat fields, big sky sunsets, Manitoba bison. Prairie pride runs deep.</p>
+      <p><strong>Maritimes:</strong> Lobsters, lighthouses, Anne of Green Gables (okay, that's just PEI). 
+      East Coast charm.</p>
+
+      <h2>Hockey Themes (Obviously)</h2>
+      <p>Is it really a Canadian celebration without at least acknowledging hockey? A cake shaped like a 
+      puck. Hockey stick decorations. Your team's colours (unless they're having a rough season, then maybe 
+      stick with the generic Canada colours).</p>
+      <p>This is basically mandatory if kids are involved. They'll forgive a lot of things but not a party 
+      without hockey references.</p>
+
+      <h2>Bilingual Considerations</h2>
+      <p>Canada's officially bilingual, so why not your cake? "Happy Canada Day / Bonne Fête du Canada" 
+      covers your bases. Or just "Canada 🍁" which works in any language.</p>
+      <p>If your family's francophone, go full French. If anglophone, English is fine. If you're trying 
+      to impress your in-laws in Montreal, maybe do both. Just saying.</p>
+
+      <h2>Cottage Party vs. City Celebration</h2>
+      <p>Where you're celebrating matters. Cottage party? Keep it rustic, nature-themed, easy to transport 
+      over bumpy dirt roads. City rooftop party? Go glamorous, skyline-inspired, something that photographs 
+      well with downtown in the background.</p>
+      <p>Also consider: mosquitoes. They love cake almost as much as Canadians do. Maybe have a bug net 
+      ready for that outdoor celebration.</p>
+
+      <h2>What to Write</h2>
+      <ul>
+        <li>"Happy Canada Day!" (classic, can't go wrong)</li>
+        <li>"True North Strong and Free"</li>
+        <li>"From Coast to Coast to Coast" (acknowledging we have three!)</li>
+        <li>"Proud to be Canadian"</li>
+        <li>Your family name + "Canada Day 2025"</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>Canada Day cakes should be as friendly and welcoming as Canadians themselves. Don't overthink it. 
+      Make something pretty, make something tasty, and enjoy it with people you love.</p>
+      <p>Sorry, that got a bit sentimental there. We can't help it. It's a Canadian thing.</p>
+    `,
+    relatedPosts: [
+      { id: "fourth-of-july-cake-ideas", title: "4th of July Cake Ideas That'll Make Your BBQ the Talk of the Block", readTime: "6 min read" },
+      { id: "creative-cake-ideas-birthday", title: "10 Creative Cake Ideas for Birthday Celebrations", readTime: "5 min read" }
+    ]
+  },
+
+  "australia-day-cake-ideas": {
+    title: "Australia Day Cake Ideas: Designs That Handle the Summer Heat",
+    date: "December 2, 2025",
+    dateISO: "2025-12-02",
+    readTime: "6 min read",
+    category: "Seasonal Celebrations",
+    metaDescription: "Australia Day cake ideas perfect for summer celebrations. From classic Aussie themes to heat-proof designs for your January 26th party.",
+    keywords: "Australia Day cake, Australian celebration cake, Aussie cake ideas, Down Under cake designs, Australian birthday cake, January 26 cake, green and gold cake",
+    content: `
+      <p>G'day! Planning an Australia Day cake? Here's the thing most cake guides forget to mention: it's 
+      bloody hot in January. Like, really hot. Your gorgeous buttercream masterpiece will turn into a 
+      puddle faster than you can say "throw another shrimp on the barbie." (Also, they're prawns. We've 
+      been over this.)</p>
+
+      <p>So let's talk Australia Day cakes that actually work for Australian conditions. Plus some design 
+      ideas that capture the Aussie spirit without being too try-hard about it.</p>
+
+      <h2>Green and Gold (Sporting Colours)</h2>
+      <p>The official national colours. Perfect for cakes, because they don't scream "I bought this at 
+      the cheap shop" the way some flag designs can. Gold and green ombre, golden wattle flower designs, 
+      eucalyptus green accents—classy and unmistakably Australian.</p>
+      <p>These colours also photograph really well against blue sky backgrounds. Which, let's be honest, 
+      you'll probably be taking photos of this cake outside.</p>
+
+      <h2>Classic Blue, White, and Red</h2>
+      <p>The flag colours. Southern Cross constellation designs can look stunning—five white stars on a 
+      navy blue background, maybe some red accent somewhere. Just don't make it look like a tea towel 
+      from a service station. We've all seen those. We've all cringed.</p>
+      <p>A subtle approach: navy blue cake with white and silver star decorations. Elegant. Understated. 
+      Very "I have good taste but also love my country."</p>
+
+      <h2>Australian Wildlife (The Cute Ones)</h2>
+      <p>Koalas. Kangaroos. Wombats. Platypuses (platypii?). Cockatoos. These make adorable cake 
+      decorations, especially for family celebrations with kids. The key is cute and stylized, not 
+      realistic animal documentary style.</p>
+      <p>Skip the spiders and snakes though. Nobody wants to eat something that looks like a huntsman. 
+      Even a fondant one. Some things are just wrong.</p>
+
+      <h2>Beach BBQ Vibes</h2>
+      <p>Australia Day often means beach. Surfboards, waves, sand, maybe some thongs (the footwear, 
+      settle down). A beach-themed cake fits perfectly if you're celebrating by the coast. Or in your 
+      backyard pretending you're at the coast. No judgement.</p>
+      <p>Bonus: beach themes work with lighter frostings that handle heat better. Practical AND pretty.</p>
+
+      <h2>Heat-Proof Design Considerations</h2>
+      <p>Okay, real talk. It's January. In Australia. Your cake will be outside. Here's what works:</p>
+      <ul>
+        <li><strong>Fondant over buttercream:</strong> Holds up better in heat. Not as tasty but won't melt.</li>
+        <li><strong>Ice cream cakes:</strong> Keep them in the esky until serving. Then eat fast.</li>
+        <li><strong>Fresh fruit decorations:</strong> Watermelon, berries, mangoes—they're in season AND heat-tolerant.</li>
+        <li><strong>Sheet cakes:</strong> Easier to keep covered and refrigerated than towering tiers.</li>
+      </ul>
+      <p>Or just accept that your cake might get a bit melty and call it "rustic." Everything's rustic 
+      if you have enough confidence.</p>
+
+      <h2>Iconic Aussie References</h2>
+      <p><strong>Sydney Harbour Bridge/Opera House:</strong> Classic skyline silhouettes for the Sydney 
+      folks. Or anyone who's been to Sydney once and won't stop talking about it.</p>
+      <p><strong>Uluru:</strong> Be respectful if you go this route. It's a sacred site, not just a 
+      pretty rock.</p>
+      <p><strong>Melbourne laneway vibes:</strong> For the Melburnians who think their city is the centre 
+      of the universe. Coffee cup decorations, maybe.</p>
+      <p><strong>Aussie slang on the cake:</strong> "No worries, mate" or "She'll be right" for a laugh.</p>
+
+      <h2>Lamington Tribute</h2>
+      <p>Want to be peak Australian? Make a cake that looks like a giant lamington. Chocolate coating, 
+      coconut everywhere, maybe a little Aussie flag on top. It's meta. It's delicious. It's extremely us.</p>
+      <p>Or just make actual lamingtons and stack them creatively. Same energy, less effort.</p>
+
+      <h2>What to Write on It</h2>
+      <ul>
+        <li>"Happy Australia Day!" (simple, effective)</li>
+        <li>"Aussie Aussie Aussie!" (if you want everyone to yell "Oi Oi Oi!")</li>
+        <li>"G'Day" with a little hat emoji/decoration</li>
+        <li>"The Lucky Country" for something a bit more meaningful</li>
+        <li>Your family name + "Australia Day Bash"</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>Australia Day cakes should be fun, a bit irreverent, and not take themselves too seriously. 
+      Kind of like Australians ourselves. Make something that'll make people smile, keep it in the shade 
+      as long as possible, and crack a cold one while you wait for dessert time.</p>
+      <p>Good on ya for putting in the effort. Now go enjoy the long weekend.</p>
+    `,
+    relatedPosts: [
+      { id: "canada-day-cake-ideas", title: "Canada Day Cake Ideas: Beyond Just Maple Leaves", readTime: "6 min read" },
+      { id: "creative-cake-ideas-birthday", title: "10 Creative Cake Ideas for Birthday Celebrations", readTime: "5 min read" }
+    ]
   }
 };
 

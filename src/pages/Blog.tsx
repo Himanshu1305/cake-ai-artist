@@ -98,6 +98,38 @@ const Blog = () => {
 
   const blogPosts = [
     {
+      id: "fourth-of-july-cake-ideas",
+      title: "4th of July Cake Ideas That'll Make Your BBQ the Talk of the Block",
+      excerpt: "Red, white, and blue cakes that don't look like a craft project gone wrong. Patriotic designs for Independence Day parties across America.",
+      date: "December 5, 2025",
+      readTime: "6 min read",
+      category: "Seasonal Celebrations"
+    },
+    {
+      id: "british-jubilee-royal-cakes",
+      title: "Royal Celebration Cakes: From Garden Parties to Jubilee Bashes",
+      excerpt: "Union Jack designs that actually look sophisticated, not tacky. Elegant British cake ideas for Jubilees, coronations, and proper celebrations.",
+      date: "December 4, 2025",
+      readTime: "6 min read",
+      category: "Seasonal Celebrations"
+    },
+    {
+      id: "canada-day-cake-ideas",
+      title: "Canada Day Cake Ideas: Beyond Just Maple Leaves (But Also Some Maple Leaves)",
+      excerpt: "Red and white designs, Canadian wildlife themes, and regional pride cakes for July 1st celebrations, eh?",
+      date: "December 3, 2025",
+      readTime: "6 min read",
+      category: "Seasonal Celebrations"
+    },
+    {
+      id: "australia-day-cake-ideas",
+      title: "Australia Day Cake Ideas: Designs That Handle the Summer Heat",
+      excerpt: "Aussie cake ideas from green and gold to beach BBQ vibes. Plus heat-proof tips because it's bloody hot in January.",
+      date: "December 2, 2025",
+      readTime: "6 min read",
+      category: "Seasonal Celebrations"
+    },
+    {
       id: "creative-cake-ideas-birthday",
       title: "10 Creative Cake Ideas for Birthday Celebrations",
       excerpt: "Stuck on what kind of cake to make? Same. Here are ten ideas that actually work, from minimalist elegance to rainbow chaos. Something for everyone.",
