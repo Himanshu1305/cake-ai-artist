@@ -60,11 +60,20 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Blog - Cake Design Ideas & Celebration Tips | Cake AI Artist</title>
-        <meta name="description" content="Explore our blog for birthday ideas, cake trends, celebration planning tips, and creative inspiration for every special occasion." />
-        <meta name="keywords" content="cake design blog, birthday tips, cake trends, celebration inspiration" />
+        <title>Blog - Best AI Cake Design Ideas & Celebration Tips | Cake AI Artist</title>
+        <meta name="description" content="Explore our blog for the best virtual cake design ideas, birthday tips, cake trends, celebration planning tips, and creative inspiration for every special occasion." />
+        <meta name="keywords" content="best AI cake design blog, birthday cake tips, virtual cake trends, celebration inspiration, best virtual cake ideas" />
         <link rel="canonical" href="https://cakeaiartist.com/blog" />
+        <meta property="og:title" content="Blog - Best AI Cake Design Ideas & Celebration Tips | Cake AI Artist" />
+        <meta property="og:description" content="Explore our blog for the best virtual cake design ideas, birthday tips, cake trends, and creative inspiration." />
         <meta property="og:url" content="https://cakeaiartist.com/blog" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Blog - Best AI Cake Design Ideas & Celebration Tips" />
+        <meta name="twitter:description" content="Explore our blog for the best virtual cake design ideas, birthday tips, and creative inspiration." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">

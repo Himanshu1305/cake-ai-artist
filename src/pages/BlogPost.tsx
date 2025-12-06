@@ -93,11 +93,20 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>{post.title} - Cake Design Ideas | Cake AI Artist Blog</title>
-        <meta name="description" content={`${post.category}: ${post.title}. Creative cake design inspiration and celebration tips.`} />
-        <meta name="keywords" content="cake design ideas, birthday cake tips, celebration planning" />
+        <title>{post.title} - Best AI Cake Design Ideas | Cake AI Artist Blog</title>
+        <meta name="description" content={`${post.category}: ${post.title}. Creative virtual cake design inspiration and celebration tips from the best AI cake generator.`} />
+        <meta name="keywords" content="best AI cake design ideas, birthday cake tips, celebration planning, best virtual cake" />
         <link rel="canonical" href={`https://cakeaiartist.com/blog/${id}`} />
+        <meta property="og:title" content={`${post.title} - Best AI Cake Design Ideas | Cake AI Artist Blog`} />
+        <meta property="og:description" content={`${post.category}: ${post.title}. Creative virtual cake design inspiration and celebration tips.`} />
         <meta property="og:url" content={`https://cakeaiartist.com/blog/${id}`} />
+        <meta property="og:type" content="article" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${post.title} - Best AI Cake Design Ideas`} />
+        <meta name="twitter:description" content={`${post.category}: ${post.title}. Creative virtual cake design inspiration.`} />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <ArticleSchema 

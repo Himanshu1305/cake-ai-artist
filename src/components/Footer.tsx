@@ -8,7 +8,7 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">Cake AI Artist</h3>
             <p className="text-sm opacity-90">
-              Create stunning personalized cakes with AI magic.
+              The best AI cake generator for stunning personalized cakes. Create beautiful virtual cake designs in seconds.
             </p>
           </div>
           <div>
@@ -44,6 +44,21 @@ export const Footer = () => {
                   About
                 </Link>
               </li>
+              <li>
+                <Link to="/blog" className="hover:underline opacity-90">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:underline opacity-90">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:underline opacity-90">
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -60,6 +75,11 @@ export const Footer = () => {
                 </Link>
               </li>
             </ul>
+            <div className="mt-4">
+              <p className="text-sm opacity-90">
+                Email: <a href="mailto:support@cakeaiartist.com" className="hover:underline">support@cakeaiartist.com</a>
+              </p>
+            </div>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/20 text-center text-sm text-white opacity-90">

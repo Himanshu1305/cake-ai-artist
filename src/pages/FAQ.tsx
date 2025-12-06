@@ -15,11 +15,20 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>FAQ - Cake AI Artist Questions & Answers</title>
-        <meta name="description" content="Frequently asked questions about Cake AI Artist. Learn how to create personalized cakes, understand pricing, and explore premium features." />
-        <meta name="keywords" content="cake AI FAQ, virtual cake questions, cake generator help, design support" />
+        <title>FAQ - Best AI Cake Generator Questions & Answers | Cake AI Artist</title>
+        <meta name="description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes, understand pricing, and explore premium features." />
+        <meta name="keywords" content="best AI cake generator FAQ, virtual cake questions, cake designer help, design support, best virtual cake" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
+        <meta property="og:title" content="FAQ - Best AI Cake Generator Questions & Answers | Cake AI Artist" />
+        <meta property="og:description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes and explore features." />
         <meta property="og:url" content="https://cakeaiartist.com/faq" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FAQ - Best AI Cake Generator Questions & Answers" />
+        <meta name="twitter:description" content="Frequently asked questions about the best AI cake generator. Learn how to create personalized virtual cakes." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <FAQSchema 

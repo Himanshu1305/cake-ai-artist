@@ -9,11 +9,20 @@ const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Use Cases - Cake Designs for Every Celebration | Cake AI Artist</title>
-        <meta name="description" content="Discover how to create stunning cakes for birthdays, anniversaries, graduations, and more. Perfect AI-generated designs for every celebration." />
-        <meta name="keywords" content="virtual cake examples, cake designs, birthday cake ideas, anniversary cake, celebration designs" />
+        <title>Use Cases - Best Virtual Cake Designs for Every Celebration | Cake AI Artist</title>
+        <meta name="description" content="Discover how to create the best virtual cakes for birthdays, anniversaries, graduations, and more. Perfect AI-generated cake designs for every celebration." />
+        <meta name="keywords" content="best virtual cake examples, best AI cake designs, birthday cake ideas, anniversary cake, celebration cake designs" />
         <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
+        <meta property="og:title" content="Use Cases - Best Virtual Cake Designs for Every Celebration | Cake AI Artist" />
+        <meta property="og:description" content="Discover how to create the best virtual cakes for birthdays, anniversaries, graduations, and more. Perfect AI-generated cake designs." />
         <meta property="og:url" content="https://cakeaiartist.com/use-cases" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:site_name" content="Cake AI Artist" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Use Cases - Best Virtual Cake Designs for Every Celebration" />
+        <meta name="twitter:description" content="Discover how to create the best virtual cakes for birthdays, anniversaries, graduations, and more." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">
