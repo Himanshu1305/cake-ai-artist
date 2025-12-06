@@ -153,9 +153,9 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>First 50 Members Only</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">$1,198 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">US$1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-gold">$49</span>
+                      <span className="text-5xl font-bold text-gold">US$49</span>
                       <span className="text-muted-foreground">once</span>
                     </div>
                   </div>
@@ -206,9 +206,9 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>Members 51-200</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">$1,198 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">US$1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-silver">$99</span>
+                      <span className="text-5xl font-bold text-silver">US$99</span>
                       <span className="text-muted-foreground">once</span>
                     </div>
                   </div>
@@ -257,10 +257,10 @@ const Pricing = () => {
                   <CardDescription>After December 31st</CardDescription>
                   <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">$9.99</span>
+                      <span className="text-5xl font-bold">US$9.99</span>
                       <span className="text-muted-foreground">/month</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">or $119.88/year</p>
+                    <p className="text-sm text-muted-foreground mt-2">or US$119.88/year</p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -274,7 +274,7 @@ const Pricing = () => {
                   </ul>
                   <div className="mt-6 p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      = $1,198.80 over 10 years
+                      = US$1,198.80 over 10 years
                     </p>
                   </div>
                 </CardContent>
@@ -309,6 +309,9 @@ const Pricing = () => {
                 <p className="text-sm font-semibold text-foreground">{text}</p>
               </div>
             ))}
+            <div className="col-span-full text-center mt-4">
+              <p className="text-sm text-muted-foreground">💵 All prices are in US Dollars (USD)</p>
+            </div>
           </motion.div>
         </div>
       </section>
