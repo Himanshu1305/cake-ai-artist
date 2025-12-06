@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { safeGetItem } from "@/utils/storage";
 
 interface CookiePreferences {
   necessary: boolean;
@@ -18,7 +19,7 @@ export const useCookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(() => {
     try {
-      const consent = localStorage.getItem("cookieConsent");
+      const consent = safeGetItem("cookieConsent");
       if (consent) {
         const parsed = JSON.parse(consent);
         return {
@@ -56,7 +57,7 @@ export const useCookieConsent = () => {
 
   useEffect(() => {
     try {
-      const consent = localStorage.getItem("cookieConsent");
+      const consent = safeGetItem("cookieConsent");
       if (!consent) {
         // No consent yet - show banner after delay
         const timer = setTimeout(() => setShowBanner(true), 1000);

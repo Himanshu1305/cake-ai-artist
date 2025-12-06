@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { X, Cookie } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
+import { safeSetItem } from "@/utils/storage";
 
 // Extend Window interface for gtag
 declare global {
@@ -23,7 +24,7 @@ export const CookieConsent = () => {
       marketing: true,
       timestamp: new Date().toISOString(),
     };
-    localStorage.setItem("cookieConsent", JSON.stringify(allAccepted));
+    safeSetItem("cookieConsent", JSON.stringify(allAccepted));
     setShowBanner(false);
     
     // Initialize Google Analytics and other tracking here
@@ -42,7 +43,7 @@ export const CookieConsent = () => {
       marketing: false,
       timestamp: new Date().toISOString(),
     };
-    localStorage.setItem("cookieConsent", JSON.stringify(rejected));
+    safeSetItem("cookieConsent", JSON.stringify(rejected));
     setShowBanner(false);
 
     // Deny consent for tracking
@@ -59,7 +60,7 @@ export const CookieConsent = () => {
       ...preferences,
       timestamp: new Date().toISOString(),
     };
-    localStorage.setItem("cookieConsent", JSON.stringify(savedPreferences));
+    safeSetItem("cookieConsent", JSON.stringify(savedPreferences));
     setShowBanner(false);
 
     // Update consent based on preferences
