@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface CookiePreferences {
   necessary: boolean;
@@ -26,28 +26,32 @@ export const useCookieConsent = () => {
     setShowBanner(true);
   }, []);
 
-  useEffect(() => {
-    // Register the listener
-    cookieConsentListeners.add(openConsentModal);
-    
-    return () => {
-      cookieConsentListeners.delete(openConsentModal);
-    };
-  }, [openConsentModal]);
+  // Use ref to maintain stable callback reference
+  const openConsentModalRef = useRef(openConsentModal);
+  openConsentModalRef.current = openConsentModal;
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookieConsent");
-    if (consent) {
-      try {
+    const listener = () => openConsentModalRef.current();
+    cookieConsentListeners.add(listener);
+    
+    return () => {
+      cookieConsentListeners.delete(listener);
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      const consent = localStorage.getItem("cookieConsent");
+      if (consent) {
         const parsed = JSON.parse(consent);
         setPreferences({
           necessary: true,
           analytics: parsed.analytics ?? false,
           marketing: parsed.marketing ?? false,
         });
-      } catch {
-        // Invalid consent data
       }
+    } catch {
+      // Invalid consent data - ignore
     }
   }, []);
 

@@ -16,14 +16,14 @@ export const CookieConsent = () => {
   const { showBanner, setShowBanner, preferences, setPreferences } = useCookieConsent();
   const [showDetails, setShowDetails] = useState(false);
 
+  // Check localStorage for existing consent on mount
   useEffect(() => {
     const consent = localStorage.getItem("cookieConsent");
     if (!consent) {
-      // Delay showing banner slightly for better UX
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [setShowBanner]);
+  }, []);
 
   const handleAcceptAll = () => {
     const allAccepted = {

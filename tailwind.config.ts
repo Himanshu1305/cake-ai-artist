@@ -75,6 +75,8 @@ export default {
           purple: "hsl(var(--party-purple))",
           coral: "hsl(var(--party-coral))",
           mint: "hsl(var(--party-mint))",
+          gold: "hsl(var(--party-gold))",
+          orange: "hsl(var(--party-orange))",
         },
       },
       backgroundImage: {
