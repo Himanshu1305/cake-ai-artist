@@ -12,7 +12,7 @@ interface FoundingSpots {
 }
 
 const CACHE_KEY = 'founding_spots_cache';
-const CACHE_DURATION = 30000; // 30 seconds
+const CACHE_DURATION = 60000; // 60 seconds (increased to reduce polling frequency)
 
 export const useFoundingSpots = () => {
   const [spots, setSpots] = useState<FoundingSpots>(() => {
