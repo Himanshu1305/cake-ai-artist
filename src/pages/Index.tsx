@@ -749,36 +749,56 @@ const Index = () => {
                 quote: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
                 author: "Sarah M.",
                 role: "Perpetual Last-Minute Planner",
+                location: "🇺🇸 Texas, USA",
                 rating: 5
               },
               {
                 quote: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
                 author: "James K.",
                 role: "Dad of Two",
+                location: "🇬🇧 Manchester, UK",
                 rating: 5
               },
               {
-                quote: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
-                author: "Maria G.",
+                quote: "As a party planner in Sydney, this tool saves me hours every week. My clients absolutely love the designs!",
+                author: "Emily R.",
                 role: "Event Coordinator",
+                location: "🇦🇺 Sydney, Australia",
+                rating: 5
+              },
+              {
+                quote: "Used this for my son's hockey-themed birthday. The personalized message was spot on - better than what I could write!",
+                author: "Mike T.",
+                role: "Busy Hockey Dad",
+                location: "🇨🇦 Toronto, Canada",
                 rating: 5
               },
               {
                 quote: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
                 author: "Jessica T.",
                 role: "Bakery Owner",
+                location: "🇺🇸 California, USA",
                 rating: 5
               },
               {
-                quote: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
-                author: "Priya S.",
-                role: "Mom & Anime Fan",
+                quote: "The character options are brilliant! Made a proper British tea party cake for my nan's 80th birthday.",
+                author: "Emma W.",
+                role: "Primary School Teacher",
+                location: "🇬🇧 London, UK",
                 rating: 5
               },
               {
-                quote: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
-                author: "David L.",
-                role: "Event Planner",
+                quote: "Finally something that works on mobile! Created a cake design for my mate's barbie while on the train.",
+                author: "Daniel H.",
+                role: "Marketing Manager",
+                location: "🇦🇺 Melbourne, Australia",
+                rating: 5
+              },
+              {
+                quote: "So easy to use! Made matching party invitations and cake design for my daughter's princess party.",
+                author: "Nicole B.",
+                role: "Mom & Crafter",
+                location: "🇨🇦 Calgary, Canada",
                 rating: 5
               }
             ].map((testimonial, idx) => (
@@ -794,6 +814,7 @@ const Index = () => {
                     <div>
                       <p className="font-semibold text-foreground">{testimonial.author}</p>
                       <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      <p className="text-xs text-muted-foreground/80 mt-1">{testimonial.location}</p>
                     </div>
                   </Card>
                 </div>
