@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Blog = () => {
   const [email, setEmail] = useState("");
@@ -33,16 +34,66 @@ const Blog = () => {
 
     setIsSubscribing(true);
     
-    // Simulate subscription (replace with actual newsletter service later)
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    toast({
-      title: "You're in!",
-      description: "Thanks for subscribing. We'll keep the good stuff coming.",
-    });
-    
-    setEmail("");
-    setIsSubscribing(false);
+    try {
+      // Get current user if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get user profile for name if available
+      let firstName = null;
+      let lastName = null;
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile) {
+          firstName = profile.first_name;
+          lastName = profile.last_name;
+        }
+      }
+      
+      // Upsert subscription (insert or update if exists)
+      const { error } = await supabase
+        .from('blog_subscribers')
+        .upsert({
+          email: email.toLowerCase().trim(),
+          first_name: firstName,
+          last_name: lastName,
+          user_id: user?.id || null,
+          is_active: true,
+          unsubscribed_at: null,
+        }, {
+          onConflict: 'email',
+        });
+
+      if (error) {
+        console.error('Subscription error:', error);
+        toast({
+          title: "Subscription failed",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "You're in!",
+        description: "Thanks for subscribing. We'll keep the good stuff coming.",
+      });
+      
+      setEmail("");
+    } catch (error) {
+      console.error('Subscription error:', error);
+      toast({
+        title: "Subscription failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   const blogPosts = [

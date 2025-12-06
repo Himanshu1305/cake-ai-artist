@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
@@ -29,6 +29,15 @@ interface CommunityImage {
   profiles: { email: string };
 }
 
+interface BlogSubscriber {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  subscribed_at: string;
+  is_active: boolean;
+}
+
 interface Analytics {
   totalUsers: number;
   premiumUsers: number;
@@ -38,6 +47,7 @@ interface Analytics {
   conversionRate: number;
   avgImagesPerUser: number;
   activeUsers: number;
+  totalSubscribers: number;
 }
 
 interface ChartData {
@@ -47,6 +57,7 @@ interface ChartData {
   characters: { name: string; count: number }[];
   topUsers: { email: string; imageCount: number }[];
   relations: { name: string; count: number }[];
+  subscriberGrowth: { date: string; subscribers: number }[];
 }
 
 export default function Admin() {
@@ -55,6 +66,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [images, setImages] = useState<CommunityImage[]>([]);
+  const [subscribers, setSubscribers] = useState<BlogSubscriber[]>([]);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
     premiumUsers: 0,
@@ -64,6 +76,7 @@ export default function Admin() {
     conversionRate: 0,
     avgImagesPerUser: 0,
     activeUsers: 0,
+    totalSubscribers: 0,
   });
   const [chartData, setChartData] = useState<ChartData | null>(null);
 
@@ -109,7 +122,22 @@ export default function Admin() {
       loadProfiles(),
       loadImages(),
       loadAnalytics(),
+      loadSubscribers(),
     ]);
+  };
+
+  const loadSubscribers = async () => {
+    const { data, error } = await supabase
+      .from('blog_subscribers')
+      .select('id, email, first_name, last_name, subscribed_at, is_active')
+      .order('subscribed_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading subscribers:', error);
+      return;
+    }
+
+    setSubscribers(data || []);
   };
 
   const loadProfiles = async () => {
@@ -160,6 +188,7 @@ export default function Admin() {
     try {
       const { data: profilesData } = await supabase.from('profiles').select('*');
       const { data: imagesData } = await supabase.from('generated_images').select('*');
+      const { data: subscribersData } = await supabase.from('blog_subscribers').select('*');
 
       const totalUsers = profilesData?.length || 0;
       const premiumUsers = profilesData?.filter(p => p.is_premium).length || 0;
@@ -171,6 +200,7 @@ export default function Admin() {
       const activeUsers = profilesData?.filter(p => 
         imagesData?.some(img => img.user_id === p.id)
       ).length || 0;
+      const totalSubscribers = subscribersData?.filter(s => s.is_active).length || 0;
 
       setAnalytics({
         totalUsers,
@@ -181,6 +211,7 @@ export default function Admin() {
         conversionRate,
         avgImagesPerUser,
         activeUsers,
+        totalSubscribers,
       });
 
       // User growth over last 30 days
@@ -258,6 +289,16 @@ export default function Admin() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
+      // Subscriber growth over last 30 days
+      const subscriberGrowth = last30Days.map((date, index) => ({
+        date,
+        subscribers: subscribersData?.filter((s) => {
+          const subscribedDate = new Date(s.subscribed_at || "");
+          const targetDate = subDays(new Date(), 29 - index);
+          return subscribedDate <= targetDate && s.is_active;
+        }).length || 0,
+      }));
+
       setChartData({
         userGrowth,
         imagesOverTime,
@@ -265,6 +306,7 @@ export default function Admin() {
         characters,
         topUsers,
         relations,
+        subscriberGrowth,
       });
     } catch (error) {
       console.error("Error loading analytics:", error);
@@ -419,6 +461,10 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="images">Community Moderation</TabsTrigger>
+            <TabsTrigger value="subscribers">
+              <Mail className="w-4 h-4 mr-2" />
+              Blog Subscribers
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6">
@@ -662,6 +708,116 @@ export default function Admin() {
                     </Card>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subscribers" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Total Subscribers
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.totalSubscribers}</div>
+                  <p className="text-xs text-muted-foreground">Active subscriptions</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">With Names</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {subscribers.filter(s => s.first_name || s.last_name).length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Identified users</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Anonymous</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-muted-foreground">
+                    {subscribers.filter(s => !s.first_name && !s.last_name).length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Email only</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {chartData && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Subscriber Growth (Last 30 Days)</CardTitle>
+                  <CardDescription>Total active blog subscribers over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={chartData.subscriberGrowth}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="subscribers" stroke="hsl(var(--primary))" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Blog Subscribers</CardTitle>
+                <CardDescription>Users who subscribed to blog updates</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Subscribed</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {subscribers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          No subscribers yet
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      subscribers.map((subscriber) => (
+                        <TableRow key={subscriber.id}>
+                          <TableCell className="font-medium">
+                            {subscriber.first_name || subscriber.last_name
+                              ? `${subscriber.first_name || ''} ${subscriber.last_name || ''}`.trim()
+                              : <span className="text-muted-foreground italic">Anonymous</span>
+                            }
+                          </TableCell>
+                          <TableCell>{subscriber.email}</TableCell>
+                          <TableCell>{new Date(subscriber.subscribed_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {subscriber.is_active ? (
+                              <Badge variant="default" className="bg-green-600">Active</Badge>
+                            ) : (
+                              <Badge variant="secondary">Unsubscribed</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
