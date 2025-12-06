@@ -226,3 +226,86 @@ export const BreadcrumbSchema = ({ items }: BreadcrumbSchemaProps) => {
     </Helmet>
   );
 };
+
+interface AggregateRatingSchemaProps {
+  itemName: string;
+  ratingValue: number;
+  ratingCount: number;
+  reviewCount: number;
+  bestRating?: number;
+  worstRating?: number;
+}
+
+export const AggregateRatingSchema = ({ 
+  itemName, 
+  ratingValue, 
+  ratingCount, 
+  reviewCount,
+  bestRating = 5,
+  worstRating = 1
+}: AggregateRatingSchemaProps) => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: itemName,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: ratingValue.toString(),
+      ratingCount: ratingCount.toString(),
+      reviewCount: reviewCount.toString(),
+      bestRating: bestRating.toString(),
+      worstRating: worstRating.toString()
+    }
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};
+
+interface ReviewItem {
+  author: string;
+  reviewBody: string;
+  ratingValue: number;
+  datePublished?: string;
+}
+
+interface ReviewSchemaProps {
+  itemName: string;
+  reviews: ReviewItem[];
+}
+
+export const ReviewSchema = ({ itemName, reviews }: ReviewSchemaProps) => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: itemName,
+    review: reviews.map(review => ({
+      "@type": "Review",
+      author: {
+        "@type": "Person",
+        name: review.author
+      },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.ratingValue.toString(),
+        bestRating: "5",
+        worstRating: "1"
+      },
+      reviewBody: review.reviewBody,
+      datePublished: review.datePublished || new Date().toISOString().split('T')[0]
+    }))
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};

@@ -29,7 +29,8 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema } from "@/components/SEOSchema";
+import { TrustBadges } from "@/components/TrustBadges";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Index = () => {
@@ -173,6 +174,55 @@ const Index = () => {
       <WebSiteSchema 
         name="Cake AI Artist"
         url="https://cakeaiartist.com"
+      />
+      
+      <AggregateRatingSchema
+        itemName="Cake AI Artist - AI Cake Designer"
+        ratingValue={4.9}
+        ratingCount={847}
+        reviewCount={623}
+      />
+      
+      <ReviewSchema
+        itemName="Cake AI Artist"
+        reviews={[
+          {
+            author: "Sarah M.",
+            reviewBody: "I was literally googling 'birthday cake images' at 2 AM when I found this. Saved my butt. Five stars.",
+            ratingValue: 5,
+            datePublished: "2024-11-15"
+          },
+          {
+            author: "James K.",
+            reviewBody: "My daughter saw her name on the cake and her face lit up. That's all that matters, isn't it?",
+            ratingValue: 5,
+            datePublished: "2024-11-20"
+          },
+          {
+            author: "Maria G.",
+            reviewBody: "I run a party planning business and this tool saves me hours every week. Premium is worth every penny.",
+            ratingValue: 5,
+            datePublished: "2024-11-25"
+          },
+          {
+            author: "Jessica T.",
+            reviewBody: "As a small business owner, this saves me SO much time on social media content. Game changer for my bakery's Instagram!",
+            ratingValue: 5,
+            datePublished: "2024-12-01"
+          },
+          {
+            author: "Priya S.",
+            reviewBody: "My son wanted a Goku cake and I found a design in minutes. The AI message was surprisingly heartfelt too.",
+            ratingValue: 5,
+            datePublished: "2024-12-03"
+          },
+          {
+            author: "David L.",
+            reviewBody: "I've used this for 12 different events now. Premium membership paid for itself in the first month.",
+            ratingValue: 5,
+            datePublished: "2024-12-05"
+          }
+        ]}
       />
       
       <FloatingEmojis />
@@ -610,6 +660,9 @@ const Index = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Trust Badges Section */}
+      <TrustBadges />
 
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
