@@ -32,7 +32,7 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Lazy load TrustBadges to prevent render blocking
@@ -180,6 +180,8 @@ const Index = () => {
         name="Cake AI Artist"
         url="https://cakeaiartist.com"
       />
+      
+      <SoftwareApplicationSchema />
       
       {/* SEO schemas temporarily disabled to fix blank screen
       <AggregateRatingSchema
