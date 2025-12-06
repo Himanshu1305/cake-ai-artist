@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { X, Cookie } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useCookieConsent } from "@/hooks/useCookieConsent";
 
 // Extend Window interface for gtag
 declare global {
@@ -11,20 +12,9 @@ declare global {
   }
 }
 
-interface CookiePreferences {
-  necessary: boolean;
-  analytics: boolean;
-  marketing: boolean;
-}
-
 export const CookieConsent = () => {
-  const [showBanner, setShowBanner] = useState(false);
+  const { showBanner, setShowBanner, preferences, setPreferences } = useCookieConsent();
   const [showDetails, setShowDetails] = useState(false);
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true,
-    analytics: false,
-    marketing: false,
-  });
 
   useEffect(() => {
     const consent = localStorage.getItem("cookieConsent");
@@ -33,7 +23,7 @@ export const CookieConsent = () => {
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [setShowBanner]);
 
   const handleAcceptAll = () => {
     const allAccepted = {

@@ -20,6 +20,7 @@ const signupSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  ageConfirmed: z.literal(true, { errorMap: () => ({ message: "You must confirm you are at least 13 years old" }) }),
 });
 
 const Auth = () => {
@@ -30,6 +31,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -94,7 +96,7 @@ const Auth = () => {
       if (isLogin) {
         loginSchema.parse({ email, password });
       } else {
-        signupSchema.parse({ firstName, lastName, email, password });
+        signupSchema.parse({ firstName, lastName, email, password, ageConfirmed });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -139,6 +141,7 @@ const Auth = () => {
         setFirstName("");
         setLastName("");
         setPassword("");
+        setAgeConfirmed(false);
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -311,6 +314,30 @@ const Auth = () => {
                   required
                 />
               </div>
+
+              {/* Age Verification Checkbox (GDPR) */}
+              {!isLogin && (
+                <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                  <input
+                    type="checkbox"
+                    id="ageConfirmed"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-border text-party-pink focus:ring-party-pink"
+                    required
+                  />
+                  <label htmlFor="ageConfirmed" className="text-sm text-foreground/80">
+                    I confirm that I am at least 13 years old and agree to the{" "}
+                    <a href="/terms" target="_blank" className="text-party-purple hover:underline">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="/privacy" target="_blank" className="text-party-purple hover:underline">
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+              )}
 
               <Button
                 type="submit"

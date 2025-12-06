@@ -1,6 +1,12 @@
 import { Link } from 'react-router-dom';
+import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
 
 export const Footer = () => {
+  const handleCookieSettings = (e: React.MouseEvent) => {
+    e.preventDefault();
+    triggerCookieConsentOpen();
+  };
+
   return (
     <footer className="bg-gradient-to-br from-party-purple via-party-pink to-party-orange py-12">
       <div className="container mx-auto px-4">
@@ -73,6 +79,14 @@ export const Footer = () => {
                 <Link to="/terms" className="hover:underline opacity-90">
                   Terms of Service
                 </Link>
+              </li>
+              <li>
+                <button
+                  onClick={handleCookieSettings}
+                  className="hover:underline opacity-90 text-left"
+                >
+                  Cookie Settings
+                </button>
               </li>
             </ul>
             <div className="mt-4">
