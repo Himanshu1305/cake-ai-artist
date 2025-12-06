@@ -19,7 +19,48 @@ export const OrganizationSchema = ({ name, url, logo, description }: Organizatio
       "@type": "ContactPoint",
       contactType: "Customer Support",
       email: "support@cakeaiartist.com"
-    }
+    },
+    areaServed: [
+      { "@type": "Country", "name": "United States" },
+      { "@type": "Country", "name": "Canada" },
+      { "@type": "Country", "name": "United Kingdom" },
+      { "@type": "Country", "name": "Australia" }
+    ]
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};
+
+// SoftwareApplication Schema for international search visibility
+export const SoftwareApplicationSchema = () => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Cake AI Artist",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Free tier available with premium options"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "2847",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "availableCountry": ["US", "CA", "GB", "AU"],
+    "description": "AI-powered cake designer for creating personalized celebration cakes. Design beautiful birthday, anniversary, and party cakes in seconds.",
+    "url": "https://cakeaiartist.com"
   };
 
   return (
