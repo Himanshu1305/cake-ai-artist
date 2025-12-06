@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 interface Sparkle {
   id: number;
@@ -10,46 +10,60 @@ interface Sparkle {
   delay: number;
 }
 
+const COLORS = [
+  'hsl(315, 100%, 65%)', // party-pink
+  'hsl(270, 100%, 75%)', // party-purple
+  'hsl(45, 100%, 60%)',  // gold
+  'hsl(15, 100%, 70%)',  // party-coral
+  'hsl(150, 60%, 70%)',  // party-mint
+];
+
+const MAX_SPARKLES = 20;
+
 export const CursorSparkles = () => {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
-  const [nextId, setNextId] = useState(0);
-
-  const colors = [
-    'hsl(315, 100%, 65%)', // party-pink
-    'hsl(270, 100%, 75%)', // party-purple
-    'hsl(45, 100%, 60%)',  // gold
-    'hsl(15, 100%, 70%)',  // party-coral
-    'hsl(150, 60%, 70%)',  // party-mint
-  ];
+  const nextIdRef = useRef(0);
+  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
   const createSparkle = useCallback((x: number, y: number) => {
+    const id = nextIdRef.current++;
+    const duration = Math.random() * 600 + 400;
+    const delay = Math.random() * 100;
+
     const sparkle: Sparkle = {
-      id: nextId,
+      id,
       x,
       y,
       size: Math.random() * 8 + 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      duration: Math.random() * 600 + 400,
-      delay: Math.random() * 100,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      duration,
+      delay,
     };
 
-    setSparkles(prev => [...prev, sparkle]);
-    setNextId(prev => prev + 1);
+    setSparkles(prev => {
+      // Limit sparkles to prevent memory issues
+      const newSparkles = prev.length >= MAX_SPARKLES 
+        ? [...prev.slice(1), sparkle] 
+        : [...prev, sparkle];
+      return newSparkles;
+    });
 
-    // Remove sparkle after animation
-    setTimeout(() => {
-      setSparkles(prev => prev.filter(s => s.id !== sparkle.id));
-    }, sparkle.duration + sparkle.delay);
-  }, [nextId, colors]);
+    // Remove sparkle after animation with proper cleanup tracking
+    const timeout = setTimeout(() => {
+      setSparkles(prev => prev.filter(s => s.id !== id));
+      timeoutsRef.current.delete(timeout);
+    }, duration + delay);
+    
+    timeoutsRef.current.add(timeout);
+  }, []);
 
   useEffect(() => {
     let lastSparkleTime = 0;
-    const sparkleInterval = 50; // Create sparkle every 50ms when moving
+    const sparkleInterval = 50;
 
     const handleMouseMove = (e: MouseEvent) => {
       const now = Date.now();
       if (now - lastSparkleTime > sparkleInterval) {
-        // Add some randomness to position for natural effect
         const offsetX = (Math.random() - 0.5) * 20;
         const offsetY = (Math.random() - 0.5) * 20;
         createSparkle(e.clientX + offsetX, e.clientY + offsetY);
@@ -58,7 +72,13 @@ export const CursorSparkles = () => {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      // Clear all pending timeouts on unmount
+      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      timeoutsRef.current.clear();
+    };
   }, [createSparkle]);
 
   return (
@@ -76,7 +96,6 @@ export const CursorSparkles = () => {
             animationDelay: `${sparkle.delay}ms`,
           }}
         >
-          {/* Star sparkle */}
           <svg
             width={sparkle.size}
             height={sparkle.size}
