@@ -365,9 +365,9 @@ const Index = () => {
               transition={{ delay: 0.4 }}
               className="space-y-2"
             >
-              <p className="text-white text-xl md:text-2xl font-semibold drop-shadow-md">
-                First 50 members only • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" /> spots left
-              </p>
+              <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
+                First 50 members only • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
+              </span>
             </motion.div>
 
             <motion.div
