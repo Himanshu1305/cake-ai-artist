@@ -55,7 +55,7 @@ export default function Settings() {
         .from("user_settings")
         .select("*")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -66,6 +66,16 @@ export default function Settings() {
           marketing_emails: data.marketing_emails ?? false,
           anniversary_reminders: data.anniversary_reminders ?? true,
         });
+      } else {
+        // No settings exist, create default settings for this user
+        const { error: insertError } = await supabase
+          .from("user_settings")
+          .insert({ user_id: userId });
+        
+        if (insertError) {
+          console.error("Error creating default settings:", insertError);
+        }
+        // Keep default settings state as-is
       }
     } catch (error) {
       console.error("Error loading settings:", error);
@@ -88,10 +98,15 @@ export default function Settings() {
         return;
       }
 
+      // Use upsert to handle case where settings don't exist yet
       const { error } = await supabase
         .from("user_settings")
-        .update(settings)
-        .eq("user_id", session.user.id);
+        .upsert({ 
+          user_id: session.user.id,
+          ...settings 
+        }, { 
+          onConflict: 'user_id' 
+        });
 
       if (error) throw error;
 
