@@ -265,6 +265,39 @@ export type Database = {
           },
         ]
       }
+      page_visits: {
+        Row: {
+          country_code: string | null
+          id: string
+          page_path: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          visited_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          id?: string
+          page_path: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visited_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visited_at?: string
+        }
+        Relationships: []
+      }
       party_packs: {
         Row: {
           banner_url: string
