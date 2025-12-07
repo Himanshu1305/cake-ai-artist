@@ -5,7 +5,7 @@ import { safeGetItem, safeSetItem } from '@/utils/storage';
 const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
 
-type SupportedCountry = 'US' | 'UK' | 'CA' | 'AU';
+type SupportedCountry = 'US' | 'UK' | 'CA' | 'AU' | 'IN';
 
 const countryRoutes: Record<string, string> = {
   GB: '/uk',
