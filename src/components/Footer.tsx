@@ -1,10 +1,30 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
+import { safeGetItem, safeSetItem } from '@/utils/storage';
+import { Globe, ChevronDown } from 'lucide-react';
+
+const countries = [
+  { code: 'US', name: 'United States', flag: '🇺🇸', path: '/' },
+  { code: 'UK', name: 'United Kingdom', flag: '🇬🇧', path: '/uk' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', path: '/canada' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', path: '/australia' },
+];
 
 export const Footer = () => {
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const savedCountry = safeGetItem('user_country_preference') || 'US';
+  const currentCountry = countries.find(c => c.code === savedCountry) || countries[0];
+
   const handleCookieSettings = (e: React.MouseEvent) => {
     e.preventDefault();
     triggerCookieConsentOpen();
+  };
+
+  const handleCountryChange = (country: typeof countries[0]) => {
+    safeSetItem('user_country_preference', country.code);
+    setShowCountryPicker(false);
+    window.location.href = country.path;
   };
 
   return (
@@ -16,6 +36,33 @@ export const Footer = () => {
             <p className="text-sm opacity-90">
               The best AI cake generator for stunning personalized cakes. Create beautiful virtual cake designs in seconds.
             </p>
+            {/* Country Selector */}
+            <div className="mt-4 relative">
+              <button
+                onClick={() => setShowCountryPicker(!showCountryPicker)}
+                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+              >
+                <Globe className="w-4 h-4" />
+                <span>{currentCountry.flag} {currentCountry.name}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showCountryPicker ? 'rotate-180' : ''}`} />
+              </button>
+              {showCountryPicker && (
+                <div className="absolute bottom-full mb-2 left-0 bg-white rounded-lg shadow-lg overflow-hidden z-50 min-w-[180px]">
+                  {countries.map((country) => (
+                    <button
+                      key={country.code}
+                      onClick={() => handleCountryChange(country)}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-party-pink/10 flex items-center gap-2 transition-colors ${
+                        country.code === currentCountry.code ? 'bg-party-pink/20 text-party-pink' : 'text-foreground'
+                      }`}
+                    >
+                      <span>{country.flag}</span>
+                      <span>{country.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Product</h4>
