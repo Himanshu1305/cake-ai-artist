@@ -1045,26 +1045,26 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Christmas Celebrations",
     metaDescription: "Red and green classics, snowy wonderlands, and gingerbread dreams. Christmas cake designs that capture that American holiday magic.",
     keywords: "American Christmas cake, Christmas cake ideas USA, holiday cake designs, festive cake ideas, Christmas dessert, holiday celebration cake",
-    content: \`
-      <p>Christmas in America is something else. The lights, the music that's been playing since November 1st, 
+    content: `
+      <p>Christmas in America is something else. The lights, the music that has been playing since November 1st, 
       the absolute chaos of holiday shopping. And at the center of so many celebrations? A cake that brings 
       everyone together.</p>
 
-      <p>Whether you're hosting the big family gathering, the office party, or just want something special 
+      <p>Whether you are hosting the big family gathering, the office party, or just want something special 
       for Christmas morning, here are cake ideas that capture that American holiday magic.</p>
 
       <h2>The Classic Red and Green</h2>
-      <p>There's a reason these colors never go out of style. Deep forest green with cranberry red accents. 
-      Holly leaves and berries. Maybe some golden touches for that extra sparkle. It's traditional, it 
-      photographs beautifully, and nobody's gonna question your Christmas spirit.</p>
-      <p>Pro tip: Use actual fresh rosemary sprigs for that "evergreen" look. They're edible-adjacent 
-      (people won't eat them, but they won't freak out either) and they smell amazing.</p>
+      <p>There is a reason these colors never go out of style. Deep forest green with cranberry red accents. 
+      Holly leaves and berries. Maybe some golden touches for that extra sparkle. It is traditional, it 
+      photographs beautifully, and nobody is gonna question your Christmas spirit.</p>
+      <p>Pro tip: Use actual fresh rosemary sprigs for that evergreen look. They are edible-adjacent 
+      (people will not eat them, but they will not freak out either) and they smell amazing.</p>
 
       <h2>Winter Wonderland White</h2>
       <p>All white. Snowflakes. Maybe some silver or icy blue accents. Think Elsa but make it Christmas. 
       This look is sophisticated and works especially well for evening parties or more formal celebrations. 
       Plus, any frosting mistakes just look like snow drifts.</p>
-      <p>Add some sparkly sugar crystals and it looks like fresh-fallen snow. Very "White Christmas" vibes.</p>
+      <p>Add some sparkly sugar crystals and it looks like fresh-fallen snow. Very White Christmas vibes.</p>
 
       <h2>Gingerbread Everything</h2>
       <p>Gingerbread houses are cute but honestly? A lot of work. A gingerbread-themed CAKE though? 
@@ -1074,48 +1074,48 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
       <h2>Rustic Farmhouse Charm</h2>
       <p>Burlap textures (fondant, not actual burlap), pinecones, natural greenery, red plaid ribbon 
-      details. Very "Hallmark Christmas movie" energy. If your holiday aesthetic involves a lot of 
-      "cozy cabin" vibes, this is your cake.</p>
-      <p>Pairs well with hot cocoa stations and that one aunt's famous cinnamon rolls.</p>
+      details. Very Hallmark Christmas movie energy. If your holiday aesthetic involves a lot of 
+      cozy cabin vibes, this is your cake.</p>
+      <p>Pairs well with hot cocoa stations and that one aunt famous cinnamon rolls.</p>
 
       <h2>Santa and Friends</h2>
       <p>Santa Claus. Rudolph. Snowmen. Elves on shelves (the actual elves, not the creepy surveillance 
-      ones). Kids absolutely love character cakes, and honestly, adults secretly do too. There's something 
-      joyful about a cake with Santa's face on it.</p>
+      ones). Kids absolutely love character cakes, and honestly, adults secretly do too. There is something 
+      joyful about a cake with Santa face on it.</p>
       <p>Keep it cheerful and cartoon-ish. Nobody wants realistic Santa. Trust me.</p>
 
       <h2>Modern Minimalist Christmas</h2>
       <p>Not everyone wants maximum Christmas chaos. Clean lines, geometric tree shapes, simple color 
       palette. Maybe just green and gold. Or white with a single red accent. For the people who have 
-      matching ornaments and actually follow the "less is more" philosophy.</p>
+      matching ornaments and actually follow the less is more philosophy.</p>
       <p>These look stunning on Instagram. Just saying.</p>
 
       <h2>Regional American Twists</h2>
       <p><strong>Southern charm:</strong> Pecan praline flavors, magnolia decorations, maybe some bourbon 
       in that frosting. Christmas below the Mason-Dixon hits different.</p>
       <p><strong>New England classic:</strong> Cranberry everything. That beautiful Cape Cod winter aesthetic. 
-      Very "Kennedy family Christmas card."</p>
+      Very Kennedy family Christmas card.</p>
       <p><strong>Southwest style:</strong> Red chile-infused chocolate, luminaria designs, desert Christmas 
-      vibes. Not everyone has a white Christmas, and that's okay.</p>
+      vibes. Not everyone has a white Christmas, and that is okay.</p>
       <p><strong>Midwest warmth:</strong> Comfort food aesthetic. Nothing too fancy. Homemade feeling. 
       Probably something grandma would approve of.</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Merry Christmas" (classic, never fails)</li>
-        <li>"Joy to the World"</li>
-        <li>"Season's Greetings" (good for mixed-faith gatherings)</li>
-        <li>"Peace, Love, Joy"</li>
-        <li>"[Family Name] Christmas 2025"</li>
+        <li>Merry Christmas (classic, never fails)</li>
+        <li>Joy to the World</li>
+        <li>Seasons Greetings (good for mixed-faith gatherings)</li>
+        <li>Peace, Love, Joy</li>
+        <li>[Family Name] Christmas 2025</li>
         <li>Or just let the design speak—sometimes pictures say enough.</li>
       </ul>
 
       <h2>Final Thought</h2>
       <p>Christmas cakes should feel like Christmas feels—warm, joyful, maybe a little over-the-top 
-      in the best way. Don't stress about perfection. Grab some hot cocoa, put on that holiday playlist, 
-      and make something that'll bring smiles when you bring it to the table.</p>
-      <p>Merry Christmas! 🎄</p>
-    \`,
+      in the best way. Do not stress about perfection. Grab some hot cocoa, put on that holiday playlist, 
+      and make something that will bring smiles when you bring it to the table.</p>
+      <p>Merry Christmas!</p>
+    `,
     relatedPosts: [
       { id: "american-new-year-cake-ideas", title: "New Year's Eve Cake Ideas: Ring in 2026 American Style", readTime: "6 min read" },
       { id: "creative-cake-ideas-birthday", title: "10 Creative Cake Ideas for Birthday Celebrations", readTime: "5 min read" }
@@ -1130,63 +1130,63 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "New Year Celebrations",
     metaDescription: "Countdown clocks, champagne themes, and Times Square sparkle. Make your NYE celebration unforgettable with these American New Year cake ideas.",
     keywords: "New Year cake ideas USA, NYE cake designs, New Year's Eve dessert, 2026 celebration cake, countdown cake, champagne cake",
-    content: \`
-      <p>New Year's Eve is that one night where everything feels possible. New beginnings, fresh starts, 
-      and the excuse to stay up way too late eating cake while watching the ball drop. Let's make sure 
+    content: `
+      <p>New Years Eve is that one night where everything feels possible. New beginnings, fresh starts, 
+      and the excuse to stay up way too late eating cake while watching the ball drop. Let us make sure 
       your cake matches the occasion.</p>
 
       <h2>The Countdown Clock</h2>
       <p>A clock face frozen at midnight. Classic, instantly recognizable, and gives you a great excuse 
       to do fancy number work. Gold numbers on black fondant looks particularly sharp. You can go full 
-      Roman numerals if you're feeling classy, or keep it digital for modern vibes.</p>
-      <p>Bonus: it's a built-in conversation piece. "Oh is it midnight already?" Dad jokes included.</p>
+      Roman numerals if you are feeling classy, or keep it digital for modern vibes.</p>
+      <p>Bonus: it is a built-in conversation piece. Oh is it midnight already? Dad jokes included.</p>
 
-      <h2>Champagne & Bubbles</h2>
+      <h2>Champagne and Bubbles</h2>
       <p>Champagne bottle decorations, cascading bubbles, gold and silver everywhere. This theme 
-      basically decorates itself—just think "celebration in cake form." Pearl-like bubble decorations 
+      basically decorates itself—just think celebration in cake form. Pearl-like bubble decorations 
       look elegant and photograph beautifully in low party lighting.</p>
       <p>Actual champagne-flavored cake is also an option for adults-only parties. Just saying.</p>
 
       <h2>Times Square Sparkle</h2>
-      <p>If you're going for that NYC energy, lean into it. Glitter (edible, obviously), city skyline 
-      silhouettes, that famous ball in all its sparkly glory. Even if you're watching from your living 
+      <p>If you are going for that NYC energy, lean into it. Glitter (edible, obviously), city skyline 
+      silhouettes, that famous ball in all its sparkly glory. Even if you are watching from your living 
       room in Ohio, you can capture that Times Square magic.</p>
       <p>This theme works great with metallic accents—gold, silver, rose gold. Go bold or go home.</p>
 
       <h2>Black and Gold Elegance</h2>
-      <p>Sometimes simple is stunning. Black fondant with gold accents. "2026" in gorgeous typography. 
-      Clean lines, no clutter. Very "sophisticated dinner party" energy. This look never goes out of 
-      style and works whether you're hosting 5 people or 50.</p>
+      <p>Sometimes simple is stunning. Black fondant with gold accents. 2026 in gorgeous typography. 
+      Clean lines, no clutter. Very sophisticated dinner party energy. This look never goes out of 
+      style and works whether you are hosting 5 people or 50.</p>
       <p>Add some edible gold leaf for extra fancy points.</p>
 
       <h2>Confetti Explosion</h2>
       <p>Colorful, chaotic, FUN. Rainbow confetti sprinkles, bright colors, party vibes. This is the 
       cake for families with kids or anyone who thinks NYE should be more party and less pretension. 
-      Nobody's sad looking at a confetti cake.</p>
+      Nobody is sad looking at a confetti cake.</p>
       <p>Consider a confetti inside—colored cake layers revealed when you cut. Surprise!</p>
 
       <h2>Resolutions Theme (The Fun Way)</h2>
-      <p>Instead of stressing about actual resolutions, make the cake about them. "2026: The Year I 
-      Eat More Cake" written in frosting. Self-aware humor. New Year's is already stressful enough—
+      <p>Instead of stressing about actual resolutions, make the cake about them. 2026: The Year I 
+      Eat More Cake written in frosting. Self-aware humor. New Years is already stressful enough—
       might as well laugh about it.</p>
-      <p>Other ideas: "New Year, Same Me (But Better at Parties)" or just "FINALLY."</p>
+      <p>Other ideas: New Year, Same Me (But Better at Parties) or just FINALLY.</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Happy New Year!" (timeless)</li>
-        <li>"Hello 2026!"</li>
-        <li>"Cheers to New Beginnings"</li>
-        <li>"Out with the old, in with the YOU" (custom for someone specific)</li>
-        <li>"[Family Name] New Year Bash"</li>
-        <li>Just "2026" in big, bold numbers</li>
+        <li>Happy New Year! (timeless)</li>
+        <li>Hello 2026!</li>
+        <li>Cheers to New Beginnings</li>
+        <li>Out with the old, in with the YOU (custom for someone specific)</li>
+        <li>[Family Name] New Year Bash</li>
+        <li>Just 2026 in big, bold numbers</li>
       </ul>
 
       <h2>Final Thought</h2>
-      <p>New Year's Eve is about hope and celebration. Your cake should feel like both. Whatever style 
-      you choose, make it sparkle—literally or figuratively. This is the one night a year where "too 
-      much glitter" isn't really a thing.</p>
-      <p>Happy New Year! Here's to 2026! 🥂</p>
-    \`,
+      <p>New Years Eve is about hope and celebration. Your cake should feel like both. Whatever style 
+      you choose, make it sparkle—literally or figuratively. This is the one night a year where too 
+      much glitter is not really a thing.</p>
+      <p>Happy New Year! Here is to 2026!</p>
+    `,
     relatedPosts: [
       { id: "american-christmas-cake-ideas", title: "American Christmas Cake Ideas: From Cozy Family Gatherings to Big Holiday Parties", readTime: "7 min read" },
       { id: "cake-design-trends-2025", title: "Cake Design Trends: What's Popular in 2025", readTime: "7 min read" }
@@ -1201,30 +1201,30 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Christmas Celebrations",
     metaDescription: "Traditional British Christmas cake with a modern twist. Designs for Boxing Day gatherings, office parties, and proper festive celebrations.",
     keywords: "British Christmas cake, UK Christmas cake ideas, traditional Christmas cake, Boxing Day cake, festive cake UK, Yule log cake",
-    content: \`
+    content: `
       <p>Right, Christmas in Britain. The fairy lights are up, the Quality Street is half-eaten (the 
-      good ones gone by December 10th, obviously), and someone's already had a row about whether 
-      Die Hard is a Christmas film. Let's talk cakes.</p>
+      good ones gone by December 10th, obviously), and someone has already had a row about whether 
+      Die Hard is a Christmas film. Let us talk cakes.</p>
 
-      <p>British Christmas cakes have their own traditions, but that doesn't mean you're stuck with 
-      great-grandma's recipe if fruitcake isn't your thing. Here's a proper guide to festive cake options.</p>
+      <p>British Christmas cakes have their own traditions, but that does not mean you are stuck with 
+      great-grandma recipe if fruitcake is not your thing. Here is a proper guide to festive cake options.</p>
 
       <h2>The Traditional Rich Fruit Cake</h2>
       <p>Dense, boozy, covered in marzipan and royal icing. This is THE British Christmas cake. Started 
       in September, fed brandy weekly, brought out Christmas Day. If your family does this, you know 
-      the ritual. If they don't, this might seem mad, but it's delicious.</p>
+      the ritual. If they do not, this might seem mad, but it is delicious.</p>
       <p>The royal icing can be peaked to look like snow, or kept smooth for a cleaner look. Both are 
       acceptable. Whatever Mum says goes, really.</p>
 
-      <h2>The Yule Log (Bûche de Noël)</h2>
-      <p>Yes, it's French originally. We've adopted it. Chocolate sponge rolled up, covered in chocolate 
+      <h2>The Yule Log (Buche de Noel)</h2>
+      <p>Yes, it is French originally. We have adopted it. Chocolate sponge rolled up, covered in chocolate 
       bark-textured icing, decorated with meringue mushrooms and holly. Looks impressive, tastes 
-      incredible, and you don't have to start making it in September.</p>
-      <p>Kids especially love this one. It looks like an actual log but it's cake. Magic.</p>
+      incredible, and you do not have to start making it in September.</p>
+      <p>Kids especially love this one. It looks like an actual log but it is cake. Magic.</p>
 
       <h2>Elegant Winter White</h2>
-      <p>All white with silver accents. Snowflakes, icicles, frost effects. Very "walking in a winter 
-      wonderland" even when it's just drizzling outside (which it probably is). This look works for 
+      <p>All white with silver accents. Snowflakes, icicles, frost effects. Very walking in a winter 
+      wonderland even when it is just drizzling outside (which it probably is). This look works for 
       sophisticated dinner parties and Christmas weddings.</p>
       <p>Pairs well with champagne and that weird uncle finally behaving himself.</p>
 
@@ -1236,32 +1236,32 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
       <h2>Modern Minimal Christmas</h2>
       <p>Clean lines, simple colour palette, understated elegance. Just some gold text on white fondant, 
-      perhaps. For those who think the traditional cake is a bit... much. No judgement here. It's your 
+      perhaps. For those who think the traditional cake is a bit... much. No judgement here. It is your 
       Christmas.</p>
-      <p>This style photographs beautifully for the family WhatsApp group that definitely doesn't need 
+      <p>This style photographs beautifully for the family WhatsApp group that definitely does not need 
       another photo but gets one anyway.</p>
 
       <h2>Pantomime Fun</h2>
       <p>Oh yes it is! British Christmas means panto season. Quirky, colourful, theatrical cake designs 
-      for families with kids who've just seen Cinderella at the local theatre. "He's behind you!" energy 
+      for families with kids who have just seen Cinderella at the local theatre. He is behind you! energy 
       but in cake form.</p>
       <p>Great for Boxing Day parties when everyone needs cheering up after the Christmas Day food coma.</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Merry Christmas" (obviously)</li>
-        <li>"Season's Greetings"</li>
-        <li>"Happy Christmas" (the British way)</li>
-        <li>"Peace and Joy"</li>
-        <li>"[Family Name] Christmas [Year]"</li>
+        <li>Merry Christmas (obviously)</li>
+        <li>Seasons Greetings</li>
+        <li>Happy Christmas (the British way)</li>
+        <li>Peace and Joy</li>
+        <li>[Family Name] Christmas [Year]</li>
         <li>Or just beautiful decorations—sometimes less is more.</li>
       </ul>
 
       <h2>Final Thought</h2>
       <p>British Christmas cakes should feel proper but not stuffy. Traditional but not boring. Whatever 
-      style you choose, make sure there's enough tea to go with it. And probably some sherry for the 
-      adults. Happy Christmas! 🎄</p>
-    \`,
+      style you choose, make sure there is enough tea to go with it. And probably some sherry for the 
+      adults. Happy Christmas!</p>
+    `,
     relatedPosts: [
       { id: "british-new-year-cake-ideas", title: "British New Year's Cake Ideas: Celebrate Hogmanay to Big Ben Chimes", readTime: "6 min read" },
       { id: "british-jubilee-royal-cakes", title: "Royal Celebration Cakes: From Garden Parties to Jubilee Bashes", readTime: "6 min read" }
@@ -1276,61 +1276,61 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "New Year Celebrations",
     metaDescription: "From Scottish Hogmanay traditions to London's Thames fireworks vibes. New Year cake designs for celebrations across the UK.",
     keywords: "British New Year cake, UK New Year's Eve cake, Hogmanay cake, Big Ben cake, 2026 UK celebration, New Year party cake UK",
-    content: \`
-      <p>New Year's Eve in Britain is its own thing. You've got the London fireworks on the telly 
-      (or in person if you're brave and don't mind crowds), Scottish Hogmanay if you're north of the 
-      border, and everywhere else just trying to stay awake until midnight. Let's sort out your cake.</p>
+    content: `
+      <p>New Years Eve in Britain is its own thing. You have got the London fireworks on the telly 
+      (or in person if you are brave and do not mind crowds), Scottish Hogmanay if you are north of the 
+      border, and everywhere else just trying to stay awake until midnight. Let us sort out your cake.</p>
 
       <h2>Big Ben and London Skyline</h2>
       <p>The iconic clock striking midnight. Tower Bridge. The London Eye with fireworks. These landmarks 
-      say "British New Year" even if you're celebrating in Cornwall or Cumbria. Black and gold colour 
+      say British New Year even if you are celebrating in Cornwall or Cumbria. Black and gold colour 
       scheme works perfectly with city silhouettes.</p>
-      <p>Great for parties where you're watching the London coverage together. The cake matches the telly.</p>
+      <p>Great for parties where you are watching the London coverage together. The cake matches the telly.</p>
 
       <h2>Scottish Hogmanay Traditions</h2>
       <p>For those celebrating Scottish-style: think tartan patterns, thistles, and that midnight energy 
       of first-footing. Deep purples, rich greens, Celtic designs. Hogmanay is arguably the biggest 
       party night of the year in Scotland, so your cake should match that energy.</p>
-      <p>Black bun-inspired designs also work—it's the traditional Scottish New Year cake, after all.</p>
+      <p>Black bun-inspired designs also work—it is the traditional Scottish New Year cake, after all.</p>
 
       <h2>Elegant Black and Gold</h2>
-      <p>Sophisticated, timeless, works everywhere in the UK. Black fondant with gold accents, "2026" 
+      <p>Sophisticated, timeless, works everywhere in the UK. Black fondant with gold accents, 2026 
       in beautiful script, maybe some champagne bubble decorations. This look suits dinner parties, 
-      house gatherings, and anywhere that's serving actual champagne, not just Prosecco.</p>
+      house gatherings, and anywhere that is serving actual champagne, not just Prosecco.</p>
       <p>Though Prosecco is fine too. No judgement.</p>
 
       <h2>Thames Fireworks Spectacular</h2>
-      <p>If you've ever watched the London fireworks, you know they're spectacular. Capture that on 
+      <p>If you have ever watched the London fireworks, you know they are spectacular. Capture that on 
       your cake—explosion of colours, sparkles, that whole riverside celebration vibe. Edible glitter 
-      was made for New Year's Eve cakes.</p>
-      <p>This theme is pure joy. Nobody's sad looking at fireworks, even fondant ones.</p>
+      was made for New Years Eve cakes.</p>
+      <p>This theme is pure joy. Nobody is sad looking at fireworks, even fondant ones.</p>
 
       <h2>Countdown Clock</h2>
       <p>Classic clock face frozen at midnight. Works with any aesthetic—vintage pocket watch style, 
-      modern digital, Big Ben clock face. Instantly communicates "New Year" without explaining anything. 
+      modern digital, Big Ben clock face. Instantly communicates New Year without explaining anything. 
       The numbers do the talking.</p>
 
       <h2>Champagne and Bubbles</h2>
-      <p>Champagne glasses, bubbles rising, celebration vibes. Very elegant, very party, very "we made 
-      it through another year." Gold and silver colour schemes work beautifully. Maybe some pearl-like 
+      <p>Champagne glasses, bubbles rising, celebration vibes. Very elegant, very party, very we made 
+      it through another year. Gold and silver colour schemes work beautifully. Maybe some pearl-like 
       decorations for extra sparkle.</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Happy New Year!" (never gets old)</li>
-        <li>"Here's to 2026!"</li>
-        <li>"Cheers!" (simple, British)</li>
-        <li>"Lang may yer lum reek" (Scottish blessing for the Hogmanay crowd)</li>
-        <li>"New Beginnings"</li>
-        <li>Just "2026" in gorgeous numbers</li>
+        <li>Happy New Year! (never gets old)</li>
+        <li>Here is to 2026!</li>
+        <li>Cheers! (simple, British)</li>
+        <li>Lang may yer lum reek (Scottish blessing for the Hogmanay crowd)</li>
+        <li>New Beginnings</li>
+        <li>Just 2026 in gorgeous numbers</li>
       </ul>
 
       <h2>Final Thought</h2>
-      <p>British New Year celebrations deserve a proper cake. Whether you're doing Hogmanay with ceilidh 
-      dancing, London fireworks viewing party, or just a quiet night with family, make sure there's 
+      <p>British New Year celebrations deserve a proper cake. Whether you are doing Hogmanay with ceilidh 
+      dancing, London fireworks viewing party, or just a quiet night with family, make sure there is 
       something sweet for midnight. And probably some leftover Christmas chocolates too.</p>
-      <p>Here's to 2026! Cheers! 🥂</p>
-    \`,
+      <p>Here is to 2026! Cheers!</p>
+    `,
     relatedPosts: [
       { id: "british-christmas-cake-ideas", title: "British Christmas Cake Ideas: From Elegant Festive Cakes to Proper Pudding Alternatives", readTime: "7 min read" },
       { id: "cake-design-trends-2025", title: "Cake Design Trends: What's Popular in 2025", readTime: "7 min read" }
@@ -1345,9 +1345,9 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Christmas Celebrations",
     metaDescription: "Maple-infused Christmas cakes, winter wonderland themes, and designs that embrace Canadian holiday traditions for your festive celebrations.",
     keywords: "Canadian Christmas cake, Christmas cake ideas Canada, winter wonderland cake, maple Christmas cake, Canadian holiday dessert, festive cake Canada",
-    content: \`
-      <p>Christmas in Canada hits different. Maybe it's the actual snow (well, most of us anyway—sorry, 
-      Victoria), the cozy cabin vibes, or the fact that we've been listening to Christmas music since 
+    content: `
+      <p>Christmas in Canada hits different. Maybe it is the actual snow (well, most of us anyway—sorry, 
+      Victoria), the cozy cabin vibes, or the fact that we have been listening to Christmas music since 
       the first frost. Whatever it is, Canadian Christmas deserves a cake that matches.</p>
 
       <h2>Winter Wonderland (The Real Kind)</h2>
@@ -1357,61 +1357,61 @@ const blogPostsContent: Record<string, BlogPostData> = {
       <p>This is the aesthetic every other country tries to fake. We live it. Own it.</p>
 
       <h2>Maple Everything (Because Of Course)</h2>
-      <p>Listen, it's a stereotype for a reason. Maple is delicious. Maple-flavoured cake, maple 
+      <p>Listen, it is a stereotype for a reason. Maple is delicious. Maple-flavoured cake, maple 
       buttercream, decorated with maple leaf motifs in red and gold. Very Canadian, very Christmas, 
-      very "everyone's asking for seconds."</p>
-      <p>Add some candied maple pecans on top? Chef's kiss.</p>
+      very everyone is asking for seconds.</p>
+      <p>Add some candied maple pecans on top? Chef kiss.</p>
 
       <h2>Canadian Wildlife Christmas</h2>
-      <p>Moose with Santa hats. Cardinals in snowy branches. Polar bears (they're basically Canadian). 
+      <p>Moose with Santa hats. Cardinals in snowy branches. Polar bears (they are basically Canadian). 
       Cute, festive, and distinctly Canadian. Kids especially love animal-themed cakes, and adults 
       secretly do too.</p>
-      <p>Caribou work too. Very on-theme with the whole Santa's reindeer thing.</p>
+      <p>Caribou work too. Very on-theme with the whole Santa reindeer thing.</p>
 
       <h2>Cozy Cabin Aesthetic</h2>
-      <p>Log cabin designs, rustic wood textures, warm lighting effects. That "weekend at the cottage 
-      in winter" feeling. Pairs perfectly with hot chocolate and that fireplace you finally lit up 
+      <p>Log cabin designs, rustic wood textures, warm lighting effects. That weekend at the cottage 
+      in winter feeling. Pairs perfectly with hot chocolate and that fireplace you finally lit up 
       for the season.</p>
-      <p>Add some ski lodge vibes if your family's more Whistler than Muskoka.</p>
+      <p>Add some ski lodge vibes if your family is more Whistler than Muskoka.</p>
 
       <h2>French-Canadian Traditions</h2>
-      <p>Bûche de Noël (Yule log) is big in Quebec and Franco-Canadian communities. Chocolate, beautiful, 
-      and you can make it look like it's in a snowy forest setting. Réveillon celebration deserves a 
+      <p>Buche de Noel (Yule log) is big in Quebec and Franco-Canadian communities. Chocolate, beautiful, 
+      and you can make it look like it is in a snowy forest setting. Reveillon celebration deserves a 
       proper dessert.</p>
-      <p>Tourtière might be the star, but the cake is the crowd-pleaser.</p>
+      <p>Tourtiere might be the star, but the cake is the crowd-pleaser.</p>
 
       <h2>Red and White Festive</h2>
       <p>Canadian flag colours, but make it Christmas. Works beautifully because red and white are 
-      already so festive. Add some green accents and you've got holiday perfection. Simple, patriotic, 
+      already so festive. Add some green accents and you have got holiday perfection. Simple, patriotic, 
       celebratory.</p>
 
       <h2>Regional Canadian Touches</h2>
       <p><strong>BC:</strong> Mountain silhouettes, Pacific Northwest forest vibes, maybe some ocean 
       touches for the coastal crowd.</p>
-      <p><strong>Prairies:</strong> Northern lights designs (they're spectacular this time of year!), 
+      <p><strong>Prairies:</strong> Northern lights designs (they are spectacular this time of year!), 
       big sky winter scenes.</p>
       <p><strong>Ontario:</strong> Urban and cottage mix—Toronto skyline with snow, or Muskoka cabin 
       Christmas.</p>
       <p><strong>Quebec:</strong> Traditional French-Canadian motifs, fleur-de-lis accents, that 
       distinctive Quebec holiday charm.</p>
       <p><strong>Maritimes:</strong> Coastal Christmas, lighthouse decorations, maybe some lobster 
-      Santa (yes, it's a thing).</p>
+      Santa (yes, it is a thing).</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Merry Christmas" / "Joyeux Noël" (bilingual is nice)</li>
-        <li>"From Our Home to Yours"</li>
-        <li>"Peace, Love, Hockey" (okay that's more Canadian than Christmas)</li>
-        <li>"[Family Name] Christmas [Year]"</li>
-        <li>"Warm Wishes"</li>
+        <li>Merry Christmas / Joyeux Noel (bilingual is nice)</li>
+        <li>From Our Home to Yours</li>
+        <li>Peace, Love, Hockey (okay that is more Canadian than Christmas)</li>
+        <li>[Family Name] Christmas [Year]</li>
+        <li>Warm Wishes</li>
       </ul>
 
       <h2>Final Thought</h2>
       <p>Canadian Christmas cakes should feel like home—warm, welcoming, maybe a little maple-flavoured. 
-      Whatever design you choose, make sure there's enough for seconds. And probably thirds. We're 
+      Whatever design you choose, make sure there is enough for seconds. And probably thirds. We are 
       generous like that.</p>
-      <p>Merry Christmas, Canada! 🍁🎄</p>
-    \`,
+      <p>Merry Christmas, Canada!</p>
+    `,
     relatedPosts: [
       { id: "canadian-new-year-cake-ideas", title: "Canadian New Year's Eve Cake Ideas: Coast to Coast Celebrations", readTime: "6 min read" },
       { id: "canada-day-cake-ideas", title: "Canada Day Cake Ideas: Beyond Just Maple Leaves", readTime: "6 min read" }
@@ -1426,62 +1426,62 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "New Year Celebrations",
     metaDescription: "From Vancouver's first countdown to Newfoundland's last toast. New Year cake ideas for celebrating across Canada.",
     keywords: "Canadian New Year cake, New Year's Eve Canada, 2026 celebration cake Canada, NYE dessert ideas, Canadian party cake",
-    content: \`
-      <p>Fun fact: Canadians get to celebrate New Year's Eve SIX times because of our time zones. 
+    content: `
+      <p>Fun fact: Canadians get to celebrate New Years Eve SIX times because of our time zones. 
       Newfoundland counts down first (well, technically half an hour after the Maritimes, but they 
-      have their own time zone—it's a whole thing), and BC wraps it up hours later. Pick your midnight, 
+      have their own time zone—it is a whole thing), and BC wraps it up hours later. Pick your midnight, 
       eh?</p>
 
       <h2>Coast to Coast Celebration</h2>
       <p>Embrace the Canadian sprawl! A cake design that honours the whole country—Pacific to Atlantic 
-      (to Arctic, we shouldn't forget). Map silhouettes, national symbols, or just a gorgeous cake 
-      that says "this country is big and we're all celebrating together." From coast to coast to coast.</p>
+      (to Arctic, we should not forget). Map silhouettes, national symbols, or just a gorgeous cake 
+      that says this country is big and we are all celebrating together. From coast to coast to coast.</p>
 
       <h2>Winter Wonderland Countdown</h2>
-      <p>It's cold outside (probably—sorry, BC). Lean into it! Sparkly snow designs, midnight blue 
+      <p>It is cold outside (probably—sorry, BC). Lean into it! Sparkly snow designs, midnight blue 
       with silver stars, that crisp Canadian winter night aesthetic. Northern lights are incredible 
       this time of year too—aurora colours make stunning cake decorations.</p>
       <p>Edible silver glitter looks like fresh snow in candlelight. Very magical.</p>
 
       <h2>Black and Gold Elegance</h2>
-      <p>Classic countdown vibes. Black fondant, gold accents, "2026" in beautiful script. Works 
-      whether you're at a fancy Toronto gala or a house party in Saskatoon. Champagne bubbles optional 
+      <p>Classic countdown vibes. Black fondant, gold accents, 2026 in beautiful script. Works 
+      whether you are at a fancy Toronto gala or a house party in Saskatoon. Champagne bubbles optional 
       but encouraged.</p>
       <p>This look photographs beautifully too. Instagram ready.</p>
 
       <h2>Hockey Night Tribute</h2>
-      <p>Because what's more Canadian than hockey? And there's definitely a game on somewhere on NYE. 
-      Hockey puck designs, ice rink aesthetics, your team's colours (unless they're having a rough 
+      <p>Because what is more Canadian than hockey? And there is definitely a game on somewhere on NYE. 
+      Hockey puck designs, ice rink aesthetics, your team colours (unless they are having a rough 
       season, then maybe stick with generic red and white).</p>
       <p>The World Juniors are on too! Perfect excuse for hockey cake.</p>
 
       <h2>Fireworks Spectacular</h2>
       <p>Ottawa, Toronto, Vancouver—all have great fireworks displays. Capture that on your cake! 
       Explosion of colours, sparkles everywhere, that moment when the sky lights up at midnight. 
-      Even if you're watching from your couch, the cake brings the party vibes.</p>
+      Even if you are watching from your couch, the cake brings the party vibes.</p>
 
       <h2>Regional Celebrations</h2>
       <p><strong>Vancouver:</strong> Mountains + fireworks at Coal Harbour. Pacific Northwest style.</p>
       <p><strong>Calgary:</strong> Western celebration vibes, maybe some cowboy hat designs (because why not).</p>
       <p><strong>Toronto:</strong> CN Tower countdown, Nathan Phillips Square energy, big city sparkle.</p>
-      <p><strong>Montreal:</strong> "Bonne Année!" in gorgeous script. Joie de vivre in cake form.</p>
+      <p><strong>Montreal:</strong> Bonne Annee! in gorgeous script. Joie de vivre in cake form.</p>
       <p><strong>Halifax:</strong> Maritime midnight, maybe some ocean accents because East Coast is best coast (fight me).</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Happy New Year!" / "Bonne Année!"</li>
-        <li>"Here's to 2026!"</li>
-        <li>"Cheers to New Beginnings"</li>
-        <li>"[Family Name] New Year Bash"</li>
-        <li>Just "2026" in bold, beautiful numbers</li>
+        <li>Happy New Year! / Bonne Annee!</li>
+        <li>Here is to 2026!</li>
+        <li>Cheers to New Beginnings</li>
+        <li>[Family Name] New Year Bash</li>
+        <li>Just 2026 in bold, beautiful numbers</li>
       </ul>
 
       <h2>Final Thought</h2>
-      <p>Canadian New Year celebrations are warm despite the cold outside. Whether you're bundled 
-      up watching fireworks or cozy inside with family, make sure there's cake. And probably some 
+      <p>Canadian New Year celebrations are warm despite the cold outside. Whether you are bundled 
+      up watching fireworks or cozy inside with family, make sure there is cake. And probably some 
       poutine earlier. And definitely some maple syrup somewhere.</p>
-      <p>Happy New Year, Canada! Here's to 2026! 🍁🥂</p>
-    \`,
+      <p>Happy New Year, Canada! Here is to 2026!</p>
+    `,
     relatedPosts: [
       { id: "canadian-christmas-cake-ideas", title: "Canadian Christmas Cake Ideas: Snowy Wonderland Designs for the Holidays", readTime: "7 min read" },
       { id: "canada-day-cake-ideas", title: "Canada Day Cake Ideas: Beyond Just Maple Leaves", readTime: "6 min read" }
@@ -1496,14 +1496,14 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Christmas Celebrations",
     metaDescription: "Beach-ready Christmas cakes that handle the heat. Tropical twists on tradition for your Aussie summer celebrations.",
     keywords: "Australian Christmas cake, Aussie Christmas dessert, summer Christmas cake, tropical Christmas cake, beach Christmas Australia, heat-proof cake",
-    content: \`
-      <p>Christmas in Australia. It's 35 degrees (that's Celsius for our Northern Hemisphere mates—
-      basically bloody hot), you're wearing thongs and a Santa hat, and the traditional fruit cake 
+    content: `
+      <p>Christmas in Australia. It is 35 degrees (that is Celsius for our Northern Hemisphere mates—
+      basically bloody hot), you are wearing thongs and a Santa hat, and the traditional fruit cake 
       your nan made is melting faster than you can eat it. We need to talk about cakes that actually 
       work in Australian summer.</p>
 
       <h2>Heat-Proof Considerations First</h2>
-      <p>Look, let's be practical. Buttercream turns to soup in December. Traditional fondant gets 
+      <p>Look, let us be practical. Buttercream turns to soup in December. Traditional fondant gets 
       sweaty. Your outdoor Christmas lunch is not the place for an elaborate European-style cake that 
       expects it to be snowing outside. Plan accordingly.</p>
       <p>Keep it cold, keep it simple, and have a backup plan (ice cream cake, anyone?).</p>
@@ -1516,7 +1516,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
       <h2>Australian Native Florals</h2>
       <p>Waratahs, banksias, gum blossoms—Australian native flowers are gorgeous and festive without 
-      trying. Red and green colours work naturally, and they're distinctly ours. Much more interesting 
+      trying. Red and green colours work naturally, and they are distinctly ours. Much more interesting 
       than the same old holly and ivy you see everywhere.</p>
       <p>Plus, they make excellent fondant decorations that handle the heat better than European flowers.</p>
 
@@ -1524,12 +1524,12 @@ const blogPostsContent: Record<string, BlogPostData> = {
       <p>Koalas in Santa hats. Kangaroos pulling a sleigh. Wombats doing... whatever wombats do at 
       Christmas. These are adorable, unique, and make visitors from overseas absolutely lose their minds 
       with delight. Kids especially love animal cakes.</p>
-      <p>Platypus in a Christmas hat? Why not. It's Australia. Anything goes.</p>
+      <p>Platypus in a Christmas hat? Why not. It is Australia. Anything goes.</p>
 
       <h2>Tropical Fruit Decoration</h2>
-      <p>Fresh mango, passionfruit, pavlova-style decoration—use what's in season! A Christmas cake 
+      <p>Fresh mango, passionfruit, pavlova-style decoration—use what is in season! A Christmas cake 
       decorated with actual tropical fruit not only looks amazing but stays cool AND tastes incredible. 
-      Very "Australian summer Christmas" energy.</p>
+      Very Australian summer Christmas energy.</p>
       <p>Pavlova is basically our national Christmas dessert anyway. Same vibe applies to cake.</p>
 
       <h2>Coastal Cool Blue</h2>
@@ -1540,24 +1540,24 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
       <h2>Traditional But Tropical</h2>
       <p>Red and green colour scheme, but with tropical twists. Hibiscus instead of poinsettias. Frangipani 
-      instead of roses. Keep the Christmas spirit but make it Australian. We've been doing Christmas our 
+      instead of roses. Keep the Christmas spirit but make it Australian. We have been doing Christmas our 
       own way for 200+ years now.</p>
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Merry Christmas!" (never goes out of style)</li>
-        <li>"Merry Aussie Christmas!" (for the patriotic crowd)</li>
-        <li>"Season's Greetings from Down Under"</li>
-        <li>"[Family Name] Christmas [Year]"</li>
-        <li>"Warm Wishes" (literally, it's summer)</li>
+        <li>Merry Christmas! (never goes out of style)</li>
+        <li>Merry Aussie Christmas! (for the patriotic crowd)</li>
+        <li>Seasons Greetings from Down Under</li>
+        <li>[Family Name] Christmas [Year]</li>
+        <li>Warm Wishes (literally, it is summer)</li>
       </ul>
 
       <h2>Practical Tips</h2>
       <ul>
         <li>Keep your cake in the fridge until the last possible moment</li>
         <li>Choose ganache or fondant over buttercream—holds up better</li>
-        <li>Indoor celebrations > outdoor in direct sun</li>
-        <li>Have an "emergency serve" plan if things start melting</li>
+        <li>Indoor celebrations are better than outdoor in direct sun</li>
+        <li>Have an emergency serve plan if things start melting</li>
         <li>Ice cream cake is always a backup. Always.</li>
       </ul>
 
@@ -1565,8 +1565,8 @@ const blogPostsContent: Record<string, BlogPostData> = {
       <p>Australian Christmas cakes should embrace our summer reality, not fight it. Make something that 
       survives the heat, looks incredible, and celebrates this unique way we do Christmas. Santa might 
       wear thongs here, but the joy is the same.</p>
-      <p>Merry Christmas, Australia! Stay cool out there! 🎄🏖️</p>
-    \`,
+      <p>Merry Christmas, Australia! Stay cool out there!</p>
+    `,
     relatedPosts: [
       { id: "australian-new-year-cake-ideas", title: "Australian New Year's Eve Cake Ideas: Sydney Harbour Sparkle and Beyond", readTime: "6 min read" },
       { id: "australia-day-cake-ideas", title: "Australia Day Cake Ideas: Designs That Handle the Summer Heat", readTime: "6 min read" }
@@ -1581,39 +1581,39 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "New Year Celebrations",
     metaDescription: "First in the world to celebrate! Summer NYE cakes featuring fireworks, beach vibes, and that iconic Aussie celebration spirit.",
     keywords: "Australian New Year cake, Sydney NYE cake, New Year's Eve Australia, 2026 cake ideas, summer New Year celebration, Australian party cake",
-    content: \`
-      <p>G'day and happy almost New Year! One of the best things about being Australian? We're 
-      basically first to the party (sorry New Zealand, you're 2 hours ahead but we have the Sydney 
-      fireworks). When it's midnight here, most of the world is still in last year. Let's make a 
+    content: `
+      <p>G day and happy almost New Year! One of the best things about being Australian? We are 
+      basically first to the party (sorry New Zealand, you are 2 hours ahead but we have the Sydney 
+      fireworks). When it is midnight here, most of the world is still in last year. Let us make a 
       cake worthy of leading the global celebration.</p>
 
       <h2>Sydney Harbour Spectacular</h2>
       <p>The Sydney NYE fireworks are world-famous for a reason. Opera House and Harbour Bridge 
-      silhouettes, explosion of colours, that iconic midnight moment. Even if you're celebrating 
+      silhouettes, explosion of colours, that iconic midnight moment. Even if you are celebrating 
       in Perth or Darwin, the Sydney fireworks represent Aussie NYE for the whole world.</p>
       <p>Black fondant with silver and gold firework bursts. Classic and gorgeous.</p>
 
       <h2>Summer Beach Party</h2>
-      <p>It's January tomorrow (technically). It's hot. Embrace the summer celebration! Beach 
-      sunset designs, tropical colours, that "NYE at the coast" vibe. Blue and gold work beautifully 
+      <p>It is January tomorrow (technically). It is hot. Embrace the summer celebration! Beach 
+      sunset designs, tropical colours, that NYE at the coast vibe. Blue and gold work beautifully 
       together—ocean meets celebration.</p>
-      <p>Perfect for beach house parties or anyone celebrating where there's sand nearby.</p>
+      <p>Perfect for beach house parties or anyone celebrating where there is sand nearby.</p>
 
       <h2>Southern Cross Midnight</h2>
-      <p>The stars at midnight in the Southern Hemisphere. Our sky is different down here, and that's 
+      <p>The stars at midnight in the Southern Hemisphere. Our sky is different down here, and that is 
       something to celebrate. Southern Cross constellation designs, midnight blue backgrounds, star-
-      studded elegance. Very "watching fireworks on the beach" energy.</p>
+      studded elegance. Very watching fireworks on the beach energy.</p>
 
       <h2>Gold and Sparkle Everything</h2>
-      <p>New Year's Eve is the one night where "too much sparkle" doesn't exist. Gold fondant, 
+      <p>New Years Eve is the one night where too much sparkle does not exist. Gold fondant, 
       edible glitter, metallic accents everywhere. Make it shine like the fireworks over the harbour. 
       Champagne colours, celebration vibes, pure party mode.</p>
       <p>This look photographs incredibly well in NYE party lighting too.</p>
 
       <h2>Countdown Clock (Heat-Proof Version)</h2>
       <p>Classic clock design frozen at midnight, but make it summer-friendly. Choose colours and 
-      decorations that won't melt in the heat. Gold numbers on navy blue work great and stay stable 
-      even when it's 30 degrees at midnight (which it probably is).</p>
+      decorations that will not melt in the heat. Gold numbers on navy blue work great and stay stable 
+      even when it is 30 degrees at midnight (which it probably is).</p>
 
       <h2>Champagne and Bubbles</h2>
       <p>Champagne bottles, rising bubbles, glasses clinking at midnight. International theme that 
@@ -1629,12 +1629,12 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
       <h2>What to Write</h2>
       <ul>
-        <li>"Happy New Year!" (timeless)</li>
-        <li>"G'Day 2026!" (very Aussie)</li>
-        <li>"First to Celebrate!"</li>
-        <li>"Cheers to New Beginnings"</li>
-        <li>"[Family Name] NYE Bash"</li>
-        <li>Just "2026" in gorgeous sparkly numbers</li>
+        <li>Happy New Year! (timeless)</li>
+        <li>G Day 2026! (very Aussie)</li>
+        <li>First to Celebrate!</li>
+        <li>Cheers to New Beginnings</li>
+        <li>[Family Name] NYE Bash</li>
+        <li>Just 2026 in gorgeous sparkly numbers</li>
       </ul>
 
       <h2>Heat Survival Tips</h2>
@@ -1642,16 +1642,16 @@ const blogPostsContent: Record<string, BlogPostData> = {
         <li>Keep cake refrigerated until serving time—no exceptions</li>
         <li>Outdoor parties need shade for the dessert table</li>
         <li>Ganache holds up better than buttercream in heat</li>
-        <li>Have the cutting done quickly if it's a scorcher</li>
+        <li>Have the cutting done quickly if it is a scorcher</li>
         <li>Ice cream cake backup is never a bad idea</li>
       </ul>
 
       <h2>Final Thought</h2>
-      <p>We get to celebrate first. Let's make it count! An Australian NYE cake should sparkle like 
+      <p>We get to celebrate first. Let us make it count! An Australian NYE cake should sparkle like 
       the harbour fireworks, survive the summer heat, and give everyone a reason to cheer. Whether 
-      you're watching from Circular Quay or your backyard in the suburbs, make midnight sweet.</p>
-      <p>Happy New Year, Australia! Here's to 2026! 🎆🇦🇺</p>
-    \`,
+      you are watching from Circular Quay or your backyard in the suburbs, make midnight sweet.</p>
+      <p>Happy New Year, Australia! Here is to 2026!</p>
+    `,
     relatedPosts: [
       { id: "australian-christmas-cake-ideas", title: "Australian Christmas Cake Ideas: Summer Celebrations Down Under", readTime: "7 min read" },
       { id: "australia-day-cake-ideas", title: "Australia Day Cake Ideas: Designs That Handle the Summer Heat", readTime: "6 min read" }
