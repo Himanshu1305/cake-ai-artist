@@ -1667,7 +1667,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Indian Celebrations",
     metaDescription: "From diya-inspired designs to rangoli patterns and gold sparkle themes. Make your Diwali party shine with stunning AI-generated cake ideas.",
     keywords: "Diwali cake ideas, Festival of Lights cake, Indian celebration cake, diya cake design, rangoli cake pattern, Diwali party cake",
-    content: \`
+    content: `
       <p>Diwali is coming up and you are thinking about the cake situation. Good news—Diwali cakes 
       are absolutely gorgeous when done right. All those warm colours, golden sparkles, and traditional 
       motifs translate beautifully to cake designs.</p>
@@ -1737,7 +1737,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
       make it something that brings a smile when people see it. The best Diwali cake is one that 
       makes everyone at the party feel the festive spirit.</p>
       <p>Happy Diwali! May your celebrations be sweet!</p>
-    \`,
+    `,
     relatedPosts: [
       { id: "holi-cake-ideas", title: "Holi Cake Ideas: Colorful Cakes for the Festival of Colors", readTime: "6 min read" },
       { id: "indian-new-year-cake-ideas", title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style", readTime: "6 min read" }
@@ -1752,7 +1752,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Indian Celebrations",
     metaDescription: "Rainbow splashes, powder paint effects, and vibrant designs that capture the joy of Holi. Cake ideas for the Festival of Colors.",
     keywords: "Holi cake ideas, Festival of Colors cake, colorful Indian cake, rainbow cake design, Holi party cake, gulal cake",
-    content: \`
+    content: `
       <p>Holi is literally the Festival of Colors. If there was ever an occasion for a ridiculously 
       colourful cake, this is it. No subtlety required. Go wild.</p>
 
@@ -1819,7 +1819,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
       colourful, the better. This is the one time where restraint is definitely not the goal. 
       Go bold, go bright, and let the colours do the talking.</p>
       <p>Happy Holi! Get ready to play with colours!</p>
-    \`,
+    `,
     relatedPosts: [
       { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
       { id: "kids-birthday-cakes-guide", title: "Kids' Birthday Cakes: What Actually Works", readTime: "7 min read" }
@@ -1834,7 +1834,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Christmas Celebrations",
     metaDescription: "Blend traditional Christmas themes with Indian flair. From Kerala plum cake vibes to modern Indo-Western fusion cake designs.",
     keywords: "Indian Christmas cake, fusion Christmas cake, Kerala plum cake, Indo-Western cake design, Christmas celebration India",
-    content: \`
+    content: `
       <p>Christmas in India has its own beautiful flavour. Whether you are in Kerala where 
       Christmas is a proper festival, or celebrating in Mumbai, Delhi, or Bangalore, 
       Indian Christmas cakes blend global traditions with local charm.</p>
@@ -1890,7 +1890,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
       touch. Whether you go traditional rich fruit cake style or modern minimalist, make 
       it something that brings your family together in celebration.</p>
       <p>Merry Christmas from all of us!</p>
-    \`,
+    `,
     relatedPosts: [
       { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
       { id: "indian-new-year-cake-ideas", title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style", readTime: "6 min read" }
@@ -1905,7 +1905,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "New Year Celebrations",
     metaDescription: "From Bollywood glamour to fusion fireworks. New Year cake designs that celebrate with unmistakable Indian flair.",
     keywords: "Indian New Year cake, desi New Year celebration, Bollywood cake design, NYE party India, 2026 celebration cake",
-    content: \`
+    content: `
       <p>New Year is Eve is celebrated with full enthusiasm across India. Whether you are 
       at a farmhouse party in Delhi, a beach bash in Goa, or a house party in Mumbai, 
       your cake should match the celebration energy.</p>
@@ -1968,7 +1968,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
       full Bollywood or elegant minimalist, make it something that matches the excitement 
       of counting down to midnight with your favourite people.</p>
       <p>Happy New Year! Here is to an amazing 2026!</p>
-    \`,
+    `,
     relatedPosts: [
       { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
       { id: "indian-christmas-cake-ideas", title: "Indian Christmas Cake Ideas: Fusion Festive Designs", readTime: "6 min read" }
