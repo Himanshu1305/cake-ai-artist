@@ -821,7 +821,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
-      canvas.height = 1350;
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
@@ -829,21 +828,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         return;
       }
       
-      // Background gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#fff1f2');
-      gradient.addColorStop(1, '#fce7f3');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Load cake image
+      // Load cake image first to calculate dynamic height
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        // Draw cake image (centered, maintain aspect ratio)
+        // Calculate cake dimensions (larger, less padding)
         const imgAspect = img.width / img.height;
-        const maxWidth = 1000;
-        const maxHeight = 800;
+        const maxWidth = 1020;
+        const maxHeight = 950;
         let drawWidth = maxWidth;
         let drawHeight = maxWidth / imgAspect;
         
@@ -852,29 +844,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           drawWidth = maxHeight * imgAspect;
         }
         
-        const x = (canvas.width - drawWidth) / 2;
-        const y = 80;
-        
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
-        
-        // Draw message box
-        const messageY = y + drawHeight + 40;
-        const messageBoxHeight = 200;
-        
-        // Message background
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-        ctx.shadowBlur = 20;
-        ctx.fillRect(40, messageY, canvas.width - 80, messageBoxHeight);
-        ctx.shadowBlur = 0;
-        
-        // Message text
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 32px Arial, sans-serif';
-        ctx.textAlign = 'center';
+        const topPadding = 40;
+        const gapAfterCake = 20;
+        const messagePadding = 25;
+        const lineHeight = 38;
+        const footerHeight = 50;
         
         // Word wrap function
         const wrapText = (text: string, maxWidth: number) => {
+          ctx.font = 'bold 30px Arial, sans-serif';
           const words = text.split(' ');
           const lines: string[] = [];
           let currentLine = '';
@@ -895,18 +873,50 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           return lines;
         };
         
-        const lines = wrapText(message, canvas.width - 160);
-        const lineHeight = 40;
-        const textStartY = messageY + (messageBoxHeight - (lines.length * lineHeight)) / 2 + 30;
+        // Calculate message dimensions
+        const lines = wrapText(message, canvas.width - 120);
+        const messageBoxHeight = (lines.length * lineHeight) + (messagePadding * 2);
         
+        // Calculate total canvas height dynamically
+        const totalHeight = topPadding + drawHeight + gapAfterCake + messageBoxHeight + footerHeight;
+        canvas.height = Math.max(totalHeight, 1080); // Minimum height for social media
+        
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#fff1f2');
+        gradient.addColorStop(1, '#fce7f3');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw cake image (centered)
+        const x = (canvas.width - drawWidth) / 2;
+        const y = topPadding;
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        
+        // Draw message box (dynamic height)
+        const messageY = y + drawHeight + gapAfterCake;
+        
+        // Message background with rounded corners effect
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(30, messageY, canvas.width - 60, messageBoxHeight);
+        ctx.shadowBlur = 0;
+        
+        // Message text
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 30px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        
+        const textStartY = messageY + messagePadding + lineHeight - 8;
         lines.forEach((line, i) => {
           ctx.fillText(line, canvas.width / 2, textStartY + (i * lineHeight));
         });
         
-        // Footer
+        // Footer (positioned just below message box)
         ctx.font = '18px Arial';
         ctx.fillStyle = '#999';
-        ctx.fillText('Created with ❤️ for ' + recipientName, canvas.width / 2, canvas.height - 40);
+        ctx.fillText('Created with ❤️ for ' + recipientName, canvas.width / 2, messageY + messageBoxHeight + 35);
         
         // Convert to blob
         canvas.toBlob((blob) => {
