@@ -12,6 +12,7 @@ const countryRoutes: Record<string, string> = {
   UK: '/uk',
   CA: '/canada',
   AU: '/australia',
+  IN: '/india',
 };
 
 export const useGeoRedirect = () => {

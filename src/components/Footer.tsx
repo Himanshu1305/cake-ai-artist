@@ -9,6 +9,7 @@ const countries = [
   { code: 'UK', name: 'United Kingdom', flag: '🇬🇧', path: '/uk' },
   { code: 'CA', name: 'Canada', flag: '🇨🇦', path: '/canada' },
   { code: 'AU', name: 'Australia', flag: '🇦🇺', path: '/australia' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', path: '/india' },
 ];
 
 export const Footer = () => {
