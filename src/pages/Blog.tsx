@@ -97,6 +97,72 @@ const Blog = () => {
   };
 
   const blogPosts = [
+    // Holiday Blog Posts - Christmas & New Year
+    {
+      id: "american-christmas-cake-ideas",
+      title: "American Christmas Cake Ideas: From Cozy Family Gatherings to Big Holiday Parties",
+      excerpt: "Red and green classics, snowy wonderlands, and gingerbread dreams. Christmas cake designs that capture that American holiday magic.",
+      date: "December 7, 2025",
+      readTime: "7 min read",
+      category: "Christmas Celebrations"
+    },
+    {
+      id: "american-new-year-cake-ideas",
+      title: "New Year's Eve Cake Ideas: Ring in 2026 American Style",
+      excerpt: "Countdown clocks, champagne themes, and Times Square sparkle. Make your NYE celebration unforgettable with these cake ideas.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "New Year Celebrations"
+    },
+    {
+      id: "british-christmas-cake-ideas",
+      title: "British Christmas Cake Ideas: From Elegant Festive Cakes to Proper Pudding Alternatives",
+      excerpt: "Traditional British Christmas cake with a modern twist. Designs for Boxing Day gatherings, office parties, and proper festive celebrations.",
+      date: "December 7, 2025",
+      readTime: "7 min read",
+      category: "Christmas Celebrations"
+    },
+    {
+      id: "british-new-year-cake-ideas",
+      title: "British New Year's Cake Ideas: Celebrate Hogmanay to Big Ben Chimes",
+      excerpt: "From Scottish Hogmanay traditions to London's Thames fireworks vibes. New Year cake designs for celebrations across the UK.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "New Year Celebrations"
+    },
+    {
+      id: "canadian-christmas-cake-ideas",
+      title: "Canadian Christmas Cake Ideas: Snowy Wonderland Designs for the Holidays",
+      excerpt: "Maple-infused Christmas cakes, winter wonderland themes, and designs that embrace Canadian holiday traditions, eh?",
+      date: "December 7, 2025",
+      readTime: "7 min read",
+      category: "Christmas Celebrations"
+    },
+    {
+      id: "canadian-new-year-cake-ideas",
+      title: "Canadian New Year's Eve Cake Ideas: Coast to Coast Celebrations",
+      excerpt: "From Vancouver's first countdown to Newfoundland's last toast. New Year cake ideas for celebrating across Canada.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "New Year Celebrations"
+    },
+    {
+      id: "australian-christmas-cake-ideas",
+      title: "Australian Christmas Cake Ideas: Summer Celebrations Down Under",
+      excerpt: "Beach-ready Christmas cakes that handle the heat. Tropical twists on tradition for your Aussie summer celebrations.",
+      date: "December 7, 2025",
+      readTime: "7 min read",
+      category: "Christmas Celebrations"
+    },
+    {
+      id: "australian-new-year-cake-ideas",
+      title: "Australian New Year's Eve Cake Ideas: Sydney Harbour Sparkle and Beyond",
+      excerpt: "First in the world to celebrate! Summer NYE cakes featuring fireworks, beach vibes, and that iconic Aussie celebration spirit.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "New Year Celebrations"
+    },
+    // Country-Specific Celebrations
     {
       id: "fourth-of-july-cake-ideas",
       title: "4th of July Cake Ideas That'll Make Your BBQ the Talk of the Block",

@@ -76,6 +76,56 @@
     <changefreq>monthly</changefreq>
   </url>
 
+  <!-- Christmas & New Year Blog Posts -->
+  <url>
+    <loc>https://cakeaiartist.com/blog/american-christmas-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/american-new-year-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/british-christmas-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/british-new-year-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/canadian-christmas-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/canadian-new-year-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/australian-christmas-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://cakeaiartist.com/blog/australian-new-year-cake-ideas</loc>
+    <lastmod>2025-12-07</lastmod>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+
   <!-- Seasonal/Country-Specific Blog Posts -->
   <url>
     <loc>https://cakeaiartist.com/blog/fourth-of-july-cake-ideas</loc>
