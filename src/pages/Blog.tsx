@@ -195,6 +195,39 @@ const Blog = () => {
       readTime: "6 min read",
       category: "Seasonal Celebrations"
     },
+    // India-Specific Celebrations
+    {
+      id: "diwali-cake-ideas",
+      title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration",
+      excerpt: "From diya-inspired designs to rangoli patterns and gold sparkle themes. Make your Diwali party shine with stunning cake ideas.",
+      date: "December 7, 2025",
+      readTime: "7 min read",
+      category: "Indian Celebrations"
+    },
+    {
+      id: "holi-cake-ideas",
+      title: "Holi Cake Ideas: Colorful Cakes for the Festival of Colors",
+      excerpt: "Rainbow splashes, powder paint effects, and vibrant designs that capture the joy of Holi. Get ready to celebrate with colour!",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "Indian Celebrations"
+    },
+    {
+      id: "indian-christmas-cake-ideas",
+      title: "Indian Christmas Cake Ideas: Fusion Festive Designs",
+      excerpt: "Blend traditional Christmas themes with Indian flair. From Kerala plum cake vibes to modern Indo-Western fusion designs.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "Christmas Celebrations"
+    },
+    {
+      id: "indian-new-year-cake-ideas",
+      title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style",
+      excerpt: "From Bollywood glamour to fusion fireworks. New Year cake designs that celebrate with that unmistakable Indian flair.",
+      date: "December 7, 2025",
+      readTime: "6 min read",
+      category: "New Year Celebrations"
+    },
     {
       id: "creative-cake-ideas-birthday",
       title: "10 Creative Cake Ideas for Birthday Celebrations",

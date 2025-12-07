@@ -27,6 +27,7 @@ import AdminLogoGenerator from "./pages/AdminLogoGenerator";
 import UKLanding from "./pages/UKLanding";
 import CanadaLanding from "./pages/CanadaLanding";
 import AustraliaLanding from "./pages/AustraliaLanding";
+import IndiaLanding from "./pages/IndiaLanding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => {
               <Route path="/uk" element={<UKLanding />} />
               <Route path="/canada" element={<CanadaLanding />} />
               <Route path="/australia" element={<AustraliaLanding />} />
+              <Route path="/india" element={<IndiaLanding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

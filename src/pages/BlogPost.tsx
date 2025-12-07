@@ -1656,6 +1656,323 @@ const blogPostsContent: Record<string, BlogPostData> = {
       { id: "australian-christmas-cake-ideas", title: "Australian Christmas Cake Ideas: Summer Celebrations Down Under", readTime: "7 min read" },
       { id: "australia-day-cake-ideas", title: "Australia Day Cake Ideas: Designs That Handle the Summer Heat", readTime: "6 min read" }
     ]
+  },
+
+  // India-Specific Blog Posts
+  "diwali-cake-ideas": {
+    title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration",
+    date: "December 7, 2025",
+    dateISO: "2025-12-07",
+    readTime: "7 min read",
+    category: "Indian Celebrations",
+    metaDescription: "From diya-inspired designs to rangoli patterns and gold sparkle themes. Make your Diwali party shine with stunning AI-generated cake ideas.",
+    keywords: "Diwali cake ideas, Festival of Lights cake, Indian celebration cake, diya cake design, rangoli cake pattern, Diwali party cake",
+    content: \`
+      <p>Diwali is coming up and you are thinking about the cake situation. Good news—Diwali cakes 
+      are absolutely gorgeous when done right. All those warm colours, golden sparkles, and traditional 
+      motifs translate beautifully to cake designs.</p>
+
+      <h2>Diya Designs That Actually Glow</h2>
+      <p>The classic diya lamp is the obvious choice, but there is a reason it works. Golden diyas 
+      with warm orange and red flames, arranged in patterns across the cake. Some people go for 
+      a single large diya design, others do scattered small ones. Both look stunning.</p>
+      <p>Pro tip: gold and saffron colour combinations photograph incredibly well on cakes.</p>
+
+      <h2>Rangoli Pattern Cakes</h2>
+      <p>Rangoli patterns are basically made for cake decoration. Those intricate geometric designs 
+      with vibrant colours? They look spectacular on fondant. Traditional peacock motifs, mandala 
+      patterns, or flower-based rangoli—the level of detail you can achieve with AI-generated designs 
+      is pretty impressive.</p>
+      <p>These cakes become the centrepiece of your Diwali party table.</p>
+
+      <h2>Gold and Sparkle Everything</h2>
+      <p>Diwali is the Festival of Lights, so sparkle is not just allowed—it is expected. Gold 
+      fondant, edible glitter, metallic accents everywhere. This is the one occasion where "too 
+      much gold" is not really a thing. Go big with the shimmer.</p>
+      <p>Gold works with deep purple, royal blue, or traditional orange beautifully.</p>
+
+      <h2>Chhota Bheem Diwali Special</h2>
+      <p>For the kids, a Chhota Bheem Diwali-themed cake is an absolute winner. Bheem with sparklers, 
+      Bheem lighting diyas, Bheem in festive clothes—kids love seeing their favourite character 
+      celebrating the same festival they are.</p>
+      <p>Add some laddoos to the design for extra authenticity!</p>
+
+      <h2>Fireworks and Crackers</h2>
+      <p>Colourful fireworks bursting across the cake, sparklers, traditional crackers (the 
+      decorative kind, obviously). The night sky lit up with Diwali celebrations makes for a 
+      dramatic cake design that captures the energy of the festival.</p>
+
+      <h2>Lakshmi and Ganesh Themes</h2>
+      <p>For a more traditional approach, Lakshmi and Ganesh motifs work beautifully. Gold 
+      lotus flowers, elephant designs, auspicious symbols. These cakes feel appropriately 
+      festive and spiritual while still looking absolutely gorgeous.</p>
+
+      <h2>Modern Minimalist Diwali</h2>
+      <p>Not everyone wants maximum sparkle (shocking, I know). A minimalist approach with 
+      clean lines, a single elegant diya, and sophisticated gold accents can be equally striking. 
+      Modern fonts for "Happy Diwali" messages, understated elegance.</p>
+      <p>This style works really well for office Diwali parties or elegant home celebrations.</p>
+
+      <h2>What to Write</h2>
+      <ul>
+        <li>Happy Diwali! (simple, classic)</li>
+        <li>Shubh Deepavali</li>
+        <li>May Your Life Be Filled With Light</li>
+        <li>[Family Name] Diwali 2026</li>
+        <li>Celebrate the Light Within</li>
+      </ul>
+
+      <h2>Colour Combinations That Work</h2>
+      <ul>
+        <li>Gold + Deep Purple (royal, elegant)</li>
+        <li>Orange + Maroon + Gold (traditional)</li>
+        <li>Pink + Gold + White (modern, feminine)</li>
+        <li>Teal + Gold (contemporary twist)</li>
+        <li>Red + Yellow + Orange (classic festival colours)</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>Diwali is about celebrating light over darkness, and your cake should reflect that joy. 
+      Whether you go traditional with diyas and rangoli or modern with minimalist gold accents, 
+      make it something that brings a smile when people see it. The best Diwali cake is one that 
+      makes everyone at the party feel the festive spirit.</p>
+      <p>Happy Diwali! May your celebrations be sweet!</p>
+    \`,
+    relatedPosts: [
+      { id: "holi-cake-ideas", title: "Holi Cake Ideas: Colorful Cakes for the Festival of Colors", readTime: "6 min read" },
+      { id: "indian-new-year-cake-ideas", title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style", readTime: "6 min read" }
+    ]
+  },
+
+  "holi-cake-ideas": {
+    title: "Holi Cake Ideas: Colorful Cakes for the Festival of Colors",
+    date: "December 7, 2025",
+    dateISO: "2025-12-07",
+    readTime: "6 min read",
+    category: "Indian Celebrations",
+    metaDescription: "Rainbow splashes, powder paint effects, and vibrant designs that capture the joy of Holi. Cake ideas for the Festival of Colors.",
+    keywords: "Holi cake ideas, Festival of Colors cake, colorful Indian cake, rainbow cake design, Holi party cake, gulal cake",
+    content: \`
+      <p>Holi is literally the Festival of Colors. If there was ever an occasion for a ridiculously 
+      colourful cake, this is it. No subtlety required. Go wild.</p>
+
+      <h2>Rainbow Explosion</h2>
+      <p>Every colour. Everywhere. Layers of rainbow, rainbow drips, rainbow everything. This is 
+      the one time where "this might be too colourful" is not a valid concern. Kids especially 
+      go absolutely crazy for these designs.</p>
+      <p>Think of it like the cake version of getting pelted with colour powder.</p>
+
+      <h2>Gulal Powder Effect</h2>
+      <p>That beautiful splatter effect of colour powder (gulal) thrown during Holi? You can 
+      recreate it on cakes. Splashes of pink, yellow, blue, green—it looks like someone 
+      celebrated Holi right on your dessert. Which is exactly the vibe you want.</p>
+
+      <h2>Water Balloon Themes</h2>
+      <p>Pichkari (water guns) and water balloons are essential Holi equipment. Cake designs 
+      featuring colourful balloons, water splashes, and pichkari make for playful, fun cakes 
+      that capture the mischief of Holi.</p>
+
+      <h2>Hello Kitty Holi Special</h2>
+      <p>For the girls, a Hello Kitty Holi cake is absolutely adorable. Hello Kitty covered 
+      in colour powder, surrounded by rainbow splashes. The pink base colour works perfectly 
+      with Holi themes. Kids love seeing their favourite characters join in the celebration.</p>
+
+      <h2>Motu Patlu Colour Fun</h2>
+      <p>Motu and Patlu having a colour fight on a cake? Hilarious and perfect for kids' 
+      parties. The fun cartoon style matches the playful energy of Holi perfectly. Add 
+      lots of bright colours and maybe a bucket of paint for extra comedy.</p>
+
+      <h2>Abstract Colour Art</h2>
+      <p>Think Jackson Pollock but make it cake. Drips, splashes, and layers of vibrant 
+      colours in an abstract pattern. This looks incredibly artistic and very Instagram-worthy. 
+      Modern, sophisticated, but still captures that Holi colour chaos.</p>
+
+      <h2>Peacock and Krishna Themes</h2>
+      <p>Lord Krishna playing Holi is a beautiful traditional theme. Peacock feathers, flute 
+      motifs, and colourful Holi scenes. These cakes are more elegant and culturally 
+      meaningful while still being absolutely vibrant.</p>
+
+      <h2>Ombre and Gradient Effects</h2>
+      <p>If full rainbow feels like too much, ombre effects work beautifully. Pink fading 
+      to orange fading to yellow. Or purple to blue to turquoise. Controlled colour that 
+      still feels festive.</p>
+
+      <h2>What to Write</h2>
+      <ul>
+        <li>Happy Holi! (colourful fonts, obviously)</li>
+        <li>Let the Colours Fly</li>
+        <li>Rang Barse!</li>
+        <li>[Name]'s Holi Bash</li>
+        <li>Play More, Worry Less</li>
+      </ul>
+
+      <h2>Colours That Work Best</h2>
+      <ul>
+        <li>Hot pink, bright yellow, electric blue, lime green (classic Holi combo)</li>
+        <li>Purple, magenta, orange (slightly more sophisticated)</li>
+        <li>Rainbow everything (no rules, maximum joy)</li>
+        <li>White base with colour splashes (clean but colourful)</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>Holi cakes should make people smile the moment they see them. The messier and more 
+      colourful, the better. This is the one time where restraint is definitely not the goal. 
+      Go bold, go bright, and let the colours do the talking.</p>
+      <p>Happy Holi! Get ready to play with colours!</p>
+    \`,
+    relatedPosts: [
+      { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
+      { id: "kids-birthday-cakes-guide", title: "Kids' Birthday Cakes: What Actually Works", readTime: "7 min read" }
+    ]
+  },
+
+  "indian-christmas-cake-ideas": {
+    title: "Indian Christmas Cake Ideas: Fusion Festive Designs",
+    date: "December 7, 2025",
+    dateISO: "2025-12-07",
+    readTime: "6 min read",
+    category: "Christmas Celebrations",
+    metaDescription: "Blend traditional Christmas themes with Indian flair. From Kerala plum cake vibes to modern Indo-Western fusion cake designs.",
+    keywords: "Indian Christmas cake, fusion Christmas cake, Kerala plum cake, Indo-Western cake design, Christmas celebration India",
+    content: \`
+      <p>Christmas in India has its own beautiful flavour. Whether you are in Kerala where 
+      Christmas is a proper festival, or celebrating in Mumbai, Delhi, or Bangalore, 
+      Indian Christmas cakes blend global traditions with local charm.</p>
+
+      <h2>Kerala-Style Rich Fruit Cake</h2>
+      <p>The Kerala Christmas cake is legendary. Rich, dense, soaked in rum (or not, your 
+      choice), loaded with dried fruits. A cake design that celebrates this tradition with 
+      deep burgundy colours, fruit motifs, and elegant gold accents hits different.</p>
+      <p>This is old-school Christmas done right.</p>
+
+      <h2>Fusion Christmas Trees</h2>
+      <p>A Christmas tree decorated with Indian motifs. Maybe some paisley patterns in the 
+      ornaments, or traditional Indian colours mixed with the green and red. It is Christmas, 
+      but make it desi. This fusion approach creates something unique and beautiful.</p>
+
+      <h2>Santa with a Twist</h2>
+      <p>Santa in a kurta? Why not! Indian takes on the Santa theme are always fun. Santa 
+      with Indian sweets, Santa celebrating with a diya, the possibilities are endless. 
+      Kids love it, and it is uniquely ours.</p>
+
+      <h2>Barbie Christmas Princess</h2>
+      <p>For the little girls, a Barbie Christmas cake with Indian touches is perfect. 
+      Barbie in a festive lehenga, Barbie with Christmas decorations, or classic Barbie 
+      in red with Indian jewellery details. Glamorous and festive combined.</p>
+
+      <h2>Snow and Stars</h2>
+      <p>Classic snowy Christmas themes work beautifully. White fondant, silver sparkles, 
+      snowflakes, and stars. Even though most of India does not see snow, the dreamy white 
+      Christmas aesthetic is universally appealing.</p>
+
+      <h2>Midnight Mass Elegance</h2>
+      <p>For the Christian community, designs inspired by midnight mass—candles, church 
+      bells, stars of Bethlehem. Elegant, meaningful, and beautiful. Gold and white colour 
+      schemes work particularly well here.</p>
+
+      <h2>Modern Minimalist Christmas</h2>
+      <p>Simple, clean designs with a single Christmas element. A minimalist tree, an 
+      elegant star, or just "Merry Christmas" in beautiful typography. Sometimes less 
+      is more, especially for grown-up celebrations.</p>
+
+      <h2>What to Write</h2>
+      <ul>
+        <li>Merry Christmas!</li>
+        <li>Peace, Love, Joy</li>
+        <li>Happy Holidays from [Family Name]</li>
+        <li>Celebrate the Season</li>
+        <li>Joy to the World</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>Indian Christmas is a beautiful blend of global and local traditions. Your cake 
+      can reflect that same fusion—classic Christmas elements with a distinctly Indian 
+      touch. Whether you go traditional rich fruit cake style or modern minimalist, make 
+      it something that brings your family together in celebration.</p>
+      <p>Merry Christmas from all of us!</p>
+    \`,
+    relatedPosts: [
+      { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
+      { id: "indian-new-year-cake-ideas", title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style", readTime: "6 min read" }
+    ]
+  },
+
+  "indian-new-year-cake-ideas": {
+    title: "Indian New Year's Eve Cake Ideas: Ring in 2026 Desi Style",
+    date: "December 7, 2025",
+    dateISO: "2025-12-07",
+    readTime: "6 min read",
+    category: "New Year Celebrations",
+    metaDescription: "From Bollywood glamour to fusion fireworks. New Year cake designs that celebrate with unmistakable Indian flair.",
+    keywords: "Indian New Year cake, desi New Year celebration, Bollywood cake design, NYE party India, 2026 celebration cake",
+    content: \`
+      <p>New Year is Eve is celebrated with full enthusiasm across India. Whether you are 
+      at a farmhouse party in Delhi, a beach bash in Goa, or a house party in Mumbai, 
+      your cake should match the celebration energy.</p>
+
+      <h2>Bollywood Glamour</h2>
+      <p>Gold, sparkle, maximum drama. Bollywood-inspired New Year cakes are all about 
+      the glamour. Think filmy vibes—stars, spotlights, red carpet energy. Over the top 
+      is exactly the right amount.</p>
+      <p>Great for parties where everyone is dressed to impress.</p>
+
+      <h2>Fireworks Over the Skyline</h2>
+      <p>Mumbai skyline, Delhi monuments, or just generic city lights with fireworks 
+      bursting overhead. The countdown moment captured in cake form. Gold and black colour 
+      schemes work beautifully with this theme.</p>
+
+      <h2>Countdown Clock Classic</h2>
+      <p>The classic clock showing midnight. Elegant, timeless (pun intended), and works 
+      for any kind of party. Add some sparkle and you are set. This design never goes 
+      out of style.</p>
+
+      <h2>Champagne and Bubbles</h2>
+      <p>Champagne bottles, glasses clinking, bubbles rising. The international symbol 
+      of New Year celebration. Gold and silver colour palette, very sophisticated, very 
+      celebratory.</p>
+
+      <h2>Desi Pop Art</h2>
+      <p>Bright colours, fun fonts, Indian pop art influences. "Happy New Year" in funky 
+      typography with vibrant backgrounds. Modern, fun, Instagram-ready. Perfect for younger 
+      crowds and trendy parties.</p>
+
+      <h2>Hello Kitty New Year</h2>
+      <p>For family celebrations with kids, a Hello Kitty New Year cake with sparklers 
+      and party vibes is adorable. Pink and gold, party hats, countdown fun. Kids love 
+      being part of the celebration.</p>
+
+      <h2>Elegant Adult Parties</h2>
+      <p>Black and gold minimalism. "2026" in stunning typography. Maybe a single champagne 
+      glass or clock hand. Sophisticated, understated glamour for grown-up celebrations. 
+      This photographs beautifully too.</p>
+
+      <h2>Regional Celebrations</h2>
+      <p><strong>Mumbai:</strong> Marine Drive lights, Gateway vibes, city energy</p>
+      <p><strong>Delhi:</strong> India Gate celebrations, winter party glamour</p>
+      <p><strong>Bangalore:</strong> Modern tech-city celebrations, rooftop party vibes</p>
+      <p><strong>Goa:</strong> Beach parties, tropical New Year, casual glam</p>
+      <p><strong>Kolkata:</strong> Park Street celebrations, cultural elegance</p>
+
+      <h2>What to Write</h2>
+      <ul>
+        <li>Happy New Year!</li>
+        <li>Welcome 2026</li>
+        <li>[Family Name] NYE Bash</li>
+        <li>New Year, New Dreams</li>
+        <li>Cheers to New Beginnings</li>
+      </ul>
+
+      <h2>Final Thought</h2>
+      <p>New Year in India is celebrated with full filmy style—lots of energy, lots of 
+      glamour, lots of joy. Your cake should reflect that enthusiasm. Whether you go 
+      full Bollywood or elegant minimalist, make it something that matches the excitement 
+      of counting down to midnight with your favourite people.</p>
+      <p>Happy New Year! Here is to an amazing 2026!</p>
+    \`,
+    relatedPosts: [
+      { id: "diwali-cake-ideas", title: "Diwali Cake Ideas: Light Up Your Festival of Lights Celebration", readTime: "7 min read" },
+      { id: "indian-christmas-cake-ideas", title: "Indian Christmas Cake Ideas: Fusion Festive Designs", readTime: "6 min read" }
+    ]
   }
 };
 
