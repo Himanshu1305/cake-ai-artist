@@ -32,7 +32,7 @@ const CanadaLanding = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment } = useRazorpayPayment("CA");
+  const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("CA");
 
   // Track page visits
   usePageTracking('/canada', 'CA');
@@ -223,6 +223,27 @@ const CanadaLanding = () => {
               <Button size="lg" className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
                 {isLoading === 'tier_1_49' ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Processing...</> : 'Claim Your Lifetime Deal Now →'}
               </Button>
+              {currentOrderId && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full mt-3 border-party-purple text-party-purple hover:bg-party-purple/10"
+                  onClick={() => checkPaymentStatus()}
+                  disabled={isCheckingStatus}
+                >
+                  {isCheckingStatus ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Checking Status...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Check Payment Status
+                    </>
+                  )}
+                </Button>
+              )}
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                 <p>"After Dec 31, this becomes CAD$13.50/month forever"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
