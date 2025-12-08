@@ -196,22 +196,14 @@ export default function Settings() {
         return;
       }
 
-      const userId = session.user.id;
+      // Call edge function to delete user from auth.users (cascades to profiles)
+      const { error } = await supabase.functions.invoke("delete-user-account");
+      
+      if (error) {
+        throw error;
+      }
 
-      // Delete user data from all tables (in order to respect foreign keys)
-      await Promise.all([
-        supabase.from("party_packs").delete().eq("user_id", userId),
-        supabase.from("generated_images").delete().eq("user_id", userId),
-        supabase.from("generation_tracking").delete().eq("user_id", userId),
-        supabase.from("achievements").delete().eq("user_id", userId),
-        supabase.from("referrals").delete().eq("referrer_id", userId),
-        supabase.from("user_settings").delete().eq("user_id", userId),
-      ]);
-
-      // Delete profile
-      await supabase.from("profiles").delete().eq("id", userId);
-
-      // Sign out the user
+      // Sign out locally (session is already invalid after auth.users deletion)
       await supabase.auth.signOut();
 
       toast({
