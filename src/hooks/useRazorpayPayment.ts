@@ -11,7 +11,7 @@ declare global {
 
 const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
 
-export const useRazorpayPayment = () => {
+export const useRazorpayPayment = (country: string = "US") => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -70,10 +70,10 @@ export const useRazorpayPayment = () => {
     setIsLoading(tier);
 
     try {
-      // Create order via edge function
+      // Create order via edge function with country for localized pricing
       const { data: orderData, error: orderError } = await supabase.functions.invoke(
         "create-razorpay-order",
-        { body: { tier } }
+        { body: { tier, country } }
       );
 
       if (orderError || !orderData) {
