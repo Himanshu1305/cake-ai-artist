@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.add-contact-to-brevo]
 verify_jwt = true
+
+[functions.delete-user-account]
+verify_jwt = true
