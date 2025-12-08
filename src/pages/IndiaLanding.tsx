@@ -32,7 +32,7 @@ const IndiaLanding = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment } = useRazorpayPayment("IN");
+  const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("IN");
 
   // Track page visits
   usePageTracking('/india', 'IN');
@@ -289,6 +289,28 @@ const IndiaLanding = () => {
                 )}
                 <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </Button>
+              
+              {currentOrderId && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full mt-3 border-party-purple text-party-purple hover:bg-party-purple/10"
+                  onClick={() => checkPaymentStatus()}
+                  disabled={isCheckingStatus}
+                >
+                  {isCheckingStatus ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Checking Status...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Check Payment Status (QR/UPI)
+                    </>
+                  )}
+                </Button>
+              )}
               
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                 <p>"After Dec 31, this becomes ₹660/month forever"</p>
