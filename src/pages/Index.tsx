@@ -481,7 +481,7 @@ const Index = () => {
               transition={{ delay: 0.3 + idx * 0.1 }}
               className="text-center group"
             >
-              <div className="text-5xl mb-4 transition-transform duration-300 group-hover:scale-125 group-hover:animate-bounce">{feature.icon}</div>
+              <div className="text-5xl mb-4 icon-hover-glow">{feature.icon}</div>
               <h3 className="text-xl font-bold mb-2 text-foreground">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.desc}</p>
             </motion.div>
@@ -545,7 +545,7 @@ const Index = () => {
                 {isLoggedIn && (
                   <Button 
                     onClick={() => navigate("/gallery")}
-                    className="bg-gradient-to-r from-party-purple to-party-pink text-white"
+                    className="btn-shimmer bg-gradient-to-r from-party-purple to-party-pink text-white"
                   >
                     Try Party Pack Now
                   </Button>
@@ -886,7 +886,7 @@ const Index = () => {
           <div className="flex gap-4 justify-center flex-wrap">
             {!isLoggedIn ? (
               <>
-                <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-8">
+                <Button size="lg" onClick={() => navigate("/auth")} className="btn-shimmer text-lg px-8">
                   Get Started Free
                 </Button>
                 <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
@@ -897,7 +897,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
-                className="text-lg px-8"
+                className="btn-shimmer text-lg px-8"
               >
                 Create Your Next Masterpiece
               </Button>
@@ -906,7 +906,7 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
-                  className="text-lg px-8"
+                  className="btn-shimmer text-lg px-8"
                 >
                   Create a Cake Now
                 </Button>
