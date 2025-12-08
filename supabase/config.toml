@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.check-payment-status]
 verify_jwt = true
+
+[functions.add-contact-to-brevo]
+verify_jwt = true

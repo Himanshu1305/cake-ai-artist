@@ -68,23 +68,23 @@ const Auth = () => {
     });
   }, [navigate]);
 
-  const sendWelcomeEmail = async (userEmail: string, userFirstName: string) => {
+  const addContactToBrevo = async (userEmail: string, userFirstName: string, userLastName: string) => {
     try {
-      const { error } = await supabase.functions.invoke('send-welcome-email', {
+      const { error } = await supabase.functions.invoke('add-contact-to-brevo', {
         body: { 
           email: userEmail, 
           firstName: userFirstName,
-          isPremium: false 
+          lastName: userLastName
         }
       });
       
       if (error) {
-        console.error("Failed to send welcome email:", error);
+        console.error("Failed to add contact to Brevo:", error);
       } else {
-        console.log("Welcome email sent successfully");
+        console.log("Contact added to Brevo successfully");
       }
     } catch (err) {
-      console.error("Error sending welcome email:", err);
+      console.error("Error adding contact to Brevo:", err);
     }
   };
 
@@ -132,8 +132,8 @@ const Auth = () => {
 
         if (error) throw error;
         
-        // Send welcome email
-        await sendWelcomeEmail(email, firstName.trim());
+        // Add contact to Brevo for welcome email automation
+        await addContactToBrevo(email, firstName.trim(), lastName.trim());
         
         toast.success("Account created successfully! You can now log in.");
         setIsLogin(true);
