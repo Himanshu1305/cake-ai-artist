@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves } from "lucide-react";
+import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves, Loader2 } from "lucide-react";
+import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
@@ -31,6 +32,7 @@ const AustraliaLanding = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const { isLoading, handlePayment } = useRazorpayPayment();
 
   // Track page visits
   usePageTracking('/australia', 'AU');
@@ -218,8 +220,8 @@ const AustraliaLanding = () => {
                 <div><p className="text-sm text-muted-foreground">Your price:</p><p className="text-3xl font-bold text-gold">~AUD$75 ONCE</p></div>
                 <div><p className="text-sm text-muted-foreground">You save:</p><p className="text-lg font-bold text-party-pink">AUD$1,755+ over 10 years</p></div>
               </div>
-              <Button size="lg" className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => navigate('/pricing')}>
-                Claim Your Lifetime Deal Now →
+              <Button size="lg" className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
+                {isLoading === 'tier_1_49' ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Processing...</> : 'Claim Your Lifetime Deal Now →'}
               </Button>
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                 <p>"After Dec 31, this becomes AUD$15.30/month forever"</p>
@@ -453,7 +455,9 @@ const AustraliaLanding = () => {
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Party Pack Generator</li>
                   </ul>
-                  <Link to="/pricing"><Button className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow">Get Lifetime Access</Button></Link>
+                  <Button className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
+                    {isLoading === 'tier_1_49' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Get Lifetime Access'}
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
