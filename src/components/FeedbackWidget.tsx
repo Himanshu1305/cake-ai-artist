@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Star, X } from "lucide-react";
+import { MessageSquare, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,8 +8,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { safeGetItem, safeSetItem } from "@/utils/storage";
 
-export const FeedbackWidget = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface FeedbackWidgetProps {
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
+}
+
+export const FeedbackWidget = ({ externalOpen, onExternalOpenChange }: FeedbackWidgetProps = {}) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = onExternalOpenChange || setInternalOpen;
+  
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [category, setCategory] = useState("");
@@ -94,10 +104,10 @@ export const FeedbackWidget = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Hidden on mobile, visible on lg screens */}
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-4 py-6 bg-party-purple hover:bg-party-purple/90"
+        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-4 py-6 bg-party-purple hover:bg-party-purple/90 hidden lg:flex"
         size="lg"
       >
         <MessageSquare className="w-5 h-5 mr-2" />
