@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
-import { Star, Download, Menu } from "lucide-react";
+import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
@@ -49,6 +49,7 @@ const Index = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   // Track page visits
   usePageTracking('/', 'US');
@@ -237,7 +238,7 @@ const Index = () => {
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
       <LivePurchaseNotifications />
-      <FeedbackWidget />
+      <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />
       
       {/* Navigation Header */}
       <nav className={`sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
@@ -314,6 +315,17 @@ const Index = () => {
                   {isAdmin && (
                     <Button onClick={() => navigate("/admin")} variant="ghost" className="w-full justify-start text-party-gold hover:text-party-gold/80 hover:bg-party-gold/10">Admin Dashboard</Button>
                   )}
+                  
+                  <div className="border-t border-party-pink/20 my-2" />
+                  
+                  <Button 
+                    onClick={() => setFeedbackOpen(true)} 
+                    variant="ghost" 
+                    className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Feedback
+                  </Button>
                   
                   <div className="border-t border-party-pink/20 my-2" />
                   
