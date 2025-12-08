@@ -35,6 +35,7 @@ import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 
 // Lazy load TrustBadges to prevent render blocking
 // Lazy load TrustBadges - disabled for now to fix blank screen
@@ -840,7 +841,7 @@ const Index = () => {
         >
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <p className="text-4xl font-bold text-party-purple mb-2">10,247+</p>
+              <p className="text-4xl font-bold text-party-purple mb-2">{useDynamicCakeCount().toLocaleString()}+</p>
               <p className="text-muted-foreground">Cakes Created This Month</p>
             </div>
             <div>

@@ -24,6 +24,7 @@ import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 
 const CanadaLanding = () => {
   const navigate = useNavigate();
@@ -263,6 +264,31 @@ const CanadaLanding = () => {
           ))}
         </div>
       </div>
+
+      {/* Social Proof Stats */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="container mx-auto px-4 mb-12"
+      >
+        <div className="bg-gradient-to-r from-party-purple/10 to-party-pink/10 rounded-lg p-8">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <p className="text-4xl font-bold text-party-purple mb-2">{useDynamicCakeCount().toLocaleString()}+</p>
+              <p className="text-muted-foreground">Cakes Created This Month</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-party-pink mb-2">4.9★</p>
+              <p className="text-muted-foreground">Average Rating</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-gold mb-2">20 sec</p>
+              <p className="text-muted-foreground">Average Creation Time</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Celebrations Section */}
       <section className="py-16 bg-muted/30">
