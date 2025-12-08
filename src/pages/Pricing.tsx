@@ -1,14 +1,17 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ArrowLeft, Crown, Star, AlertCircle } from "lucide-react";
+import { Check, ArrowLeft, Crown, Star, AlertCircle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { ProductSchema } from "@/components/SEOSchema";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
@@ -16,8 +19,160 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
+
 const Pricing = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Check auth state
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handlePayment = async (tier: "tier_1_49" | "tier_2_99") => {
+    // Check if user is logged in
+    if (!user) {
+      toast.error("Please sign in to continue", {
+        description: "You need to be logged in to purchase a lifetime deal.",
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/auth"),
+        },
+      });
+      return;
+    }
+
+    if (!razorpayLoaded) {
+      toast.error("Payment system is loading, please try again in a moment.");
+      return;
+    }
+
+    setIsLoading(tier);
+
+    try {
+      // Create order via edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke(
+        "create-razorpay-order",
+        { body: { tier } }
+      );
+
+      if (orderError || !orderData) {
+        console.error("Order error:", orderError);
+        throw new Error(orderData?.error || "Failed to create order");
+      }
+
+      // Configure Razorpay checkout options
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Cake AI Artist",
+        description: tier === "tier_1_49" 
+          ? "New Year Special - Lifetime Access (Tier 1)" 
+          : "Launch Supporter - Lifetime Access (Tier 2)",
+        order_id: orderData.order_id,
+        prefill: {
+          email: orderData.user_email,
+          name: orderData.user_name,
+        },
+        theme: {
+          color: "#e84393",
+        },
+        handler: async function (response: any) {
+          // Verify payment on backend
+          try {
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+              "verify-razorpay-payment",
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  tier: tier,
+                },
+              }
+            );
+
+            if (verifyError || !verifyData?.success) {
+              console.error("Verification error:", verifyError);
+              throw new Error(verifyData?.error || "Payment verification failed");
+            }
+
+            // Success!
+            toast.success("🎉 Welcome to the Lifetime Club!", {
+              description: `You're member #${verifyData.member_number}! Check your email for details.`,
+              duration: 10000,
+            });
+
+            // Redirect to home after success
+            setTimeout(() => {
+              navigate("/");
+            }, 2000);
+
+          } catch (verifyErr: any) {
+            console.error("Verification error:", verifyErr);
+            toast.error("Payment verification failed", {
+              description: "Please contact support@cakeaiartist.com with your payment details.",
+            });
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsLoading(null);
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      // Open Razorpay checkout
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", function (response: any) {
+        console.error("Payment failed:", response.error);
+        toast.error("Payment failed", {
+          description: response.error.description || "Please try again or use a different payment method.",
+        });
+        setIsLoading(null);
+      });
+      razorpay.open();
+
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error("Payment failed", {
+        description: error.message || "Please try again.",
+      });
+      setIsLoading(null);
+    }
+  };
 
   const foundingFeatures = [
     "Everything in Premium",
@@ -176,11 +331,21 @@ const Pricing = () => {
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
                   <Button
-                    className="w-full bg-gradient-gold hover:shadow-gold text-white font-bold py-6 disabled:opacity-50"
-                    disabled
+                    className="w-full btn-shimmer bg-gradient-gold hover:shadow-gold text-white font-bold py-6"
+                    onClick={() => handlePayment("tier_1_49")}
+                    disabled={isLoading !== null}
                   >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Claim Lifetime Deal (Stripe TBD)
+                    {isLoading === "tier_1_49" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="w-4 h-4 mr-2" />
+                        Claim Lifetime Deal
+                      </>
+                    )}
                   </Button>
                   <p className="text-xs text-muted-foreground">One-time payment • Never expires</p>
                 </CardFooter>
@@ -229,11 +394,21 @@ const Pricing = () => {
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
                   <Button
-                    className="w-full bg-gradient-to-r from-slate-400 to-slate-500 hover:shadow-elegant text-white font-bold py-6 disabled:opacity-50"
-                    disabled
+                    className="w-full btn-shimmer bg-gradient-to-r from-slate-400 to-slate-500 hover:shadow-elegant text-white font-bold py-6"
+                    onClick={() => handlePayment("tier_2_99")}
+                    disabled={isLoading !== null}
                   >
-                    <Star className="w-4 h-4 mr-2" />
-                    Secure Lifetime (Stripe TBD)
+                    {isLoading === "tier_2_99" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-4 h-4 mr-2" />
+                        Secure Lifetime Access
+                      </>
+                    )}
                   </Button>
                   <p className="text-xs text-muted-foreground">One-time payment • Never expires</p>
                 </CardFooter>
@@ -301,7 +476,7 @@ const Pricing = () => {
           >
             {[
               "✓ 7-day money-back guarantee",
-              "✓ Secure payment via Stripe",
+              "✓ Secure payment via Razorpay",
               "✓ This offer will NEVER be repeated",
               "✓ Cancel anytime, no hidden fees"
             ].map((text, i) => (
@@ -348,7 +523,7 @@ const Pricing = () => {
           </div>
           <Button
             size="lg"
-            className="bg-gradient-party hover:shadow-party text-lg px-8 py-6 font-bold"
+            className="btn-shimmer bg-gradient-party hover:shadow-party text-lg px-8 py-6 font-bold"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Claim Your Lifetime Deal →
