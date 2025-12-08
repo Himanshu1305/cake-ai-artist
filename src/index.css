@@ -380,4 +380,42 @@ All colors MUST be HSL.
     touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Button shimmer effect - CSS only, no JS */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.3),
+      transparent
+    );
+    animation: btn-shimmer-slide 2.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes btn-shimmer-slide {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+  }
+
+  /* Icon hover glow effect */
+  .icon-hover-glow {
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .group:hover .icon-hover-glow {
+    filter: drop-shadow(0 0 12px hsl(var(--party-pink) / 0.6));
+    transform: scale(1.1);
+  }
 }
