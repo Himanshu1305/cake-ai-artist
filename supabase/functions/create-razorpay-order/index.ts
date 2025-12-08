@@ -12,7 +12,32 @@ const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
 
 const requestSchema = z.object({
   tier: z.enum(["tier_1_49", "tier_2_99"]),
+  country: z.string().optional().default("US"),
 });
+
+// Pricing by country (amount in smallest currency unit)
+const PRICING: Record<string, { tier_1: { amount: number; currency: string }; tier_2: { amount: number; currency: string } }> = {
+  IN: { 
+    tier_1: { amount: 410000, currency: "INR" },  // ₹4,100 (in paise)
+    tier_2: { amount: 820000, currency: "INR" },  // ₹8,200
+  },
+  GB: { 
+    tier_1: { amount: 3900, currency: "GBP" },    // £39 (in pence)
+    tier_2: { amount: 7800, currency: "GBP" },    // £78
+  },
+  CA: { 
+    tier_1: { amount: 6700, currency: "CAD" },    // CAD$67 (in cents)
+    tier_2: { amount: 13400, currency: "CAD" },   // CAD$134
+  },
+  AU: { 
+    tier_1: { amount: 7500, currency: "AUD" },    // AUD$75 (in cents)
+    tier_2: { amount: 15000, currency: "AUD" },   // AUD$150
+  },
+  US: { 
+    tier_1: { amount: 4900, currency: "USD" },    // $49 (in cents)
+    tier_2: { amount: 9900, currency: "USD" },    // $99
+  },
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
@@ -59,7 +84,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { tier } = parseResult.data;
+    const { tier, country } = parseResult.data;
+    const countryCode = country.toUpperCase();
+    const pricing = PRICING[countryCode] || PRICING.US;
+    const tierPricing = tier === "tier_1_49" ? pricing.tier_1 : pricing.tier_2;
 
     // Check if user is already a founding member
     const { data: existingMember } = await supabase
@@ -105,9 +133,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Determine amount (in paise - Razorpay uses smallest currency unit)
-    const amount = tier === "tier_1_49" ? 4900 : 9900; // $49 or $99 in cents
-    const currency = "USD";
+    // Use country-specific pricing
+    const amount = tierPricing.amount;
+    const currency = tierPricing.currency;
+    console.log(`Creating order for country: ${countryCode}, amount: ${amount}, currency: ${currency}`);
 
     // Create Razorpay order
     const razorpayAuth = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);

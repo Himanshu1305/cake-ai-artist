@@ -32,7 +32,7 @@ const UKLanding = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment } = useRazorpayPayment();
+  const { isLoading, handlePayment } = useRazorpayPayment("GB");
 
   // Track page visits
   usePageTracking('/uk', 'UK');
