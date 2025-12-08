@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download } from "lucide-react";
+import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download, Loader2 } from "lucide-react";
+import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
@@ -31,6 +32,7 @@ const IndiaLanding = () => {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const { isLoading, handlePayment } = useRazorpayPayment();
 
   // Track page visits
   usePageTracking('/india', 'IN');
@@ -274,9 +276,17 @@ const IndiaLanding = () => {
               <Button
                 size="lg"
                 className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow animate-rainbow-shimmer relative overflow-hidden group"
-                onClick={() => navigate('/pricing')}
+                onClick={() => handlePayment('tier_1_49')}
+                disabled={isLoading !== null}
               >
-                <span className="relative z-10">Claim Your Lifetime Deal Now →</span>
+                {isLoading === 'tier_1_49' ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <span className="relative z-10">Claim Your Lifetime Deal Now →</span>
+                )}
                 <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </Button>
               
@@ -667,11 +677,13 @@ const IndiaLanding = () => {
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All characters</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Party Pack Generator</li>
                   </ul>
-                  <Link to="/pricing">
-                    <Button className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow">
-                      Get Lifetime Access
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow"
+                    onClick={() => handlePayment('tier_1_49')}
+                    disabled={isLoading !== null}
+                  >
+                    {isLoading === 'tier_1_49' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Get Lifetime Access'}
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
