@@ -205,7 +205,7 @@ const AustraliaLanding = () => {
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              🇦🇺 Get LIFETIME ACCESS for just $49 <span className="text-lg md:text-2xl">(~AUD$75)</span>
+              🇦🇺 Get LIFETIME ACCESS for just A$75
             </motion.h1>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="space-y-2">
@@ -448,13 +448,12 @@ const AustraliaLanding = () => {
       <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">Special New Year Lifetime Deal</h2>
-          <p className="text-center text-muted-foreground mb-12">Prices shown in USD with approximate AUD conversion</p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <Card className="text-center h-full">
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-bold text-foreground mb-2">Free</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-4">AUD$0</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">A$0</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />5 cakes per day</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Basic characters</li>
@@ -469,8 +468,7 @@ const AustraliaLanding = () => {
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-party-pink text-white">Most Popular</Badge>
                 <CardContent className="pt-8">
                   <h3 className="text-xl font-bold text-foreground mb-2">Lifetime Deal</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-1">US$49</p>
-                  <p className="text-sm text-muted-foreground mb-4">(~AUD$75)</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">A$75</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Unlimited cakes forever</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
@@ -486,14 +484,20 @@ const AustraliaLanding = () => {
               <Card className="text-center h-full">
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-1">US$9.99/mo</p>
-                  <p className="text-sm text-muted-foreground mb-4">(~AUD$15.30/mo)</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">A$15.30/mo</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />150 cakes per year</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Cancel anytime</li>
                   </ul>
-                  <Link to="/pricing"><Button variant="outline" className="w-full">Subscribe</Button></Link>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handlePayment('monthly_aud')}
+                    disabled={isLoading !== null}
+                  >
+                    {isLoading === 'monthly_aud' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
