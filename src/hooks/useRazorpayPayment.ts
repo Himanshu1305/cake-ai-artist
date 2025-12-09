@@ -3,6 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+export type PaymentTier = 
+  | "tier_1_49" 
+  | "tier_2_99" 
+  | "monthly_inr" 
+  | "monthly_gbp" 
+  | "monthly_cad" 
+  | "monthly_aud" 
+  | "monthly_usd";
+
 declare global {
   interface Window {
     Razorpay: any;
@@ -122,7 +131,7 @@ export const useRazorpayPayment = (country: string = "US") => {
     }, 300000);
   }, [checkPaymentStatus]);
 
-  const handlePayment = async (tier: "tier_1_49" | "tier_2_99" | "monthly_inr" | "monthly_gbp" | "monthly_cad" | "monthly_aud" | "monthly_usd") => {
+  const handlePayment = async (tier: PaymentTier) => {
     // Check if user is logged in
     if (!user) {
       toast.error("Please sign in to continue", {
