@@ -26,6 +26,7 @@ export const useRazorpayPayment = (country: string = "US") => {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [currentSubscriptionId, setCurrentSubscriptionId] = useState<string | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -131,33 +132,98 @@ export const useRazorpayPayment = (country: string = "US") => {
     }, 300000);
   }, [checkPaymentStatus]);
 
-  const handlePayment = async (tier: PaymentTier) => {
-    // Check if user is logged in
-    if (!user) {
-      toast.error("Please sign in to continue", {
-        description: "You need to be logged in to subscribe.",
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
+  // Handle subscription flow
+  const handleSubscription = async (tier: PaymentTier) => {
+    setIsLoading(tier);
+
+    try {
+      // Create subscription via edge function
+      const { data: subData, error: subError } = await supabase.functions.invoke(
+        "create-razorpay-subscription",
+        { body: { tier, country } }
+      );
+
+      if (subError) {
+        console.error("Subscription error:", subError);
+        throw new Error("Failed to create subscription");
+      }
+
+      // Check if plans are not yet configured (placeholder IDs)
+      if (subData?.error?.includes("not yet configured") || subData?.message?.includes("coming soon")) {
+        toast.info("Monthly subscription coming very soon!", {
+          description: subData.message || "For now, grab our Lifetime Deal at 96% off - never pay again!",
+          duration: 5000,
+        });
+        setIsLoading(null);
+        return;
+      }
+
+      if (!subData?.subscription_id) {
+        throw new Error(subData?.error || "Failed to create subscription");
+      }
+
+      setCurrentSubscriptionId(subData.subscription_id);
+
+      // Configure Razorpay checkout for subscription
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        subscription_id: subData.subscription_id, // Use subscription_id instead of order_id
+        name: "Cake AI Artist",
+        description: `Monthly Premium - ${subData.display_amount}`,
+        prefill: {
+          email: user.email,
         },
+        theme: {
+          color: "#e84393",
+        },
+        handler: async function (response: any) {
+          // Subscription payment successful
+          // Webhook will handle the subscription.activated event
+          setCurrentSubscriptionId(null);
+          toast.success("🎉 Subscription activated!", {
+            description: "Welcome to Cake AI Artist Premium! Your subscription is now active.",
+            duration: 10000,
+          });
+
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
+          setIsLoading(null);
+        },
+        modal: {
+          ondismiss: function () {
+            setIsLoading(null);
+            setCurrentSubscriptionId(null);
+            toast.info("Payment window closed.");
+          },
+          confirm_close: true,
+          escape: false,
+        },
+      };
+
+      // Open Razorpay checkout
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", function (response: any) {
+        console.error("Subscription payment failed:", response.error);
+        setCurrentSubscriptionId(null);
+        toast.error("Payment failed", {
+          description: response.error.description || "Please try again or use a different payment method.",
+        });
+        setIsLoading(null);
       });
-      return;
-    }
+      razorpay.open();
 
-    // Monthly subscriptions - backend not ready yet
-    if (tier.startsWith("monthly_")) {
-      toast.info("Monthly subscription coming very soon!", {
-        description: "For now, grab our Lifetime Deal at 96% off - never pay again!",
-        duration: 5000,
+    } catch (error: any) {
+      console.error("Subscription error:", error);
+      toast.error("Subscription failed", {
+        description: error.message || "Please try again.",
       });
-      return;
+      setIsLoading(null);
     }
+  };
 
-    if (!razorpayLoaded) {
-      toast.error("Payment system is loading, please try again in a moment.");
-      return;
-    }
-
+  // Handle one-time payment flow
+  const handleOneTimePayment = async (tier: PaymentTier) => {
     setIsLoading(tier);
 
     try {
@@ -186,9 +252,7 @@ export const useRazorpayPayment = (country: string = "US") => {
         name: "Cake AI Artist",
         description: tier === "tier_1_49" 
           ? "New Year Special - Lifetime Access (Tier 1)" 
-          : tier === "tier_2_99"
-          ? "Launch Supporter - Lifetime Access (Tier 2)"
-          : "Monthly Subscription",
+          : "Launch Supporter - Lifetime Access (Tier 2)",
         order_id: orderData.order_id,
         prefill: {
           email: orderData.user_email,
@@ -290,12 +354,39 @@ export const useRazorpayPayment = (country: string = "US") => {
     }
   };
 
+  const handlePayment = async (tier: PaymentTier) => {
+    // Check if user is logged in
+    if (!user) {
+      toast.error("Please sign in to continue", {
+        description: "You need to be logged in to subscribe.",
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/auth"),
+        },
+      });
+      return;
+    }
+
+    if (!razorpayLoaded) {
+      toast.error("Payment system is loading, please try again in a moment.");
+      return;
+    }
+
+    // Route to appropriate payment flow
+    if (tier.startsWith("monthly_")) {
+      await handleSubscription(tier);
+    } else {
+      await handleOneTimePayment(tier);
+    }
+  };
+
   return {
     user,
     isLoading,
     razorpayLoaded,
     handlePayment,
     currentOrderId,
+    currentSubscriptionId,
     checkPaymentStatus,
     isCheckingStatus,
   };
