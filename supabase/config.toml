@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.delete-user-account]
 verify_jwt = true
+
+[functions.send-premium-emails]
+verify_jwt = false

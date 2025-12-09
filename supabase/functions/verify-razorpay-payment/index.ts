@@ -14,6 +14,8 @@ const requestSchema = z.object({
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
   tier: z.enum(["tier_1_49", "tier_2_99"]),
+  amount: z.number(),
+  currency: z.string(),
 });
 
 // HMAC SHA256 signature verification
@@ -84,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier } = parseResult.data;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier, amount, currency } = parseResult.data;
 
     // Verify payment signature
     const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
@@ -124,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
       .select("*", { count: "exact", head: true });
 
     const memberNumber = (count || 0) + 1;
-    const pricePaid = tier === "tier_1_49" ? 49 : 99;
+    const pricePaid = amount / 100; // Convert from smallest unit to display value
     const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
 
     // Insert founding member record
@@ -171,13 +173,21 @@ const handler = async (req: Request): Promise<Response> => {
       p_message: `🎉 Member #${memberNumber} just joined with a Lifetime Deal!`,
     });
 
-    // Send welcome email
+    // Send premium emails (welcome + payment confirmation) via Brevo Transactional API
     try {
-      await supabase.functions.invoke("send-welcome-email", {
-        body: { isPremium: true },
+      await supabaseServiceRole.functions.invoke("send-premium-emails", {
+        body: {
+          userId: user.id,
+          memberNumber,
+          tier,
+          amount,
+          currency,
+          razorpay_payment_id,
+          razorpay_order_id,
+        },
       });
     } catch (emailError) {
-      console.error("Failed to send welcome email:", emailError);
+      console.error("Failed to send premium emails:", emailError);
       // Don't fail the request
     }
 

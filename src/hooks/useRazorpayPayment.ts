@@ -198,6 +198,8 @@ export const useRazorpayPayment = (country: string = "US") => {
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                   tier: tier,
+                  amount: orderData.amount,
+                  currency: orderData.currency,
                 },
               }
             );
