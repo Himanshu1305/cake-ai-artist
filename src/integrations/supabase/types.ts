@@ -365,6 +365,8 @@ export type Database = {
           lifetime_access: boolean | null
           premium_until: string | null
           purchased_date: string | null
+          subscription_id: string | null
+          subscription_status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -382,6 +384,8 @@ export type Database = {
           lifetime_access?: boolean | null
           premium_until?: string | null
           purchased_date?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -399,6 +403,8 @@ export type Database = {
           lifetime_access?: boolean | null
           premium_until?: string | null
           purchased_date?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -495,6 +501,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          razorpay_plan_id: string
+          razorpay_subscription_id: string
+          status: string
+          tier: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          razorpay_plan_id: string
+          razorpay_subscription_id: string
+          status?: string
+          tier: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          razorpay_plan_id?: string
+          razorpay_subscription_id?: string
+          status?: string
+          tier?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

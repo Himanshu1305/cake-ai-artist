@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.send-premium-emails]
 verify_jwt = false
+
+[functions.create-razorpay-subscription]
+verify_jwt = true
