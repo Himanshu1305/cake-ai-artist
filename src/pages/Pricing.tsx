@@ -59,7 +59,15 @@ const Pricing = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handlePayment = async (tier: "tier_1_49" | "tier_2_99") => {
+  const handlePayment = async (tier: "tier_1_49" | "tier_2_99" | "monthly_usd") => {
+    // Monthly subscriptions - backend not ready yet
+    if (tier === "monthly_usd") {
+      toast.info("Monthly subscription coming very soon!", {
+        description: "For now, grab our Lifetime Deal at 96% off - never pay again!",
+        duration: 5000,
+      });
+      return;
+    }
     // Check if user is logged in
     if (!user) {
       toast.error("Please sign in to continue", {
@@ -415,52 +423,64 @@ const Pricing = () => {
               </Card>
             </motion.div>
 
-            {/* Regular Pricing - Greyed Out */}
+            {/* Monthly Subscription */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="border-2 border-border relative hover:shadow-none transition-all duration-300 h-full opacity-60">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge variant="secondary" className="px-6 py-2 text-sm font-bold">
-                    AVAILABLE JAN 1
-                  </Badge>
-                </div>
+              <Card className="border-2 border-border relative hover:shadow-elegant transition-all duration-300 h-full">
                 <CardHeader className="pt-8">
-                  <CardTitle className="text-2xl">Regular Pricing</CardTitle>
-                  <CardDescription>After December 31st</CardDescription>
+                  <CardTitle className="text-2xl">Monthly</CardTitle>
+                  <CardDescription>Flexible subscription</CardDescription>
                   <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">US$9.99</span>
+                      <span className="text-5xl font-bold">$9.99</span>
                       <span className="text-muted-foreground">/month</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">or US$119.88/year</p>
+                    <p className="text-sm text-muted-foreground mt-2">or $119.88/year</p>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 text-left">
-                    {foundingFeatures.slice(0, 5).map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">{feature.replace('Founding Member Badge', 'Standard Badge').replace('Wall of Founders', 'Member Gallery')}</span>
-                      </li>
-                    ))}
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">150 cakes per year</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">All characters & themes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Party Pack Generator</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Cancel anytime</span>
+                    </li>
                   </ul>
                   <div className="mt-6 p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      = US$1,198.80 over 10 years
+                      = $1,198.80 over 10 years
                     </p>
                   </div>
                 </CardContent>
                 <CardFooter>
                   <Button
                     className="w-full"
-                    variant="secondary"
-                    disabled
+                    variant="outline"
+                    onClick={() => handlePayment('monthly_usd' as any)}
+                    disabled={isLoading !== null}
                   >
-                    <AlertCircle className="w-4 h-4 mr-2" />
-                    Coming Jan 1
+                    {isLoading === 'monthly_usd' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Subscribe Monthly'
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
@@ -484,9 +504,6 @@ const Pricing = () => {
                 <p className="text-sm font-semibold text-foreground">{text}</p>
               </div>
             ))}
-            <div className="col-span-full text-center mt-4">
-              <p className="text-sm text-muted-foreground">💵 All prices are in US Dollars (USD)</p>
-            </div>
           </motion.div>
         </div>
       </section>

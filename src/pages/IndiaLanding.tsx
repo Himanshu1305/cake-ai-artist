@@ -238,7 +238,7 @@ const IndiaLanding = () => {
               transition={{ delay: 0.3 }}
               className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
-              🇮🇳 Get LIFETIME ACCESS for just $49 <span className="text-lg md:text-2xl">(~₹4,100)</span>
+              🇮🇳 Get LIFETIME ACCESS for just ₹4,100
             </motion.h1>
 
             <motion.div
@@ -667,10 +667,7 @@ const IndiaLanding = () => {
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">
             Special New Year Lifetime Deal
           </h2>
-          <p className="text-center text-muted-foreground mb-12">
-            Prices shown in USD with approximate INR conversion
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <Card className="text-center h-full">
                 <CardContent className="pt-6">
@@ -692,8 +689,7 @@ const IndiaLanding = () => {
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-party-pink text-white">Most Popular</Badge>
                 <CardContent className="pt-8">
                   <h3 className="text-xl font-bold text-foreground mb-2">Lifetime Deal</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-1">US$49</p>
-                  <p className="text-sm text-muted-foreground mb-4">(~₹4,100)</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">₹4,100</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Unlimited cakes forever</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All characters</li>
@@ -713,16 +709,20 @@ const IndiaLanding = () => {
               <Card className="text-center h-full">
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-1">US$9.99/mo</p>
-                  <p className="text-sm text-muted-foreground mb-4">(~₹830/mo)</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">₹830/mo</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 150 cakes per year</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All characters</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Cancel anytime</li>
                   </ul>
-                  <Link to="/pricing">
-                    <Button variant="outline" className="w-full">Subscribe</Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handlePayment('monthly_inr')}
+                    disabled={isLoading !== null}
+                  >
+                    {isLoading === 'monthly_inr' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

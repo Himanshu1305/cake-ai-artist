@@ -122,15 +122,24 @@ export const useRazorpayPayment = (country: string = "US") => {
     }, 300000);
   }, [checkPaymentStatus]);
 
-  const handlePayment = async (tier: "tier_1_49" | "tier_2_99") => {
+  const handlePayment = async (tier: "tier_1_49" | "tier_2_99" | "monthly_inr" | "monthly_gbp" | "monthly_cad" | "monthly_aud" | "monthly_usd") => {
     // Check if user is logged in
     if (!user) {
       toast.error("Please sign in to continue", {
-        description: "You need to be logged in to purchase a lifetime deal.",
+        description: "You need to be logged in to subscribe.",
         action: {
           label: "Sign In",
           onClick: () => navigate("/auth"),
         },
+      });
+      return;
+    }
+
+    // Monthly subscriptions - backend not ready yet
+    if (tier.startsWith("monthly_")) {
+      toast.info("Monthly subscription coming very soon!", {
+        description: "For now, grab our Lifetime Deal at 96% off - never pay again!",
+        duration: 5000,
       });
       return;
     }
@@ -168,7 +177,9 @@ export const useRazorpayPayment = (country: string = "US") => {
         name: "Cake AI Artist",
         description: tier === "tier_1_49" 
           ? "New Year Special - Lifetime Access (Tier 1)" 
-          : "Launch Supporter - Lifetime Access (Tier 2)",
+          : tier === "tier_2_99"
+          ? "Launch Supporter - Lifetime Access (Tier 2)"
+          : "Monthly Subscription",
         order_id: orderData.order_id,
         prefill: {
           email: orderData.user_email,
