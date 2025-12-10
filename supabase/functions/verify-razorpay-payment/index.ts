@@ -120,12 +120,19 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Get current member count for member number
+    // Generate year-based member number (e.g., 2025-1001)
+    const currentYear = new Date().getFullYear();
+    
+    // Count members for current year to determine sequence
     const { count } = await supabaseServiceRole
       .from("founding_members")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .like("member_number", `${currentYear}-%`);
 
-    const memberNumber = (count || 0) + 1;
+    // Start from 1001 for first member of each year
+    const sequenceNumber = 1001 + (count || 0);
+    const memberNumber = `${currentYear}-${sequenceNumber}`;
+    
     const pricePaid = amount / 100; // Convert from smallest unit to display value
     const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
 
