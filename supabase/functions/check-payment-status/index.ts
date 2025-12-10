@@ -121,12 +121,16 @@ const handler = async (req: Request): Promise<Response> => {
           const tier = capturedPayment.notes?.tier || "tier_1_49";
           const amount = capturedPayment.amount;
 
-          // Process the payment - create founding member
+          // Generate year-based member number (e.g., 2025-1001)
+          const currentYear = new Date().getFullYear();
+          
           const { count } = await supabaseServiceRole
             .from("founding_members")
-            .select("*", { count: "exact", head: true });
+            .select("*", { count: "exact", head: true })
+            .like("member_number", `${currentYear}-%`);
 
-          const memberNumber = (count || 0) + 1;
+          const sequenceNumber = 1001 + (count || 0);
+          const memberNumber = `${currentYear}-${sequenceNumber}`;
           const pricePaid = amount / 100;
           const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
 

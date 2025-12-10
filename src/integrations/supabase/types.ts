@@ -146,7 +146,7 @@ export type Database = {
           created_at: string | null
           display_on_wall: boolean | null
           id: string
-          member_number: number
+          member_number: string
           price_paid: number
           purchased_at: string | null
           special_badge: string | null
@@ -157,7 +157,7 @@ export type Database = {
           created_at?: string | null
           display_on_wall?: boolean | null
           id?: string
-          member_number: number
+          member_number: string
           price_paid: number
           purchased_at?: string | null
           special_badge?: string | null
@@ -168,7 +168,7 @@ export type Database = {
           created_at?: string | null
           display_on_wall?: boolean | null
           id?: string
-          member_number?: number
+          member_number?: string
           price_paid?: number
           purchased_at?: string | null
           special_badge?: string | null
@@ -355,7 +355,7 @@ export type Database = {
           current_streak: number | null
           email: string
           first_name: string | null
-          founding_member_number: number | null
+          founding_member_number: string | null
           founding_tier: string | null
           id: string
           is_founding_member: boolean | null
@@ -374,7 +374,7 @@ export type Database = {
           current_streak?: number | null
           email: string
           first_name?: string | null
-          founding_member_number?: number | null
+          founding_member_number?: string | null
           founding_tier?: string | null
           id: string
           is_founding_member?: boolean | null
@@ -393,7 +393,7 @@ export type Database = {
           current_streak?: number | null
           email?: string
           first_name?: string | null
-          founding_member_number?: number | null
+          founding_member_number?: string | null
           founding_tier?: string | null
           id?: string
           is_founding_member?: boolean | null
