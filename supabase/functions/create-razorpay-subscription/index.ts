@@ -9,18 +9,18 @@ const corsHeaders = {
 
 // Placeholder Plan IDs - Replace with actual Razorpay Plan IDs after creating them in dashboard
 const PLAN_IDS: Record<string, string> = {
-  monthly_inr: "plan_PLACEHOLDER_INR", // ₹830/month - Create in Razorpay Dashboard
+  monthly_inr: "plan_PLACEHOLDER_INR", // ₹899/month - Create in Razorpay Dashboard
   monthly_gbp: "plan_PLACEHOLDER_GBP", // £7.99/month
-  monthly_cad: "plan_PLACEHOLDER_CAD", // C$13.50/month
-  monthly_aud: "plan_PLACEHOLDER_AUD", // A$15.30/month
+  monthly_cad: "plan_PLACEHOLDER_CAD", // C$13.99/month
+  monthly_aud: "plan_PLACEHOLDER_AUD", // A$14.99/month
   monthly_usd: "plan_PLACEHOLDER_USD", // $9.99/month
 };
 
 const PRICING: Record<string, { amount: number; currency: string; display: string }> = {
-  monthly_inr: { amount: 83000, currency: "INR", display: "₹830/month" },
+  monthly_inr: { amount: 89900, currency: "INR", display: "₹899/month" },
   monthly_gbp: { amount: 799, currency: "GBP", display: "£7.99/month" },
-  monthly_cad: { amount: 1350, currency: "CAD", display: "C$13.50/month" },
-  monthly_aud: { amount: 1530, currency: "AUD", display: "A$15.30/month" },
+  monthly_cad: { amount: 1399, currency: "CAD", display: "C$13.99/month" },
+  monthly_aud: { amount: 1499, currency: "AUD", display: "A$14.99/month" },
   monthly_usd: { amount: 999, currency: "USD", display: "$9.99/month" },
 };
 

@@ -245,7 +245,7 @@ const CanadaLanding = () => {
                 </Button>
               )}
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"After Dec 31, this becomes CAD$13.50/month forever"</p>
+                <p>"After Dec 31, this becomes C$13.99/month forever"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
             </motion.div>
@@ -484,7 +484,7 @@ const CanadaLanding = () => {
               <Card className="text-center h-full">
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-4">C$13.50/mo</p>
+                  <p className="text-3xl font-bold text-party-pink mb-4">C$13.99/mo</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />150 cakes per year</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
