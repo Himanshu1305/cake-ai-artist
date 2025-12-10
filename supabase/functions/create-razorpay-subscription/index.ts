@@ -9,11 +9,11 @@ const corsHeaders = {
 
 // Placeholder Plan IDs - Replace with actual Razorpay Plan IDs after creating them in dashboard
 const PLAN_IDS: Record<string, string> = {
-  monthly_inr: "plan_PLACEHOLDER_INR", // ₹899/month - Create in Razorpay Dashboard
-  monthly_gbp: "plan_PLACEHOLDER_GBP", // £7.99/month
-  monthly_cad: "plan_PLACEHOLDER_CAD", // C$13.99/month
-  monthly_aud: "plan_PLACEHOLDER_AUD", // A$14.99/month
-  monthly_usd: "plan_PLACEHOLDER_USD", // $9.99/month
+  monthly_inr: "plan_Rprva8uygKTjL2", // ₹899/month - India Monthly
+  monthly_gbp: "plan_RpryvSwlCKa3Od", // £7.99/month - UK Monthly
+  monthly_cad: "plan_Rps8Bxz9PNFBuW", // C$13.99/month - Canada Monthly
+  monthly_aud: "plan_Rps8qwoBYUgZNI", // A$14.99/month - Australia Monthly
+  monthly_usd: "plan_RprxbHKmMdok6a", // $9.99/month - USA Monthly
 };
 
 const PRICING: Record<string, { amount: number; currency: string; display: string }> = {
