@@ -29,6 +29,66 @@ async function verifyWebhookSignature(
   return expectedSignature === signature;
 }
 
+// Generate LTA member number: 2025-LTA-1000, 2025-LTA-1001, etc.
+async function generateLTAMemberNumber(supabase: any): Promise<string> {
+  const currentYear = new Date().getFullYear();
+  
+  // Count existing LTA members (one-time payments have tier like %_49 or %_99)
+  const { count } = await supabase
+    .from("founding_members")
+    .select("*", { count: "exact", head: true })
+    .or("tier.like.%_49,tier.like.%_99");
+  
+  return `${currentYear}-LTA-${1000 + (count || 0)}`;
+}
+
+// Generate subscription member number: 2025-1000, 2025-1001, etc.
+async function generateSubscriptionMemberNumber(supabase: any): Promise<string> {
+  const currentYear = new Date().getFullYear();
+  
+  // Count existing subscription members
+  const { count } = await supabase
+    .from("founding_members")
+    .select("*", { count: "exact", head: true })
+    .like("tier", "monthly%");
+  
+  return `${currentYear}-${1000 + (count || 0)}`;
+}
+
+// Send premium emails via the send-premium-emails function
+async function sendPremiumEmails(supabase: any, emailData: {
+  userId: string;
+  memberNumber: string;
+  tier: string;
+  amount: number;
+  currency: string;
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+}): Promise<void> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-premium-emails`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to send premium emails:", errorText);
+    } else {
+      console.log("Premium emails sent successfully for member:", emailData.memberNumber);
+    }
+  } catch (error) {
+    console.error("Error calling send-premium-emails:", error);
+  }
+}
+
 // Handle one-time payment captured
 async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ success: boolean; message: string }> {
   const orderId = payment.order_id;
@@ -58,12 +118,8 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
     return { success: true, message: "Already processed" };
   }
 
-  // Get current member count
-  const { count } = await supabase
-    .from("founding_members")
-    .select("*", { count: "exact", head: true });
-
-  const memberNumber = (count || 0) + 1;
+  // Generate LTA member number: 2025-LTA-1000, 2025-LTA-1001, etc.
+  const memberNumber = await generateLTAMemberNumber(supabase);
   const pricePaid = amount / 100; // Convert from paise/cents
   const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
 
@@ -107,8 +163,19 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
     p_message: `🎉 Member #${memberNumber} just joined with a Lifetime Deal!`,
   });
 
-  console.log(`Payment processed: user ${userId} is now member #${memberNumber}`);
-  return { success: true, message: `Member #${memberNumber}` };
+  // Send premium emails
+  await sendPremiumEmails(supabase, {
+    userId,
+    memberNumber,
+    tier,
+    amount,
+    currency,
+    razorpay_payment_id: paymentId,
+    razorpay_order_id: orderId,
+  });
+
+  console.log(`Payment processed: user ${userId} is now member ${memberNumber}`);
+  return { success: true, message: `Member ${memberNumber}` };
 }
 
 // Handle subscription activated
@@ -124,6 +191,66 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
   if (!userId) {
     console.error("Missing user_id in subscription notes");
     return { success: false, message: "Missing user_id" };
+  }
+
+  // Check if already processed
+  const { data: existingMember } = await supabase
+    .from("founding_members")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existingMember) {
+    console.log("User already a member, updating subscription status only");
+  } else {
+    // Generate subscription member number: 2025-1000, 2025-1001, etc.
+    const memberNumber = await generateSubscriptionMemberNumber(supabase);
+    
+    // Get subscription amount from the subscriptions table
+    const { data: subData } = await supabase
+      .from("subscriptions")
+      .select("amount, currency")
+      .eq("razorpay_subscription_id", subscriptionId)
+      .maybeSingle();
+    
+    const amount = subData?.amount || 0;
+    const currency = subData?.currency || "INR";
+
+    // Insert founding member record for subscriber
+    const { error: insertError } = await supabase
+      .from("founding_members")
+      .insert({
+        user_id: userId,
+        tier: tier || "monthly_subscription",
+        member_number: memberNumber,
+        price_paid: amount / 100,
+        special_badge: "subscriber",
+        display_on_wall: true,
+      });
+
+    if (insertError) {
+      console.error("Failed to insert founding member for subscription:", insertError);
+    } else {
+      // Send premium emails for new subscriber
+      await sendPremiumEmails(supabase, {
+        userId,
+        memberNumber,
+        tier: tier || "monthly_subscription",
+        amount,
+        currency,
+        razorpay_payment_id: `SUB_${subscriptionId}`,
+        razorpay_order_id: subscriptionId,
+      });
+
+      // Update profile with member number
+      await supabase
+        .from("profiles")
+        .update({
+          founding_member_number: memberNumber,
+          is_founding_member: true,
+        })
+        .eq("id", userId);
+    }
   }
 
   // Update subscription record

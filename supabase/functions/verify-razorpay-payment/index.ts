@@ -120,18 +120,16 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Generate year-based member number (e.g., 2025-1001)
+    // Generate LTA member number (e.g., 2025-LTA-1000)
     const currentYear = new Date().getFullYear();
     
-    // Count members for current year to determine sequence
+    // Count existing LTA members (one-time payments have tier like %_49 or %_99)
     const { count } = await supabaseServiceRole
       .from("founding_members")
       .select("*", { count: "exact", head: true })
-      .like("member_number", `${currentYear}-%`);
+      .or("tier.like.%_49,tier.like.%_99");
 
-    // Start from 1001 for first member of each year
-    const sequenceNumber = 1001 + (count || 0);
-    const memberNumber = `${currentYear}-${sequenceNumber}`;
+    const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
     
     const pricePaid = amount / 100; // Convert from smallest unit to display value
     const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
