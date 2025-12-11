@@ -75,7 +75,7 @@ function getWelcomeTitle(paymentType: "lifetime" | "subscription" | "admin_grant
     case "subscription":
       return "Welcome to Monthly Premium!";
     case "admin_grant":
-      return "Premium Access Granted!";
+      return "Welcome to the Cake AI Artist Family!";
   }
 }
 
@@ -86,7 +86,7 @@ function getWelcomeSubtitle(paymentType: "lifetime" | "subscription" | "admin_gr
     case "subscription":
       return "Your premium subscription is now active";
     case "admin_grant":
-      return "Complimentary access has been activated";
+      return "Your Premium Access is Now Active! 🎉";
   }
 }
 
@@ -128,8 +128,36 @@ function getThankYouMessage(paymentType: "lifetime" | "subscription" | "admin_gr
     case "subscription":
       return `Thank you for subscribing to Cake AI Artist Premium! Your monthly subscription gives you access to all premium features.`;
     case "admin_grant":
-      return `Your premium access to Cake AI Artist has been activated! You now have full access to create beautiful, personalized cakes for every celebration.`;
+      return `We're thrilled to have you! Your premium access has been activated and you're now part of our creative community. Get ready to design stunning cakes that will make every celebration unforgettable!`;
   }
+}
+
+function getWhatToCreateSection(): string {
+  return `
+                <tr>
+                  <td style="padding: 0 30px 30px;">
+                    <div style="background: linear-gradient(135deg, #fff5f7 0%, #fef3e8 100%); border-radius: 12px; padding: 25px; border: 1px solid #ffd6e8;">
+                      <h2 style="color: #c44569; margin: 0 0 15px; font-size: 18px;">
+                        🧁 What to Create First?
+                      </h2>
+                      <table width="100%" cellpadding="6" cellspacing="0">
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">🎂 <strong>Birthday Cake</strong> - Personalized with name & age</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">💕 <strong>Anniversary Cake</strong> - Romantic designs for couples</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">🎓 <strong>Celebration Cake</strong> - Graduations, promotions & more</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">🦸 <strong>Character Cake</strong> - Superhero, princess, cartoon themes</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+  `;
 }
 
 function getPremiumWelcomeEmailHtml(
@@ -137,6 +165,16 @@ function getPremiumWelcomeEmailHtml(
   memberNumber: string,
   paymentType: "lifetime" | "subscription" | "admin_grant"
 ): string {
+  const isAdminGrant = paymentType === "admin_grant";
+  
+  // Enhanced header gradient for admin grants
+  const headerStyle = isAdminGrant
+    ? "background: linear-gradient(135deg, #9b59b6 0%, #e74c9c 50%, #f39c12 100%);"
+    : "background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);";
+  
+  // Celebration emojis for admin grants
+  const headerEmojis = isAdminGrant ? "🎉🎂🍰🧁" : "✨";
+  
   return `
 <!DOCTYPE html>
 <html>
@@ -150,13 +188,25 @@ function getPremiumWelcomeEmailHtml(
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(232, 67, 147, 0.15);">
+          
+          <!-- Logo Placeholder -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <!-- Logo will be added here -->
+              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+            </td>
+          </tr>
+          
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); padding: 40px 30px; text-align: center;">
+            <td style="${headerStyle} padding: 40px 30px; text-align: center; margin-top: 20px;">
+              <p style="color: #ffffff; margin: 0 0 10px; font-size: 32px;">
+                ${headerEmojis}
+              </p>
               <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
-                ✨ ${getWelcomeTitle(paymentType)}
+                ${getWelcomeTitle(paymentType)}
               </h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">
+              <p style="color: rgba(255,255,255,0.95); margin: 12px 0 0; font-size: 17px;">
                 ${getWelcomeSubtitle(paymentType)}
               </p>
             </td>
@@ -179,10 +229,10 @@ function getPremiumWelcomeEmailHtml(
           <!-- Greeting -->
           <tr>
             <td style="padding: 0 30px 20px;">
-              <p style="color: #333; font-size: 18px; margin: 0;">
+              <p style="color: #333; font-size: 20px; margin: 0; font-weight: 600;">
                 Hello ${firstName || 'there'}! 🎂
               </p>
-              <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 15px 0 0;">
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
                 ${getThankYouMessage(paymentType, firstName)}
               </p>
             </td>
@@ -202,12 +252,25 @@ function getPremiumWelcomeEmailHtml(
             </td>
           </tr>
           
+          <!-- What to Create Section (only for admin grants) -->
+          ${isAdminGrant ? getWhatToCreateSection() : ""}
+          
           <!-- CTA Button -->
           <tr>
             <td style="padding: 0 30px 40px; text-align: center;">
-              <a href="https://cakeaiartist.com" style="display: inline-block; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 30px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);">
-                Start Creating Your First Masterpiece →
+              <a href="https://cakeaiartist.com" style="display: inline-block; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: #ffffff; text-decoration: none; padding: 18px 45px; border-radius: 30px; font-size: 17px; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);">
+                🎂 Start Creating Your First Cake →
               </a>
+            </td>
+          </tr>
+          
+          <!-- Support Note -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0; line-height: 1.6;">
+                💬 Questions? We're here to help!<br/>
+                <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
             </td>
           </tr>
           
@@ -574,7 +637,7 @@ const handler = async (req: Request): Promise<Response> => {
         welcomeSubject = `🌟 Welcome to Premium, ${firstName || "Member"}! You're Member ${memberNumber}`;
         break;
       case "admin_grant":
-        welcomeSubject = `🎁 Premium Access Granted, ${firstName || "Member"}! You're Member ${memberNumber}`;
+        welcomeSubject = `🎉 Welcome to Cake AI Artist, ${firstName || "Member"}! Your Premium Access is Ready (Member ${memberNumber})`;
         break;
     }
 
@@ -588,39 +651,43 @@ const handler = async (req: Request): Promise<Response> => {
       "Cake AI Artist"
     );
 
-    // Determine confirmation email subject based on type
-    let confirmSubject: string;
-    switch (paymentType) {
-      case "lifetime":
-        confirmSubject = `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`;
-        break;
-      case "subscription":
-        confirmSubject = `🔄 Subscription Confirmed - Cake AI Artist Monthly Premium`;
-        break;
-      case "admin_grant":
-        confirmSubject = `🎁 Premium Access Confirmed - Cake AI Artist`;
-        break;
-    }
+    // Only send confirmation/invoice email for paid users (lifetime or subscription)
+    // Admin grants only receive the single welcome email above
+    if (paymentType !== "admin_grant") {
+      let confirmSubject: string;
+      switch (paymentType) {
+        case "lifetime":
+          confirmSubject = `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`;
+          break;
+        case "subscription":
+          confirmSubject = `🔄 Subscription Confirmed - Cake AI Artist Monthly Premium`;
+          break;
+        default:
+          confirmSubject = `🧾 Payment Confirmed - Cake AI Artist`;
+      }
 
-    // Send Payment/Access Confirmation Email
-    const invoiceHtml = getPaymentConfirmationEmailHtml(
-      firstName,
-      memberNumber,
-      tier,
-      displayAmount,
-      razorpay_payment_id,
-      razorpay_order_id,
-      invoiceNumber,
-      purchaseDate,
-      paymentType
-    );
-    await sendEmail(
-      profile.email,
-      confirmSubject,
-      invoiceHtml,
-      paymentType === "admin_grant" ? "welcome@cakeaiartist.com" : "billing@cakeaiartist.com",
-      paymentType === "admin_grant" ? "Cake AI Artist" : "Cake AI Artist Billing"
-    );
+      const invoiceHtml = getPaymentConfirmationEmailHtml(
+        firstName,
+        memberNumber,
+        tier,
+        displayAmount,
+        razorpay_payment_id,
+        razorpay_order_id,
+        invoiceNumber,
+        purchaseDate,
+        paymentType
+      );
+      await sendEmail(
+        profile.email,
+        confirmSubject,
+        invoiceHtml,
+        "billing@cakeaiartist.com",
+        "Cake AI Artist Billing"
+      );
+      console.log("Both premium emails sent successfully to:", profile.email);
+    } else {
+      console.log("Single welcome email sent for admin grant to:", profile.email);
+    }
 
     console.log("Both premium emails sent successfully to:", profile.email);
 
