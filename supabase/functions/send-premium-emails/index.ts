@@ -10,12 +10,27 @@ const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
 interface EmailRequest {
   userId: string;
-  memberNumber: number;
+  memberNumber: string; // Now a string: 2025-LTA-1000, 2025-1000, 2025-GIFT-1000
   tier: string;
   amount: number; // In smallest unit (paise/cents)
   currency: string;
   razorpay_payment_id: string;
   razorpay_order_id: string;
+}
+
+// Detect payment type from member number format
+function getPaymentType(memberNumber: string, paymentId: string): "lifetime" | "subscription" | "admin_grant" {
+  if (paymentId.startsWith("ADMIN_")) {
+    return "admin_grant";
+  }
+  if (memberNumber.includes("-LTA-")) {
+    return "lifetime";
+  }
+  if (memberNumber.includes("-GIFT-")) {
+    return "admin_grant";
+  }
+  // Default format like 2025-1000 is subscription
+  return "subscription";
 }
 
 function formatCurrency(amount: number, currency: string): string {
@@ -33,25 +48,102 @@ function formatCurrency(amount: number, currency: string): string {
   return `${symbols[currency] || currency + " "}${value.toLocaleString()}`;
 }
 
-function getTierDescription(tier: string): string {
+function getTierDescription(tier: string, paymentType: "lifetime" | "subscription" | "admin_grant"): string {
+  if (paymentType === "admin_grant") {
+    return "Complimentary Premium Access";
+  }
+  if (paymentType === "subscription") {
+    return "Monthly Premium Subscription";
+  }
+  // Lifetime
   return tier === "tier_1_49" 
     ? "New Year Special - Tier 1 (First 50 Members)" 
     : "Launch Supporter - Tier 2 (Next 150 Members)";
 }
 
-function generateInvoiceNumber(memberNumber: number): string {
+function generateInvoiceNumber(memberNumber: string): string {
+  // Extract numeric part for invoice
+  const numericPart = memberNumber.replace(/[^0-9]/g, "").slice(-4);
   const year = new Date().getFullYear();
-  return `CAI-${year}-${String(memberNumber).padStart(4, '0')}`;
+  return `CAI-${year}-${numericPart.padStart(4, '0')}`;
 }
 
-function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): string {
+function getWelcomeTitle(paymentType: "lifetime" | "subscription" | "admin_grant"): string {
+  switch (paymentType) {
+    case "lifetime":
+      return "Welcome to the Lifetime Club!";
+    case "subscription":
+      return "Welcome to Monthly Premium!";
+    case "admin_grant":
+      return "Premium Access Granted!";
+  }
+}
+
+function getWelcomeSubtitle(paymentType: "lifetime" | "subscription" | "admin_grant"): string {
+  switch (paymentType) {
+    case "lifetime":
+      return "You're officially a founding member";
+    case "subscription":
+      return "Your premium subscription is now active";
+    case "admin_grant":
+      return "Complimentary access has been activated";
+  }
+}
+
+function getBenefitsTitle(paymentType: "lifetime" | "subscription" | "admin_grant"): string {
+  switch (paymentType) {
+    case "lifetime":
+      return "🎁 Your Lifetime Benefits";
+    case "subscription":
+      return "🎁 Your Monthly Premium Benefits";
+    case "admin_grant":
+      return "🎁 Your Premium Benefits";
+  }
+}
+
+function getBenefitsList(paymentType: "lifetime" | "subscription" | "admin_grant"): string {
+  const benefits = [
+    paymentType === "lifetime" ? "✅ 150 cake generations per year" : "✅ 100 cake generations per month",
+    "✅ Complete Party Pack Generator",
+    "✅ Private Gallery (30 saved images)",
+    "✅ Smart Occasion Reminders",
+    "✅ Priority Support",
+  ];
+  
+  if (paymentType === "lifetime") {
+    benefits.push("✅ All Future Updates - Forever!");
+  } else if (paymentType === "subscription") {
+    benefits.push("✅ Cancel anytime");
+  } else {
+    benefits.push("✅ All Premium Features Included");
+  }
+
+  return benefits.map(b => `<tr><td style="color: #333; font-size: 15px;">${b}</td></tr>`).join("");
+}
+
+function getThankYouMessage(paymentType: "lifetime" | "subscription" | "admin_grant", firstName: string): string {
+  switch (paymentType) {
+    case "lifetime":
+      return `Thank you for becoming a lifetime member of Cake AI Artist! You now have unlimited access to create beautiful, personalized cakes for every celebration.`;
+    case "subscription":
+      return `Thank you for subscribing to Cake AI Artist Premium! Your monthly subscription gives you access to all premium features.`;
+    case "admin_grant":
+      return `Your premium access to Cake AI Artist has been activated! You now have full access to create beautiful, personalized cakes for every celebration.`;
+  }
+}
+
+function getPremiumWelcomeEmailHtml(
+  firstName: string, 
+  memberNumber: string,
+  paymentType: "lifetime" | "subscription" | "admin_grant"
+): string {
   return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to the Lifetime Club!</title>
+  <title>${getWelcomeTitle(paymentType)}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef7f7; padding: 40px 20px;">
@@ -62,10 +154,10 @@ function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): st
           <tr>
             <td style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); padding: 40px 30px; text-align: center;">
               <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
-                ✨ Welcome to the Lifetime Club!
+                ✨ ${getWelcomeTitle(paymentType)}
               </h1>
               <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">
-                You're officially a founding member
+                ${getWelcomeSubtitle(paymentType)}
               </p>
             </td>
           </tr>
@@ -77,8 +169,8 @@ function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): st
                 <p style="color: #ffffff; margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">
                   Member Number
                 </p>
-                <p style="color: #ffffff; margin: 5px 0 0; font-size: 36px; font-weight: 700;">
-                  #${memberNumber}
+                <p style="color: #ffffff; margin: 5px 0 0; font-size: 28px; font-weight: 700;">
+                  ${memberNumber}
                 </p>
               </div>
             </td>
@@ -91,7 +183,7 @@ function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): st
                 Hello ${firstName || 'there'}! 🎂
               </p>
               <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 15px 0 0;">
-                Thank you for becoming a lifetime member of Cake AI Artist! You now have unlimited access to create beautiful, personalized cakes for every celebration.
+                ${getThankYouMessage(paymentType, firstName)}
               </p>
             </td>
           </tr>
@@ -101,27 +193,10 @@ function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): st
             <td style="padding: 0 30px 30px;">
               <div style="background-color: #fef7f7; border-radius: 12px; padding: 25px;">
                 <h2 style="color: #c44569; margin: 0 0 20px; font-size: 18px;">
-                  🎁 Your Lifetime Benefits
+                  ${getBenefitsTitle(paymentType)}
                 </h2>
                 <table width="100%" cellpadding="8" cellspacing="0">
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ 150 cake generations per year</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ Complete Party Pack Generator</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ Private Gallery (30 saved images)</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ Smart Occasion Reminders</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ Priority Support</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #333; font-size: 15px;">✅ All Future Updates - Forever!</td>
-                  </tr>
+                  ${getBenefitsList(paymentType)}
                 </table>
               </div>
             </td>
@@ -158,15 +233,114 @@ function getPremiumWelcomeEmailHtml(firstName: string, memberNumber: number): st
 
 function getPaymentConfirmationEmailHtml(
   firstName: string,
-  memberNumber: number,
+  memberNumber: string,
   tier: string,
   displayAmount: string,
   paymentId: string,
   orderId: string,
   invoiceNumber: string,
-  purchaseDate: string
+  purchaseDate: string,
+  paymentType: "lifetime" | "subscription" | "admin_grant"
 ): string {
-  const tierDescription = getTierDescription(tier);
+  const tierDescription = getTierDescription(tier, paymentType);
+  
+  // For admin grants, show a simplified confirmation without payment details
+  if (paymentType === "admin_grant") {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Access Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef7f7; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); padding: 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">
+                🎁 Complimentary Access Granted
+              </h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px;">
+                Member ${memberNumber}
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Message -->
+          <tr>
+            <td style="padding: 30px;">
+              <p style="color: #333; font-size: 16px; margin: 0;">
+                Hello ${firstName || 'there'},
+              </p>
+              <p style="color: #555; font-size: 15px; line-height: 1.6; margin: 15px 0 0;">
+                You have been granted complimentary premium access to Cake AI Artist. Your account has been upgraded and you now have full access to all premium features.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Access Details -->
+          <tr>
+            <td style="padding: 0 30px 30px;">
+              <div style="background-color: #f8f4ff; border-radius: 12px; padding: 25px; border: 1px solid #e8daff;">
+                <h3 style="color: #8e44ad; margin: 0 0 15px; font-size: 16px;">
+                  🎂 Access Details
+                </h3>
+                <table width="100%" cellpadding="8" cellspacing="0">
+                  <tr>
+                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e8daff; padding-bottom: 12px;">Member Number</td>
+                    <td style="color: #333; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #e8daff; padding-bottom: 12px;">${memberNumber}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e8daff; padding: 12px 0;">Access Type</td>
+                    <td style="color: #333; font-size: 14px; text-align: right; border-bottom: 1px solid #e8daff; padding: 12px 0;">${tierDescription}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #666; font-size: 14px; padding: 12px 0;">Activated On</td>
+                    <td style="color: #333; font-size: 14px; text-align: right; padding: 12px 0;">${purchaseDate}</td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Support Note -->
+          <tr>
+            <td style="padding: 0 30px 30px;">
+              <p style="color: #888; font-size: 13px; margin: 0; line-height: 1.6;">
+                💬 Questions? Contact us at 
+                <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e9ecef;">
+              <p style="color: #888; font-size: 14px; margin: 0;">
+                Cake AI Artist
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+  }
+  
+  // For paid users (lifetime or subscription), show full payment details
+  const isSubscription = paymentType === "subscription";
+  const headerColor = isSubscription 
+    ? "background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);" 
+    : "background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);";
+  const headerTitle = isSubscription ? "🔄 Subscription Confirmed" : "🧾 Payment Confirmed";
   
   return `
 <!DOCTYPE html>
@@ -183,12 +357,12 @@ function getPaymentConfirmationEmailHtml(
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); padding: 30px; text-align: center;">
+            <td style="${headerColor} padding: 30px; text-align: center;">
               <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">
-                🧾 Payment Confirmed
+                ${headerTitle}
               </h1>
               <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px;">
-                Invoice ${invoiceNumber}
+                ${isSubscription ? `Subscription ID: ${orderId}` : `Invoice ${invoiceNumber}`}
               </p>
             </td>
           </tr>
@@ -200,32 +374,36 @@ function getPaymentConfirmationEmailHtml(
                 Hello ${firstName || 'there'},
               </p>
               <p style="color: #555; font-size: 15px; line-height: 1.6; margin: 15px 0 0;">
-                Thank you for your purchase! Your payment has been successfully processed. Here are your receipt details:
+                ${isSubscription 
+                  ? "Thank you for subscribing! Your monthly premium subscription is now active. Here are your subscription details:"
+                  : "Thank you for your purchase! Your payment has been successfully processed. Here are your receipt details:"}
               </p>
             </td>
           </tr>
           
-          <!-- Invoice Details -->
+          <!-- Invoice/Subscription Details -->
           <tr>
             <td style="padding: 0 30px 30px;">
               <div style="background-color: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e9ecef;">
                 <table width="100%" cellpadding="8" cellspacing="0">
                   <tr>
-                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding-bottom: 12px;">Invoice Number</td>
-                    <td style="color: #333; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #e9ecef; padding-bottom: 12px;">${invoiceNumber}</td>
+                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding-bottom: 12px;">${isSubscription ? "Subscription ID" : "Invoice Number"}</td>
+                    <td style="color: #333; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #e9ecef; padding-bottom: 12px;">${isSubscription ? orderId : invoiceNumber}</td>
                   </tr>
                   <tr>
                     <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding: 12px 0;">Date</td>
                     <td style="color: #333; font-size: 14px; text-align: right; border-bottom: 1px solid #e9ecef; padding: 12px 0;">${purchaseDate}</td>
                   </tr>
                   <tr>
-                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding: 12px 0;">Payment ID</td>
+                    <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding: 12px 0;">${isSubscription ? "Transaction ID" : "Payment ID"}</td>
                     <td style="color: #333; font-size: 12px; text-align: right; border-bottom: 1px solid #e9ecef; padding: 12px 0; font-family: monospace;">${paymentId}</td>
                   </tr>
+                  ${!isSubscription ? `
                   <tr>
                     <td style="color: #666; font-size: 14px; border-bottom: 1px solid #e9ecef; padding: 12px 0;">Order ID</td>
                     <td style="color: #333; font-size: 12px; text-align: right; border-bottom: 1px solid #e9ecef; padding: 12px 0; font-family: monospace;">${orderId}</td>
                   </tr>
+                  ` : ""}
                 </table>
               </div>
             </td>
@@ -234,26 +412,26 @@ function getPaymentConfirmationEmailHtml(
           <!-- Item Details -->
           <tr>
             <td style="padding: 0 30px 30px;">
-              <div style="background-color: #fff8e1; border-radius: 12px; padding: 25px; border: 1px solid #ffe082;">
-                <h3 style="color: #f39c12; margin: 0 0 15px; font-size: 16px;">
-                  🎂 Purchase Details
+              <div style="background-color: ${isSubscription ? "#e8f4fd" : "#fff8e1"}; border-radius: 12px; padding: 25px; border: 1px solid ${isSubscription ? "#b3d9f7" : "#ffe082"};">
+                <h3 style="color: ${isSubscription ? "#2980b9" : "#f39c12"}; margin: 0 0 15px; font-size: 16px;">
+                  🎂 ${isSubscription ? "Subscription Details" : "Purchase Details"}
                 </h3>
                 <table width="100%" cellpadding="8" cellspacing="0">
                   <tr>
                     <td style="color: #333; font-size: 14px;">
                       <strong>${tierDescription}</strong>
                       <br>
-                      <span style="color: #666; font-size: 13px;">Lifetime Access - Member #${memberNumber}</span>
+                      <span style="color: #666; font-size: 13px;">${isSubscription ? `Monthly Premium - Member ${memberNumber}` : `Lifetime Access - Member ${memberNumber}`}</span>
                     </td>
                     <td style="color: #333; font-size: 18px; font-weight: 700; text-align: right; vertical-align: top;">
-                      ${displayAmount}
+                      ${displayAmount}${isSubscription ? "/mo" : ""}
                     </td>
                   </tr>
                 </table>
-                <div style="border-top: 2px solid #f39c12; margin-top: 15px; padding-top: 15px;">
+                <div style="border-top: 2px solid ${isSubscription ? "#2980b9" : "#f39c12"}; margin-top: 15px; padding-top: 15px;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td style="color: #333; font-size: 16px; font-weight: 700;">Total Paid</td>
+                      <td style="color: #333; font-size: 16px; font-weight: 700;">${isSubscription ? "Monthly Amount" : "Total Paid"}</td>
                       <td style="color: #27ae60; font-size: 20px; font-weight: 700; text-align: right;">${displayAmount}</td>
                     </tr>
                   </table>
@@ -266,24 +444,32 @@ function getPaymentConfirmationEmailHtml(
           <tr>
             <td style="padding: 0 30px 30px;">
               <p style="color: #666; font-size: 13px; margin: 0 0 10px;">
-                <strong>Included in your purchase:</strong>
+                <strong>Included in your ${isSubscription ? "subscription" : "purchase"}:</strong>
               </p>
               <p style="color: #888; font-size: 13px; line-height: 1.8; margin: 0;">
-                ✓ 150 cake generations/year &nbsp;&nbsp;
-                ✓ Party Pack Generator &nbsp;&nbsp;
-                ✓ Private Gallery (30 images) &nbsp;&nbsp;
-                ✓ Smart Reminders &nbsp;&nbsp;
-                ✓ Priority Support &nbsp;&nbsp;
-                ✓ All Future Updates
+                ${isSubscription 
+                  ? "✓ 100 cake generations/month &nbsp;&nbsp;✓ Party Pack Generator &nbsp;&nbsp;✓ Private Gallery (30 images) &nbsp;&nbsp;✓ Smart Reminders &nbsp;&nbsp;✓ Priority Support &nbsp;&nbsp;✓ Cancel anytime"
+                  : "✓ 150 cake generations/year &nbsp;&nbsp;✓ Party Pack Generator &nbsp;&nbsp;✓ Private Gallery (30 images) &nbsp;&nbsp;✓ Smart Reminders &nbsp;&nbsp;✓ Priority Support &nbsp;&nbsp;✓ All Future Updates"}
               </p>
             </td>
           </tr>
+          
+          ${isSubscription ? `
+          <!-- Next Billing -->
+          <tr>
+            <td style="padding: 0 30px 30px;">
+              <p style="color: #666; font-size: 13px; margin: 0; line-height: 1.6; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+                📅 <strong>Next billing date:</strong> Your subscription will automatically renew monthly. You can cancel anytime from your account settings.
+              </p>
+            </td>
+          </tr>
+          ` : ""}
           
           <!-- Support Note -->
           <tr>
             <td style="padding: 0 30px 30px;">
               <p style="color: #888; font-size: 13px; margin: 0; line-height: 1.6;">
-                💬 Questions about your purchase? Contact us at 
+                💬 Questions about your ${isSubscription ? "subscription" : "purchase"}? Contact us at 
                 <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
               </p>
             </td>
@@ -346,6 +532,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending premium emails for user:", userId, "member:", memberNumber);
 
+    // Detect payment type from member number format
+    const paymentType = getPaymentType(memberNumber, razorpay_payment_id);
+    console.log("Detected payment type:", paymentType);
+
     // Get user profile for email and name
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -374,17 +564,45 @@ const handler = async (req: Request): Promise<Response> => {
       minute: "2-digit",
     });
 
+    // Determine welcome email subject based on type
+    let welcomeSubject: string;
+    switch (paymentType) {
+      case "lifetime":
+        welcomeSubject = `✨ Welcome to the Lifetime Club, ${firstName || "Member"}! You're Member ${memberNumber}`;
+        break;
+      case "subscription":
+        welcomeSubject = `🌟 Welcome to Premium, ${firstName || "Member"}! You're Member ${memberNumber}`;
+        break;
+      case "admin_grant":
+        welcomeSubject = `🎁 Premium Access Granted, ${firstName || "Member"}! You're Member ${memberNumber}`;
+        break;
+    }
+
     // Send Premium Welcome Email
-    const welcomeHtml = getPremiumWelcomeEmailHtml(firstName, memberNumber);
+    const welcomeHtml = getPremiumWelcomeEmailHtml(firstName, memberNumber, paymentType);
     await sendEmail(
       profile.email,
-      `✨ Welcome to the Lifetime Club, ${firstName || "Member"}! You're Member #${memberNumber}`,
+      welcomeSubject,
       welcomeHtml,
       "welcome@cakeaiartist.com",
       "Cake AI Artist"
     );
 
-    // Send Payment Confirmation Email
+    // Determine confirmation email subject based on type
+    let confirmSubject: string;
+    switch (paymentType) {
+      case "lifetime":
+        confirmSubject = `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`;
+        break;
+      case "subscription":
+        confirmSubject = `🔄 Subscription Confirmed - Cake AI Artist Monthly Premium`;
+        break;
+      case "admin_grant":
+        confirmSubject = `🎁 Premium Access Confirmed - Cake AI Artist`;
+        break;
+    }
+
+    // Send Payment/Access Confirmation Email
     const invoiceHtml = getPaymentConfirmationEmailHtml(
       firstName,
       memberNumber,
@@ -393,20 +611,21 @@ const handler = async (req: Request): Promise<Response> => {
       razorpay_payment_id,
       razorpay_order_id,
       invoiceNumber,
-      purchaseDate
+      purchaseDate,
+      paymentType
     );
     await sendEmail(
       profile.email,
-      `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`,
+      confirmSubject,
       invoiceHtml,
-      "billing@cakeaiartist.com",
-      "Cake AI Artist Billing"
+      paymentType === "admin_grant" ? "welcome@cakeaiartist.com" : "billing@cakeaiartist.com",
+      paymentType === "admin_grant" ? "Cake AI Artist" : "Cake AI Artist Billing"
     );
 
     console.log("Both premium emails sent successfully to:", profile.email);
 
     return new Response(
-      JSON.stringify({ success: true, invoiceNumber }),
+      JSON.stringify({ success: true, invoiceNumber, paymentType }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

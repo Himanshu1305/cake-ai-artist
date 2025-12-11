@@ -453,20 +453,98 @@ export default function Admin() {
   };
 
   const togglePremium = async (userId: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        is_premium: !currentStatus,
-        premium_until: !currentStatus ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
-      })
-      .eq('id', userId);
+    if (!currentStatus) {
+      // Granting premium - create founding member record and send emails
+      try {
+        // Get count of admin grants to generate member number
+        const { count: giftCount } = await supabase
+          .from('founding_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('tier', 'admin_grant');
 
-    if (error) {
-      toast.error('Failed to update user status');
-      return;
+        const currentYear = new Date().getFullYear();
+        const memberNumber = `${currentYear}-GIFT-${1000 + (giftCount || 0)}`;
+
+        // Create founding member record
+        const { error: insertError } = await supabase
+          .from('founding_members')
+          .insert({
+            user_id: userId,
+            tier: 'admin_grant',
+            member_number: memberNumber,
+            price_paid: 0,
+            special_badge: 'gift',
+            display_on_wall: false,
+          });
+
+        if (insertError) {
+          console.error('Failed to create founding member:', insertError);
+          toast.error('Failed to create member record');
+          return;
+        }
+
+        // Update profile to premium
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            is_premium: true,
+            is_founding_member: true,
+            founding_member_number: memberNumber,
+            founding_tier: 'admin_grant',
+            lifetime_access: true,
+            premium_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            purchased_date: new Date().toISOString(),
+          })
+          .eq('id', userId);
+
+        if (profileError) {
+          toast.error('Failed to update user status');
+          return;
+        }
+
+        // Send premium emails via edge function
+        try {
+          await supabase.functions.invoke('send-premium-emails', {
+            body: {
+              userId,
+              memberNumber,
+              tier: 'admin_grant',
+              amount: 0,
+              currency: 'USD',
+              razorpay_payment_id: `ADMIN_${Date.now()}`,
+              razorpay_order_id: `ADMIN_GRANT_${memberNumber}`,
+            },
+          });
+          console.log('Premium emails sent for admin grant');
+        } catch (emailError) {
+          console.error('Failed to send premium emails:', emailError);
+          // Don't fail the operation if emails fail
+        }
+
+        toast.success(`Premium granted! Member ${memberNumber}`);
+      } catch (error) {
+        console.error('Error granting premium:', error);
+        toast.error('Failed to grant premium');
+        return;
+      }
+    } else {
+      // Revoking premium - just update the profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          is_premium: false,
+          premium_until: null
+        })
+        .eq('id', userId);
+
+      if (error) {
+        toast.error('Failed to update user status');
+        return;
+      }
+
+      toast.success('Premium removed');
     }
-
-    toast.success(currentStatus ? 'Premium removed' : 'Premium granted');
+    
     loadProfiles();
     loadAnalytics();
   };
