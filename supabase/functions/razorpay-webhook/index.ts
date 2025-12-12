@@ -89,6 +89,37 @@ async function sendPremiumEmails(supabase: any, emailData: {
   }
 }
 
+// Send subscription ended email
+async function sendSubscriptionEndedEmail(emailData: {
+  userId: string;
+  status: "halted" | "expired" | "cancelled";
+  subscriptionId: string;
+  periodEndDate?: string;
+}): Promise<void> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-premium-emails`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to send subscription ended email:", errorText);
+    } else {
+      console.log(`Subscription ${emailData.status} email sent for user:`, emailData.userId);
+    }
+  } catch (error) {
+    console.error("Error sending subscription ended email:", error);
+  }
+}
+
 // Handle one-time payment captured
 async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ success: boolean; message: string }> {
   const orderId = payment.order_id;
@@ -351,6 +382,15 @@ async function handleSubscriptionEnded(subscription: any, status: string, supaba
     return { success: false, message: "Missing user_id" };
   }
 
+  // Get current period end from subscription record
+  const { data: subData } = await supabase
+    .from("subscriptions")
+    .select("current_period_end")
+    .eq("razorpay_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  const periodEndDate = subData?.current_period_end;
+
   // Update subscription status
   const { error: subError } = await supabase
     .from("subscriptions")
@@ -380,7 +420,15 @@ async function handleSubscriptionEnded(subscription: any, status: string, supaba
     .update(updates)
     .eq("id", userId);
 
-  console.log(`Subscription ${status} for user ${userId}`);
+  // Send subscription ended notification email
+  await sendSubscriptionEndedEmail({
+    userId,
+    status: status as "halted" | "expired" | "cancelled",
+    subscriptionId,
+    periodEndDate,
+  });
+
+  console.log(`Subscription ${status} for user ${userId}, notification email sent`);
   return { success: true, message: `Subscription ${status}` };
 }
 
