@@ -18,6 +18,13 @@ interface EmailRequest {
   razorpay_order_id: string;
 }
 
+interface SubscriptionEndedRequest {
+  userId: string;
+  status: "halted" | "expired" | "cancelled";
+  subscriptionId: string;
+  periodEndDate?: string;
+}
+
 // Detect payment type from member number format
 function getPaymentType(memberNumber: string, paymentId: string): "lifetime" | "subscription" | "admin_grant" {
   if (paymentId.startsWith("ADMIN_")) {
@@ -558,6 +565,376 @@ function getPaymentConfirmationEmailHtml(
 `;
 }
 
+// ============= SUBSCRIPTION ENDED EMAIL TEMPLATES =============
+
+function getWhatYoureMissingSection(): string {
+  return `
+                <tr>
+                  <td style="padding: 0 30px 30px;">
+                    <div style="background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 25px; border: 1px solid #ffcdd2;">
+                      <h2 style="color: #c62828; margin: 0 0 15px; font-size: 18px;">
+                        😢 What You're Missing Without Premium
+                      </h2>
+                      <table width="100%" cellpadding="8" cellspacing="0">
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>150 → 5</strong> cake generations (per year → per day)
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>30 → 20</strong> gallery storage slots
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>No access</strong> to Party Pack Generator
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>No</strong> Smart Occasion Reminders
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>No</strong> Priority Support
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="color: #555; font-size: 14px;">
+                            <span style="color: #c62828;">❌</span> <strong>No</strong> Special Member Badge
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+  `;
+}
+
+function getSubscriptionHaltedEmailHtml(firstName: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Premium Access Has Been Paused</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef7f7; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+            </td>
+          </tr>
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 40px 30px; text-align: center; margin-top: 20px;">
+              <p style="color: #ffffff; margin: 0 0 10px; font-size: 32px;">⚠️</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700;">
+                Payment Issue Detected
+              </h1>
+              <p style="color: rgba(255,255,255,0.95); margin: 12px 0 0; font-size: 16px;">
+                Your premium access has been paused
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Message -->
+          <tr>
+            <td style="padding: 30px 30px 20px;">
+              <p style="color: #333; font-size: 20px; margin: 0; font-weight: 600;">
+                Hi ${firstName || 'there'},
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                We tried to process your subscription payment, but it didn't go through. Your premium access is temporarily paused until we can successfully charge your payment method.
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                <strong>Don't worry!</strong> This is an easy fix. Just update your payment information and you'll be back to creating beautiful cakes in no time.
+              </p>
+            </td>
+          </tr>
+          
+          ${getWhatYoureMissingSection()}
+          
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <a href="https://cakeaiartist.com/pricing" style="display: inline-block; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: #ffffff; text-decoration: none; padding: 18px 45px; border-radius: 30px; font-size: 17px; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);">
+                💳 Reactivate My Premium →
+              </a>
+            </td>
+          </tr>
+          
+          <!-- Alternative -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0;">
+                Or upgrade to <a href="https://cakeaiartist.com/pricing" style="color: #c44569; text-decoration: none; font-weight: 600;">Lifetime Access</a> - One payment, no more renewal worries!
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Support -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0; line-height: 1.6;">
+                💬 Need help? Contact us at<br/>
+                <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fef7f7; padding: 25px 30px; text-align: center; border-top: 1px solid #f0e0e0;">
+              <p style="color: #888; font-size: 14px; margin: 0;">Made with 💖 by Cake AI Artist</p>
+              <p style="color: #aaa; font-size: 12px; margin: 10px 0 0;">
+                <a href="https://cakeaiartist.com" style="color: #c44569; text-decoration: none;">cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+function getSubscriptionExpiredEmailHtml(firstName: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>We Miss You!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef7f7; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+            </td>
+          </tr>
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); padding: 40px 30px; text-align: center; margin-top: 20px;">
+              <p style="color: #ffffff; margin: 0 0 10px; font-size: 32px;">😢💔</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700;">
+                We Miss You!
+              </h1>
+              <p style="color: rgba(255,255,255,0.95); margin: 12px 0 0; font-size: 16px;">
+                Your premium subscription has expired
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Message -->
+          <tr>
+            <td style="padding: 30px 30px 20px;">
+              <p style="color: #333; font-size: 20px; margin: 0; font-weight: 600;">
+                Hi ${firstName || 'there'},
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                Your Cake AI Artist premium subscription has expired. We've really enjoyed having you as a premium member, and we hope you'll come back soon!
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                All your saved cakes and gallery items are still safe and waiting for you. You can still access them with your free account, but you're missing out on the full creative experience.
+              </p>
+            </td>
+          </tr>
+          
+          ${getWhatYoureMissingSection()}
+          
+          <!-- Special Offer -->
+          <tr>
+            <td style="padding: 0 30px 20px;">
+              <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 12px; padding: 20px; border: 2px solid #ff9800; text-align: center;">
+                <p style="color: #e65100; font-size: 16px; font-weight: 700; margin: 0 0 5px;">
+                  🎁 Welcome Back Offer
+                </p>
+                <p style="color: #555; font-size: 14px; margin: 0;">
+                  Resubscribe now and pick up right where you left off!
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <a href="https://cakeaiartist.com/pricing" style="display: inline-block; background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: #ffffff; text-decoration: none; padding: 18px 45px; border-radius: 30px; font-size: 17px; font-weight: 600; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);">
+                🎂 Renew My Premium →
+              </a>
+            </td>
+          </tr>
+          
+          <!-- Lifetime Upsell -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0;">
+                Tired of renewals? Get <a href="https://cakeaiartist.com/pricing" style="color: #c44569; text-decoration: none; font-weight: 600;">Lifetime Access</a> for one simple payment!
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Support -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0; line-height: 1.6;">
+                💬 Questions? We're here at<br/>
+                <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fef7f7; padding: 25px 30px; text-align: center; border-top: 1px solid #f0e0e0;">
+              <p style="color: #888; font-size: 14px; margin: 0;">Made with 💖 by Cake AI Artist</p>
+              <p style="color: #aaa; font-size: 12px; margin: 10px 0 0;">
+                <a href="https://cakeaiartist.com" style="color: #c44569; text-decoration: none;">cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+function getSubscriptionCancelledEmailHtml(firstName: string, periodEndDate: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Cancellation Confirmed</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef7f7; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+            </td>
+          </tr>
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #607d8b 0%, #455a64 100%); padding: 40px 30px; text-align: center; margin-top: 20px;">
+              <p style="color: #ffffff; margin: 0 0 10px; font-size: 32px;">📋</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700;">
+                Cancellation Confirmed
+              </h1>
+              <p style="color: rgba(255,255,255,0.95); margin: 12px 0 0; font-size: 16px;">
+                Your subscription will end on ${periodEndDate}
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Message -->
+          <tr>
+            <td style="padding: 30px 30px 20px;">
+              <p style="color: #333; font-size: 20px; margin: 0; font-weight: 600;">
+                Hi ${firstName || 'there'},
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                We've received your cancellation request. Your premium access will remain active until <strong>${periodEndDate}</strong>, so you can still enjoy all premium features until then!
+              </p>
+              <p style="color: #555; font-size: 16px; line-height: 1.7; margin: 15px 0 0;">
+                We're sorry to see you go. If there's anything we could have done better, we'd love to hear from you.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Time Remaining -->
+          <tr>
+            <td style="padding: 0 30px 20px;">
+              <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 12px; padding: 20px; border: 1px solid #a5d6a7; text-align: center;">
+                <p style="color: #2e7d32; font-size: 16px; font-weight: 700; margin: 0 0 5px;">
+                  ✅ Still Premium Until ${periodEndDate}
+                </p>
+                <p style="color: #555; font-size: 14px; margin: 0;">
+                  Continue creating beautiful cakes until your premium period ends!
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          ${getWhatYoureMissingSection()}
+          
+          <!-- Change Mind CTA -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <a href="https://cakeaiartist.com/pricing" style="display: inline-block; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: #ffffff; text-decoration: none; padding: 18px 45px; border-radius: 30px; font-size: 17px; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);">
+                🔄 Change My Mind - Keep Premium →
+              </a>
+            </td>
+          </tr>
+          
+          <!-- Lifetime Upsell -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0;">
+                Want to avoid monthly payments? Switch to <a href="https://cakeaiartist.com/pricing" style="color: #c44569; text-decoration: none; font-weight: 600;">Lifetime Access</a>!
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Support -->
+          <tr>
+            <td style="padding: 0 30px 30px; text-align: center;">
+              <p style="color: #888; font-size: 14px; margin: 0; line-height: 1.6;">
+                💬 Feedback or questions?<br/>
+                <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fef7f7; padding: 25px 30px; text-align: center; border-top: 1px solid #f0e0e0;">
+              <p style="color: #888; font-size: 14px; margin: 0;">Made with 💖 by Cake AI Artist</p>
+              <p style="color: #aaa; font-size: 12px; margin: 10px 0 0;">
+                <a href="https://cakeaiartist.com" style="color: #c44569; text-decoration: none;">cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
 async function sendEmail(to: string, subject: string, htmlContent: string, senderEmail: string, senderName: string): Promise<void> {
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -584,14 +961,96 @@ async function sendEmail(to: string, subject: string, htmlContent: string, sende
   console.log("Email sent successfully to:", to);
 }
 
+// Handle subscription ended email sending
+async function handleSubscriptionEndedEmail(
+  supabase: any,
+  request: SubscriptionEndedRequest
+): Promise<{ success: boolean; message: string }> {
+  const { userId, status, subscriptionId, periodEndDate } = request;
+
+  // Get user profile
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("email, first_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profileError || !profile?.email) {
+    console.error("Failed to get user profile for subscription ended email:", profileError);
+    return { success: false, message: "User profile not found" };
+  }
+
+  const firstName = profile.first_name || "";
+  const formattedPeriodEnd = periodEndDate 
+    ? new Date(periodEndDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : "soon";
+
+  let subject: string;
+  let htmlContent: string;
+
+  switch (status) {
+    case "halted":
+      subject = `⚠️ ${firstName || 'Hi'}, Your Cake AI Artist Premium Access Has Been Paused`;
+      htmlContent = getSubscriptionHaltedEmailHtml(firstName);
+      break;
+    case "expired":
+      subject = `😢 We Miss You, ${firstName || 'Friend'}! Your Premium Has Expired`;
+      htmlContent = getSubscriptionExpiredEmailHtml(firstName);
+      break;
+    case "cancelled":
+      subject = `📋 Cancellation Confirmed - Premium Ends ${formattedPeriodEnd}`;
+      htmlContent = getSubscriptionCancelledEmailHtml(firstName, formattedPeriodEnd);
+      break;
+    default:
+      return { success: false, message: "Unknown status" };
+  }
+
+  try {
+    await sendEmail(
+      profile.email,
+      subject,
+      htmlContent,
+      "support@cakeaiartist.com",
+      "Cake AI Artist"
+    );
+    console.log(`Subscription ${status} email sent to:`, profile.email);
+    return { success: true, message: `${status} email sent` };
+  } catch (error) {
+    console.error(`Failed to send subscription ${status} email:`, error);
+    return { success: false, message: "Email send failed" };
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const body: EmailRequest = await req.json();
-    const { userId, memberNumber, tier, amount, currency, razorpay_payment_id, razorpay_order_id } = body;
+    const body = await req.json();
+    
+    // Check if this is a subscription ended request
+    if (body.status && (body.status === "halted" || body.status === "expired" || body.status === "cancelled")) {
+      console.log("Processing subscription ended email for status:", body.status);
+      
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      
+      const result = await handleSubscriptionEndedEmail(supabase, body as SubscriptionEndedRequest);
+      
+      return new Response(
+        JSON.stringify(result),
+        { 
+          status: result.success ? 200 : 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
+    
+    // Original premium emails logic
+    const { userId, memberNumber, tier, amount, currency, razorpay_payment_id, razorpay_order_id } = body as EmailRequest;
 
     console.log("Sending premium emails for user:", userId, "member:", memberNumber);
 
@@ -688,8 +1147,6 @@ const handler = async (req: Request): Promise<Response> => {
     } else {
       console.log("Single welcome email sent for admin grant to:", profile.email);
     }
-
-    console.log("Both premium emails sent successfully to:", profile.email);
 
     return new Response(
       JSON.stringify({ success: true, invoiceNumber, paymentType }),
