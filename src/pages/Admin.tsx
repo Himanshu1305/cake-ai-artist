@@ -11,6 +11,16 @@ import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe } from '
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -72,6 +82,8 @@ export default function Admin() {
   const [subscribers, setSubscribers] = useState<BlogSubscriber[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
+  const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
+  const [selectedEmailType, setSelectedEmailType] = useState<'halted' | 'expired' | 'cancelled' | 'none'>('expired');
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
     premiumUsers: 0,
@@ -528,23 +540,56 @@ export default function Admin() {
         return;
       }
     } else {
-      // Revoking premium - just update the profile
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          is_premium: false,
-          premium_until: null
-        })
-        .eq('id', userId);
-
-      if (error) {
-        toast.error('Failed to update user status');
-        return;
-      }
-
-      toast.success('Premium removed');
+      // Show dialog to select email type for removing premium
+      setRemovePremiumDialog({ open: true, userId });
+      return; // Don't proceed until user selects email type
     }
     
+    loadProfiles();
+    loadAnalytics();
+  };
+
+  const handleRemovePremium = async () => {
+    const userId = removePremiumDialog.userId;
+    if (!userId) return;
+
+    // Send subscription ended email if not 'none'
+    if (selectedEmailType !== 'none') {
+      try {
+        await supabase.functions.invoke('send-premium-emails', {
+          body: {
+            userId,
+            status: selectedEmailType,
+            subscriptionId: `ADMIN_REVOKE_${Date.now()}`,
+            periodEndDate: new Date().toISOString(),
+          },
+        });
+        console.log(`Subscription ${selectedEmailType} email sent`);
+        toast.success(`${selectedEmailType.charAt(0).toUpperCase() + selectedEmailType.slice(1)} notification email sent`);
+      } catch (emailError) {
+        console.error('Failed to send subscription ended email:', emailError);
+        toast.error('Failed to send notification email');
+      }
+    }
+
+    // Update profile to remove premium
+    const { error } = await supabase
+      .from('profiles')
+      .update({ 
+        is_premium: false,
+        premium_until: null,
+        subscription_status: selectedEmailType === 'none' ? null : selectedEmailType,
+      })
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Failed to update user status');
+      return;
+    }
+
+    toast.success('Premium removed');
+    setRemovePremiumDialog({ open: false, userId: null });
+    setSelectedEmailType('expired');
     loadProfiles();
     loadAnalytics();
   };
@@ -565,6 +610,82 @@ export default function Admin() {
   const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "hsl(var(--muted))", "#8884d8", "#82ca9d", "#ffc658", "#ff8042"];
 
   return (
+    <>
+      {/* Remove Premium Dialog */}
+      <AlertDialog open={removePremiumDialog.open} onOpenChange={(open) => setRemovePremiumDialog({ ...removePremiumDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Premium Access</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select which notification email to send to the user:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-2 py-4">
+            <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50">
+              <input
+                type="radio"
+                name="emailType"
+                value="halted"
+                checked={selectedEmailType === 'halted'}
+                onChange={() => setSelectedEmailType('halted')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium">Halted</p>
+                <p className="text-sm text-muted-foreground">Payment failed message</p>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50">
+              <input
+                type="radio"
+                name="emailType"
+                value="expired"
+                checked={selectedEmailType === 'expired'}
+                onChange={() => setSelectedEmailType('expired')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium">Expired</p>
+                <p className="text-sm text-muted-foreground">Subscription ended naturally</p>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50">
+              <input
+                type="radio"
+                name="emailType"
+                value="cancelled"
+                checked={selectedEmailType === 'cancelled'}
+                onChange={() => setSelectedEmailType('cancelled')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium">Cancelled</p>
+                <p className="text-sm text-muted-foreground">User cancelled message</p>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50">
+              <input
+                type="radio"
+                name="emailType"
+                value="none"
+                checked={selectedEmailType === 'none'}
+                onChange={() => setSelectedEmailType('none')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium">No email</p>
+                <p className="text-sm text-muted-foreground">Silent removal (testing only)</p>
+              </div>
+            </label>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedEmailType('expired')}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemovePremium}>
+              Remove Premium
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Admin Dashboard - Cake AI Artist</title>
@@ -1217,5 +1338,6 @@ export default function Admin() {
         </Tabs>
       </div>
     </div>
+    </>
   );
 }
