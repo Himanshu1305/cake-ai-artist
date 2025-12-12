@@ -137,38 +137,50 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
     return { success: false, message: "Missing metadata" };
   }
 
-  // Check if already processed (idempotency)
-  const { data: existingMember } = await supabase
-    .from("founding_members")
-    .select("id")
-    .eq("user_id", userId)
+  // Check if user already has a member number (for renewals/re-purchases)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("founding_member_number")
+    .eq("id", userId)
     .maybeSingle();
 
-  if (existingMember) {
-    console.log("User already a founding member, skipping");
-    return { success: true, message: "Already processed" };
-  }
-
-  // Generate LTA member number: 2025-LTA-1000, 2025-LTA-1001, etc.
-  const memberNumber = await generateLTAMemberNumber(supabase);
+  let memberNumber: string;
+  
+  if (profile?.founding_member_number) {
+    // Reuse existing member number
+    memberNumber = profile.founding_member_number;
+    console.log("Reactivating with existing member number:", memberNumber);
+    
+    // Update existing founding member record
+    await supabase
+      .from("founding_members")
+      .update({
+        tier: tier,
+        special_badge: tier === "tier_1_49" ? "gold" : "silver",
+      })
+      .eq("user_id", userId);
+  } else {
+    // Generate new LTA member number for first-time purchase
+    memberNumber = await generateLTAMemberNumber(supabase);
   const pricePaid = amount / 100; // Convert from paise/cents
   const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
 
-  // Insert founding member record
-  const { error: insertError } = await supabase
-    .from("founding_members")
-    .insert({
-      user_id: userId,
-      tier: tier,
-      member_number: memberNumber,
-      price_paid: pricePaid,
-      special_badge: specialBadge,
-      display_on_wall: true,
-    });
+    // Insert founding member record
+    const { error: insertError } = await supabase
+      .from("founding_members")
+      .insert({
+        user_id: userId,
+        tier: tier,
+        member_number: memberNumber,
+        price_paid: pricePaid,
+        special_badge: specialBadge,
+        display_on_wall: true,
+      });
 
-  if (insertError) {
-    console.error("Failed to insert founding member:", insertError);
-    return { success: false, message: "Database error" };
+    if (insertError) {
+      console.error("Failed to insert founding member:", insertError);
+      return { success: false, message: "Database error" };
+    }
   }
 
   // Update profile to premium
@@ -224,28 +236,41 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
     return { success: false, message: "Missing user_id" };
   }
 
-  // Check if already processed
-  const { data: existingMember } = await supabase
-    .from("founding_members")
-    .select("id")
-    .eq("user_id", userId)
+  // Check if user already has a member number (for renewals/reactivations)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("founding_member_number")
+    .eq("id", userId)
     .maybeSingle();
 
-  if (existingMember) {
-    console.log("User already a member, updating subscription status only");
+  // Get subscription amount from the subscriptions table
+  const { data: subData } = await supabase
+    .from("subscriptions")
+    .select("amount, currency")
+    .eq("razorpay_subscription_id", subscriptionId)
+    .maybeSingle();
+  
+  const amount = subData?.amount || 0;
+  const currency = subData?.currency || "INR";
+
+  let memberNumber: string;
+
+  if (profile?.founding_member_number) {
+    // Reuse existing member number
+    memberNumber = profile.founding_member_number;
+    console.log("Reactivating subscription with existing member number:", memberNumber);
+    
+    // Update existing founding member record
+    await supabase
+      .from("founding_members")
+      .update({
+        tier: tier || "monthly_subscription",
+        special_badge: "subscriber",
+      })
+      .eq("user_id", userId);
   } else {
-    // Generate subscription member number: 2025-1000, 2025-1001, etc.
-    const memberNumber = await generateSubscriptionMemberNumber(supabase);
-    
-    // Get subscription amount from the subscriptions table
-    const { data: subData } = await supabase
-      .from("subscriptions")
-      .select("amount, currency")
-      .eq("razorpay_subscription_id", subscriptionId)
-      .maybeSingle();
-    
-    const amount = subData?.amount || 0;
-    const currency = subData?.currency || "INR";
+    // Generate new subscription member number for first-time subscriber
+    memberNumber = await generateSubscriptionMemberNumber(supabase);
 
     // Insert founding member record for subscriber
     const { error: insertError } = await supabase
@@ -261,28 +286,28 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
 
     if (insertError) {
       console.error("Failed to insert founding member for subscription:", insertError);
-    } else {
-      // Send premium emails for new subscriber
-      await sendPremiumEmails(supabase, {
-        userId,
-        memberNumber,
-        tier: tier || "monthly_subscription",
-        amount,
-        currency,
-        razorpay_payment_id: `SUB_${subscriptionId}`,
-        razorpay_order_id: subscriptionId,
-      });
-
-      // Update profile with member number
-      await supabase
-        .from("profiles")
-        .update({
-          founding_member_number: memberNumber,
-          is_founding_member: true,
-        })
-        .eq("id", userId);
     }
+
+    // Update profile with member number
+    await supabase
+      .from("profiles")
+      .update({
+        founding_member_number: memberNumber,
+        is_founding_member: true,
+      })
+      .eq("id", userId);
   }
+
+  // Send premium emails (for both new and reactivated)
+  await sendPremiumEmails(supabase, {
+    userId,
+    memberNumber,
+    tier: tier || "monthly_subscription",
+    amount,
+    currency,
+    razorpay_payment_id: `SUB_${subscriptionId}`,
+    razorpay_order_id: subscriptionId,
+  });
 
   // Update subscription record
   const { error: subError } = await supabase

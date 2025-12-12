@@ -29,6 +29,7 @@ interface Profile {
   is_founding_member: boolean;
   created_at: string;
   country?: string;
+  founding_member_number?: string;
 }
 
 interface CommunityImage {
@@ -212,7 +213,7 @@ export default function Admin() {
   const loadProfiles = async () => {
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, is_premium, is_founding_member, created_at')
+      .select('id, email, is_premium, is_founding_member, created_at, founding_member_number')
       .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -466,33 +467,54 @@ export default function Admin() {
 
   const togglePremium = async (userId: string, currentStatus: boolean) => {
     if (!currentStatus) {
-      // Granting premium - create founding member record and send emails
+      // Granting premium - check for existing member number first
       try {
-        // Get count of admin grants to generate member number
-        const { count: giftCount } = await supabase
-          .from('founding_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('tier', 'admin_grant');
+        // Find the user to check for existing member number
+        const user = profiles.find(p => p.id === userId);
+        const existingMemberNumber = user?.founding_member_number;
+        
+        let memberNumber: string;
+        
+        if (existingMemberNumber) {
+          // Reuse existing member number (re-granting premium)
+          memberNumber = existingMemberNumber;
+          console.log('Reactivating with existing member number:', memberNumber);
+          
+          // Update existing founding member record
+          await supabase
+            .from('founding_members')
+            .update({
+              tier: 'admin_grant',
+              special_badge: 'gift',
+            })
+            .eq('user_id', userId);
+        } else {
+          // Generate new GIFT member number for first-time grant
+          const { count: giftCount } = await supabase
+            .from('founding_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('tier', 'admin_grant');
 
-        const currentYear = new Date().getFullYear();
-        const memberNumber = `${currentYear}-GIFT-${1000 + (giftCount || 0)}`;
+          const currentYear = new Date().getFullYear();
+          memberNumber = `${currentYear}-GIFT-${1000 + (giftCount || 0)}`;
 
-        // Create founding member record
-        const { error: insertError } = await supabase
-          .from('founding_members')
-          .insert({
-            user_id: userId,
-            tier: 'admin_grant',
-            member_number: memberNumber,
-            price_paid: 0,
-            special_badge: 'gift',
-            display_on_wall: false,
-          });
+          // Create founding member record
+          const { error: insertError } = await supabase
+            .from('founding_members')
+            .insert({
+              user_id: userId,
+              tier: 'admin_grant',
+              member_number: memberNumber,
+              price_paid: 0,
+              special_badge: 'gift',
+              display_on_wall: false,
+            });
 
-        if (insertError) {
-          console.error('Failed to create founding member:', insertError);
-          toast.error('Failed to create member record');
-          return;
+          if (insertError) {
+            console.error('Failed to create founding member:', insertError);
+            toast.error('Failed to create member record');
+            return;
+          }
         }
 
         // Update profile to premium
