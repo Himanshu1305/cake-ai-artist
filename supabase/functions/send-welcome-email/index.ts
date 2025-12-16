@@ -19,6 +19,9 @@ const getPremiumWelcomeEmail = (firstName: string) => `
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="text-align: center; padding: 20px 20px 0;">
+      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+    </div>
     <div style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border-radius: 20px 20px 0 0; padding: 40px; text-align: center;">
       <h1 style="color: white; margin: 0; font-size: 32px;">✨ Welcome to Premium!</h1>
     </div>
@@ -104,6 +107,9 @@ const getFreeWelcomeEmail = (firstName: string) => `
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f7;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="text-align: center; padding: 20px 20px 0;">
+      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+    </div>
     <div style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border-radius: 20px 20px 0 0; padding: 40px; text-align: center;">
       <h1 style="color: white; margin: 0; font-size: 32px;">🎂 Welcome to Cake AI Artist!</h1>
     </div>
