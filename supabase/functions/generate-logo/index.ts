@@ -25,7 +25,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Generating logo with prompt:", prompt.substring(0, 100) + "...");
+    // Ensure prompt explicitly asks for image generation
+    const imagePrompt = prompt.startsWith("Generate") ? prompt : `Generate an image: ${prompt}`;
+    console.log("Generating logo with prompt:", imagePrompt.substring(0, 100) + "...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -34,11 +36,11 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
+        model: "google/gemini-3-pro-image-preview",
         messages: [
           {
             role: "user",
-            content: prompt
+            content: imagePrompt
           }
         ],
         modalities: ["image", "text"]
