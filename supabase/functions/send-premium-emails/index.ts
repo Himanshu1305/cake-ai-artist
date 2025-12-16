@@ -196,11 +196,10 @@ function getPremiumWelcomeEmailHtml(
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(232, 67, 147, 0.15);">
           
-          <!-- Logo Placeholder -->
+          <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <!-- Logo will be added here -->
-              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -329,6 +328,12 @@ function getPaymentConfirmationEmailHtml(
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+            </td>
+          </tr>
           <!-- Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); padding: 30px; text-align: center;">
@@ -425,6 +430,12 @@ function getPaymentConfirmationEmailHtml(
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 25px 30px 0; text-align: center;">
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+            </td>
+          </tr>
           <!-- Header -->
           <tr>
             <td style="${headerColor} padding: 30px; text-align: center;">
@@ -631,7 +642,7 @@ function getSubscriptionHaltedEmailHtml(firstName: string): string {
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -729,7 +740,7 @@ function getSubscriptionExpiredEmailHtml(firstName: string): string {
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -841,7 +852,7 @@ function getSubscriptionCancelledEmailHtml(firstName: string, periodEndDate: str
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <p style="color: #c44569; font-size: 24px; font-weight: 700; margin: 0;">🎂 Cake AI Artist</p>
+              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
