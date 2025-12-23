@@ -1214,8 +1214,11 @@ export default function Admin() {
                                 size="sm"
                                 variant={profile.is_premium ? "destructive" : "default"}
                                 onClick={() => togglePremium(profile.id, profile.is_premium)}
+                                disabled={grantingPremium.has(profile.id)}
                               >
-                                {profile.is_premium ? 'Remove Premium' : 'Grant Premium'}
+                                {grantingPremium.has(profile.id) 
+                                  ? 'Processing...' 
+                                  : (profile.is_premium ? 'Remove Premium' : 'Grant Premium')}
                               </Button>
                             </TableCell>
                           </TableRow>
