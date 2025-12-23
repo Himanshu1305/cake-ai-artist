@@ -2013,13 +2013,15 @@ const BlogPost = () => {
         url={`https://cakeaiartist.com/blog/${id}`}
       />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Link to="/blog">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blog
-          </Button>
+      {/* Header with Logo */}
+      <header className="container mx-auto px-4 py-4 max-w-4xl">
+        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <span>Cake AI Artist</span>
         </Link>
+      </header>
+
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         <article className="bg-card/50 backdrop-blur-sm rounded-lg p-8 md:p-12 shadow-lg">
           <div className="mb-6">

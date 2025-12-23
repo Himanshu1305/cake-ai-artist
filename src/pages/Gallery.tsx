@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -257,7 +257,10 @@ const Gallery = () => {
       
       <nav className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-foreground">My Gallery</h1>
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+            <span>Cake AI Artist</span>
+          </Link>
           <div className="flex gap-4">
             <Button
               onClick={() => {

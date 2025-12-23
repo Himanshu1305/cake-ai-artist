@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,12 +160,17 @@ const Auth = () => {
         <link rel="canonical" href="https://cakeaiartist.com/auth" />
       </Helmet>
       
+      {/* Header with Logo */}
+      <header className="container mx-auto px-4 py-4">
+        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <span>Cake AI Artist</span>
+        </Link>
+      </header>
+
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 bg-surface-elevated/90 backdrop-blur-sm border-2 border-party-pink/30">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              🎂 Cake Creator
-            </h1>
             <p className="text-foreground/70">
               {isForgotPassword 
                 ? "Reset your password" 

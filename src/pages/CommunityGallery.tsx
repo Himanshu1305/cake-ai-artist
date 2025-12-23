@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -108,11 +108,11 @@ const CommunityGallery = () => {
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-40 border-b border-border/30">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Community Gallery</h1>
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+            <span>Cake AI Artist</span>
+          </Link>
           <div className="flex gap-3">
-            <Button onClick={() => navigate("/")} variant="outline" size="sm">
-              Home
-            </Button>
             <Button onClick={() => navigate("/#creator")} size="sm">
               <Sparkles className="w-4 h-4 mr-2" />
               Create Your Own

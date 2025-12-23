@@ -23,15 +23,13 @@ const Privacy = () => {
         <meta name="twitter:description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data." />
       </Helmet>
       
-      {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <Link to="/">
-          <Button variant="outline" className="mb-6">
-            <Home className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
+      {/* Header with Logo */}
+      <header className="container mx-auto px-4 py-4">
+        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <span>Cake AI Artist</span>
         </Link>
-      </div>
+      </header>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-12 max-w-4xl">
