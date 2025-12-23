@@ -12,7 +12,7 @@ import { Helmet } from "react-helmet-async";
 interface CommunityImage {
   id: string;
   image_url: string;
-  prompt: string;
+  occasion_type: string | null;
   created_at: string;
 }
 
@@ -30,16 +30,15 @@ const CommunityGallery = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from("generated_images")
-        .select("id, image_url, prompt, created_at")
-        .eq("featured", true)
+        .from("public_featured_images" as any)
+        .select("id, image_url, occasion_type, created_at")
         .order("created_at", { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
       if (data) {
-        setImages(data);
+        setImages(data as unknown as CommunityImage[]);
       }
     } catch (error) {
       console.error("Error loading community images:", error);
@@ -53,14 +52,15 @@ const CommunityGallery = () => {
     }
   };
 
-  const handleDownload = async (imageUrl: string, prompt: string) => {
+  const handleDownload = async (imageUrl: string, occasionType: string | null) => {
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cake-design-${prompt.slice(0, 20).replace(/\s+/g, '-')}-${Date.now()}.png`;
+      const filename = occasionType ? occasionType.toLowerCase().replace(/\s+/g, '-') : 'cake';
+      link.download = `cake-design-${filename}-${Date.now()}.png`;
       link.click();
       window.URL.revokeObjectURL(url);
       
@@ -161,12 +161,12 @@ const CommunityGallery = () => {
                 <div className="relative aspect-square">
                   <img
                     src={image.image_url}
-                    alt={image.prompt}
+                    alt={image.occasion_type || "Cake design"}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                     <p className="text-white text-sm font-medium line-clamp-2">
-                      {image.prompt}
+                      {image.occasion_type || "Cake Design"}
                     </p>
                   </div>
                 </div>
@@ -183,16 +183,16 @@ const CommunityGallery = () => {
             <div className="space-y-4">
               <img
                 src={selectedImage.image_url}
-                alt={selectedImage.prompt}
+                alt={selectedImage.occasion_type || "Cake design"}
                 className="w-full h-auto rounded-lg"
               />
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground italic">
-                  {selectedImage.prompt}
+                  {selectedImage.occasion_type || "Cake Design"}
                 </p>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleDownload(selectedImage.image_url, selectedImage.prompt)}
+                    onClick={() => handleDownload(selectedImage.image_url, selectedImage.occasion_type)}
                     className="flex-1"
                   >
                     <Download className="w-4 h-4 mr-2" />
