@@ -84,6 +84,7 @@ export default function Admin() {
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
   const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
+  const [grantingPremium, setGrantingPremium] = useState<Set<string>>(new Set());
   const [selectedEmailType, setSelectedEmailType] = useState<'halted' | 'expired' | 'cancelled' | 'none'>('expired');
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
@@ -466,18 +467,30 @@ export default function Admin() {
   };
 
   const togglePremium = async (userId: string, currentStatus: boolean) => {
+    // Prevent double-clicks
+    if (grantingPremium.has(userId)) {
+      toast.info('Please wait, processing...');
+      return;
+    }
+
     if (!currentStatus) {
-      // Granting premium - check for existing member number first
+      // Set loading state
+      setGrantingPremium(prev => new Set(prev).add(userId));
+      
+      // Granting premium - check for existing founding member record in database
       try {
-        // Find the user to check for existing member number
-        const user = profiles.find(p => p.id === userId);
-        const existingMemberNumber = user?.founding_member_number;
+        // Check database directly for existing founding member record (not just profile)
+        const { data: existingMember } = await supabase
+          .from('founding_members')
+          .select('member_number')
+          .eq('user_id', userId)
+          .maybeSingle();
         
         let memberNumber: string;
         
-        if (existingMemberNumber) {
+        if (existingMember?.member_number) {
           // Reuse existing member number (re-granting premium)
-          memberNumber = existingMemberNumber;
+          memberNumber = existingMember.member_number;
           console.log('Reactivating with existing member number:', memberNumber);
           
           // Update existing founding member record
@@ -513,6 +526,11 @@ export default function Admin() {
           if (insertError) {
             console.error('Failed to create founding member:', insertError);
             toast.error('Failed to create member record');
+            setGrantingPremium(prev => {
+              const next = new Set(prev);
+              next.delete(userId);
+              return next;
+            });
             return;
           }
         }
@@ -533,6 +551,11 @@ export default function Admin() {
 
         if (profileError) {
           toast.error('Failed to update user status');
+          setGrantingPremium(prev => {
+            const next = new Set(prev);
+            next.delete(userId);
+            return next;
+          });
           return;
         }
 
@@ -556,9 +579,21 @@ export default function Admin() {
         }
 
         toast.success(`Premium granted! Member ${memberNumber}`);
+        
+        // Clear loading state
+        setGrantingPremium(prev => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
       } catch (error) {
         console.error('Error granting premium:', error);
         toast.error('Failed to grant premium');
+        setGrantingPremium(prev => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
         return;
       }
     } else {

@@ -60,12 +60,49 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    // Set up auth state listener for OAuth signups
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const user = session.user;
+          const isOAuthUser = user.app_metadata?.provider === 'google';
+          
+          if (isOAuthUser) {
+            // Check if welcome email was already sent (use localStorage flag)
+            const welcomeSentKey = `welcome_sent_${user.id}`;
+            if (!localStorage.getItem(welcomeSentKey)) {
+              // Extract name from Google metadata
+              const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+              const nameParts = fullName.split(' ');
+              const firstName = nameParts[0] || '';
+              const lastName = nameParts.slice(1).join(' ') || '';
+              
+              // Send welcome email via Brevo
+              setTimeout(async () => {
+                try {
+                  await addContactToBrevo(user.email || '', firstName, lastName);
+                  localStorage.setItem(welcomeSentKey, 'true');
+                  console.log('Welcome email sent for OAuth user:', user.email);
+                } catch (err) {
+                  console.error('Failed to send OAuth welcome email:', err);
+                }
+              }, 0);
+            }
+          }
+          
+          navigate("/");
+        }
+      }
+    );
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/");
       }
     });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const addContactToBrevo = async (userEmail: string, userFirstName: string, userLastName: string) => {
