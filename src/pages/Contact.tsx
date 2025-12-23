@@ -60,13 +60,15 @@ const Contact = () => {
         email="support@cakeaiartist.com"
       />
       
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <Link to="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Button>
+      {/* Header with Logo */}
+      <header className="container mx-auto px-4 py-4 max-w-5xl">
+        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <span>Cake AI Artist</span>
         </Link>
+      </header>
+
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>

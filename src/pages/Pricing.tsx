@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,15 +254,10 @@ const Pricing = () => {
       {/* Navigation */}
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/")}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+            <span>Cake AI Artist</span>
+          </Link>
         </div>
       </nav>
 

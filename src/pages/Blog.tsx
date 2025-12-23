@@ -337,13 +337,15 @@ const Blog = () => {
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <Link to="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Button>
+      {/* Header with Logo */}
+      <header className="container mx-auto px-4 py-4 max-w-6xl">
+        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <span>Cake AI Artist</span>
         </Link>
+      </header>
+
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
 
         <div className="mb-12">
           <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Ideas & Tips</h1>
