@@ -282,7 +282,11 @@ const Index = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
-                <div className="flex flex-col gap-2 mt-8">
+                <div className="flex items-center gap-2 mb-6">
+                  <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+                  <span className="text-lg font-bold text-party-pink">Cake AI Artist</span>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Link to="/how-it-works">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button>
                   </Link>
