@@ -32,8 +32,11 @@ export const Footer = () => {
     <footer className="bg-gradient-to-br from-party-purple via-party-pink to-party-orange py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
-          <div>
-            <h3 className="font-bold text-lg mb-4">Cake AI Artist</h3>
+        <div>
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/logo.png" alt="Cake AI Artist" className="w-12 h-12 rounded-lg" />
+              <h3 className="font-bold text-lg">Cake AI Artist</h3>
+            </div>
             <p className="text-sm opacity-90">
               The best AI cake generator for stunning personalized cakes. Create beautiful virtual cake designs in seconds.
             </p>
