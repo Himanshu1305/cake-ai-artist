@@ -253,7 +253,7 @@ const UKLanding = () => {
               className="space-y-2"
             >
               <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
-                First 50 members only • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
+                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
               </span>
             </motion.div>
 
