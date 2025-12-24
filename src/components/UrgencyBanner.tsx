@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap } from 'lucide-react';
-import { SpotsRemainingCounter } from './SpotsRemainingCounter';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -42,10 +41,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
               <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                <span>🎉 NEW YEAR LIFETIME DEAL -</span>
-                <SpotsRemainingCounter className="flex-shrink-0" />
-                <span className="hidden sm:inline">SPOTS LEFT AT $49 - ENDS DEC 31</span>
-                <span className="sm:hidden">LEFT - ENDS DEC 31</span>
+                <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS DEC 31</span>
               </div>
             </div>
           </div>

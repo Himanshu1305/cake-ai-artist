@@ -61,13 +61,13 @@ export const SpotsRemainingCounter = ({ tier = 'total', className = '' }: SpotsR
   return (
     <motion.span
       initial={{ scale: 1 }}
-      animate={spotsLeft < 10 ? { scale: [1, 1.05, 1] } : {}}
-      transition={{ duration: 1, repeat: spotsLeft < 10 ? Infinity : 0 }}
+      animate={{ scale: [1, 1.02, 1] }}
+      transition={{ duration: 2, repeat: Infinity }}
       className={`inline-flex ${className}`}
     >
-      <Badge className={`${bg} ${text} font-semibold`}>
-        <Icon className="w-3 h-3 mr-1" />
-        {spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} left
+      <Badge className="bg-destructive text-destructive-foreground font-semibold">
+        <Zap className="w-3 h-3 mr-1" />
+        Limited spots remaining
       </Badge>
     </motion.span>
   );

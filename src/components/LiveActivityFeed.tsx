@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, TrendingUp, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles, TrendingUp, Users, Flame } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface Activity {
@@ -12,7 +12,6 @@ interface Activity {
 
 export const LiveActivityFeed = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [visible, setVisible] = useState(true);
   const isMountedRef = useRef(true);
   // Memoize random "online now" count to prevent re-render issues
   const [onlineCount] = useState(() => Math.floor(Math.random() * 500) + 100);
@@ -39,17 +38,9 @@ export const LiveActivityFeed = () => {
       )
       .subscribe();
 
-    // Rotation effect - show/hide periodically (increased to 15s to reduce timer load)
-    const interval = setInterval(() => {
-      if (isMountedRef.current) {
-        setVisible((v) => !v);
-      }
-    }, 15000);
-
     return () => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
-      clearInterval(interval);
     };
   }, []);
 
@@ -67,55 +58,68 @@ export const LiveActivityFeed = () => {
   if (activities.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 max-w-sm">
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ type: "spring", damping: 25 }}
-          >
-            <Card className="p-4 bg-surface-elevated/95 backdrop-blur-sm border-party-pink/30 shadow-party">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 bg-gradient-party rounded-full">
-                  <TrendingUp className="h-3.5 w-3.5 text-white" />
-                </div>
-                <span className="text-sm font-semibold text-foreground">Live Activity</span>
-                <div className="ml-auto flex gap-1">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="w-2 h-2 bg-green-500 rounded-full"
-                  />
-                </div>
+    <div className="fixed bottom-6 left-6 z-40 w-80">
+      <motion.div
+        initial={{ opacity: 0, x: -100, scale: 0.9 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ type: "spring", damping: 20, stiffness: 100 }}
+      >
+        <Card className="p-5 bg-surface-elevated/98 backdrop-blur-md border-2 border-party-pink/40 shadow-xl shadow-party-pink/20">
+          {/* Header with urgency */}
+          <div className="flex items-center gap-2 mb-4">
+            <motion.div 
+              animate={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+              className="p-2 bg-gradient-party rounded-full shadow-lg"
+            >
+              <TrendingUp className="h-4 w-4 text-white" />
+            </motion.div>
+            <div className="flex-1">
+              <span className="text-base font-bold text-foreground">Live Activity</span>
+              <div className="flex items-center gap-1 text-xs text-party-pink">
+                <Flame className="h-3 w-3" />
+                <span>High demand right now</span>
               </div>
+            </div>
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="w-3 h-3 bg-green-500 rounded-full shadow-lg shadow-green-500/50"
+            />
+          </div>
 
-              <div className="space-y-2">
-                {activities.slice(0, 3).map((activity, idx) => (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="text-xs text-muted-foreground flex items-start gap-2"
-                  >
-                    <Sparkles className="h-3 w-3 text-party-pink mt-0.5 flex-shrink-0" />
-                    <span>{activity.message}</span>
-                  </motion.div>
-                ))}
-              </div>
+          {/* Activity list */}
+          <div className="space-y-3">
+            {activities.slice(0, 4).map((activity, idx) => (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="text-sm text-foreground/80 flex items-start gap-2 bg-background/50 rounded-lg p-2"
+              >
+                <Sparkles className="h-4 w-4 text-party-pink mt-0.5 flex-shrink-0" />
+                <span className="leading-tight">{activity.message}</span>
+              </motion.div>
+            ))}
+          </div>
 
-              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {onlineCount} online now
-                </span>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Footer with online count */}
+          <div className="mt-4 pt-3 border-t border-party-pink/20 flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Users className="h-4 w-4 text-party-purple" />
+              <span className="text-party-purple font-bold">{onlineCount}</span> browsing now
+            </span>
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="text-xs bg-gradient-party text-white px-2 py-1 rounded-full font-semibold"
+            >
+              LIVE
+            </motion.div>
+          </div>
+        </Card>
+      </motion.div>
     </div>
   );
 };
