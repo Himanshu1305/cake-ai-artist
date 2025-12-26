@@ -452,7 +452,35 @@ const Index = () => {
               But when you&apos;re juggling everything else, who has three hours to browse stock photos? 
               That&apos;s where we come in. Get gorgeous, personalized cake designs in the time it takes to make coffee.
             </p>
+            <Button
+              size="lg"
+              className="bg-gradient-party hover:opacity-90 text-white font-bold px-8 py-6 text-lg"
+              onClick={() => {
+                const creatorEl = document.getElementById('creator');
+                if (creatorEl) {
+                  const headerOffset = 80;
+                  const elementPosition = creatorEl.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                }
+              }}
+            >
+              🎂 Start Creating Your Cake Now
+            </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Main Creator Section - Moved Up for better UX */}
+      <div id="creator" className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
+            <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
+          </div>
+          <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
+            <CakeCreator />
+          </Suspense>
         </div>
       </div>
 
@@ -489,19 +517,6 @@ const Index = () => {
               <p className="text-muted-foreground">{feature.desc}</p>
             </motion.div>
           ))}
-        </div>
-      </div>
-
-      {/* Main Creator Section - Moved Up */}
-      <div id="creator" className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
-            <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
-          </div>
-          <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
-            <CakeCreator />
-          </Suspense>
         </div>
       </div>
 
