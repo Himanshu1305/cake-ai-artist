@@ -189,7 +189,6 @@ const Index = () => {
       
       <SoftwareApplicationSchema />
       
-      {/* SEO schemas temporarily disabled to fix blank screen
       <AggregateRatingSchema
         itemName="Cake AI Artist - AI Cake Designer"
         ratingValue={4.9}
@@ -228,7 +227,6 @@ const Index = () => {
           }
         ]}
       />
-      */}
       
       <FloatingEmojis />
       {/* CursorSparkles temporarily disabled to fix blank page issue */}

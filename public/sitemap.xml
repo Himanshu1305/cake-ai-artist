@@ -3,55 +3,55 @@
   <!-- Main Pages -->
   <url>
     <loc>https://cakeaiartist.com/</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/pricing</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.9</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/how-it-works</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/use-cases</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/faq</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/community</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/about</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/contact</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.5</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -59,25 +59,25 @@
   <!-- Country Landing Pages -->
   <url>
     <loc>https://cakeaiartist.com/uk</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/canada</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/australia</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/india</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -85,25 +85,25 @@
   <!-- India-Specific Blog Posts -->
   <url>
     <loc>https://cakeaiartist.com/blog/diwali-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/holi-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/indian-christmas-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/indian-new-year-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
@@ -111,49 +111,49 @@
   <!-- Christmas & New Year Blog Posts -->
   <url>
     <loc>https://cakeaiartist.com/blog/american-christmas-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/american-new-year-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/british-christmas-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/british-new-year-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/canadian-christmas-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/canadian-new-year-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/australian-christmas-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/australian-new-year-cake-ideas</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.7</priority>
     <changefreq>yearly</changefreq>
   </url>
@@ -161,25 +161,25 @@
   <!-- Seasonal/Country-Specific Blog Posts -->
   <url>
     <loc>https://cakeaiartist.com/blog/fourth-of-july-cake-ideas</loc>
-    <lastmod>2025-12-05</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/british-jubilee-royal-cakes</loc>
-    <lastmod>2025-12-04</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/canada-day-cake-ideas</loc>
-    <lastmod>2025-12-03</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/australia-day-cake-ideas</loc>
-    <lastmod>2025-12-02</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>yearly</changefreq>
   </url>
@@ -187,67 +187,67 @@
   <!-- General Blog Posts -->
   <url>
     <loc>https://cakeaiartist.com/blog/creative-cake-ideas-birthday</loc>
-    <lastmod>2025-11-20</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/cake-design-trends-2025</loc>
-    <lastmod>2025-11-18</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/ai-vs-traditional-cake-design</loc>
-    <lastmod>2025-11-15</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/perfect-birthday-messages</loc>
-    <lastmod>2025-11-12</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/virtual-party-guide</loc>
-    <lastmod>2025-11-10</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/last-minute-birthday-solutions</loc>
-    <lastmod>2025-11-08</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/personalized-cakes-psychology</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/anniversary-cake-ideas</loc>
-    <lastmod>2025-11-03</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/kids-birthday-cakes-guide</loc>
-    <lastmod>2025-10-30</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/cake-message-writing-tips</loc>
-    <lastmod>2025-10-28</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/blog/first-birthday-cake-ideas</loc>
-    <lastmod>2025-10-25</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
@@ -255,13 +255,13 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://cakeaiartist.com/privacy</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.3</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
     <loc>https://cakeaiartist.com/terms</loc>
-    <lastmod>2025-12-07</lastmod>
+    <lastmod>2025-12-26</lastmod>
     <priority>0.3</priority>
     <changefreq>yearly</changefreq>
   </url>
