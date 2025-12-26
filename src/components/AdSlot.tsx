@@ -1,14 +1,12 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useAdsEnabled } from "@/hooks/useAdsEnabled";
 
 interface AdSlotProps {
   size: "horizontal" | "rectangle" | "responsive" | "in-article";
   className?: string;
   slotId?: string;
 }
-
-// Set to true once AdSense is approved and you have real slot IDs
-const ADSENSE_ENABLED = false;
 
 const sizeConfig = {
   horizontal: { width: 728, height: 90, style: "min-h-[90px]" },
@@ -20,10 +18,11 @@ const sizeConfig = {
 export const AdSlot = ({ size, className, slotId }: AdSlotProps) => {
   const adRef = useRef<HTMLDivElement>(null);
   const config = sizeConfig[size];
+  const { adsEnabled, loading } = useAdsEnabled();
 
   useEffect(() => {
-    // Only initialize ads if AdSense is enabled and we have a slot ID
-    if (ADSENSE_ENABLED && slotId && adRef.current) {
+    // Only initialize ads if enabled in database and we have a slot ID
+    if (adsEnabled && slotId && adRef.current) {
       try {
         // Push ad to AdSense
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
@@ -31,9 +30,22 @@ export const AdSlot = ({ size, className, slotId }: AdSlotProps) => {
         console.error("AdSense error:", error);
       }
     }
-  }, [slotId]);
+  }, [adsEnabled, slotId]);
 
-  if (ADSENSE_ENABLED && slotId) {
+  // Don't render anything while loading to prevent layout shift
+  if (loading) {
+    return (
+      <div
+        className={cn(
+          "flex items-center justify-center bg-muted/10 rounded-lg animate-pulse",
+          config.style,
+          className
+        )}
+      />
+    );
+  }
+
+  if (adsEnabled && slotId) {
     return (
       <div
         ref={adRef}
@@ -55,7 +67,7 @@ export const AdSlot = ({ size, className, slotId }: AdSlotProps) => {
     );
   }
 
-  // Placeholder when ads are not enabled yet
+  // Placeholder when ads are not enabled
   return (
     <div
       className={cn(
