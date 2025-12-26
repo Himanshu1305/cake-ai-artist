@@ -10,6 +10,7 @@ import { LivePurchaseNotifications } from "@/components/LivePurchaseNotification
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { AdSlot } from "@/components/AdSlot";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 // Temporarily disabled CursorSparkles to fix blank page issue
 // import { CursorSparkles } from "@/components/CursorSparkles";
@@ -892,8 +893,13 @@ const Index = () => {
       </Suspense>
       */}
 
+      {/* Ad Banner before CTA */}
+      <div className="container mx-auto px-4 py-8">
+        <AdSlot size="horizontal" className="max-w-3xl mx-auto" />
+      </div>
+
       {/* CTA Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-party-purple/20 to-party-pink/20 rounded-2xl p-12 text-center">
           <h2 className="text-4xl font-bold mb-4 text-foreground">
             Join 10,000+ Happy Creators

@@ -4,6 +4,8 @@ import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { ArticleSchema } from "@/components/SEOSchema";
+import { AdSlot } from "@/components/AdSlot";
+import { SidebarAd } from "@/components/SidebarAd";
 
 interface BlogPostData {
   title: string;
@@ -2021,44 +2023,59 @@ const BlogPost = () => {
         </Link>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex gap-8">
+          {/* Main Content */}
+          <div className="flex-1 max-w-4xl">
+            <article className="bg-card/50 backdrop-blur-sm rounded-lg p-8 md:p-12 shadow-lg">
+              <div className="mb-6">
+                <span className="text-sm font-semibold text-party-purple">
+                  {post.category}
+                </span>
+              </div>
 
-        <article className="bg-card/50 backdrop-blur-sm rounded-lg p-8 md:p-12 shadow-lg">
-          <div className="mb-6">
-            <span className="text-sm font-semibold text-party-purple">
-              {post.category}
-            </span>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                {post.title}
+              </h1>
+
+              <div className="flex items-center gap-6 text-sm text-muted-foreground mb-8 pb-8 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{post.date}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{post.readTime}</span>
+                </div>
+              </div>
+
+              {/* In-article ad after intro */}
+              <AdSlot size="in-article" className="my-8" />
+
+              <div 
+                className="prose prose-lg max-w-none text-foreground [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+                style={{
+                  lineHeight: '1.8'
+                }}
+              />
+
+              {/* Horizontal ad after article */}
+              <div className="mt-12">
+                <AdSlot size="horizontal" className="w-full" />
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-border/50">
+                <Link to="/">
+                  <Button size="lg">Alright, Let's Make a Cake</Button>
+                </Link>
+              </div>
+            </article>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            {post.title}
-          </h1>
-
-          <div className="flex items-center gap-6 text-sm text-muted-foreground mb-8 pb-8 border-b border-border/50">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{post.date}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span>{post.readTime}</span>
-            </div>
-          </div>
-
-          <div 
-            className="prose prose-lg max-w-none text-foreground [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-            style={{
-              lineHeight: '1.8'
-            }}
-          />
-
-          <div className="mt-12 pt-8 border-t border-border/50">
-            <Link to="/">
-              <Button size="lg">Alright, Let's Make a Cake</Button>
-            </Link>
-          </div>
-        </article>
+          {/* Sidebar Ad (desktop only) */}
+          <SidebarAd />
+        </div>
 
         {/* Related Posts */}
         <div className="mt-12">

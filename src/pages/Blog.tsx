@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AdSlot } from "@/components/AdSlot";
 
 const Blog = () => {
   const [email, setEmail] = useState("");
@@ -356,40 +357,54 @@ const Blog = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
-            <Link key={post.id} to={`/blog/${post.id}`}>
-              <Card className="h-full p-6 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer group">
-                <div className="mb-4">
-                  <span className="text-sm font-semibold text-party-purple">
-                    {post.category}
-                  </span>
-                </div>
-                
-                <h2 className="text-xl font-bold mb-3 text-foreground group-hover:text-party-purple transition-colors">
-                  {post.title}
-                </h2>
-                
-                <p className="text-muted-foreground mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
-                
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>{post.date}</span>
+          {blogPosts.map((post, index) => (
+            <>
+              <Link key={post.id} to={`/blog/${post.id}`}>
+                <Card className="h-full p-6 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer group">
+                  <div className="mb-4">
+                    <span className="text-sm font-semibold text-party-purple">
+                      {post.category}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{post.readTime}</span>
+                  
+                  <h2 className="text-xl font-bold mb-3 text-foreground group-hover:text-party-purple transition-colors">
+                    {post.title}
+                  </h2>
+                  
+                  <p className="text-muted-foreground mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+                  
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>{post.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{post.readTime}</span>
+                    </div>
                   </div>
+                </Card>
+              </Link>
+              
+              {/* Insert horizontal ad after every 6 posts */}
+              {(index + 1) % 6 === 0 && index < blogPosts.length - 1 && (
+                <div key={`ad-${index}`} className="col-span-full">
+                  <AdSlot size="horizontal" className="w-full max-w-3xl mx-auto my-4" />
                 </div>
-              </Card>
-            </Link>
+              )}
+            </>
           ))}
         </div>
 
+        {/* Ad before Newsletter */}
+        <div className="mt-12 flex justify-center">
+          <AdSlot size="rectangle" className="max-w-[300px]" />
+        </div>
+
         {/* Newsletter Signup */}
-        <div className="mt-16 text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">
+        <div className="mt-8 text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">
           <h2 className="text-3xl font-bold mb-4 text-foreground">Want More?</h2>
           <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
             New ideas, tips, and the occasional discount code. We email like once a week max. 
