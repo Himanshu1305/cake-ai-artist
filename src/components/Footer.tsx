@@ -132,6 +132,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/advertising" className="hover:underline opacity-90">
+                  Advertising
+                </Link>
+              </li>
+              <li>
                 <button
                   onClick={handleCookieSettings}
                   className="hover:underline opacity-90 text-left"

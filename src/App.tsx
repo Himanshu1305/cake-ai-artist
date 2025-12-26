@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Privacy from "./pages/Privacy";
+import Advertising from "./pages/Advertising";
 import Auth from "./pages/Auth";
 import Gallery from "./pages/Gallery";
 import CommunityGallery from "./pages/CommunityGallery";
@@ -47,6 +48,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/advertising" element={<Advertising />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/faq" element={<FAQ />} />

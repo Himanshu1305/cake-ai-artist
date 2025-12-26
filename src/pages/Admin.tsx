@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { useAdsEnabled, useUpdateAdsEnabled } from '@/hooks/useAdsEnabled';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -98,7 +100,8 @@ export default function Admin() {
     totalSubscribers: 0,
   });
   const [chartData, setChartData] = useState<ChartData | null>(null);
-
+  const { adsEnabled, loading: adsLoading } = useAdsEnabled();
+  const updateAdsEnabled = useUpdateAdsEnabled();
   useEffect(() => {
     checkAdminAccess();
   }, []);
@@ -829,6 +832,10 @@ export default function Admin() {
               <Mail className="w-4 h-4 mr-2" />
               Blog Subscribers
             </TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6">
@@ -1392,6 +1399,54 @@ export default function Admin() {
                     )}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Site Settings
+                </CardTitle>
+                <CardDescription>Configure site-wide settings and features</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Ads Toggle */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Enable Advertisements</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Toggle Google AdSense advertisements across the entire site. 
+                      Disable for testing or compliance purposes.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Note: Actual ads will only display once you have valid AdSense slot IDs configured.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={adsEnabled ? "default" : "secondary"}>
+                      {adsEnabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                    <Switch
+                      checked={adsEnabled}
+                      disabled={adsLoading || updateAdsEnabled.isPending}
+                      onCheckedChange={(checked) => {
+                        updateAdsEnabled.mutate(checked, {
+                          onSuccess: () => {
+                            toast.success(`Ads ${checked ? 'enabled' : 'disabled'} site-wide`);
+                          },
+                          onError: (error) => {
+                            toast.error('Failed to update ads setting');
+                            console.error('Error updating ads setting:', error);
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
