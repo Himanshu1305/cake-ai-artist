@@ -350,3 +350,63 @@ export const ReviewSchema = ({ itemName, reviews }: ReviewSchemaProps) => {
     </Helmet>
   );
 };
+
+// Combined Product + Reviews + AggregateRating schema (fixes Google Search Console error)
+interface ProductReviewSchemaProps {
+  itemName: string;
+  description?: string;
+  url?: string;
+  ratingValue: number;
+  ratingCount: number;
+  reviewCount: number;
+  reviews: ReviewItem[];
+}
+
+export const ProductReviewSchema = ({ 
+  itemName, 
+  description,
+  url,
+  ratingValue, 
+  ratingCount, 
+  reviewCount,
+  reviews 
+}: ProductReviewSchemaProps) => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: itemName,
+    ...(description && { description }),
+    ...(url && { url }),
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: ratingValue.toString(),
+      ratingCount: ratingCount.toString(),
+      reviewCount: reviewCount.toString(),
+      bestRating: "5",
+      worstRating: "1"
+    },
+    review: reviews.map(review => ({
+      "@type": "Review",
+      author: {
+        "@type": "Person",
+        name: review.author
+      },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.ratingValue.toString(),
+        bestRating: "5",
+        worstRating: "1"
+      },
+      reviewBody: review.reviewBody,
+      datePublished: review.datePublished || new Date().toISOString().split('T')[0]
+    }))
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};

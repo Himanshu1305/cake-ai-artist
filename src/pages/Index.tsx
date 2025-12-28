@@ -33,7 +33,7 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, AggregateRatingSchema, ReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
@@ -190,17 +190,13 @@ const Index = () => {
       
       <SoftwareApplicationSchema />
       
-      <AggregateRatingSchema
+      <ProductReviewSchema
         itemName="Cake AI Artist - AI Cake Designer"
+        description="AI-powered personalized cake design platform"
+        url="https://cakeaiartist.com"
         ratingValue={4.9}
         ratingCount={847}
         reviewCount={847}
-        bestRating={5}
-        worstRating={1}
-      />
-      
-      <ReviewSchema
-        itemName="Cake AI Artist - AI Cake Designer"
         reviews={[
           {
             author: "Sarah M.",
