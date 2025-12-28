@@ -177,6 +177,81 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gallery_image_stats: {
+        Row: {
+          comment_count: number
+          created_at: string
+          id: string
+          image_id: string
+          like_count: number
+          updated_at: string
+        }
+        Insert: {
+          comment_count?: number
+          created_at?: string
+          id?: string
+          image_id: string
+          like_count?: number
+          updated_at?: string
+        }
+        Update: {
+          comment_count?: number
+          created_at?: string
+          id?: string
+          image_id?: string
+          like_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery_likes: {
+        Row: {
+          created_at: string
+          id: string
+          image_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_images: {
         Row: {
           created_at: string | null
