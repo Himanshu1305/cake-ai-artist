@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { FAQSchema } from "@/components/SEOSchema";
+import { FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import {
   Accordion,
   AccordionContent,
@@ -79,6 +79,13 @@ const FAQ = () => {
           <span>Cake AI Artist</span>
         </Link>
       </header>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "FAQ", url: "https://cakeaiartist.com/faq" },
+        ]}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 

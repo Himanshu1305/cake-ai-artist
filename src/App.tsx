@@ -29,6 +29,8 @@ import UKLanding from "./pages/UKLanding";
 import CanadaLanding from "./pages/CanadaLanding";
 import AustraliaLanding from "./pages/AustraliaLanding";
 import IndiaLanding from "./pages/IndiaLanding";
+import FreeCakeDesigner from "./pages/FreeCakeDesigner";
+import { EmbedGalleryPage } from "./components/EmbeddableGalleryWidget";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +69,8 @@ const App = () => {
               <Route path="/canada" element={<CanadaLanding />} />
               <Route path="/australia" element={<AustraliaLanding />} />
               <Route path="/india" element={<IndiaLanding />} />
+              <Route path="/free-ai-cake-designer" element={<FreeCakeDesigner />} />
+              <Route path="/embed/gallery" element={<EmbedGalleryPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

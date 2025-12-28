@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
-import { LocalBusinessSchema } from "@/components/SEOSchema";
+import { LocalBusinessSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -58,6 +58,13 @@ const Contact = () => {
         name="Cake AI Artist"
         url="https://cakeaiartist.com"
         email="support@cakeaiartist.com"
+      />
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Contact", url: "https://cakeaiartist.com/contact" },
+        ]}
       />
       
       {/* Header with Logo */}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
 
 const Terms = () => {
   return (
@@ -29,6 +30,13 @@ const Terms = () => {
           <span>Cake AI Artist</span>
         </Link>
       </header>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Terms of Service", url: "https://cakeaiartist.com/terms" },
+        ]}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 

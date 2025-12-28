@@ -8,6 +8,8 @@ import { Download, Sparkles, Heart, MessageCircle } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
+import { PopularCakesSection } from "@/components/PopularCakesSection";
 import { useGalleryInteractions } from "@/hooks/useGalleryInteractions";
 import { GalleryComments } from "@/components/GalleryComments";
 import { cn } from "@/lib/utils";
@@ -135,6 +137,13 @@ const CommunityGallery = () => {
         <meta name="twitter:description" content="Explore amazing virtual cakes created with the best AI cake generator." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Community Gallery", url: "https://cakeaiartist.com/community" },
+        ]}
+      />
       
       {/* Navigation Header */}
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-40 border-b border-border/30">
@@ -154,7 +163,10 @@ const CommunityGallery = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
+        {/* Most Popular This Week */}
+        <PopularCakesSection />
+
+        <div className="text-center mb-12 mt-8">
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Community Creations
           </h2>

@@ -33,7 +33,8 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema } from "@/components/SEOSchema";
+import { PopularCakesSection } from "@/components/PopularCakesSection";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
@@ -222,6 +223,20 @@ const Index = () => {
             ratingValue: 5,
             datePublished: "2024-12-05"
           }
+        ]}
+      />
+      
+      <HowToSchema
+        name="How to Create a Personalized Cake with AI"
+        description="Create a beautiful personalized cake design in 30 seconds using our AI cake generator"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "USD", value: "0" }}
+        steps={[
+          { name: "Enter the recipient's name", text: "Type the name you want on the cake" },
+          { name: "Choose the occasion", text: "Select birthday, anniversary, wedding, or other celebration" },
+          { name: "Customize your design", text: "Pick colors, layers, themes, and optionally add a character" },
+          { name: "Generate your cake", text: "Click generate and wait 30 seconds for your AI-designed cake" },
+          { name: "Download and share", text: "Download your high-resolution cake image or share to social media" },
         ]}
       />
       
@@ -888,6 +903,9 @@ const Index = () => {
         <TrustBadges />
       </Suspense>
       */}
+
+      {/* Most Popular Cakes This Week */}
+      <PopularCakesSection />
 
       {/* Ad Banner before CTA */}
       <div className="container mx-auto px-4 py-8">
