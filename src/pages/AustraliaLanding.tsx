@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,6 +145,27 @@ const AustraliaLanding = () => {
         <meta property="og:url" content="https://cakeaiartist.com/australia" />
         <meta property="og:locale" content="en_AU" />
       </Helmet>
+
+      <OrganizationSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com/australia"
+        description="AI-powered cake design for Australian celebrations - birthdays, Australia Day, and beach parties"
+      />
+
+      <ProductReviewSchema
+        itemName="Cake AI Artist - AI Cake Designer Australia"
+        description="AI-powered cake design platform for Australian celebrations"
+        url="https://cakeaiartist.com/australia"
+        ratingValue={4.9}
+        ratingCount={245}
+        reviewCount={245}
+        reviews={[
+          { author: "Emily R.", reviewBody: "As a party planner, I use this weekly! Made a gorgeous tiered vanilla anniversary cake.", ratingValue: 5, datePublished: "2024-11-22" },
+          { author: "Daniel H.", reviewBody: "Created my mate's Goku birthday cake on the train! The modern style with blue accents was sick!", ratingValue: 5, datePublished: "2024-11-30" },
+          { author: "Chloe M.", reviewBody: "Made my daughter's Barbie cake with pink elegant styling. Looked like a real bakery did it!", ratingValue: 5, datePublished: "2024-12-04" },
+          { author: "Josh W.", reviewBody: "Used the Spider-Man character with chocolate 3-layer design for my nephew. Total legend move!", ratingValue: 5, datePublished: "2024-12-12" }
+        ]}
+      />
 
       <FloatingEmojis />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />

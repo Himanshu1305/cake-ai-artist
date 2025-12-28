@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,6 +145,27 @@ const IndiaLanding = () => {
         <meta property="og:url" content="https://cakeaiartist.com/india" />
         <meta property="og:locale" content="en_IN" />
       </Helmet>
+
+      <OrganizationSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com/india"
+        description="AI-powered cake design for Indian celebrations - birthdays, Diwali, Holi, and anniversaries"
+      />
+
+      <ProductReviewSchema
+        itemName="Cake AI Artist - AI Cake Designer India"
+        description="AI-powered cake design platform for Indian celebrations"
+        url="https://cakeaiartist.com/india"
+        ratingValue={4.9}
+        ratingCount={423}
+        reviewCount={423}
+        reviews={[
+          { author: "Priya S.", reviewBody: "Made a Chhota Bheem cake for my son's 5th birthday. The chocolate 2-layer design was exactly what he wanted!", ratingValue: 5, datePublished: "2024-11-16" },
+          { author: "Rahul M.", reviewBody: "The Motu Patlu option was brilliant for my nephew! Created a fun cartoon vanilla 3-layer cake.", ratingValue: 5, datePublished: "2024-11-24" },
+          { author: "Ananya K.", reviewBody: "My daughter is obsessed with Hello Kitty. The pastel pink elegant tiered design was absolutely perfect!", ratingValue: 5, datePublished: "2024-12-01" },
+          { author: "Arjun P.", reviewBody: "Created a gorgeous Barbie cake with pink and magenta theme for my daughter. The princess design was stunning!", ratingValue: 5, datePublished: "2024-12-09" }
+        ]}
+      />
 
       <FloatingEmojis />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,6 +145,27 @@ const UKLanding = () => {
         <meta property="og:url" content="https://cakeaiartist.com/uk" />
         <meta property="og:locale" content="en_GB" />
       </Helmet>
+
+      <OrganizationSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com/uk"
+        description="AI-powered personalised cake design for UK celebrations - birthdays, royal events, and garden parties"
+      />
+
+      <ProductReviewSchema
+        itemName="Cake AI Artist - AI Cake Designer UK"
+        description="AI-powered personalised cake design platform for British celebrations"
+        url="https://cakeaiartist.com/uk"
+        ratingValue={4.9}
+        ratingCount={312}
+        reviewCount={312}
+        reviews={[
+          { author: "James K.", reviewBody: "Made a Peppa Pig cake for my daughter's 4th birthday. The pastel pink design was spot on!", ratingValue: 5, datePublished: "2024-11-20" },
+          { author: "Emma W.", reviewBody: "The Elsa character option was brilliant! Created a proper tiered birthday cake for my nan's 70th.", ratingValue: 5, datePublished: "2024-11-28" },
+          { author: "Sophie R.", reviewBody: "Used the fun/cartoon style for my son's Spider-Man cake. The multicolor frosting looked absolutely gorgeous!", ratingValue: 5, datePublished: "2024-12-05" },
+          { author: "David M.", reviewBody: "Created a beautiful red velvet anniversary cake with gold/silver accents. My wife loved it!", ratingValue: 5, datePublished: "2024-12-10" }
+        ]}
+      />
 
       <FloatingEmojis />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />

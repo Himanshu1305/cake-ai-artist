@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,6 +145,27 @@ const CanadaLanding = () => {
         <meta property="og:url" content="https://cakeaiartist.com/canada" />
         <meta property="og:locale" content="en_CA" />
       </Helmet>
+
+      <OrganizationSchema 
+        name="Cake AI Artist"
+        url="https://cakeaiartist.com/canada"
+        description="AI-powered cake design for Canadian celebrations - birthdays, Canada Day, and winter parties"
+      />
+
+      <ProductReviewSchema
+        itemName="Cake AI Artist - AI Cake Designer Canada"
+        description="AI-powered cake design platform for Canadian celebrations"
+        url="https://cakeaiartist.com/canada"
+        ratingValue={4.9}
+        ratingCount={287}
+        reviewCount={287}
+        reviews={[
+          { author: "Mike T.", reviewBody: "Made a Pikachu birthday cake for my son's 8th. The rainbow colors were perfect!", ratingValue: 5, datePublished: "2024-11-18" },
+          { author: "Nicole B.", reviewBody: "Used the Frozen theme with Olaf character for my daughter's party. The pastel 3-layer cake design was stunning!", ratingValue: 5, datePublished: "2024-11-25" },
+          { author: "Ryan D.", reviewBody: "Created a Minions graduation cake with funfetti style. The AI-generated message was heartfelt!", ratingValue: 5, datePublished: "2024-12-02" },
+          { author: "Sarah L.", reviewBody: "The Hello Kitty option was exactly what my daughter wanted. Pink 2-layer design looked professional!", ratingValue: 5, datePublished: "2024-12-08" }
+        ]}
+      />
 
       <FloatingEmojis />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
