@@ -410,3 +410,64 @@ export const ProductReviewSchema = ({
     </Helmet>
   );
 };
+
+// HowTo Schema for step-by-step processes (great for cake creation)
+interface HowToStep {
+  name: string;
+  text: string;
+  url?: string;
+  image?: string;
+}
+
+interface HowToSchemaProps {
+  name: string;
+  description: string;
+  totalTime?: string; // ISO 8601 duration format e.g., "PT30S" for 30 seconds
+  estimatedCost?: {
+    currency: string;
+    value: string;
+  };
+  steps: HowToStep[];
+  image?: string;
+}
+
+export const HowToSchema = ({ 
+  name, 
+  description, 
+  totalTime, 
+  estimatedCost,
+  steps,
+  image 
+}: HowToSchemaProps) => {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    ...(totalTime && { totalTime }),
+    ...(image && { image }),
+    ...(estimatedCost && {
+      estimatedCost: {
+        "@type": "MonetaryAmount",
+        currency: estimatedCost.currency,
+        value: estimatedCost.value
+      }
+    }),
+    step: steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      ...(step.url && { url: step.url }),
+      ...(step.image && { image: step.image })
+    }))
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};

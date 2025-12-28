@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Home, Sparkles, Brain, Palette, Download, Share2, Gift } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
 
 const About = () => {
   return (
@@ -24,6 +25,13 @@ const About = () => {
         <meta name="twitter:description" content="We built Cake AI Artist because designing cakes shouldn't require a degree." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "About", url: "https://cakeaiartist.com/about" },
+        ]}
+      />
       
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4">

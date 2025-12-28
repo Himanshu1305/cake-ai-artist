@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Home, Shield, Lock, Eye, Database, Mail, Scale, Clock, Globe, Users, Calendar } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
 
 const Privacy = () => {
   return (
@@ -30,6 +31,13 @@ const Privacy = () => {
           <span>Cake AI Artist</span>
         </Link>
       </header>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Privacy Policy", url: "https://cakeaiartist.com/privacy" },
+        ]}
+      />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-12 max-w-4xl">

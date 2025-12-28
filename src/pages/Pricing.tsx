@@ -9,7 +9,7 @@ import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ProductSchema } from "@/components/SEOSchema";
+import { ProductSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -241,6 +241,13 @@ const Pricing = () => {
         <meta name="twitter:description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Pricing", url: "https://cakeaiartist.com/pricing" },
+        ]}
+      />
       
       <ProductSchema 
         name="Cake AI Artist New Year Special - Tier 1"

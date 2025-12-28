@@ -4,6 +4,7 @@ import { ArrowLeft, Type, Sparkles, Download, Share2, Star, Heart, Palette, Laye
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema, HowToSchema } from "@/components/SEOSchema";
 
 const HowItWorks = () => {
   return (
@@ -24,6 +25,28 @@ const HowItWorks = () => {
         <meta name="twitter:description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "How It Works", url: "https://cakeaiartist.com/how-it-works" },
+        ]}
+      />
+
+      <HowToSchema
+        name="How to Create a Personalized Cake in 30 Seconds"
+        description="Step-by-step guide to creating stunning AI-generated cake designs for any occasion"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "USD", value: "0" }}
+        steps={[
+          { name: "Enter a Name", text: "Type the name you want on the cake - could be 'Sarah', 'Mom', or 'Class of 2025'" },
+          { name: "Add Personal Details", text: "Tell us your relationship to the recipient and their gender for personalized messages" },
+          { name: "Choose Your Occasion", text: "Select birthday, anniversary, wedding, graduation, or other celebrations" },
+          { name: "Add a Character (Optional)", text: "Choose from 28+ popular characters like Spider-Man, Elsa, or Peppa Pig" },
+          { name: "Customize Design", text: "Pick cake type, layers, theme, and colors" },
+          { name: "Generate & Download", text: "Click generate, wait 30 seconds, then download your high-resolution cake images" },
+        ]}
+      />
       
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4 max-w-5xl">

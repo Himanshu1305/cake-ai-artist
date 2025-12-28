@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdSlot } from "@/components/AdSlot";
@@ -337,6 +338,13 @@ const Blog = () => {
         <meta name="twitter:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Blog", url: "https://cakeaiartist.com/blog" },
+        ]}
+      />
       
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4 max-w-6xl">

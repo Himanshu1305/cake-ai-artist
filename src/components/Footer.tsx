@@ -82,6 +82,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/free-ai-cake-designer" className="hover:underline opacity-90">
+                  Free AI Cake Designer
+                </Link>
+              </li>
+              <li>
                 <Link to="/pricing" className="hover:underline opacity-90">
                   Pricing
                 </Link>
