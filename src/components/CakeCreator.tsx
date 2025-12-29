@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MobileSelect } from "@/components/ui/mobile-select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
-import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon, RefreshCw } from "lucide-react";
+import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon, RefreshCw, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -1900,6 +1901,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
               )}
             </div>
+
+            {/* Login Required Banner - shown when user is not logged in */}
+            {!isLoggedIn && (
+              <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg animate-pulse">
+                <div className="flex-shrink-0">
+                  <LogIn className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    🔐 Log in to create your cake!
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Create an account to save your cakes and access them anytime
+                  </p>
+                </div>
+                <Link to="/auth">
+                  <Button type="button" variant="outline" size="sm" className="border-amber-400 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/50">
+                    Log in
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             <Button
               type="submit"
