@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileSelect } from "@/components/ui/mobile-select";
+import { CharacterPicker } from "@/components/CharacterPicker";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { Download, Sparkles, MessageSquare, Calendar, Users, User, Share2, Facebook, MessageCircle, Crown, Instagram, RotateCw, Check, Save, X as XIcon, Star, HelpCircle, Smartphone, Monitor, Upload, Type, Image as ImageIcon, RefreshCw, LogIn } from "lucide-react";
@@ -1359,79 +1360,18 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <Sparkles className="w-4 h-4" />
                       Character
                     </Label>
-                    <MobileSelect
+                    <CharacterPicker
                       value={character}
-                      onValueChange={(value) => {
-                        // Check if character is premium and user is not premium
-                        if (PREMIUM_CHARACTERS.includes(value) && !isPremium) {
-                          toast({
-                            title: "Premium character",
-                            description: "This character requires Premium. Upgrade to unlock!",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        setCharacter(value);
-                      }}
+                      onValueChange={setCharacter}
+                      isPremium={isPremium}
                       disabled={isLoading}
-                      label="Select Character (Optional)"
-                      placeholder="Select character (optional)"
-                      triggerClassName="bg-background border-border"
-                      options={[
-                        { value: "mickey-minnie", label: "Mickey Mouse and Minnie Mouse" },
-                        { value: "unicorn", label: "🦄 Unicorn" },
-                        { value: "dinosaurs", label: "🦕 Dinosaurs" },
-                        { value: "spider-man", label: `🕷️ Spider-Man ${!isPremium ? '👑' : ''}` },
-                        { value: "hulk", label: `💪 Hulk ${!isPremium ? '👑' : ''}` },
-                        { value: "captain-america", label: `🛡️ Captain America ${!isPremium ? '👑' : ''}` },
-                        { value: "iron-man", label: `⚡ Iron Man ${!isPremium ? '👑' : ''}` },
-                        { value: "thor", label: `⚡ Thor ${!isPremium ? '👑' : ''}` },
-                        { value: "batman", label: `🦇 Batman ${!isPremium ? '👑' : ''}` },
-                        { value: "wonder-woman", label: `⭐ Wonder Woman ${!isPremium ? '👑' : ''}` },
-                        { value: "harry-potter", label: `⚡ Harry Potter ${!isPremium ? '👑' : ''}` },
-                        { value: "hermione-granger", label: `🧙 Hermione Granger ${!isPremium ? '👑' : ''}` },
-                        { value: "simba", label: `🦁 Simba (Lion King) ${!isPremium ? '👑' : ''}` },
-                        { value: "nemo", label: `🐠 Nemo ${!isPremium ? '👑' : ''}` },
-                        { value: "dory", label: `🐠 Dory ${!isPremium ? '👑' : ''}` },
-                        { value: "aladdin", label: `🧞 Aladdin ${!isPremium ? '👑' : ''}` },
-                        { value: "jasmine", label: `👸 Jasmine ${!isPremium ? '👑' : ''}` },
-                        { value: "genie", label: `🧞 Genie ${!isPremium ? '👑' : ''}` },
-                        { value: "zootopia", label: `🦊 Zootopia (Judy & Nick) ${!isPremium ? '👑' : ''}` },
-                        { value: "jack-skellington", label: `🎃 Jack Skellington ${!isPremium ? '👑' : ''}` },
-                        { value: "moana", label: `🌊 Moana ${!isPremium ? '👑' : ''}` },
-                        { value: "rapunzel", label: `👸 Rapunzel ${!isPremium ? '👑' : ''}` },
-                        { value: "cinderella", label: `👸 Cinderella ${!isPremium ? '👑' : ''}` },
-                        { value: "snow-white", label: `👸 Snow White ${!isPremium ? '👑' : ''}` },
-                        { value: "woody", label: `🤠 Woody (Toy Story) ${!isPremium ? '👑' : ''}` },
-                        { value: "buzz-lightyear", label: `🚀 Buzz Lightyear ${!isPremium ? '👑' : ''}` },
-                        { value: "winnie-the-pooh", label: `🧸 Winnie the Pooh ${!isPremium ? '👑' : ''}` },
-                        { value: "paw-patrol", label: `🐕 PAW Patrol ${!isPremium ? '👑' : ''}` },
-                        { value: "peppa-pig", label: `🐷 Peppa Pig ${!isPremium ? '👑' : ''}` },
-                        { value: "doraemon", label: `🤖 Doraemon ${!isPremium ? '👑' : ''}` },
-                        { value: "shinchan", label: `👦 Shinchan ${!isPremium ? '👑' : ''}` },
-                        { value: "minions", label: `💛 Minions ${!isPremium ? '👑' : ''}` },
-                        { value: "hello-kitty", label: `🎀 Hello Kitty ${!isPremium ? '👑' : ''}` },
-                        { value: "chhota-bheem", label: `💪 Chhota Bheem ${!isPremium ? '👑' : ''}` },
-                        { value: "motu-patlu", label: `🎭 Motu Patlu ${!isPremium ? '👑' : ''}` },
-                        { value: "pikachu", label: `⚡ Pikachu ${!isPremium ? '👑' : ''}` },
-                        { value: "totoro", label: `🌳 Totoro ${!isPremium ? '👑' : ''}` },
-                        { value: "sailor-moon", label: `🌙 Sailor Moon ${!isPremium ? '👑' : ''}` },
-                        { value: "tom-and-jerry", label: `🐱 Tom and Jerry ${!isPremium ? '👑' : ''}` },
-                        { value: "gojo-satoru", label: `👁️ Gojo Satoru ${!isPremium ? '👑' : ''}` },
-                        { value: "inosuke", label: `🐗 Inosuke ${!isPremium ? '👑' : ''}` },
-                        { value: "zenitsu", label: `⚡ Zenitsu ${!isPremium ? '👑' : ''}` },
-                        { value: "todoroki-shoto", label: `🔥 Todoroki Shoto ${!isPremium ? '👑' : ''}` },
-                        { value: "anya-forger", label: `🥜 Anya Forger ${!isPremium ? '👑' : ''}` },
-                        { value: "loid-forger", label: `🕵️ Loid Forger ${!isPremium ? '👑' : ''}` },
-                        { value: "goku", label: `🔥 Goku ${!isPremium ? '👑' : ''}` },
-                        { value: "naruto", label: `🍥 Naruto ${!isPremium ? '👑' : ''}` },
-                        { value: "masha-and-bear", label: `🐻 Masha and the Bear ${!isPremium ? '👑' : ''}` },
-                        { value: "anna", label: `❄️ Anna ${!isPremium ? '👑' : ''}` },
-                        { value: "elsa", label: `❄️ Elsa ${!isPremium ? '👑' : ''}` },
-                        { value: "olaf", label: `⛄ Olaf ${!isPremium ? '👑' : ''}` },
-                        { value: "sven", label: `🦌 Sven ${!isPremium ? '👑' : ''}` },
-                        { value: "barbie", label: `💖 Barbie ${!isPremium ? '👑' : ''}` },
-                      ]}
+                      onPremiumBlock={() => {
+                        toast({
+                          title: "Premium character",
+                          description: "This character requires Premium. Upgrade to unlock!",
+                          variant: "destructive",
+                        });
+                      }}
                     />
                   </div>
 
