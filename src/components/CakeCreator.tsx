@@ -260,10 +260,40 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   useEffect(() => {
     checkUser();
+    
+    // Listen for auth state changes (login/logout/token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      if (session) {
+        setUser(session.user);
+        setIsLoggedIn(true);
+        await loadUserData(session.user.id);
+      } else {
+        setUser(null);
+        setIsLoggedIn(false);
+        setIsPremium(false);
+        setIsAdmin(false);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    // Try to refresh the session first
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Session error:', error);
+      // Try to refresh
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      if (refreshData.session) {
+        setUser(refreshData.session.user);
+        setIsLoggedIn(true);
+        await loadUserData(refreshData.session.user.id);
+        return;
+      }
+    }
     
     if (session) {
       setUser(session.user);
@@ -636,9 +666,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         console.error("Error generating cake:", error);
         
         let errorMessage = "Something went wrong. Please try again.";
+        let isAuthError = false;
         
         if (error instanceof Error) {
-          if (error.message.includes('Rate limit')) {
+          const errorText = error.message.toLowerCase();
+          
+          if (errorText.includes('401') || errorText.includes('invalid') && errorText.includes('token') || 
+              errorText.includes('expired') || errorText.includes('unauthorized') ||
+              errorText.includes('missing authorization')) {
+            isAuthError = true;
+            errorMessage = "Your session has expired. Please log in again to continue.";
+            // Clear the stale session state
+            setIsLoggedIn(false);
+            setUser(null);
+            // Try to refresh the session
+            const { data: refreshData } = await supabase.auth.refreshSession();
+            if (refreshData.session) {
+              setUser(refreshData.session.user);
+              setIsLoggedIn(true);
+              errorMessage = "Session refreshed! Please try generating again.";
+            }
+          } else if (error.message.includes('Rate limit')) {
             errorMessage = "You've hit the rate limit. Please wait a moment and try again.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
             errorMessage = "Connection was interrupted during generation. Please try again - your internet may have briefly disconnected.";
@@ -651,7 +699,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         
         haptic.error();
         toast({
-          title: "Failed to create cake",
+          title: isAuthError ? "Session expired" : "Failed to create cake",
           description: errorMessage,
           variant: "destructive",
         });
