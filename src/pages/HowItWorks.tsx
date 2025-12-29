@@ -42,7 +42,7 @@ const HowItWorks = () => {
           { name: "Enter a Name", text: "Type the name you want on the cake - could be 'Sarah', 'Mom', or 'Class of 2025'" },
           { name: "Add Personal Details", text: "Tell us your relationship to the recipient and their gender for personalized messages" },
           { name: "Choose Your Occasion", text: "Select birthday, anniversary, wedding, graduation, or other celebrations" },
-          { name: "Add a Character (Optional)", text: "Choose from 28+ popular characters like Spider-Man, Elsa, or Peppa Pig" },
+          { name: "Add a Character (Optional)", text: "Choose from 52+ popular characters like Spider-Man, Elsa, or Peppa Pig" },
           { name: "Customize Design", text: "Pick cake type, layers, theme, and colors" },
           { name: "Generate & Download", text: "Click generate, wait 30 seconds, then download your high-resolution cake images" },
         ]}
@@ -186,7 +186,7 @@ const HowItWorks = () => {
                 </h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
                   Want Spider-Man swinging across the cake? Or maybe Elsa from Frozen? Choose from our collection of 
-                  <strong> 28+ popular characters</strong> to make the cake extra special for kids (or kids at heart!).
+                  <strong> 52+ popular characters</strong> to make the cake extra special for kids (or kids at heart!).
                 </p>
                 
                 <div className="space-y-3 mb-4">
@@ -196,8 +196,9 @@ const HowItWorks = () => {
                       Free Characters
                     </p>
                     <div className="flex flex-wrap gap-2 text-sm">
-                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Mickey Mouse</span>
-                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Minnie Mouse</span>
+                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Mickey & Minnie</span>
+                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Unicorn</span>
+                      <span className="bg-party-mint/20 text-party-mint px-3 py-1 rounded-full">Dinosaurs</span>
                     </div>
                   </div>
                   
@@ -208,9 +209,9 @@ const HowItWorks = () => {
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                       <div>
-                        <p className="font-medium text-muted-foreground mb-1">Disney</p>
+                        <p className="font-medium text-muted-foreground mb-1">Disney Princesses</p>
                         <div className="flex flex-wrap gap-1">
-                          {['Elsa/Anna', 'Moana', 'Cinderella', 'Ariel'].map((c) => (
+                          {['Elsa/Anna', 'Moana', 'Rapunzel', 'Cinderella'].map((c) => (
                             <span key={c} className="bg-party-purple/10 text-party-purple px-2 py-0.5 rounded">{c}</span>
                           ))}
                         </div>
@@ -218,15 +219,15 @@ const HowItWorks = () => {
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Superheroes</p>
                         <div className="flex flex-wrap gap-1">
-                          {['Spider-Man', 'Batman', 'Superman', 'Iron Man'].map((c) => (
+                          {['Spider-Man', 'Batman', 'Iron Man', 'Thor', 'Hulk'].map((c) => (
                             <span key={c} className="bg-party-coral/10 text-party-coral px-2 py-0.5 rounded">{c}</span>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <p className="font-medium text-muted-foreground mb-1">Cartoons</p>
+                        <p className="font-medium text-muted-foreground mb-1">Disney/Pixar</p>
                         <div className="flex flex-wrap gap-1">
-                          {['Peppa Pig', 'Paw Patrol', 'Bluey', 'Cocomelon'].map((c) => (
+                          {['Simba', 'Nemo', 'Woody', 'Buzz', 'Zootopia'].map((c) => (
                             <span key={c} className="bg-party-orange/10 text-party-orange px-2 py-0.5 rounded">{c}</span>
                           ))}
                         </div>
