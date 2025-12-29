@@ -1362,16 +1362,38 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             setCakeStyle("decorated");
                             haptic.light();
                           }}
-                          className={`p-3 rounded-lg border-2 transition-all ${
+                          className={`p-4 rounded-lg border-2 transition-all ${
                             cakeStyle === "decorated"
                               ? "border-party-pink bg-party-pink/10 shadow-md"
                               : "border-border bg-background hover:border-party-purple/50"
                           }`}
                         >
                           <div className="text-center">
-                            <span className="text-2xl mb-1 block">🎂</span>
-                            <span className="text-sm font-medium">Character on Cake</span>
-                            <p className="text-xs text-muted-foreground mt-1">Decorations & figurines</p>
+                            {/* Decorated Cake Illustration - Traditional cake with figurine on top */}
+                            <div className="flex justify-center mb-2">
+                              <svg viewBox="0 0 80 60" className="w-16 h-12">
+                                {/* Cake base plate */}
+                                <ellipse cx="40" cy="54" rx="32" ry="4" fill="currentColor" opacity="0.2" />
+                                {/* Bottom tier */}
+                                <rect x="15" y="38" width="50" height="16" rx="3" className="fill-party-pink/40" />
+                                <rect x="15" y="38" width="50" height="3" rx="1" className="fill-party-pink/60" />
+                                {/* Middle tier */}
+                                <rect x="22" y="24" width="36" height="14" rx="3" className="fill-party-coral/40" />
+                                <rect x="22" y="24" width="36" height="3" rx="1" className="fill-party-coral/60" />
+                                {/* Top tier */}
+                                <rect x="30" y="12" width="20" height="12" rx="2" className="fill-party-purple/40" />
+                                <rect x="30" y="12" width="20" height="2" rx="1" className="fill-party-purple/60" />
+                                {/* Character figurine on top */}
+                                <circle cx="40" cy="6" r="4" className="fill-party-pink" />
+                                <rect x="37" y="8" width="6" height="6" rx="1" className="fill-party-pink" />
+                                {/* Decorative dots */}
+                                <circle cx="25" cy="45" r="2" className="fill-party-mint/60" />
+                                <circle cx="40" cy="45" r="2" className="fill-party-mint/60" />
+                                <circle cx="55" cy="45" r="2" className="fill-party-mint/60" />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium block">Character on Cake</span>
+                            <p className="text-xs text-muted-foreground mt-1">Figurines & decorations on a tiered cake</p>
                           </div>
                         </button>
                         <button
@@ -1381,16 +1403,40 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             setLayers(""); // Clear layers when switching to sculpted
                             haptic.light();
                           }}
-                          className={`p-3 rounded-lg border-2 transition-all ${
+                          className={`p-4 rounded-lg border-2 transition-all ${
                             cakeStyle === "sculpted"
                               ? "border-party-pink bg-party-pink/10 shadow-md"
                               : "border-border bg-background hover:border-party-purple/50"
                           }`}
                         >
                           <div className="text-center">
-                            <span className="text-2xl mb-1 block">🦸</span>
-                            <span className="text-sm font-medium">Character-Shaped</span>
-                            <p className="text-xs text-muted-foreground mt-1">Sculpted 3D cake</p>
+                            {/* Sculpted Cake Illustration - Character-shaped cake */}
+                            <div className="flex justify-center mb-2">
+                              <svg viewBox="0 0 80 60" className="w-16 h-12">
+                                {/* Shadow/plate */}
+                                <ellipse cx="40" cy="56" rx="24" ry="3" fill="currentColor" opacity="0.15" />
+                                {/* Character body (the cake itself) */}
+                                <path 
+                                  d="M28 52 Q22 35 26 22 Q30 12 40 10 Q50 12 54 22 Q58 35 52 52 Z" 
+                                  className="fill-party-coral/50"
+                                />
+                                {/* Character head */}
+                                <ellipse cx="40" cy="16" rx="12" ry="10" className="fill-party-pink/50" />
+                                {/* Cake texture lines to show it's a cake */}
+                                <path d="M30 30 Q40 28 50 30" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.3" />
+                                <path d="M29 40 Q40 38 51 40" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.3" />
+                                {/* Eyes to show character */}
+                                <circle cx="35" cy="14" r="2" className="fill-party-purple/60" />
+                                <circle cx="45" cy="14" r="2" className="fill-party-purple/60" />
+                                {/* Smile */}
+                                <path d="M36 20 Q40 24 44 20" stroke="currentColor" strokeWidth="1.5" fill="none" className="stroke-party-purple/60" />
+                                {/* Arms (cake extensions) */}
+                                <ellipse cx="22" cy="32" rx="6" ry="4" className="fill-party-coral/40" />
+                                <ellipse cx="58" cy="32" rx="6" ry="4" className="fill-party-coral/40" />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium block">Character-Shaped</span>
+                            <p className="text-xs text-muted-foreground mt-1">Entire cake sculpted as the character</p>
                           </div>
                         </button>
                       </div>
