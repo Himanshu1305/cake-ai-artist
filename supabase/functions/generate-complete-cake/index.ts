@@ -15,12 +15,13 @@ const cakeRequestSchema = z.object({
   relation: z.string().min(1, "Relation is required").max(50),
   gender: z.string().min(1, "Gender is required").max(20),
   character: z.string().max(50).optional().nullable(),
+  cakeStyle: z.enum(['decorated', 'sculpted']).optional().default('decorated'),
   cakeType: z.string().max(30).optional().nullable(),
   layers: z.string().max(20).optional().nullable(),
   theme: z.string().max(100).optional().nullable(),
   colors: z.string().max(100).optional().nullable(),
   userPhotoBase64: z.string().max(5000000).optional().nullable(), // ~3.75MB base64
-  specificView: z.enum(['front', 'side', 'top']).optional().nullable(),
+  specificView: z.enum(['front', 'side', 'top', 'main']).optional().nullable(),
 });
 
 serve(async (req) => {
@@ -76,6 +77,7 @@ serve(async (req) => {
       occasion, 
       relation, 
       gender, 
+      cakeStyle,
       cakeType, 
       layers, 
       theme, 
@@ -84,7 +86,7 @@ serve(async (req) => {
       specificView
     } = validationResult.data;
 
-    console.log('Generate complete cake request:', { name, character, occasion, relation, gender });
+    console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -114,8 +116,26 @@ serve(async (req) => {
 
     const occasionText = getOccasionText(occasion || 'birthday');
 
-    // Build view-specific prompts with name and photo baked in (3 views only)
-    const viewAngles = [
+    // Sculpted cake view angles (2 views only - for character-shaped cakes)
+    const sculptedViewAngles = [
+      { 
+        name: 'main', 
+        description: `Professional food photography of a stunning 3D SCULPTED CAKE that IS SHAPED LIKE ${character || 'the character'}. This is sculptural fondant cake art where the ENTIRE CAKE STRUCTURE forms the character shape - not a regular cake with decorations. The cake IS the ${character || 'character'}, crafted entirely from fondant, modeling chocolate, and edible materials. Full body/form visible on a marble pedestal. CRITICAL: The entire sculpted figure must be visible in frame from top to bottom.`,
+        namePosition: 'on a decorative fondant banner/plaque integrated at the base',
+        occasionPosition: 'on a fondant scroll or banner prominently displayed',
+        photoPosition: null // No photo on main sculpted view
+      },
+      { 
+        name: 'top', 
+        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from DIRECTLY ABOVE (bird\'s eye view). Frame the shot to FILL THE IMAGE with the cake - the cake should occupy most of the frame with minimal empty space. Show the entire circular top surface with just a hint of the cake stand edge. MINIMIZE BLANK SPACE above and below the cake. The cake should be the dominant element filling 80-90% of the frame.',
+        namePosition: 'elegantly around the outer edge or on a decorative banner',
+        occasionPosition: 'prominently on the top surface in elegant fondant letters (even when photo is present)',
+        photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
+      }
+    ];
+
+    // Decorated cake view angles (3 views - traditional cake with character decorations)
+    const decoratedViewAngles = [
       { 
         name: 'front', 
         description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from the FRONT VIEW, camera at eye level. The ENTIRE cake must be visible in frame - from the top decorations down to the cake stand/pedestal base. NO CROPPING. Full view of all cake tiers.',
@@ -138,6 +158,9 @@ serve(async (req) => {
         photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
       }
     ];
+
+    // Select view angles based on cake style
+    const viewAngles = cakeStyle === 'sculpted' ? sculptedViewAngles : decoratedViewAngles;
 
     // Helper function to generate a single view with retry logic
     const generateView = async (view: typeof viewAngles[0], retries = 2): Promise<string> => {
@@ -229,18 +252,41 @@ CRITICAL TEXT ON CAKE:
 - Text must be clearly readable, large, and in complementary colors (gold, pink #D4687A, or blue #2563EB)
 - EXACT SPELLING for name: ${name.split('').join('-')}
 - DO NOT repeat any text - show each text element ONCE only
+`;
 
+      // Different cake specifications based on style
+      if (cakeStyle === 'sculpted' && view.name === 'main') {
+        // Sculpted main view - the cake IS the character
+        prompt += `
+SCULPTED CAKE SPECIFICATIONS:
+- This is a 3D SCULPTED character cake - the entire cake IS SHAPED LIKE ${character || 'the character'}
+- Made entirely of edible materials: fondant, modeling chocolate, cake, buttercream
+- The character form should be immediately recognizable
+- Incredible detail in the sculpted features
+- Theme: ${theme || 'fun celebration'}
+- Color scheme: ${colors || 'vibrant character-accurate colors'}
+- Do NOT show a tiered/layered cake - this is a sculpted 3D figure cake`;
+      } else if (cakeStyle === 'sculpted' && view.name === 'top') {
+        // Sculpted top view - standard decorated cake top
+        prompt += `
+Cake specifications:
+- Style: round ${cakeType || 'fondant'} cake
+- Theme: ${theme || 'elegant celebration'} with ${character || ''} themed decorations
+- Color scheme: ${colors || 'soft pastels with white base'}`;
+      } else {
+        // Decorated cake - standard tiered cake with decorations
+        prompt += `
 Cake specifications:
 - Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
 - Theme: ${theme || 'elegant celebration'}
 - Color scheme: ${colors || 'soft pastels with white base'}`;
-
-      if (character) {
-        prompt += `\n- Character: ${character} themed decorations and figurines placed tastefully`;
+        
+        if (character) {
+          prompt += `\n- Character: ${character} themed decorations and figurines placed tastefully`;
+        }
       }
 
       prompt += `\n\nStandard photography specifications: luxurious marble pedestal, soft studio lighting, shallow depth of field, hyper-realistic detail, cinematic composition, 8K resolution, professional food photography, award-winning pastry art aesthetic.`;
-
 
       console.log(`Generating ${view.name} view...`);
 
@@ -467,17 +513,30 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
         );
       }
       
-      // Generate all 3 views AND message in parallel for maximum speed
-      console.log('Starting parallel generation of all 3 views and personalized message...');
-      [generatedImages, greetingMessage] = await Promise.all([
-        Promise.all([
-          generateView(viewAngles[0]), // front
-          generateView(viewAngles[1]), // side
-          generateView(viewAngles[2])  // top
-        ]),
-        generateMessageAsync()  // message generation in parallel
-      ]);
-      console.log('✓ All 3 views and message generated successfully');
+      // Generate views AND message in parallel for maximum speed
+      // Sculpted cakes: 2 views (main + top), Decorated cakes: 3 views (front + side + top)
+      if (cakeStyle === 'sculpted') {
+        console.log('Starting parallel generation of 2 views (sculpted) and personalized message...');
+        [generatedImages, greetingMessage] = await Promise.all([
+          Promise.all([
+            generateView(viewAngles[0]), // main
+            generateView(viewAngles[1])  // top
+          ]),
+          generateMessageAsync()  // message generation in parallel
+        ]);
+        console.log('✓ All 2 views and message generated successfully (sculpted cake)');
+      } else {
+        console.log('Starting parallel generation of all 3 views and personalized message...');
+        [generatedImages, greetingMessage] = await Promise.all([
+          Promise.all([
+            generateView(viewAngles[0]), // front
+            generateView(viewAngles[1]), // side
+            generateView(viewAngles[2])  // top
+          ]),
+          generateMessageAsync()  // message generation in parallel
+        ]);
+        console.log('✓ All 3 views and message generated successfully (decorated cake)');
+      }
     
     } catch (error) {
       if (error instanceof Error && error.message === 'RATE_LIMIT') {

@@ -52,6 +52,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [relation, setRelation] = useState("");
   const [gender, setGender] = useState("");
   const [character, setCharacter] = useState("");
+  const [cakeStyle, setCakeStyle] = useState<"decorated" | "sculpted">("decorated");
   const [cakeType, setCakeType] = useState("");
   const [layers, setLayers] = useState("");
   const [theme, setTheme] = useState("");
@@ -141,7 +142,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Regenerate specific view
   const handleRegenerateView = async (viewIndex: number) => {
-    const viewNames = ['front', 'side', 'top'];
+    // For sculpted cakes: 0=main, 1=top. For decorated: 0=front, 1=side, 2=top
+    const decoratedViewNames = ['front', 'side', 'top'];
+    const sculptedViewNames = ['main', 'top'];
+    const viewNames = cakeStyle === 'sculpted' ? sculptedViewNames : decoratedViewNames;
     const viewName = viewNames[viewIndex];
     
     setRegeneratingView(viewIndex);
@@ -155,8 +159,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           occasion,
           relation,
           gender,
+          cakeStyle,
           cakeType,
-          layers,
+          layers: cakeStyle === 'sculpted' ? undefined : layers, // Ignore layers for sculpted
           theme,
           colors,
           userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
@@ -170,9 +175,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const newImages = [...generatedImages];
         newImages[viewIndex] = data.regeneratedImage;
         setGeneratedImages(newImages);
+        const decoratedLabels = ["Front", "Side", "Top-Down"];
+        const sculptedLabels = ["Main", "Top-Down"];
+        const labels = cakeStyle === 'sculpted' ? sculptedLabels : decoratedLabels;
         toast({
           title: "Success!",
-          description: `${["Front", "Side", "Top-Down"][viewIndex]} view regenerated!`
+          description: `${labels[viewIndex]} view regenerated!`
         });
         haptic.success();
       }
@@ -550,9 +558,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       // ========== NEW NATIVE LOVABLE AI SOLUTION ==========
       try {
+        const viewCount = cakeStyle === 'sculpted' ? 2 : 3;
         toast({
           title: "Creating your cake...",
-          description: "AI is generating 3 beautiful views with your personalization!",
+          description: `AI is generating ${viewCount} beautiful views with your personalization!`,
         });
 
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
@@ -561,8 +570,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           occasion: occasion,
           relation: relation,
           gender: gender,
+          cakeStyle: cakeStyle,
           cakeType: cakeType || undefined,
-          layers: layers || undefined,
+          layers: cakeStyle === 'sculpted' ? undefined : (layers || undefined), // Ignore layers for sculpted
           theme: theme || undefined,
           colors: colors || undefined,
           userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined
@@ -1337,6 +1347,63 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       ]}
                     />
                   </div>
+
+                  {/* Cake Style Toggle - Only show when character is selected */}
+                  {character && (
+                    <div className="col-span-full mt-4 p-4 bg-gradient-to-r from-party-purple/10 to-party-coral/10 rounded-lg border border-party-purple/30">
+                      <Label className="text-sm font-medium flex items-center gap-2 mb-3">
+                        <Sparkles className="w-4 h-4 text-party-purple" />
+                        Cake Style
+                      </Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCakeStyle("decorated");
+                            haptic.light();
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            cakeStyle === "decorated"
+                              ? "border-party-pink bg-party-pink/10 shadow-md"
+                              : "border-border bg-background hover:border-party-purple/50"
+                          }`}
+                        >
+                          <div className="text-center">
+                            <span className="text-2xl mb-1 block">🎂</span>
+                            <span className="text-sm font-medium">Character on Cake</span>
+                            <p className="text-xs text-muted-foreground mt-1">Decorations & figurines</p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCakeStyle("sculpted");
+                            setLayers(""); // Clear layers when switching to sculpted
+                            haptic.light();
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            cakeStyle === "sculpted"
+                              ? "border-party-pink bg-party-pink/10 shadow-md"
+                              : "border-border bg-background hover:border-party-purple/50"
+                          }`}
+                        >
+                          <div className="text-center">
+                            <span className="text-2xl mb-1 block">🦸</span>
+                            <span className="text-sm font-medium">Character-Shaped</span>
+                            <p className="text-xs text-muted-foreground mt-1">Sculpted 3D cake</p>
+                          </div>
+                        </button>
+                      </div>
+                      {cakeStyle === "sculpted" && (
+                        <div className="mt-3 p-2 bg-party-coral/10 rounded-md border border-party-coral/30">
+                          <p className="text-xs text-party-coral font-medium flex items-center gap-1">
+                            <HelpCircle className="w-3 h-3" />
+                            Only 2 views will be created for sculpted cakes (Main + Top-Down)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Photo Upload Section */}
@@ -1605,12 +1672,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="layers" className="text-sm font-medium">
+                  <Label htmlFor="layers" className="text-sm font-medium flex items-center gap-2">
                     Layers
+                    {cakeStyle === "sculpted" && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Layers don't apply to character-shaped cakes</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </Label>
-                  <Select value={layers} onValueChange={setLayers} disabled={isLoading}>
-                    <SelectTrigger className="bg-background border-border">
-                      <SelectValue placeholder="Select layers" />
+                  <Select 
+                    value={layers} 
+                    onValueChange={setLayers} 
+                    disabled={isLoading || cakeStyle === "sculpted"}
+                  >
+                    <SelectTrigger className={`bg-background border-border ${cakeStyle === "sculpted" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <SelectValue placeholder={cakeStyle === "sculpted" ? "N/A for sculpted cakes" : "Select layers"} />
                     </SelectTrigger>
                     <SelectContent className="bg-background border-border z-50">
                       <SelectItem value="single">Single Layer</SelectItem>
@@ -1897,7 +1980,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     
                     {/* View Label */}
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                      {["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`}
+                      {cakeStyle === "sculpted" 
+                        ? (["Main View", "Top-Down View"][index] || `View ${index + 1}`)
+                        : (["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`)
+                      }
                     </div>
                     
                     {/* Regenerate View Button */}
