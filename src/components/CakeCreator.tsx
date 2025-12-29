@@ -1926,20 +1926,29 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
             <Button
               type="submit"
-              disabled={isLoading || !name.trim() || !occasion || !relation || !gender}
-              className="w-full py-6 text-lg bg-gradient-party hover:shadow-party transition-all duration-300 transform hover:scale-[1.02] text-white font-semibold"
+              disabled={isLoading || !isLoggedIn || !name.trim() || !occasion || !relation || !gender}
+              className={`w-full py-6 text-lg font-bold transition-all duration-300 ${
+                !isLoggedIn 
+                  ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-70' 
+                  : 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+              }`}
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  🎂 Creating your magical cake...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  ✨ Generate My Cake 🎉
-                </div>
-              )}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              🎂 Creating your magical cake...
+            </div>
+          ) : !isLoggedIn ? (
+            <div className="flex items-center gap-2">
+              <LogIn className="w-5 h-5" />
+              🔐 Free Sign Up Required to Generate
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              ✨ Generate My Cake 🎉
+            </div>
+          )}
             </Button>
           </div>
         </form>
