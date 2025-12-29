@@ -476,6 +476,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       }
     }
 
+    // REQUIRE LOGIN: Users must be logged in to generate cakes
+    if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in or create an account to generate your personalized cake!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Check generation limits for logged-in users
     if (isLoggedIn) {
       if (isPremium) {
@@ -673,7 +683,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           
           if (errorText.includes('401') || errorText.includes('invalid') && errorText.includes('token') || 
               errorText.includes('expired') || errorText.includes('unauthorized') ||
-              errorText.includes('missing authorization')) {
+              errorText.includes('missing authorization') || errorText.includes('missing sub claim')) {
             isAuthError = true;
             errorMessage = "Your session has expired. Please log in again to continue.";
             // Clear the stale session state
