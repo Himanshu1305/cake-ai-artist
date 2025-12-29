@@ -1683,41 +1683,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
                 )}
 
-                {/* Memory Fields - NEW */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-surface-elevated/50 rounded-lg border border-party-pink/20">
-                  <div className="space-y-2">
-                    <Label htmlFor="recipientName" className="text-sm font-medium flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Who is this for? (Optional)
-                    </Label>
-                    <Input
-                      id="recipientName"
-                      type="text"
-                      placeholder="e.g., Sarah, Mom, Best Friend"
-                      value={recipientName}
-                      onChange={(e) => setRecipientName(e.target.value)}
-                      className="bg-background border-border"
-                      disabled={isLoading}
-                    />
-                    <p className="text-xs text-muted-foreground">Save as a memory to remember later</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="occasionDate" className="text-sm font-medium flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Occasion Date (Optional)
-                    </Label>
-                    <Input
-                      id="occasionDate"
-                      type="date"
-                      value={occasionDate}
-                      onChange={(e) => setOccasionDate(e.target.value)}
-                      className="bg-background border-border"
-                      disabled={isLoading}
-                    />
-                    <p className="text-xs text-muted-foreground">For future reminders</p>
-                  </div>
-                </div>
               </div>
 
             {/* Cake Customization */}
@@ -1814,6 +1779,45 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       <SelectItem value="rainbow">Rainbow</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Save as Memory - Who is this for & Occasion Date */}
+            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-2">Save as a Memory</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="recipientName" className="text-sm font-medium flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Who is this for? (Optional)
+                  </Label>
+                  <Input
+                    id="recipientName"
+                    type="text"
+                    placeholder="e.g., Sarah, Mom, Best Friend"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    className="bg-background border-border"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">Remember who this cake was for</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occasionDate" className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Occasion Date (Optional)
+                  </Label>
+                  <Input
+                    id="occasionDate"
+                    type="date"
+                    value={occasionDate}
+                    onChange={(e) => setOccasionDate(e.target.value)}
+                    className="bg-background border-border"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">Get reminders for future celebrations</p>
                 </div>
               </div>
             </div>
