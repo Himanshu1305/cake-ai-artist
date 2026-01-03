@@ -15,20 +15,20 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
     // Console warning for January 1st decision
     try {
       const now = new Date();
-      const janFirst2026 = new Date('2026-01-01T00:00:00');
-      const hasShownWarning = sessionStorage.getItem('jan1_sale_warning_shown');
+      const janTenth2026 = new Date('2026-01-11T00:00:00');
+      const hasShownWarning = sessionStorage.getItem('jan10_sale_warning_shown');
       
-      if (now >= janFirst2026 && !hasShownWarning) {
+      if (now >= janTenth2026 && !hasShownWarning) {
         console.warn(
           '%c⚠️ NEW YEAR LIFETIME DEAL DECISION NEEDED ⚠️',
           'color: #ff6b6b; font-size: 16px; font-weight: bold;',
-          '\n\nThe deal ended on Dec 31, 2025.',
+          '\n\nThe deal ended on Jan 10, 2026.',
           '\n\nOptions:',
           '\n1. Extend Deal: Update date in UrgencyBanner.tsx and CountdownTimer.tsx',
           '\n2. Close Deal: Follow steps in FOUNDING_MEMBER_CLEANUP_INSTRUCTIONS.md',
           '\n\nCheck AdminSaleReminder component at top of homepage for quick actions.'
         );
-        sessionStorage.setItem('jan1_sale_warning_shown', 'true');
+        sessionStorage.setItem('jan10_sale_warning_shown', 'true');
       }
     } catch (e) {
       console.error("Error accessing sessionStorage:", e);

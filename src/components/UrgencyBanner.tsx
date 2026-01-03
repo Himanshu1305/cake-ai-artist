@@ -41,7 +41,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
               <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
+                <span>🎉 EXTENDED! NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
               </div>
             </div>
           </div>
