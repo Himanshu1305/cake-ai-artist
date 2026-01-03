@@ -155,7 +155,7 @@ const Auth = () => {
         toast.success("Logged in successfully!");
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -168,6 +168,22 @@ const Auth = () => {
         });
 
         if (error) throw error;
+        
+        // Link anonymous page visits to the new user
+        if (data.user) {
+          try {
+            const sessionId = sessionStorage.getItem('page_tracking_session');
+            if (sessionId) {
+              await supabase.rpc('link_session_visits_to_user', {
+                p_user_id: data.user.id,
+                p_session_id: sessionId
+              });
+            }
+          } catch (linkError) {
+            console.error('Failed to link page visits:', linkError);
+            // Don't fail signup if this fails
+          }
+        }
         
         // Add contact to Brevo for welcome email automation
         await addContactToBrevo(email, firstName.trim(), lastName.trim());
