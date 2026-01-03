@@ -2,6 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -37,14 +43,26 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
         onClick={handleBannerClick}
       >
         <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-center gap-4 text-white">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
-              <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                <span>🎉 EXTENDED! NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
-              </div>
-            </div>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center gap-4 text-white">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
+                    <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
+                      <span className="bg-yellow-400 text-party-purple px-2 py-0.5 rounded-full text-xs font-bold animate-pulse shadow-lg">
+                        EXTENDED!
+                      </span>
+                      <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
+                    </div>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-white text-gray-800 border shadow-lg">
+                <p className="font-medium">Extended by popular demand! Don't miss this limited-time offer.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </motion.div>
     </AnimatePresence>
