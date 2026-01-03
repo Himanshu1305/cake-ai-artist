@@ -90,7 +90,7 @@ const Auth = () => {
             }
           }
           
-          navigate("/");
+          navigate("/gallery");
         }
       }
     );
@@ -98,7 +98,7 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate("/gallery");
       }
     });
 
