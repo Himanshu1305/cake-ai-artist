@@ -99,6 +99,13 @@ export const useGeoRedirect = () => {
     const detectAndRedirect = async () => {
       debugLog('Starting geo detection for path:', location.pathname);
       
+      // Early exit: Only process redirectable routes
+      if (!REDIRECTABLE_ROUTES.includes(location.pathname)) {
+        debugLog('Not a redirectable route, skipping');
+        setIsLoading(false);
+        return;
+      }
+      
       // Check if user has manual preference
       const savedPreference = safeGetItem(COUNTRY_STORAGE_KEY);
       if (savedPreference) {
@@ -113,19 +120,12 @@ export const useGeoRedirect = () => {
       if (geoChecked) {
         debugLog('Using cached geo result:', geoChecked);
         setDetectedCountry(geoChecked);
-        // Still redirect if on a redirectable route and country has a specific page
+        // Redirect if country has a specific page
         const targetRoute = countryRoutes[geoChecked];
-        if (targetRoute && REDIRECTABLE_ROUTES.includes(location.pathname)) {
+        if (targetRoute) {
           debugLog('Redirecting to:', targetRoute);
           navigate(targetRoute, { replace: true });
         }
-        setIsLoading(false);
-        return;
-      }
-
-      // Only auto-redirect from redirectable routes
-      if (!REDIRECTABLE_ROUTES.includes(location.pathname)) {
-        debugLog('Not a redirectable route, skipping');
         setIsLoading(false);
         return;
       }
@@ -153,7 +153,8 @@ export const useGeoRedirect = () => {
     };
 
     detectAndRedirect();
-  }, [location.pathname, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const setCountryPreference = (country: SupportedCountry) => {
     safeSetItem(COUNTRY_STORAGE_KEY, country);
