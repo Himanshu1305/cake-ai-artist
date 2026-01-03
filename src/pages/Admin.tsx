@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings } from 'lucide-react';
+import { CountryPicker } from '@/components/CountryPicker';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
@@ -217,7 +218,7 @@ export default function Admin() {
   const loadProfiles = async () => {
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, is_premium, is_founding_member, created_at, founding_member_number')
+      .select('id, email, is_premium, is_founding_member, created_at, founding_member_number, country')
       .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -225,7 +226,7 @@ export default function Admin() {
       return;
     }
 
-    // Fetch page visits to determine user countries
+    // Fetch page visits to determine user countries for those without stored country
     const { data: pageVisitsData, error: pageVisitsError } = await supabase
       .from('page_visits')
       .select('user_id, country_code')
@@ -247,8 +248,13 @@ export default function Admin() {
       }
     });
 
-    // Assign primary country to each profile
+    // Assign primary country to each profile (use stored country if available)
     const profilesWithCountry = (profilesData || []).map((profile) => {
+      // Use stored country if available
+      if (profile.country) {
+        return { ...profile };
+      }
+      // Fall back to page visits inference
       const countryCounts = userCountryCounts[profile.id];
       let primaryCountry = 'Unknown';
       if (countryCounts) {
@@ -271,6 +277,21 @@ export default function Admin() {
       .map(([country, count]) => ({ country, count }))
       .sort((a, b) => b.count - a.count);
     setUserCountryStats(countryStats);
+  };
+
+  const updateUserCountry = async (userId: string, newCountry: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ country: newCountry })
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Failed to update country');
+      return;
+    }
+    
+    toast.success('Country updated successfully');
+    loadProfiles();
   };
 
   const loadImages = async () => {
@@ -1104,8 +1125,9 @@ export default function Admin() {
 
           <TabsContent value="users" className="space-y-4">
             {/* Country Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               {[
+                { code: 'IN', label: '🇮🇳 India', flag: '🇮🇳' },
                 { code: 'US', label: '🇺🇸 US', flag: '🇺🇸' },
                 { code: 'UK', label: '🇬🇧 UK', flag: '🇬🇧' },
                 { code: 'CA', label: '🇨🇦 Canada', flag: '🇨🇦' },
@@ -1168,7 +1190,7 @@ export default function Admin() {
                     </div>
                     {/* Country Filter Tabs */}
                     <div className="flex gap-1 flex-wrap">
-                      {['all', 'US', 'UK', 'CA', 'AU', 'Unknown'].map((filter) => (
+                      {['all', 'IN', 'US', 'UK', 'CA', 'AU', 'Unknown'].map((filter) => (
                         <Button
                           key={filter}
                           size="sm"
@@ -1199,14 +1221,10 @@ export default function Admin() {
                           <TableRow key={profile.id}>
                             <TableCell className="font-medium">{profile.email}</TableCell>
                             <TableCell>
-                              <Badge variant="outline">
-                                {profile.country === 'US' && '🇺🇸 '}
-                                {profile.country === 'UK' && '🇬🇧 '}
-                                {profile.country === 'CA' && '🇨🇦 '}
-                                {profile.country === 'AU' && '🇦🇺 '}
-                                {profile.country === 'Unknown' && '❓ '}
-                                {profile.country}
-                              </Badge>
+                              <CountryPicker
+                                value={profile.country || 'Unknown'}
+                                onValueChange={(value) => updateUserCountry(profile.id, value)}
+                              />
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">

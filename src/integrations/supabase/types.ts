@@ -426,6 +426,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          country: string | null
           created_at: string | null
           current_streak: number | null
           email: string
@@ -445,6 +446,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          country?: string | null
           created_at?: string | null
           current_streak?: number | null
           email: string
@@ -464,6 +466,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          country?: string | null
           created_at?: string | null
           current_streak?: number | null
           email?: string
@@ -748,6 +751,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      link_session_visits_to_user: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
