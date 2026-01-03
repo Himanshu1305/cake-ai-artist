@@ -171,7 +171,7 @@ const AustraliaLanding = () => {
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
 
       {/* Navigation */}
-      <nav className={`sticky ${isBannerVisible ? 'top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
+      <nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
