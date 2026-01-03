@@ -1,22 +1,22 @@
 # Founding Member Sale - Manual Cleanup Instructions
 
-## 🔔 JANUARY 1ST DECISION POINT
+## 🔔 JANUARY 10TH DECISION POINT
 
-**Automatic cleanup is NOW ENABLED** - After December 31, 2025, the system will automatically:
+**Automatic cleanup is NOW ENABLED** - After January 10, 2026, the system will automatically:
 - Hide the UrgencyBanner from all pages
 - Show "Sale Ended" message in CountdownTimer
 - Display AdminSaleReminder component to logged-in users
 
-**You have two options on/after January 1st, 2026:**
+**You have two options on/after January 11th, 2026:**
 
 ### Option A: Extend the Sale
 
 1. Open `src/components/UrgencyBanner.tsx` (line 18)
-   - Change: `const saleEndDate = new Date('2025-12-31T23:59:59');`
+   - Change: `const saleEndDate = new Date('2026-01-10T23:59:59');`
    - To: `const saleEndDate = new Date('2026-01-31T23:59:59');` (or your new date)
 
 2. Open `src/components/CountdownTimer.tsx` (line 11)
-   - Change: `const SALE_END_DATE = new Date('2025-12-31T23:59:59');`
+   - Change: `const SALE_END_DATE = new Date('2026-01-10T23:59:59');`
    - To: `const SALE_END_DATE = new Date('2026-01-31T23:59:59');` (same new date)
 
 3. That's it! Banner and timer will continue running with new date.
@@ -27,10 +27,10 @@ Follow the detailed cleanup steps in the sections below.
 
 ---
 
-## What Happens Automatically After Dec 31, 2025
+## What Happens Automatically After Jan 10, 2026
 
 1. **UrgencyBanner.tsx** (line 18-23)
-   - Auto-hide after December 31, 2025 is ENABLED
+   - Auto-hide after January 10, 2026 is ENABLED
    - Banner will hide automatically when `isSaleActive` becomes false
    - To extend: Update the `saleEndDate` variable
 
@@ -40,12 +40,12 @@ Follow the detailed cleanup steps in the sections below.
    - To extend: Update the `SALE_END_DATE` constant
 
 3. **AdminSaleReminder.tsx** (new component)
-   - Shows reminder banner to all users on/after January 1, 2026
+   - Shows reminder banner to all users on/after January 11, 2026
    - Provides quick decision options (extend or close)
    - Can be dismissed for a day or permanently
 
 4. **useCountdown.ts** hook
-   - Displays console warning on/after January 1, 2026
+   - Displays console warning on/after January 11, 2026
    - Warning shown once per browser session
    - Reminds you to make a decision about the sale
 
