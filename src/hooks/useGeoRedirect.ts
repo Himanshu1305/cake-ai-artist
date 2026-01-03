@@ -40,8 +40,9 @@ export const useGeoRedirect = () => {
           return;
         }
 
-        // Only auto-redirect from homepage
-        if (location.pathname !== '/') {
+        // Only auto-redirect from homepage or pricing page
+        const redirectableRoutes = ['/', '/pricing'];
+        if (!redirectableRoutes.includes(location.pathname)) {
           setIsLoading(false);
           return;
         }
@@ -61,7 +62,7 @@ export const useGeoRedirect = () => {
 
         // Redirect if country has specific landing page
         const targetRoute = countryRoutes[countryCode];
-        if (targetRoute && location.pathname === '/') {
+        if (targetRoute && redirectableRoutes.includes(location.pathname)) {
           navigate(targetRoute, { replace: true });
         }
       } catch (error) {
