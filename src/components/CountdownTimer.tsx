@@ -7,8 +7,8 @@ interface CountdownTimerProps {
   className?: string;
 }
 
-// December 31, 2025 at 11:59:59 PM
-const SALE_END_DATE = new Date('2025-12-31T23:59:59');
+// January 10, 2026 at 11:59:59 PM
+const SALE_END_DATE = new Date('2026-01-10T23:59:59');
 
 export const CountdownTimer = ({ compact = false, className = '' }: CountdownTimerProps) => {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(SALE_END_DATE);
