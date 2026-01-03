@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useGeoContext } from '@/contexts/GeoContext';
 
-export const usePageTracking = (pagePath: string, countryCode?: string) => {
+export const usePageTracking = (pagePath: string, fallbackCountryCode?: string) => {
+  const { detectedCountry } = useGeoContext();
+  
+  // Use detected country if available, otherwise fall back to page default
+  const countryCode = detectedCountry || fallbackCountryCode;
+
   useEffect(() => {
     const trackVisit = async () => {
       try {
