@@ -95,9 +95,11 @@ interface CountryPickerProps {
   value: string;
   onValueChange: (value: string) => void;
   disabled?: boolean;
+  className?: string;
+  fullWidth?: boolean;
 }
 
-export function CountryPicker({ value, onValueChange, disabled }: CountryPickerProps) {
+export function CountryPicker({ value, onValueChange, disabled, className, fullWidth }: CountryPickerProps) {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -106,10 +108,14 @@ export function CountryPicker({ value, onValueChange, disabled }: CountryPickerP
   }, [value]);
 
   const displayValue = selectedCountry 
-    ? `${selectedCountry.flag} ${selectedCountry.code}` 
+    ? `${selectedCountry.flag} ${selectedCountry.name}` 
     : value === 'Unknown' 
       ? '❓ Unknown' 
       : value || 'Select country';
+
+  const buttonClasses = fullWidth 
+    ? cn("w-full justify-between text-left font-normal", !value && "text-muted-foreground", className)
+    : cn("h-8 gap-1 text-xs", className);
 
   const handleSelect = (countryCode: string) => {
     onValueChange(countryCode);
@@ -168,12 +174,12 @@ export function CountryPicker({ value, onValueChange, disabled }: CountryPickerP
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            size="sm"
+            size={fullWidth ? "default" : "sm"}
             disabled={disabled}
-            className="h-8 gap-1 text-xs"
+            className={buttonClasses}
           >
             {displayValue}
-            <ChevronsUpDown className="h-3 w-3 opacity-50" />
+            <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
           </Button>
         </SheetTrigger>
         <SheetContent side="bottom" className="h-[80vh]">
@@ -196,12 +202,12 @@ export function CountryPicker({ value, onValueChange, disabled }: CountryPickerP
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size={fullWidth ? "default" : "sm"}
           disabled={disabled}
-          className="h-8 gap-1 text-xs"
+          className={buttonClasses}
         >
           {displayValue}
-          <ChevronsUpDown className="h-3 w-3 opacity-50" />
+          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0 ml-auto" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-0" align="start">

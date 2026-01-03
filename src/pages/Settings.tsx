@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Trash2, AlertTriangle } from "lucide-react";
+import { Loader2, Download, Trash2, AlertTriangle, Globe, Mail } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import {
   AlertDialog,
@@ -19,6 +19,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Country data for display
+const COUNTRIES: Record<string, { name: string; flag: string }> = {
+  'IN': { name: 'India', flag: '🇮🇳' },
+  'US': { name: 'USA', flag: '🇺🇸' },
+  'UK': { name: 'UK', flag: '🇬🇧' },
+  'GB': { name: 'UK', flag: '🇬🇧' },
+  'CA': { name: 'Canada', flag: '🇨🇦' },
+  'AU': { name: 'Australia', flag: '🇦🇺' },
+  'JP': { name: 'Japan', flag: '🇯🇵' },
+  'KR': { name: 'South Korea', flag: '🇰🇷' },
+  'CN': { name: 'China', flag: '🇨🇳' },
+  'SG': { name: 'Singapore', flag: '🇸🇬' },
+  'MY': { name: 'Malaysia', flag: '🇲🇾' },
+  'DE': { name: 'Germany', flag: '🇩🇪' },
+  'FR': { name: 'France', flag: '🇫🇷' },
+  'IT': { name: 'Italy', flag: '🇮🇹' },
+  'ES': { name: 'Spain', flag: '🇪🇸' },
+  'NL': { name: 'Netherlands', flag: '🇳🇱' },
+  'AE': { name: 'UAE', flag: '🇦🇪' },
+  'SA': { name: 'Saudi Arabia', flag: '🇸🇦' },
+  'ZA': { name: 'South Africa', flag: '🇿🇦' },
+  'NG': { name: 'Nigeria', flag: '🇳🇬' },
+};
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -33,6 +57,7 @@ export default function Settings() {
     marketing_emails: false,
     anniversary_reminders: true,
   });
+  const [userCountry, setUserCountry] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuthAndLoadSettings();
@@ -51,13 +76,20 @@ export default function Settings() {
 
   const loadSettings = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("user_settings")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Load settings and profile in parallel
+      const [settingsRes, profileRes] = await Promise.all([
+        supabase.from("user_settings").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("profiles").select("country").eq("id", userId).single(),
+      ]);
 
-      if (error) throw error;
+      if (settingsRes.error) throw settingsRes.error;
+
+      // Set country from profile
+      if (profileRes.data?.country) {
+        setUserCountry(profileRes.data.country);
+      }
+
+      const data = settingsRes.data;
 
       if (data) {
         setSettings({
@@ -253,6 +285,58 @@ export default function Settings() {
       </nav>
 
       <div className="container mx-auto px-4 py-12 max-w-2xl space-y-6">
+        {/* Account Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Information</CardTitle>
+            <CardDescription>
+              Your account details and preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Country Display (Read-only) */}
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-base font-medium">Country</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  This determines your pricing and cannot be changed.
+                </p>
+              </div>
+              <div className="text-right">
+                {userCountry ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">
+                      {COUNTRIES[userCountry]?.flag || '🌍'}
+                    </span>
+                    <span className="font-medium">
+                      {COUNTRIES[userCountry]?.name || userCountry}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">Not set</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Support Contact for Country Change */}
+            <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <Mail className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Need to change your country? Contact us at{" "}
+                <a 
+                  href="mailto:support@cakeaiartist.com?subject=Country Change Request" 
+                  className="text-party-purple hover:underline font-medium"
+                >
+                  support@cakeaiartist.com
+                </a>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Notification Preferences */}
         <Card>
           <CardHeader>

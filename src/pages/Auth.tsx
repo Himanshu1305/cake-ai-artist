@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { CountryPicker } from "@/components/CountryPicker";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,6 +20,7 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(50, "First name too long"),
   lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
+  country: z.string().min(2, "Please select your country"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   ageConfirmed: z.literal(true, { errorMap: () => ({ message: "You must confirm you are at least 13 years old" }) }),
@@ -25,14 +28,25 @@ const signupSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { detectedCountry } = useGeoContext();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [country, setCountry] = useState("");
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Set default country from geo-detection
+  useEffect(() => {
+    if (detectedCountry && !country) {
+      // Map GB to UK for our country picker
+      const mappedCountry = detectedCountry === 'GB' ? 'UK' : detectedCountry;
+      setCountry(mappedCountry);
+    }
+  }, [detectedCountry, country]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +147,7 @@ const Auth = () => {
       if (isLogin) {
         loginSchema.parse({ email, password });
       } else {
-        signupSchema.parse({ firstName, lastName, email, password, ageConfirmed });
+        signupSchema.parse({ firstName, lastName, country, email, password, ageConfirmed });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -163,6 +177,7 @@ const Auth = () => {
             data: {
               first_name: firstName.trim(),
               last_name: lastName.trim(),
+              country: country,
             }
           },
         });
@@ -193,6 +208,7 @@ const Auth = () => {
         // Clear signup fields
         setFirstName("");
         setLastName("");
+        setCountry("");
         setPassword("");
         setAgeConfirmed(false);
       }
@@ -335,6 +351,18 @@ const Auth = () => {
                           required={!isLogin}
                         />
                       </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country</Label>
+                      <CountryPicker
+                        value={country}
+                        onValueChange={setCountry}
+                        fullWidth
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        This determines your pricing. Cannot be changed later.
+                      </p>
                     </div>
                   </>
                 )}

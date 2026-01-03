@@ -8,12 +8,34 @@ const GEO_CHECKED_KEY = 'geo_detection_done';
 
 type SupportedCountry = 'US' | 'UK' | 'CA' | 'AU' | 'IN';
 
-const countryRoutes: Record<string, string> = {
-  GB: '/uk',
-  UK: '/uk',
-  CA: '/canada',
-  AU: '/australia',
-  IN: '/india',
+// Asia (except India) → Australia page (AUD pricing)
+const ASIA_COUNTRIES = ['JP', 'KR', 'CN', 'SG', 'MY', 'TH', 'VN', 'PH', 'ID', 'BD', 'PK', 'LK', 'NP', 'HK', 'TW', 'NZ'];
+
+// Europe (except UK) → UK page (GBP pricing)
+const EUROPE_COUNTRIES = ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'PT', 'SE', 'NO', 'DK', 'FI', 'PL', 'AT', 'CH', 'IE', 'GR', 'CZ', 'HU', 'RO', 'UA', 'RU'];
+
+// Middle East & Africa → UK page (GBP pricing)
+const MENA_COUNTRIES = ['AE', 'SA', 'EG', 'ZA', 'NG', 'KE', 'IL', 'TR', 'DZ'];
+
+// Get target route based on country code
+const getTargetRoute = (countryCode: string): string | null => {
+  // Direct country matches
+  if (countryCode === 'IN') return '/india';
+  if (countryCode === 'GB' || countryCode === 'UK') return '/uk';
+  if (countryCode === 'CA') return '/canada';
+  if (countryCode === 'AU') return '/australia';
+  
+  // Asia → Australia page (AUD pricing)
+  if (ASIA_COUNTRIES.includes(countryCode)) return '/australia';
+  
+  // Europe → UK page (GBP pricing)
+  if (EUROPE_COUNTRIES.includes(countryCode)) return '/uk';
+  
+  // Middle East & Africa → UK page (GBP pricing)
+  if (MENA_COUNTRIES.includes(countryCode)) return '/uk';
+  
+  // Americas & rest of world → stay on / (USD)
+  return null;
 };
 
 const REDIRECTABLE_ROUTES = ['/', '/pricing'];
@@ -121,7 +143,7 @@ export const useGeoRedirect = () => {
         debugLog('Using cached geo result:', geoChecked);
         setDetectedCountry(geoChecked);
         // Redirect if country has a specific page
-        const targetRoute = countryRoutes[geoChecked];
+        const targetRoute = getTargetRoute(geoChecked);
         if (targetRoute) {
           debugLog('Redirecting to:', targetRoute);
           navigate(targetRoute, { replace: true });
@@ -139,7 +161,7 @@ export const useGeoRedirect = () => {
         safeSetItem(GEO_CHECKED_KEY, countryCode, 'session');
 
         // Redirect if country has specific landing page
-        const targetRoute = countryRoutes[countryCode];
+        const targetRoute = getTargetRoute(countryCode);
         if (targetRoute) {
           debugLog('Redirecting to:', targetRoute);
           navigate(targetRoute, { replace: true });
@@ -161,11 +183,11 @@ export const useGeoRedirect = () => {
     setDetectedCountry(country);
     
     // Navigate to appropriate page
-    if (country === 'US') {
-      navigate('/');
+    const route = getTargetRoute(country);
+    if (route) {
+      navigate(route);
     } else {
-      const route = countryRoutes[country] || countryRoutes[country === 'UK' ? 'GB' : country];
-      if (route) navigate(route);
+      navigate('/');
     }
   };
 
