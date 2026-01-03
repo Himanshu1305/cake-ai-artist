@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
+import { supabase } from '@/integrations/supabase/client';
 
 const GEO_CHECKED_KEY = 'geo_detection_done';
 
@@ -25,17 +26,45 @@ const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Respons
   }
 };
 
-// Single geo detection attempt
-const detectCountry = async (): Promise<string | null> => {
+// Primary: Client-side geo detection via ipapi.co
+const detectCountryClient = async (): Promise<string | null> => {
   try {
     const response = await fetchWithTimeout('https://ipapi.co/json/', 3000);
-    if (!response.ok) throw new Error('Geo API failed');
+    if (!response.ok) throw new Error('ipapi.co failed');
     const data = await response.json();
+    console.log('[GeoContext] ipapi.co response:', data.country_code);
     return data.country_code || null;
   } catch (error) {
-    console.error('[GeoContext] Geo detection failed:', error);
+    console.log('[GeoContext] ipapi.co failed:', error);
     return null;
   }
+};
+
+// Fallback: Server-side geo detection via Edge Function
+const detectCountryServer = async (): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('detect-country');
+    if (error) throw error;
+    console.log('[GeoContext] Edge function response:', data);
+    return data?.country_code || null;
+  } catch (error) {
+    console.log('[GeoContext] Edge function failed:', error);
+    return null;
+  }
+};
+
+// Combined detection with fallback
+const detectCountry = async (): Promise<string | null> => {
+  // Try client-side first (faster, no server cost)
+  let country = await detectCountryClient();
+  
+  // Fallback to server-side if client fails
+  if (!country) {
+    console.log('[GeoContext] Trying server-side fallback...');
+    country = await detectCountryServer();
+  }
+  
+  return country;
 };
 
 export const GeoProvider = ({ children }: { children: ReactNode }) => {
@@ -52,14 +81,8 @@ export const GeoProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Try to detect country
-      let country = await detectCountry();
-      
-      // Retry once if first attempt failed
-      if (!country) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        country = await detectCountry();
-      }
+      // Try to detect country (with fallback)
+      const country = await detectCountry();
 
       if (country) {
         setDetectedCountry(country);
