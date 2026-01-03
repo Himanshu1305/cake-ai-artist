@@ -159,7 +159,10 @@ serve(async (req) => {
       }
     ];
 
-    // Select view angles based on cake style
+    // Determine if we should generate both styles (when character is selected)
+    const generateBothStyles = !!character && !specificView;
+    
+    // Select view angles based on cake style (or both if character selected)
     const viewAngles = cakeStyle === 'sculpted' ? sculptedViewAngles : decoratedViewAngles;
 
     // Helper function to generate a single view with retry logic
@@ -489,22 +492,39 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
     // Generate images - either specific view or all views
     let generatedImages: string[] = [];
     let greetingMessage = '';
+    let imageLabels: string[] = [];
     
     try {
       if (specificView) {
         // Regenerate only the specified view
         console.log(`Regenerating only ${specificView} view...`);
-        const viewIndex = viewAngles.findIndex(v => v.name === specificView);
+        
+        // Determine which view angles array to use based on view name
+        let viewAnglesToUse = viewAngles;
+        let viewStyle: 'decorated' | 'sculpted' = cakeStyle;
+        
+        // If specificView is 'main', it's a sculpted view
+        if (specificView === 'main') {
+          viewAnglesToUse = sculptedViewAngles;
+          viewStyle = 'sculpted';
+        } else if (['front', 'side'].includes(specificView)) {
+          viewAnglesToUse = decoratedViewAngles;
+          viewStyle = 'decorated';
+        }
+        // 'top' exists in both, use the cakeStyle to determine
+        
+        const viewIndex = viewAnglesToUse.findIndex(v => v.name === specificView);
         if (viewIndex === -1) {
           throw new Error(`Invalid view name: ${specificView}`);
         }
-        const regeneratedImage = await generateView(viewAngles[viewIndex]);
+        const regeneratedImage = await generateView(viewAnglesToUse[viewIndex]);
         
         return new Response(
           JSON.stringify({ 
             regeneratedImage,
             viewIndex,
-            viewName: specificView
+            viewName: specificView,
+            viewStyle
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -514,8 +534,22 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
       }
       
       // Generate views AND message in parallel for maximum speed
-      // Sculpted cakes: 2 views (main + top), Decorated cakes: 3 views (front + side + top)
-      if (cakeStyle === 'sculpted') {
+      if (generateBothStyles) {
+        // Character selected: Generate 3 decorated views + 1 sculpted main view = 4 total
+        console.log('Starting parallel generation of 4 views (3 decorated + 1 sculpted main) and personalized message...');
+        [generatedImages, greetingMessage] = await Promise.all([
+          Promise.all([
+            generateView(decoratedViewAngles[0]), // front (decorated)
+            generateView(decoratedViewAngles[1]), // side (decorated)
+            generateView(decoratedViewAngles[2]), // top (decorated)
+            generateView(sculptedViewAngles[0])   // main (sculpted - character-shaped)
+          ]),
+          generateMessageAsync()  // message generation in parallel
+        ]);
+        imageLabels = ['Front View (Decorated)', 'Side View (Decorated)', 'Top-Down (Decorated)', 'Character-Shaped Cake'];
+        console.log('✓ All 4 views and message generated successfully (both styles)');
+      } else if (cakeStyle === 'sculpted') {
+        // Sculpted cakes: 2 views (main + top)
         console.log('Starting parallel generation of 2 views (sculpted) and personalized message...');
         [generatedImages, greetingMessage] = await Promise.all([
           Promise.all([
@@ -524,8 +558,10 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
           ]),
           generateMessageAsync()  // message generation in parallel
         ]);
+        imageLabels = ['Main View', 'Top-Down View'];
         console.log('✓ All 2 views and message generated successfully (sculpted cake)');
       } else {
+        // Decorated cakes: 3 views (front + side + top)
         console.log('Starting parallel generation of all 3 views and personalized message...');
         [generatedImages, greetingMessage] = await Promise.all([
           Promise.all([
@@ -535,6 +571,7 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
           ]),
           generateMessageAsync()  // message generation in parallel
         ]);
+        imageLabels = ['Front View', 'Side View', 'Top-Down View'];
         console.log('✓ All 3 views and message generated successfully (decorated cake)');
       }
     
@@ -552,6 +589,8 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
       JSON.stringify({
         success: true,
         images: generatedImages,
+        imageLabels: imageLabels,
+        generateBothStyles: generateBothStyles,
         greetingMessage: greetingMessage
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

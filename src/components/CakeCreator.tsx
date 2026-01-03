@@ -148,11 +148,35 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Regenerate specific view
   const handleRegenerateView = async (viewIndex: number) => {
-    // For sculpted cakes: 0=main, 1=top. For decorated: 0=front, 1=side, 2=top
-    const decoratedViewNames = ['front', 'side', 'top'];
-    const sculptedViewNames = ['main', 'top'];
-    const viewNames = cakeStyle === 'sculpted' ? sculptedViewNames : decoratedViewNames;
-    const viewName = viewNames[viewIndex];
+    // When character is selected (4 images): 0=front, 1=side, 2=top (decorated), 3=main (sculpted)
+    // For sculpted-only: 0=main, 1=top
+    // For decorated-only: 0=front, 1=side, 2=top
+    
+    let viewName: string;
+    let viewStyle: 'decorated' | 'sculpted' = 'decorated';
+    
+    // Check if we're in dual-style mode (character selected = 4 images)
+    const isDualStyleMode = character && generatedImages.length === 4;
+    
+    if (isDualStyleMode) {
+      // 4-image mode: first 3 are decorated, last 1 is sculpted main
+      if (viewIndex < 3) {
+        const decoratedViewNames = ['front', 'side', 'top'];
+        viewName = decoratedViewNames[viewIndex];
+        viewStyle = 'decorated';
+      } else {
+        viewName = 'main';
+        viewStyle = 'sculpted';
+      }
+    } else if (cakeStyle === 'sculpted') {
+      const sculptedViewNames = ['main', 'top'];
+      viewName = sculptedViewNames[viewIndex];
+      viewStyle = 'sculpted';
+    } else {
+      const decoratedViewNames = ['front', 'side', 'top'];
+      viewName = decoratedViewNames[viewIndex];
+      viewStyle = 'decorated';
+    }
     
     setRegeneratingView(viewIndex);
     haptic.medium();
@@ -165,9 +189,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           occasion,
           relation,
           gender,
-          cakeStyle,
+          cakeStyle: viewStyle, // Use the specific style for this view
           cakeType,
-          layers: cakeStyle === 'sculpted' ? undefined : layers, // Ignore layers for sculpted
+          layers: viewStyle === 'sculpted' ? undefined : layers,
           theme,
           colors,
           userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
@@ -181,12 +205,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const newImages = [...generatedImages];
         newImages[viewIndex] = data.regeneratedImage;
         setGeneratedImages(newImages);
-        const decoratedLabels = ["Front", "Side", "Top-Down"];
-        const sculptedLabels = ["Main", "Top-Down"];
-        const labels = cakeStyle === 'sculpted' ? sculptedLabels : decoratedLabels;
+        
+        // Get the appropriate label based on mode
+        let label: string;
+        if (isDualStyleMode) {
+          const labels = ['Front (Decorated)', 'Side (Decorated)', 'Top-Down (Decorated)', 'Character-Shaped'];
+          label = labels[viewIndex];
+        } else if (cakeStyle === 'sculpted') {
+          const labels = ['Main', 'Top-Down'];
+          label = labels[viewIndex];
+        } else {
+          const labels = ['Front', 'Side', 'Top-Down'];
+          label = labels[viewIndex];
+        }
+        
         toast({
           title: "Success!",
-          description: `${labels[viewIndex]} view regenerated!`
+          description: `${label} view regenerated!`
         });
         haptic.success();
       }
@@ -604,10 +639,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       // ========== NEW NATIVE LOVABLE AI SOLUTION ==========
       try {
-        const viewCount = cakeStyle === 'sculpted' ? 2 : 3;
+        // Determine view count: 4 if character selected, else 2 for sculpted, 3 for decorated
+        const viewCount = character ? 4 : (cakeStyle === 'sculpted' ? 2 : 3);
+        const viewDescription = character 
+          ? "4 beautiful views (3 decorated + 1 character-shaped)" 
+          : `${viewCount} beautiful views`;
+        
         toast({
           title: "Creating your cake...",
-          description: `AI is generating ${viewCount} beautiful views with your personalization!`,
+          description: `AI is generating ${viewDescription} with your personalization!`,
         });
 
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
@@ -1375,106 +1415,49 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     />
                   </div>
 
-                  {/* Cake Style Toggle - Only show when character is selected */}
+                  {/* Cake Style Info - Show when character is selected (both styles will be generated) */}
                   {character && (
                     <div className="col-span-full mt-4 p-4 bg-gradient-to-r from-party-purple/10 to-party-coral/10 rounded-lg border border-party-purple/30">
-                      <Label className="text-sm font-medium flex items-center gap-2 mb-3">
-                        <Sparkles className="w-4 h-4 text-party-purple" />
-                        Cake Style
-                      </Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCakeStyle("decorated");
-                            haptic.light();
-                          }}
-                          className={`p-4 rounded-lg border-2 transition-all ${
-                            cakeStyle === "decorated"
-                              ? "border-party-pink bg-party-pink/10 shadow-md"
-                              : "border-border bg-background hover:border-party-purple/50"
-                          }`}
-                        >
-                          <div className="text-center">
-                            {/* Decorated Cake Illustration - Traditional cake with figurine on top */}
-                            <div className="flex justify-center mb-2">
-                              <svg viewBox="0 0 80 60" className="w-16 h-12">
-                                {/* Cake base plate */}
-                                <ellipse cx="40" cy="54" rx="32" ry="4" fill="currentColor" opacity="0.2" />
-                                {/* Bottom tier */}
-                                <rect x="15" y="38" width="50" height="16" rx="3" className="fill-party-pink/40" />
-                                <rect x="15" y="38" width="50" height="3" rx="1" className="fill-party-pink/60" />
-                                {/* Middle tier */}
-                                <rect x="22" y="24" width="36" height="14" rx="3" className="fill-party-coral/40" />
-                                <rect x="22" y="24" width="36" height="3" rx="1" className="fill-party-coral/60" />
-                                {/* Top tier */}
-                                <rect x="30" y="12" width="20" height="12" rx="2" className="fill-party-purple/40" />
-                                <rect x="30" y="12" width="20" height="2" rx="1" className="fill-party-purple/60" />
-                                {/* Character figurine on top */}
-                                <circle cx="40" cy="6" r="4" className="fill-party-pink" />
-                                <rect x="37" y="8" width="6" height="6" rx="1" className="fill-party-pink" />
-                                {/* Decorative dots */}
-                                <circle cx="25" cy="45" r="2" className="fill-party-mint/60" />
-                                <circle cx="40" cy="45" r="2" className="fill-party-mint/60" />
-                                <circle cx="55" cy="45" r="2" className="fill-party-mint/60" />
-                              </svg>
-                            </div>
-                            <span className="text-sm font-medium block">Character on Cake</span>
-                            <p className="text-xs text-muted-foreground mt-1">Figurines & decorations on a tiered cake</p>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCakeStyle("sculpted");
-                            setLayers(""); // Clear layers when switching to sculpted
-                            haptic.light();
-                          }}
-                          className={`p-4 rounded-lg border-2 transition-all ${
-                            cakeStyle === "sculpted"
-                              ? "border-party-pink bg-party-pink/10 shadow-md"
-                              : "border-border bg-background hover:border-party-purple/50"
-                          }`}
-                        >
-                          <div className="text-center">
-                            {/* Sculpted Cake Illustration - Character-shaped cake */}
-                            <div className="flex justify-center mb-2">
-                              <svg viewBox="0 0 80 60" className="w-16 h-12">
-                                {/* Shadow/plate */}
-                                <ellipse cx="40" cy="56" rx="24" ry="3" fill="currentColor" opacity="0.15" />
-                                {/* Character body (the cake itself) */}
-                                <path 
-                                  d="M28 52 Q22 35 26 22 Q30 12 40 10 Q50 12 54 22 Q58 35 52 52 Z" 
-                                  className="fill-party-coral/50"
-                                />
-                                {/* Character head */}
-                                <ellipse cx="40" cy="16" rx="12" ry="10" className="fill-party-pink/50" />
-                                {/* Cake texture lines to show it's a cake */}
-                                <path d="M30 30 Q40 28 50 30" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.3" />
-                                <path d="M29 40 Q40 38 51 40" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.3" />
-                                {/* Eyes to show character */}
-                                <circle cx="35" cy="14" r="2" className="fill-party-purple/60" />
-                                <circle cx="45" cy="14" r="2" className="fill-party-purple/60" />
-                                {/* Smile */}
-                                <path d="M36 20 Q40 24 44 20" stroke="currentColor" strokeWidth="1.5" fill="none" className="stroke-party-purple/60" />
-                                {/* Arms (cake extensions) */}
-                                <ellipse cx="22" cy="32" rx="6" ry="4" className="fill-party-coral/40" />
-                                <ellipse cx="58" cy="32" rx="6" ry="4" className="fill-party-coral/40" />
-                              </svg>
-                            </div>
-                            <span className="text-sm font-medium block">Character-Shaped</span>
-                            <p className="text-xs text-muted-foreground mt-1">Entire cake sculpted as the character</p>
-                          </div>
-                        </button>
-                      </div>
-                      {cakeStyle === "sculpted" && (
-                        <div className="mt-3 p-2 bg-party-coral/10 rounded-md border border-party-coral/30">
-                          <p className="text-xs text-party-coral font-medium flex items-center gap-1">
-                            <HelpCircle className="w-3 h-3" />
-                            Only 2 views will be created for sculpted cakes (Main + Top-Down)
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-party-purple to-party-pink rounded-full flex items-center justify-center">
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-foreground flex items-center gap-2">
+                            Both Cake Styles Included!
+                            <Crown className="w-4 h-4 text-gold" />
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            You'll get <strong>4 images</strong>: 3 decorated cake views + 1 character-shaped cake
                           </p>
                         </div>
-                      )}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-background/50 rounded-lg border border-border/50">
+                          <div className="flex items-center gap-2 mb-1">
+                            {/* Decorated Cake Icon */}
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 text-party-pink">
+                              <rect x="4" y="14" width="16" height="6" rx="1" fill="currentColor" opacity="0.4" />
+                              <rect x="6" y="8" width="12" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                              <rect x="8" y="3" width="8" height="5" rx="1" fill="currentColor" />
+                            </svg>
+                            <span className="text-sm font-medium">Decorated (3 views)</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Front, Side, Top-Down</p>
+                        </div>
+                        <div className="p-3 bg-background/50 rounded-lg border border-border/50">
+                          <div className="flex items-center gap-2 mb-1">
+                            {/* Sculpted Cake Icon */}
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 text-party-coral">
+                              <ellipse cx="12" cy="16" rx="8" ry="4" fill="currentColor" opacity="0.4" />
+                              <ellipse cx="12" cy="10" rx="6" ry="8" fill="currentColor" opacity="0.6" />
+                              <circle cx="12" cy="6" r="4" fill="currentColor" />
+                            </svg>
+                            <span className="text-sm font-medium">Character-Shaped (1 view)</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Full sculpted cake</p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -2034,94 +2017,288 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {generatedImages.map((imageUrl, index) => (
-                  <div
-                    key={index}
-                    className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 group ${
-                      selectedImages.has(index)
-                        ? "border-party-pink shadow-lg shadow-party-pink/50"
-                        : "border-border hover:border-party-purple/50"
-                    }`}
-                  >
-                    <div
-                      onClick={() => {
-                        haptic.light();
-                        setPreviewImageIndex(index);
-                      }}
-                      className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
-                    >
-                      <img
-                        src={imageUrl || '/placeholder.svg'}
-                        alt={`Cake ${["Front View", "Side View", "Top-Down View", "3/4 View"][index]}`}
-                        className="w-full h-full object-cover rounded-lg"
-                        onError={(e) => {
-                          console.error('Failed to load image:', imageUrl);
-                          e.currentTarget.src = '/placeholder.svg';
-                        }}
-                      />
+              {/* Check if we're in dual-style mode (4 images with character) */}
+              {generatedImages.length === 4 && character ? (
+                // Dual-style mode: Show grouped sections
+                <div className="space-y-6">
+                  {/* Decorated Style Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 text-party-pink">
+                        <rect x="4" y="14" width="16" height="6" rx="1" fill="currentColor" opacity="0.4" />
+                        <rect x="6" y="8" width="12" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                        <rect x="8" y="3" width="8" height="5" rx="1" fill="currentColor" />
+                      </svg>
+                      <h4 className="font-semibold text-foreground">Decorated Style</h4>
+                      <span className="text-xs text-muted-foreground">(3 views)</span>
                     </div>
-                    
-                    {/* Selection Checkbox */}
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        haptic.light(); // Haptic on selection toggle
-                        const newSelected = new Set(selectedImages);
-                        if (newSelected.has(index)) {
-                          newSelected.delete(index);
-                        } else {
-                          newSelected.add(index);
-                        }
-                        setSelectedImages(newSelected);
-                      }}
-                      className="absolute top-2 right-2 cursor-pointer"
-                    >
-                      <div className={`rounded-full p-1.5 shadow-lg transition-all ${
-                        selectedImages.has(index)
-                          ? "bg-party-pink text-white"
-                          : "bg-white/80 text-gray-600 hover:bg-white"
-                      }`}>
-                        <Check className="w-5 h-5" />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {generatedImages.slice(0, 3).map((imageUrl, index) => (
+                        <div
+                          key={index}
+                          className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 group ${
+                            selectedImages.has(index)
+                              ? "border-party-pink shadow-lg shadow-party-pink/50"
+                              : "border-border hover:border-party-purple/50"
+                          }`}
+                        >
+                          <div
+                            onClick={() => {
+                              haptic.light();
+                              setPreviewImageIndex(index);
+                            }}
+                            className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+                          >
+                            <img
+                              src={imageUrl || '/placeholder.svg'}
+                              alt={`Cake ${["Front View", "Side View", "Top-Down View"][index]}`}
+                              className="w-full h-full object-cover rounded-lg"
+                              onError={(e) => {
+                                console.error('Failed to load image:', imageUrl);
+                                e.currentTarget.src = '/placeholder.svg';
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Selection Checkbox */}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              haptic.light();
+                              const newSelected = new Set(selectedImages);
+                              if (newSelected.has(index)) {
+                                newSelected.delete(index);
+                              } else {
+                                newSelected.add(index);
+                              }
+                              setSelectedImages(newSelected);
+                            }}
+                            className="absolute top-2 right-2 cursor-pointer"
+                          >
+                            <div className={`rounded-full p-1.5 shadow-lg transition-all ${
+                              selectedImages.has(index)
+                                ? "bg-party-pink text-white"
+                                : "bg-white/80 text-gray-600 hover:bg-white"
+                            }`}>
+                              <Check className="w-5 h-5" />
+                            </div>
+                          </div>
+                          
+                          {/* View Label */}
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                            {["Front View", "Side View", "Top-Down View"][index]}
+                          </div>
+                          
+                          {/* Regenerate View Button */}
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRegenerateView(index);
+                            }}
+                            disabled={regeneratingView !== null}
+                            size="sm"
+                            variant="secondary"
+                            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            {regeneratingView === index ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                                Regenerating...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="w-3 h-3 mr-1" />
+                                Regenerate
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sculpted Style Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 text-party-coral">
+                        <ellipse cx="12" cy="16" rx="8" ry="4" fill="currentColor" opacity="0.4" />
+                        <ellipse cx="12" cy="10" rx="6" ry="8" fill="currentColor" opacity="0.6" />
+                        <circle cx="12" cy="6" r="4" fill="currentColor" />
+                      </svg>
+                      <h4 className="font-semibold text-foreground">Character-Shaped Cake</h4>
+                      <span className="text-xs text-muted-foreground">(1 view)</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                      <div
+                        className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 group ${
+                          selectedImages.has(3)
+                            ? "border-party-coral shadow-lg shadow-party-coral/50"
+                            : "border-border hover:border-party-purple/50"
+                        }`}
+                      >
+                        <div
+                          onClick={() => {
+                            haptic.light();
+                            setPreviewImageIndex(3);
+                          }}
+                          className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+                        >
+                          <img
+                            src={generatedImages[3] || '/placeholder.svg'}
+                            alt="Character-Shaped Cake"
+                            className="w-full h-full object-cover rounded-lg"
+                            onError={(e) => {
+                              console.error('Failed to load image:', generatedImages[3]);
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Selection Checkbox */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            haptic.light();
+                            const newSelected = new Set(selectedImages);
+                            if (newSelected.has(3)) {
+                              newSelected.delete(3);
+                            } else {
+                              newSelected.add(3);
+                            }
+                            setSelectedImages(newSelected);
+                          }}
+                          className="absolute top-2 right-2 cursor-pointer"
+                        >
+                          <div className={`rounded-full p-1.5 shadow-lg transition-all ${
+                            selectedImages.has(3)
+                              ? "bg-party-coral text-white"
+                              : "bg-white/80 text-gray-600 hover:bg-white"
+                          }`}>
+                            <Check className="w-5 h-5" />
+                          </div>
+                        </div>
+                        
+                        {/* View Label */}
+                        <div className="absolute bottom-2 left-2 bg-gradient-to-r from-party-coral to-party-pink text-white px-2 py-1 rounded text-xs font-medium">
+                          ✨ Character-Shaped
+                        </div>
+                        
+                        {/* Regenerate View Button */}
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRegenerateView(3);
+                          }}
+                          disabled={regeneratingView !== null}
+                          size="sm"
+                          variant="secondary"
+                          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          {regeneratingView === 3 ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                              Regenerating...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3 h-3 mr-1" />
+                              Regenerate
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </div>
-                    
-                    {/* View Label */}
-                    <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                      {cakeStyle === "sculpted" 
-                        ? (["Main View", "Top-Down View"][index] || `View ${index + 1}`)
-                        : (["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`)
-                      }
-                    </div>
-                    
-                    {/* Regenerate View Button */}
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRegenerateView(index);
-                      }}
-                      disabled={regeneratingView !== null}
-                      size="sm"
-                      variant="secondary"
-                      className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      {regeneratingView === index ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
-                          Regenerating...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="w-3 h-3 mr-1" />
-                          Regenerate
-                        </>
-                      )}
-                    </Button>
-                    
-                    {/* Edit Text Button - Hidden since text is now baked into AI-generated images */}
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                // Standard mode: Single grid
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {generatedImages.map((imageUrl, index) => (
+                    <div
+                      key={index}
+                      className={`relative rounded-lg border-4 overflow-visible transition-all duration-300 group ${
+                        selectedImages.has(index)
+                          ? "border-party-pink shadow-lg shadow-party-pink/50"
+                          : "border-border hover:border-party-purple/50"
+                      }`}
+                    >
+                      <div
+                        onClick={() => {
+                          haptic.light();
+                          setPreviewImageIndex(index);
+                        }}
+                        className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+                      >
+                        <img
+                          src={imageUrl || '/placeholder.svg'}
+                          alt={`Cake ${["Front View", "Side View", "Top-Down View", "3/4 View"][index]}`}
+                          className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            console.error('Failed to load image:', imageUrl);
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Selection Checkbox */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          haptic.light();
+                          const newSelected = new Set(selectedImages);
+                          if (newSelected.has(index)) {
+                            newSelected.delete(index);
+                          } else {
+                            newSelected.add(index);
+                          }
+                          setSelectedImages(newSelected);
+                        }}
+                        className="absolute top-2 right-2 cursor-pointer"
+                      >
+                        <div className={`rounded-full p-1.5 shadow-lg transition-all ${
+                          selectedImages.has(index)
+                            ? "bg-party-pink text-white"
+                            : "bg-white/80 text-gray-600 hover:bg-white"
+                        }`}>
+                          <Check className="w-5 h-5" />
+                        </div>
+                      </div>
+                      
+                      {/* View Label */}
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                        {cakeStyle === "sculpted" 
+                          ? (["Main View", "Top-Down View"][index] || `View ${index + 1}`)
+                          : (["Front View", "Side View", "Top-Down View", "3/4 View (Diagonal)"][index] || `View ${index + 1}`)
+                        }
+                      </div>
+                      
+                      {/* Regenerate View Button */}
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRegenerateView(index);
+                        }}
+                        disabled={regeneratingView !== null}
+                        size="sm"
+                        variant="secondary"
+                        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        {regeneratingView === index ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                            Regenerating...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Regenerate
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <p className="text-xs text-muted-foreground text-center">
                 Click images to preview • Click checkmark to select for download/share
