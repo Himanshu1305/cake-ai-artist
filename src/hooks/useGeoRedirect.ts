@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
+import { supabase } from '@/integrations/supabase/client';
 
 const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
@@ -32,7 +33,7 @@ const debugLog = (...args: unknown[]) => {
   }
 };
 
-// Fetch with AbortController-based timeout for broader compatibility
+// Fetch with AbortController-based timeout
 const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -47,18 +48,45 @@ const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Respons
   }
 };
 
-// Single geo detection attempt
-const detectCountry = async (): Promise<string | null> => {
+// Primary: Client-side geo detection via ipapi.co
+const detectCountryClient = async (): Promise<string | null> => {
   try {
     const response = await fetchWithTimeout('https://ipapi.co/json/', 3000);
-    if (!response.ok) throw new Error('Geo API failed');
+    if (!response.ok) throw new Error('ipapi.co failed');
     const data = await response.json();
-    debugLog('ipapi response:', data.country_code);
+    debugLog('ipapi.co response:', data.country_code);
     return data.country_code || null;
   } catch (error) {
-    debugLog('Geo detection attempt failed:', error);
+    debugLog('ipapi.co failed:', error);
     return null;
   }
+};
+
+// Fallback: Server-side geo detection via Edge Function
+const detectCountryServer = async (): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('detect-country');
+    if (error) throw error;
+    debugLog('Edge function response:', data);
+    return data?.country_code || null;
+  } catch (error) {
+    debugLog('Edge function failed:', error);
+    return null;
+  }
+};
+
+// Combined detection with fallback
+const detectCountry = async (): Promise<string | null> => {
+  // Try client-side first
+  let country = await detectCountryClient();
+  
+  // Fallback to server-side if client fails
+  if (!country) {
+    debugLog('Trying server-side fallback...');
+    country = await detectCountryServer();
+  }
+  
+  return country;
 };
 
 export const useGeoRedirect = () => {
@@ -102,15 +130,8 @@ export const useGeoRedirect = () => {
         return;
       }
 
-      // First attempt at geo detection
-      let countryCode = await detectCountry();
-      
-      // Retry once on /pricing if first attempt failed
-      if (!countryCode && location.pathname === '/pricing') {
-        debugLog('First attempt failed on /pricing, retrying in 1s...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        countryCode = await detectCountry();
-      }
+      // Detect country with fallback
+      const countryCode = await detectCountry();
 
       if (countryCode) {
         debugLog('Detected country:', countryCode);
@@ -124,7 +145,6 @@ export const useGeoRedirect = () => {
           navigate(targetRoute, { replace: true });
         }
       } else {
-        // Do NOT cache 'US' on failure - allow future retries
         debugLog('Geo detection failed, not caching. User stays on current page.');
         setDetectedCountry(null);
       }
