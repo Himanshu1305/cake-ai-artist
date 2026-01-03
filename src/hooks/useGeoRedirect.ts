@@ -32,16 +32,22 @@ export const useGeoRedirect = () => {
           return;
         }
 
+        // Only auto-redirect from homepage or pricing page
+        const redirectableRoutes = ['/', '/pricing'];
+        
         // Check if we've already done geo detection this session
         const geoChecked = safeGetItem(GEO_CHECKED_KEY, 'session');
         if (geoChecked) {
           setDetectedCountry(geoChecked);
+          // Still redirect if on a redirectable route and country has a specific page
+          const targetRoute = countryRoutes[geoChecked];
+          if (targetRoute && redirectableRoutes.includes(location.pathname)) {
+            navigate(targetRoute, { replace: true });
+          }
           setIsLoading(false);
           return;
         }
 
-        // Only auto-redirect from homepage or pricing page
-        const redirectableRoutes = ['/', '/pricing'];
         if (!redirectableRoutes.includes(location.pathname)) {
           setIsLoading(false);
           return;
