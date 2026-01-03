@@ -13,10 +13,10 @@ export const AdminSaleReminder = () => {
   useEffect(() => {
     try {
       const now = new Date();
-      const janFirst2026 = new Date('2026-01-01T00:00:00');
+      const janEleventh2026 = new Date('2026-01-11T00:00:00');
       
-      // Only show if we're past Jan 1, 2026
-      if (now < janFirst2026) {
+      // Only show if we're past Jan 10, 2026
+      if (now < janEleventh2026) {
         return;
       }
 
@@ -82,7 +82,7 @@ export const AdminSaleReminder = () => {
                     🔔 NEW YEAR LIFETIME DEAL DECISION REQUIRED
                   </h3>
                   <p className="text-secondary-foreground/90">
-                    The New Year Lifetime Deal ended on December 31st. Choose what to do:
+                    The New Year Lifetime Deal ended on January 10th. Choose what to do:
                   </p>
                 </div>
 
