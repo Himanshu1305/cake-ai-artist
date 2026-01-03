@@ -11,7 +11,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
   const navigate = useNavigate();
 
   // Check if sale is still active
-  const saleEndDate = new Date('2025-12-31T23:59:59');
+  const saleEndDate = new Date('2026-01-10T23:59:59');
   const isSaleActive = new Date() < saleEndDate;
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
               <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS DEC 31</span>
+                <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
               </div>
             </div>
           </div>
