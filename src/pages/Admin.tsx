@@ -310,18 +310,20 @@ export default function Admin() {
   };
 
   const extractCharacterFromPrompt = (prompt: string): string => {
-    const characterPatterns = [
-      /featuring ([\w\s]+?)(?:,|\.|$)/i,
-      /with ([\w\s]+?)(?:theme|design|,|\.|$)/i,
-      /([\w\s]+) themed/i,
-      /([\w\s]+) cake/i,
-    ];
-    
-    for (const pattern of characterPatterns) {
-      const match = prompt.match(pattern);
-      if (match) return match[1].trim();
+    // Primary pattern: "with character-name" at end of prompt
+    // Format: "Name - occasion cake for relation (gender) with character-name"
+    const withPattern = /\bwith\s+([\w-]+)\s*$/i;
+    const withMatch = prompt.match(withPattern);
+    if (withMatch) {
+      // Convert "gojo-satoru" to "Gojo Satoru"
+      return withMatch[1]
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
     }
-    return "Other";
+    
+    // No character specified in prompt
+    return "No Character";
   };
 
   const loadAnalytics = async () => {

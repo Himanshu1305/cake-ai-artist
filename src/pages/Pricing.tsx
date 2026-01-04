@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { isChecking: isCheckingCountry } = useRequireCountry();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);

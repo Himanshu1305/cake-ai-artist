@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -47,6 +48,7 @@ const COUNTRIES: Record<string, { name: string; flag: string }> = {
 export default function Settings() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isChecking: isCheckingCountry } = useRequireCountry();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -256,7 +258,7 @@ export default function Settings() {
     }
   };
 
-  if (loading) {
+  if (loading || isCheckingCountry) {
     return (
       <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ interface GeneratedImage {
 
 const Gallery = () => {
   const navigate = useNavigate();
+  const { isChecking: isCheckingCountry } = useRequireCountry();
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -237,7 +239,7 @@ const Gallery = () => {
     return images.filter(img => !upcomingOccasions.some(upcoming => upcoming.id === img.id));
   }, [images, upcomingOccasions]);
 
-  if (loading) {
+  if (loading || isCheckingCountry) {
     return (
       <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-party-pink" />
