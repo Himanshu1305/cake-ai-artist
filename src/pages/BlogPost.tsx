@@ -6,6 +6,10 @@ import { Helmet } from "react-helmet-async";
 import { ArticleSchema } from "@/components/SEOSchema";
 import { AdSlot } from "@/components/AdSlot";
 import { SidebarAd } from "@/components/SidebarAd";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { AuthorByline } from "@/components/AuthorByline";
+import { BlogCTABox } from "@/components/BlogCTABox";
 
 interface BlogPostData {
   title: string;
@@ -16,8 +20,40 @@ interface BlogPostData {
   metaDescription: string;
   keywords: string;
   content: string;
+  featuredImage?: string;
   relatedPosts: { id: string; title: string; readTime: string }[];
 }
+
+// Featured images mapping by post id
+const featuredImages: Record<string, string> = {
+  "american-christmas-cake-ideas": "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=1200&h=600&fit=crop",
+  "american-new-year-cake-ideas": "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=1200&h=600&fit=crop",
+  "british-christmas-cake-ideas": "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=1200&h=600&fit=crop",
+  "british-new-year-cake-ideas": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&h=600&fit=crop",
+  "canadian-christmas-cake-ideas": "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=1200&h=600&fit=crop",
+  "canadian-new-year-cake-ideas": "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200&h=600&fit=crop",
+  "australian-christmas-cake-ideas": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=600&fit=crop",
+  "australian-new-year-cake-ideas": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&h=600&fit=crop",
+  "fourth-of-july-cake-ideas": "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&h=600&fit=crop",
+  "british-jubilee-royal-cakes": "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=1200&h=600&fit=crop",
+  "canada-day-cake-ideas": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=600&fit=crop",
+  "australia-day-cake-ideas": "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=1200&h=600&fit=crop",
+  "diwali-cake-ideas": "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&h=600&fit=crop",
+  "holi-cake-ideas": "https://images.unsplash.com/photo-1615887023544-3a566f29717b?w=1200&h=600&fit=crop",
+  "indian-christmas-cake-ideas": "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=1200&h=600&fit=crop",
+  "indian-new-year-cake-ideas": "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1200&h=600&fit=crop",
+  "creative-cake-ideas-birthday": "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=1200&h=600&fit=crop",
+  "cake-design-trends-2025": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1200&h=600&fit=crop",
+  "ai-vs-traditional-cake-design": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1200&h=600&fit=crop",
+  "perfect-birthday-messages": "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=1200&h=600&fit=crop",
+  "virtual-party-guide": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&h=600&fit=crop",
+  "last-minute-birthday-solutions": "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200&h=600&fit=crop",
+  "personalized-cakes-psychology": "https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=1200&h=600&fit=crop",
+  "anniversary-cake-ideas": "https://images.unsplash.com/photo-1522767131822-6b8c5a53c0e4?w=1200&h=600&fit=crop",
+  "kids-birthday-cakes-guide": "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=1200&h=600&fit=crop",
+  "cake-message-writing-tips": "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=1200&h=600&fit=crop",
+  "first-birthday-cake-ideas": "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=1200&h=600&fit=crop",
+};
 
 const blogPostsContent: Record<string, BlogPostData> = {
   "creative-cake-ideas-birthday": {
@@ -28,6 +64,7 @@ const blogPostsContent: Record<string, BlogPostData> = {
     category: "Ideas & Inspiration",
     metaDescription: "Stuck on what cake to make? Here are 10 ideas that work for any birthday—from minimalist elegance to rainbow chaos. Something for everyone.",
     keywords: "birthday cake ideas, cake design inspiration, creative cake designs, birthday celebration cakes",
+    featuredImage: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=1200&h=600&fit=crop",
     content: `
       <p>So you're staring at a blank screen trying to figure out what cake to make. Welcome to the club. 
       With literally infinite possibilities, decision paralysis is real. That's why we put together this list—
@@ -1982,28 +2019,39 @@ const BlogPost = () => {
   const { id } = useParams();
   
   const post = id ? blogPostsContent[id] : null;
+  const heroImage = id ? (post?.featuredImage || featuredImages[id]) : null;
+  const postUrl = `https://cakeaiartist.com/blog/${id}`;
   
   if (!post) {
     return <Navigate to="/blog" replace />;
   }
 
+  // Split content to insert CTA box mid-article
+  const contentParts = post.content.split('</p>');
+  const midPoint = Math.floor(contentParts.length / 2);
+  const firstHalf = contentParts.slice(0, midPoint).join('</p>') + '</p>';
+  const secondHalf = contentParts.slice(midPoint).join('</p>');
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      {/* Reading Progress Bar */}
+      <ReadingProgressBar />
+      
       <Helmet>
         <title>{post.title} | Cake AI Artist Blog</title>
         <meta name="description" content={post.metaDescription} />
         <meta name="keywords" content={post.keywords} />
-        <link rel="canonical" href={`https://cakeaiartist.com/blog/${id}`} />
+        <link rel="canonical" href={postUrl} />
         <meta property="og:title" content={`${post.title} | Cake AI Artist Blog`} />
         <meta property="og:description" content={post.metaDescription} />
-        <meta property="og:url" content={`https://cakeaiartist.com/blog/${id}`} />
+        <meta property="og:url" content={postUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image" content={heroImage || "https://cakeaiartist.com/hero-cake.jpg"} />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${post.title} | Cake AI Artist`} />
         <meta name="twitter:description" content={post.metaDescription} />
-        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta name="twitter:image" content={heroImage || "https://cakeaiartist.com/hero-cake.jpg"} />
       </Helmet>
       
       <ArticleSchema 
@@ -2012,7 +2060,7 @@ const BlogPost = () => {
         datePublished={post.dateISO}
         dateModified={post.dateISO}
         author="Cake AI Artist Team"
-        url={`https://cakeaiartist.com/blog/${id}`}
+        url={postUrl}
       />
       
       {/* Header with Logo */}
@@ -2027,48 +2075,82 @@ const BlogPost = () => {
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 max-w-4xl">
-            <article className="bg-card/50 backdrop-blur-sm rounded-lg p-8 md:p-12 shadow-lg">
-              <div className="mb-6">
-                <span className="text-sm font-semibold text-party-purple">
-                  {post.category}
-                </span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                {post.title}
-              </h1>
-
-              <div className="flex items-center gap-6 text-sm text-muted-foreground mb-8 pb-8 border-b border-border/50">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{post.date}</span>
+            <article className="bg-card/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
+              {/* Hero Image */}
+              {heroImage && (
+                <div className="relative h-64 md:h-80 lg:h-96">
+                  <img 
+                    src={heroImage} 
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>{post.readTime}</span>
+              )}
+              
+              <div className="p-8 md:p-12">
+                <div className="mb-4">
+                  <span className="text-sm font-semibold text-party-purple">
+                    {post.category}
+                  </span>
                 </div>
-              </div>
 
-              {/* In-article ad after intro */}
-              <AdSlot size="in-article" className="my-8" />
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                  {post.title}
+                </h1>
 
-              <div 
-                className="prose prose-lg max-w-none text-foreground [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-                style={{
-                  lineHeight: '1.8'
-                }}
-              />
+                {/* Author Byline */}
+                <AuthorByline date={post.date} readTime={post.readTime} />
 
-              {/* Horizontal ad after article */}
-              <div className="mt-12">
-                <AdSlot size="horizontal" className="w-full" />
-              </div>
+                {/* Social Share Buttons - Top */}
+                <div className="py-4 border-y border-border/50 my-6">
+                  <SocialShareButtons 
+                    url={postUrl}
+                    title={post.title}
+                    description={post.metaDescription}
+                  />
+                </div>
 
-              <div className="mt-8 pt-8 border-t border-border/50">
-                <Link to="/">
-                  <Button size="lg">Alright, Let's Make a Cake</Button>
-                </Link>
+                {/* In-article ad after intro */}
+                <AdSlot size="in-article" className="my-8" />
+
+                {/* First half of content */}
+                <div 
+                  className="prose prose-lg max-w-none text-foreground [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold"
+                  dangerouslySetInnerHTML={{ __html: firstHalf }}
+                  style={{ lineHeight: '1.8' }}
+                />
+
+                {/* Mid-article CTA */}
+                <BlogCTABox />
+
+                {/* Second half of content */}
+                <div 
+                  className="prose prose-lg max-w-none text-foreground [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold"
+                  dangerouslySetInnerHTML={{ __html: secondHalf }}
+                  style={{ lineHeight: '1.8' }}
+                />
+
+                {/* Horizontal ad after article */}
+                <div className="mt-12">
+                  <AdSlot size="horizontal" className="w-full" />
+                </div>
+
+                {/* Social Share Buttons - Bottom */}
+                <div className="py-6 border-t border-border/50 mt-8">
+                  <p className="text-sm text-muted-foreground mb-3">Enjoyed this article? Share it!</p>
+                  <SocialShareButtons 
+                    url={postUrl}
+                    title={post.title}
+                    description={post.metaDescription}
+                  />
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-border/50">
+                  <Link to="/">
+                    <Button size="lg" className="bg-gradient-party hover:opacity-90">Alright, Let's Make a Cake</Button>
+                  </Link>
+                </div>
               </div>
             </article>
           </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -106,7 +106,8 @@ const Blog = () => {
       excerpt: "Red and green classics, snowy wonderlands, and gingerbread dreams. Christmas cake designs that capture that American holiday magic.",
       date: "December 7, 2025",
       readTime: "7 min read",
-      category: "Christmas Celebrations"
+      category: "Christmas Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=600&h=400&fit=crop"
     },
     {
       id: "american-new-year-cake-ideas",
@@ -114,7 +115,8 @@ const Blog = () => {
       excerpt: "Countdown clocks, champagne themes, and Times Square sparkle. Make your NYE celebration unforgettable with these cake ideas.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "New Year Celebrations"
+      category: "New Year Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=600&h=400&fit=crop"
     },
     {
       id: "british-christmas-cake-ideas",
@@ -122,7 +124,8 @@ const Blog = () => {
       excerpt: "Traditional British Christmas cake with a modern twist. Designs for Boxing Day gatherings, office parties, and proper festive celebrations.",
       date: "December 7, 2025",
       readTime: "7 min read",
-      category: "Christmas Celebrations"
+      category: "Christmas Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=600&h=400&fit=crop"
     },
     {
       id: "british-new-year-cake-ideas",
@@ -130,7 +133,8 @@ const Blog = () => {
       excerpt: "From Scottish Hogmanay traditions to London's Thames fireworks vibes. New Year cake designs for celebrations across the UK.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "New Year Celebrations"
+      category: "New Year Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&h=400&fit=crop"
     },
     {
       id: "canadian-christmas-cake-ideas",
@@ -138,7 +142,8 @@ const Blog = () => {
       excerpt: "Maple-infused Christmas cakes, winter wonderland themes, and designs that embrace Canadian holiday traditions, eh?",
       date: "December 7, 2025",
       readTime: "7 min read",
-      category: "Christmas Celebrations"
+      category: "Christmas Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=600&h=400&fit=crop"
     },
     {
       id: "canadian-new-year-cake-ideas",
@@ -146,7 +151,8 @@ const Blog = () => {
       excerpt: "From Vancouver's first countdown to Newfoundland's last toast. New Year cake ideas for celebrating across Canada.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "New Year Celebrations"
+      category: "New Year Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&h=400&fit=crop"
     },
     {
       id: "australian-christmas-cake-ideas",
@@ -154,7 +160,8 @@ const Blog = () => {
       excerpt: "Beach-ready Christmas cakes that handle the heat. Tropical twists on tradition for your Aussie summer celebrations.",
       date: "December 7, 2025",
       readTime: "7 min read",
-      category: "Christmas Celebrations"
+      category: "Christmas Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop"
     },
     {
       id: "australian-new-year-cake-ideas",
@@ -162,7 +169,8 @@ const Blog = () => {
       excerpt: "First in the world to celebrate! Summer NYE cakes featuring fireworks, beach vibes, and that iconic Aussie celebration spirit.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "New Year Celebrations"
+      category: "New Year Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&h=400&fit=crop"
     },
     // Country-Specific Celebrations
     {
@@ -171,7 +179,8 @@ const Blog = () => {
       excerpt: "Red, white, and blue cakes that don't look like a craft project gone wrong. Patriotic designs for Independence Day parties across America.",
       date: "December 5, 2025",
       readTime: "6 min read",
-      category: "Seasonal Celebrations"
+      category: "Seasonal Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&h=400&fit=crop"
     },
     {
       id: "british-jubilee-royal-cakes",
@@ -179,7 +188,8 @@ const Blog = () => {
       excerpt: "Union Jack designs that actually look sophisticated, not tacky. Elegant British cake ideas for Jubilees, coronations, and proper celebrations.",
       date: "December 4, 2025",
       readTime: "6 min read",
-      category: "Seasonal Celebrations"
+      category: "Seasonal Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=600&h=400&fit=crop"
     },
     {
       id: "canada-day-cake-ideas",
@@ -187,7 +197,8 @@ const Blog = () => {
       excerpt: "Red and white designs, Canadian wildlife themes, and regional pride cakes for July 1st celebrations, eh?",
       date: "December 3, 2025",
       readTime: "6 min read",
-      category: "Seasonal Celebrations"
+      category: "Seasonal Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop"
     },
     {
       id: "australia-day-cake-ideas",
@@ -195,7 +206,8 @@ const Blog = () => {
       excerpt: "Aussie cake ideas from green and gold to beach BBQ vibes. Plus heat-proof tips because it's bloody hot in January.",
       date: "December 2, 2025",
       readTime: "6 min read",
-      category: "Seasonal Celebrations"
+      category: "Seasonal Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=600&h=400&fit=crop"
     },
     // India-Specific Celebrations
     {
@@ -204,7 +216,8 @@ const Blog = () => {
       excerpt: "From diya-inspired designs to rangoli patterns and gold sparkle themes. Make your Diwali party shine with stunning cake ideas.",
       date: "December 7, 2025",
       readTime: "7 min read",
-      category: "Indian Celebrations"
+      category: "Indian Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=600&h=400&fit=crop"
     },
     {
       id: "holi-cake-ideas",
@@ -212,7 +225,8 @@ const Blog = () => {
       excerpt: "Rainbow splashes, powder paint effects, and vibrant designs that capture the joy of Holi. Get ready to celebrate with colour!",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "Indian Celebrations"
+      category: "Indian Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1615887023544-3a566f29717b?w=600&h=400&fit=crop"
     },
     {
       id: "indian-christmas-cake-ideas",
@@ -220,7 +234,8 @@ const Blog = () => {
       excerpt: "Blend traditional Christmas themes with Indian flair. From Kerala plum cake vibes to modern Indo-Western fusion designs.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "Christmas Celebrations"
+      category: "Christmas Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600&h=400&fit=crop"
     },
     {
       id: "indian-new-year-cake-ideas",
@@ -228,7 +243,8 @@ const Blog = () => {
       excerpt: "From Bollywood glamour to fusion fireworks. New Year cake designs that celebrate with that unmistakable Indian flair.",
       date: "December 7, 2025",
       readTime: "6 min read",
-      category: "New Year Celebrations"
+      category: "New Year Celebrations",
+      featuredImage: "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&h=400&fit=crop"
     },
     {
       id: "creative-cake-ideas-birthday",
@@ -236,7 +252,8 @@ const Blog = () => {
       excerpt: "Stuck on what kind of cake to make? Same. Here are ten ideas that actually work, from minimalist elegance to rainbow chaos. Something for everyone.",
       date: "November 20, 2025",
       readTime: "5 min read",
-      category: "Ideas & Inspiration"
+      category: "Ideas & Inspiration",
+      featuredImage: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop"
     },
     {
       id: "cake-design-trends-2025",
@@ -244,7 +261,8 @@ const Blog = () => {
       excerpt: "Geometric patterns are still having a moment. Vintage is back. Minimalism refuses to die. Here's what we're seeing people create most.",
       date: "November 18, 2025",
       readTime: "7 min read",
-      category: "Trends"
+      category: "Trends",
+      featuredImage: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=400&fit=crop"
     },
     {
       id: "ai-vs-traditional-cake-design",
@@ -252,7 +270,8 @@ const Blog = () => {
       excerpt: "A few years ago this wasn't even possible. Now it is. Here's an honest look at what AI does well and where it still falls short.",
       date: "November 15, 2025",
       readTime: "6 min read",
-      category: "Technology"
+      category: "Technology",
+      featuredImage: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop"
     },
     {
       id: "perfect-birthday-messages",
@@ -260,7 +279,8 @@ const Blog = () => {
       excerpt: "Finding the right words is harder than it looks. Here are messages sorted by relationship—boss, grandma, best friend, that cousin you barely know.",
       date: "November 12, 2025",
       readTime: "8 min read",
-      category: "Writing Tips"
+      category: "Writing Tips",
+      featuredImage: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=600&h=400&fit=crop"
     },
     {
       id: "virtual-party-guide",
@@ -268,7 +288,8 @@ const Blog = () => {
       excerpt: "Video call birthdays can feel awkward. They don't have to. Here's what works based on parties that didn't make everyone want to close their laptops.",
       date: "November 10, 2025",
       readTime: "6 min read",
-      category: "Party Planning"
+      category: "Party Planning",
+      featuredImage: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&h=400&fit=crop"
     },
     {
       id: "last-minute-birthday-solutions",
@@ -276,7 +297,8 @@ const Blog = () => {
       excerpt: "It's the day of. You forgot. Deep breaths. Here's exactly what to do in the next 10 minutes to not look like a terrible person.",
       date: "November 8, 2025",
       readTime: "4 min read",
-      category: "Quick Tips"
+      category: "Quick Tips",
+      featuredImage: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&h=400&fit=crop"
     },
     {
       id: "personalized-cakes-psychology",
@@ -284,7 +306,8 @@ const Blog = () => {
       excerpt: "There's actual science behind why seeing your name on a cake feels so good. Something about being seen. Here's what the research says.",
       date: "November 5, 2025",
       readTime: "6 min read",
-      category: "Psychology"
+      category: "Psychology",
+      featuredImage: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=600&h=400&fit=crop"
     },
     {
       id: "anniversary-cake-ideas",
@@ -292,7 +315,8 @@ const Blog = () => {
       excerpt: "Birthdays get all the attention. But anniversary cakes? Underrated. Here's how to make yours memorable without going overboard.",
       date: "November 3, 2025",
       readTime: "5 min read",
-      category: "Anniversary"
+      category: "Anniversary",
+      featuredImage: "https://images.unsplash.com/photo-1522767131822-6b8c5a53c0e4?w=600&h=400&fit=crop"
     },
     {
       id: "kids-birthday-cakes-guide",
@@ -300,7 +324,8 @@ const Blog = () => {
       excerpt: "Kids are honest. Brutally so. After years of trial and error, here's what consistently gets the 'wow' reaction.",
       date: "October 30, 2025",
       readTime: "7 min read",
-      category: "Party Planning"
+      category: "Party Planning",
+      featuredImage: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop"
     },
     {
       id: "cake-message-writing-tips",
@@ -308,7 +333,8 @@ const Blog = () => {
       excerpt: "Happy Birthday. Congrats. Best Wishes. Yawn. Here's how to write something they'll actually remember.",
       date: "October 28, 2025",
       readTime: "5 min read",
-      category: "Writing Tips"
+      category: "Writing Tips",
+      featuredImage: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=600&h=400&fit=crop"
     },
     {
       id: "first-birthday-cake-ideas",
@@ -316,9 +342,17 @@ const Blog = () => {
       excerpt: "Your baby won't remember this. You will. Here's how to make it special without losing your mind.",
       date: "October 25, 2025",
       readTime: "5 min read",
-      category: "Ideas & Inspiration"
+      category: "Ideas & Inspiration",
+      featuredImage: "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=600&h=400&fit=crop"
     }
   ];
+
+  // Popular posts - select the best performing ones
+  const popularPosts = [
+    blogPosts.find(p => p.id === "creative-cake-ideas-birthday")!,
+    blogPosts.find(p => p.id === "perfect-birthday-messages")!,
+    blogPosts.find(p => p.id === "diwali-cake-ideas")!,
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -364,33 +398,85 @@ const Blog = () => {
           </p>
         </div>
 
+        {/* Popular Posts Section */}
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp className="w-5 h-5 text-party-pink" />
+            <h2 className="text-2xl font-bold text-foreground">Popular This Week</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {popularPosts.map((post) => (
+              <Link key={post.id} to={`/blog/${post.id}`}>
+                <Card className="h-full overflow-hidden bg-gradient-to-br from-party-purple/5 to-party-pink/5 hover:shadow-xl transition-all group border-party-pink/20">
+                  <div className="aspect-video relative overflow-hidden">
+                    <img 
+                      src={post.featuredImage} 
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-1 bg-party-pink/90 text-white text-xs font-semibold rounded-full">
+                        Trending
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <span className="text-xs font-semibold text-party-purple">
+                      {post.category}
+                    </span>
+                    <h3 className="font-bold text-foreground mt-1 line-clamp-2 group-hover:text-party-purple transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-2">{post.readTime}</p>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* All Posts */}
+        <h2 className="text-2xl font-bold mb-6 text-foreground">All Articles</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post, index) => (
             <>
               <Link key={post.id} to={`/blog/${post.id}`}>
-                <Card className="h-full p-6 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer group">
-                  <div className="mb-4">
-                    <span className="text-sm font-semibold text-party-purple">
-                      {post.category}
-                    </span>
+                <Card className="h-full overflow-hidden bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer group">
+                  {/* Featured Image */}
+                  <div className="aspect-video relative overflow-hidden">
+                    <img 
+                      src={post.featuredImage} 
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
                   </div>
                   
-                  <h2 className="text-xl font-bold mb-3 text-foreground group-hover:text-party-purple transition-colors">
-                    {post.title}
-                  </h2>
-                  
-                  <p className="text-muted-foreground mb-4 line-clamp-3">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>{post.date}</span>
+                  <div className="p-6">
+                    <div className="mb-3">
+                      <span className="text-sm font-semibold text-party-purple">
+                        {post.category}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{post.readTime}</span>
+                    
+                    <h2 className="text-xl font-bold mb-3 text-foreground group-hover:text-party-purple transition-colors line-clamp-2">
+                      {post.title}
+                    </h2>
+                    
+                    <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>{post.date}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{post.readTime}</span>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -415,27 +501,28 @@ const Blog = () => {
         <div className="mt-8 text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">
           <h2 className="text-3xl font-bold mb-4 text-foreground">Want More?</h2>
           <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
-            New ideas, tips, and the occasional discount code. We email like once a week max. 
-            Unsubscribe anytime—no hard feelings.
+            Get cake ideas, party planning tips, and the occasional inside joke delivered to your inbox. 
+            No spam, we promise.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
-              className="flex-1 px-4 py-3 rounded-lg bg-background/50 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-party-purple"
+              className="px-4 py-3 rounded-lg border border-border bg-background text-foreground flex-1 focus:outline-none focus:ring-2 focus:ring-party-pink"
+              onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
             />
             <Button 
-              size="lg" 
               onClick={handleSubscribe}
               disabled={isSubscribing}
+              className="bg-gradient-party hover:opacity-90 text-white px-8"
             >
               {isSubscribing ? "Subscribing..." : "Subscribe"}
             </Button>
           </div>
         </div>
+
       </div>
       <Footer />
     </div>
