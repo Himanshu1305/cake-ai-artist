@@ -76,7 +76,7 @@ const Auth = () => {
   useEffect(() => {
     // Set up auth state listener for OAuth signups
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const user = session.user;
           const isOAuthUser = user.app_metadata?.provider === 'google';
@@ -91,12 +91,11 @@ const Auth = () => {
               const firstName = nameParts[0] || '';
               const lastName = nameParts.slice(1).join(' ') || '';
               
-              // Send welcome email via Brevo
+              // Send welcome email via Brevo (deferred)
               setTimeout(async () => {
                 try {
                   await addContactToBrevo(user.email || '', firstName, lastName);
                   localStorage.setItem(welcomeSentKey, 'true');
-                  console.log('Welcome email sent for OAuth user:', user.email);
                 } catch (err) {
                   console.error('Failed to send OAuth welcome email:', err);
                 }
@@ -104,15 +103,40 @@ const Auth = () => {
             }
           }
           
-          navigate("/gallery");
+          // Check if user has country set (deferred to avoid deadlock)
+          setTimeout(async () => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('country')
+              .eq('id', user.id)
+              .single();
+            
+            if (!profile?.country) {
+              // OAuth user without country - redirect to complete profile
+              navigate("/complete-profile");
+            } else {
+              navigate("/gallery");
+            }
+          }, 0);
         }
       }
     );
 
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        navigate("/gallery");
+        // Check if country is set
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('country')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!profile?.country) {
+          navigate("/complete-profile");
+        } else {
+          navigate("/gallery");
+        }
       }
     });
 
