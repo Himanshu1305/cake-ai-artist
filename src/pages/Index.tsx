@@ -907,6 +907,65 @@ const Index = () => {
       {/* Most Popular Cakes This Week */}
       <PopularCakesSection />
 
+      {/* From Our Blog Section */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground">From Our Blog</h2>
+          <Link to="/blog">
+            <Button variant="outline" className="border-party-pink/30 hover:bg-party-pink/10">
+              View All Posts →
+            </Button>
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              id: "creative-cake-ideas-birthday",
+              title: "10 Creative Cake Ideas for Birthday Celebrations",
+              category: "Ideas & Inspiration",
+              readTime: "5 min read",
+              image: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop"
+            },
+            {
+              id: "perfect-birthday-messages",
+              title: "50 Birthday Message Ideas (Because 'HBD' Isn't Cutting It)",
+              category: "Writing Tips",
+              readTime: "8 min read",
+              image: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=600&h=400&fit=crop"
+            },
+            {
+              id: "cake-design-trends-2025",
+              title: "Cake Design Trends: What's Popular in 2025",
+              category: "Trends",
+              readTime: "7 min read",
+              image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=400&fit=crop"
+            }
+          ].map((post) => (
+            <Link key={post.id} to={`/blog/${post.id}`}>
+              <Card className="h-full overflow-hidden hover:shadow-xl transition-all group bg-card/50 backdrop-blur-sm">
+                <div className="aspect-video relative overflow-hidden">
+                  <img 
+                    src={post.image} 
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-4">
+                  <span className="text-xs font-semibold text-party-purple">
+                    {post.category}
+                  </span>
+                  <h3 className="font-semibold mt-1 text-foreground group-hover:text-party-purple transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-2">{post.readTime}</p>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Ad Banner before CTA */}
       <div className="container mx-auto px-4 py-8">
         <AdSlot size="horizontal" className="max-w-3xl mx-auto" />
