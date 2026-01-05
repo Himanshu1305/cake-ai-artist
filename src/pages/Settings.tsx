@@ -56,8 +56,9 @@ export default function Settings() {
   const [settings, setSettings] = useState({
     email_reminders: true,
     birthday_reminders: true,
-    marketing_emails: false,
+    marketing_emails: true,
     anniversary_reminders: true,
+    blog_digest_emails: true,
   });
   const [userCountry, setUserCountry] = useState<string | null>(null);
 
@@ -97,8 +98,9 @@ export default function Settings() {
         setSettings({
           email_reminders: data.email_reminders ?? true,
           birthday_reminders: data.birthday_reminders ?? true,
-          marketing_emails: data.marketing_emails ?? false,
+          marketing_emails: data.marketing_emails ?? true,
           anniversary_reminders: data.anniversary_reminders ?? true,
+          blog_digest_emails: data.blog_digest_emails ?? true,
         });
       } else {
         // No settings exist, create default settings for this user
@@ -143,6 +145,27 @@ export default function Settings() {
         });
 
       if (error) throw error;
+
+      // Sync blog digest preference with blog_subscribers table
+      const userEmail = session.user.email;
+      if (userEmail) {
+        if (settings.blog_digest_emails) {
+          // Enable subscription - upsert to blog_subscribers
+          await supabase
+            .from("blog_subscribers")
+            .upsert({
+              email: userEmail,
+              user_id: session.user.id,
+              is_active: true,
+            }, { onConflict: 'email' });
+        } else {
+          // Disable subscription
+          await supabase
+            .from("blog_subscribers")
+            .update({ is_active: false })
+            .eq("user_id", session.user.id);
+        }
+      }
 
       toast({
         title: "Success",
@@ -408,6 +431,22 @@ export default function Settings() {
                 checked={settings.marketing_emails}
                 onCheckedChange={(checked) =>
                   setSettings({ ...settings, marketing_emails: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="blog_digest_emails">Weekly Blog Digest</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive weekly cake inspiration tips and articles
+                </p>
+              </div>
+              <Switch
+                id="blog_digest_emails"
+                checked={settings.blog_digest_emails}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, blog_digest_emails: checked })
                 }
               />
             </div>

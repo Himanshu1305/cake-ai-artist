@@ -767,6 +767,7 @@ export type Database = {
         Row: {
           anniversary_reminders: boolean | null
           birthday_reminders: boolean | null
+          blog_digest_emails: boolean | null
           created_at: string
           email_reminders: boolean | null
           id: string
@@ -777,6 +778,7 @@ export type Database = {
         Insert: {
           anniversary_reminders?: boolean | null
           birthday_reminders?: boolean | null
+          blog_digest_emails?: boolean | null
           created_at?: string
           email_reminders?: boolean | null
           id?: string
@@ -787,6 +789,7 @@ export type Database = {
         Update: {
           anniversary_reminders?: boolean | null
           birthday_reminders?: boolean | null
+          blog_digest_emails?: boolean | null
           created_at?: string
           email_reminders?: boolean | null
           id?: string
