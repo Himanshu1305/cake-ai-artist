@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Calendar, Clock, TrendingUp, Eye } from "lucide-react";
+import { Calendar, Clock, TrendingUp, Eye, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema } from "@/components/SEOSchema";
@@ -11,10 +12,49 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdSlot } from "@/components/AdSlot";
 import { useBlogViewCounts } from "@/hooks/useBlogViewCounts";
 
+interface DatabaseBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  read_time: string;
+  featured_image: string | null;
+  published_at: string | null;
+  is_ai_generated: boolean;
+}
+
 const Blog = () => {
   const { viewCounts } = useBlogViewCounts();
   const [email, setEmail] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [dbPosts, setDbPosts] = useState<DatabaseBlogPost[]>([]);
+  const [loadingDbPosts, setLoadingDbPosts] = useState(true);
+
+  // Fetch database posts on mount
+  useEffect(() => {
+    const fetchDbPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('id, slug, title, excerpt, category, read_time, featured_image, published_at, is_ai_generated')
+          .eq('is_published', true)
+          .order('published_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching blog posts:', error);
+        } else if (data) {
+          setDbPosts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+      } finally {
+        setLoadingDbPosts(false);
+      }
+    };
+
+    fetchDbPosts();
+  }, []);
 
   const handleSubscribe = async () => {
     if (!email) {
@@ -349,8 +389,28 @@ const Blog = () => {
     }
   ];
 
-  // Popular posts - sorted by actual view counts
-  const popularPosts = [...blogPosts]
+  // Combine database posts with hardcoded posts (DB posts first)
+  const allPosts = [
+    // Database posts converted to same format
+    ...dbPosts.map(post => ({
+      id: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      date: post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recent',
+      readTime: post.read_time || '5 min read',
+      category: post.category,
+      featuredImage: post.featured_image || 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop',
+      isAiGenerated: post.is_ai_generated,
+    })),
+    // Hardcoded posts (legacy)
+    ...blogPosts.map(post => ({
+      ...post,
+      isAiGenerated: false,
+    })),
+  ];
+
+  // Popular posts - sorted by actual view counts (use slug/id for lookup)
+  const popularPosts = [...allPosts]
     .sort((a, b) => (viewCounts[b.id] || 0) - (viewCounts[a.id] || 0))
     .slice(0, 3);
 
@@ -437,9 +497,17 @@ const Blog = () => {
         </div>
 
         {/* All Posts */}
-        <h2 className="text-2xl font-bold mb-6 text-foreground">All Articles</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-foreground">All Articles</h2>
+          {dbPosts.length > 0 && (
+            <Badge variant="outline" className="gap-1">
+              <Sparkles className="h-3 w-3" />
+              {dbPosts.length} AI-generated
+            </Badge>
+          )}
+        </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
+          {allPosts.map((post, index) => (
             <>
               <Link key={post.id} to={`/blog/${post.id}`}>
                 <Card className="h-full overflow-hidden bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer group">
@@ -451,6 +519,14 @@ const Blog = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
+                    {post.isAiGenerated && (
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          AI
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-6">
@@ -489,7 +565,7 @@ const Blog = () => {
               </Link>
               
               {/* Insert horizontal ad after every 6 posts */}
-              {(index + 1) % 6 === 0 && index < blogPosts.length - 1 && (
+              {(index + 1) % 6 === 0 && index < allPosts.length - 1 && (
                 <div key={`ad-${index}`} className="col-span-full">
                   <AdSlot size="horizontal" className="w-full max-w-3xl mx-auto my-4" />
                 </div>
