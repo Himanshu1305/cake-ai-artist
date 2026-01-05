@@ -32,7 +32,7 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
     
     <!-- Logo Section -->
     <div style="padding: 32px 24px 16px; text-align: center; background-color: #ffffff;">
-      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" 
+      <img src="https://cakeaiartist.com/logo.png" 
            alt="Cake AI Artist" 
            style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #ec4899;" />
     </div>
@@ -110,7 +110,7 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
     
     <!-- Footer -->
     <div style="padding: 24px; text-align: center; border-top: 1px solid #e5e7eb; background: #ffffff;">
-      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" 
+      <img src="https://cakeaiartist.com/logo.png" 
            alt="Cake AI Artist" 
            style="width: 40px; height: 40px; border-radius: 50%; margin-bottom: 12px;" />
       <p style="margin: 0 0 8px; color: #6b7280; font-size: 12px;">
