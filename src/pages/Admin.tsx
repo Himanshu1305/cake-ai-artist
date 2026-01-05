@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings, FileText } from 'lucide-react';
 import { CountryPicker } from '@/components/CountryPicker';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -784,9 +784,15 @@ export default function Admin() {
             </h1>
             <p className="text-muted-foreground mt-2">Manage users, analytics, and community content</p>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
-            Back to Home
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/admin/blog-analytics')} variant="outline">
+              <FileText className="w-4 h-4 mr-2" />
+              Blog Analytics
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         {/* Analytics Cards */}

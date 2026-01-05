@@ -26,12 +26,14 @@ import BlogPost from "./pages/BlogPost";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import AdminLogoGenerator from "./pages/AdminLogoGenerator";
+import AdminBlogAnalytics from "./pages/AdminBlogAnalytics";
 import UKLanding from "./pages/UKLanding";
 import CanadaLanding from "./pages/CanadaLanding";
 import AustraliaLanding from "./pages/AustraliaLanding";
 import IndiaLanding from "./pages/IndiaLanding";
 import FreeCakeDesigner from "./pages/FreeCakeDesigner";
 import CompleteProfile from "./pages/CompleteProfile";
+import BlogUnsubscribe from "./pages/BlogUnsubscribe";
 import { EmbedGalleryPage } from "./components/EmbeddableGalleryWidget";
 import NotFound from "./pages/NotFound";
 
@@ -68,12 +70,14 @@ const App = () => {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/logo-generator" element={<AdminLogoGenerator />} />
+                <Route path="/admin/blog-analytics" element={<AdminBlogAnalytics />} />
                 <Route path="/uk" element={<UKLanding />} />
                 <Route path="/canada" element={<CanadaLanding />} />
                 <Route path="/australia" element={<AustraliaLanding />} />
                 <Route path="/india" element={<IndiaLanding />} />
                 <Route path="/free-ai-cake-designer" element={<FreeCakeDesigner />} />
                 <Route path="/complete-profile" element={<CompleteProfile />} />
+                <Route path="/blog/unsubscribe" element={<BlogUnsubscribe />} />
                 <Route path="/embed/gallery" element={<EmbedGalleryPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
