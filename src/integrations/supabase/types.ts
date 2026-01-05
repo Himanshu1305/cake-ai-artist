@@ -673,6 +673,42 @@ export type Database = {
           },
         ]
       }
+      scheduled_task_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          records_processed: number | null
+          result_message: string | null
+          started_at: string
+          status: string
+          task_name: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number | null
+          result_message?: string | null
+          started_at?: string
+          status?: string
+          task_name: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number | null
+          result_message?: string | null
+          started_at?: string
+          status?: string
+          task_name?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           id: string
