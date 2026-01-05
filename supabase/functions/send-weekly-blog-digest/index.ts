@@ -158,10 +158,30 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Helper to log task run
+  const logTaskRun = async (status: string, resultMessage?: string, errorMessage?: string, recordsProcessed?: number) => {
+    try {
+      await supabase.from("scheduled_task_runs").insert({
+        task_name: "weekly-blog-digest",
+        status,
+        result_message: resultMessage,
+        error_message: errorMessage,
+        records_processed: recordsProcessed || 0,
+        completed_at: status !== 'running' ? new Date().toISOString() : null,
+      });
+    } catch (e) {
+      console.error("Failed to log task run:", e);
+    }
+  };
+
+  // Log task start
+  await logTaskRun('running');
+
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Calculate one week ago
     const oneWeekAgo = new Date();
@@ -246,18 +266,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Digest complete: ${successCount} sent, ${failCount} failed`);
 
+    // Log task success
+    await logTaskRun('success', `Sent ${successCount} emails, ${failCount} failed`, null, successCount);
+
     return new Response(
       JSON.stringify({ 
         message: "Weekly digest sent",
         success: successCount,
         failed: failCount,
         postsIncluded: postsToSend.length,
-        hasNewAIContent
+        hasNewAIContent,
+        records_processed: successCount
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in weekly digest function:", error);
+    // Log task failure
+    await logTaskRun('failed', null, error.message, 0);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }

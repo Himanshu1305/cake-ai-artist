@@ -117,21 +117,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Helper to log task run
+  const logTaskRun = async (status: string, resultMessage?: string, errorMessage?: string, recordsProcessed?: number) => {
+    try {
+      await supabase.from("scheduled_task_runs").insert({
+        task_name: "weekly-blog-generation",
+        status,
+        result_message: resultMessage,
+        error_message: errorMessage,
+        records_processed: recordsProcessed || 0,
+        completed_at: status !== 'running' ? new Date().toISOString() : null,
+      });
+    } catch (e) {
+      console.error("Failed to log task run:", e);
+    }
+  };
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     const body: GenerateBlogRequest = await req.json();
     console.log("Request body:", body);
 
     // If generating weekly batch, create multiple articles
     if (body.generate_weekly_batch) {
+      // Log task start
+      await logTaskRun('running');
+
       const countries = ["IN", "UK", "AU", "CA"];
       const weekNumber = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
       const countryIndex = weekNumber % countries.length;
@@ -155,10 +174,14 @@ serve(async (req) => {
       const universalResult = await generateArticle(supabase, LOVABLE_API_KEY, universalTopic, null);
       results.push(universalResult);
 
+      // Log task success
+      await logTaskRun('success', `Generated ${results.length} articles`, null, results.length);
+
       return new Response(
         JSON.stringify({ 
           message: "Weekly batch generated",
-          articles: results 
+          articles: results,
+          records_processed: results.length
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
@@ -178,6 +201,17 @@ serve(async (req) => {
 
   } catch (error: any) {
     console.error("Error generating blog post:", error);
+    // Log task failure
+    try {
+      await supabase.from("scheduled_task_runs").insert({
+        task_name: "weekly-blog-generation",
+        status: 'failed',
+        error_message: error.message,
+        completed_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error("Failed to log task failure:", e);
+    }
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
