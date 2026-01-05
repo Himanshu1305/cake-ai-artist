@@ -120,7 +120,24 @@ serve(async (req) => {
     const sculptedViewAngles = [
       { 
         name: 'main', 
-        description: `Professional food photography of a stunning 3D SCULPTED CAKE that IS SHAPED LIKE ${character || 'the character'}. This is sculptural fondant cake art where the ENTIRE CAKE STRUCTURE forms the character shape - not a regular cake with decorations. The cake IS the ${character || 'character'}, crafted entirely from fondant, modeling chocolate, and edible materials. Full body/form visible on a marble pedestal. CRITICAL: The entire sculpted figure must be visible in frame from top to bottom.`,
+        description: `Professional food photography of an INCREDIBLE SCULPTED FONDANT CAKE masterpiece inspired by ${character || 'the character'}. 
+
+CRITICAL - THIS MUST LOOK LIKE A REAL CAKE:
+- The cake structure must be CLEARLY VISIBLE - showing fondant-covered cake layers, sculpted cake body, and sturdy base
+- Show VISIBLE CAKE TEXTURES: smooth fondant surface with subtle sheen, fondant seams and edges, buttercream details, modeling chocolate accents
+- Include handcrafted imperfections: slight asymmetries, visible tool marks, fondant wrinkles - NOT a perfect CGI render or plastic toy
+- The character features should be STYLIZED and CAKE-LIKE (adorable, rounded, exaggerated for cake art) rather than hyper-realistic
+- Show a sturdy cake board/drum at the base with decorative piped border
+
+CAKE ART DETAILS TO INCLUDE:
+- Visible fondant covering with subtle matte sheen
+- Edible paint brush strokes for details
+- Modeling chocolate or gum paste accents
+- Piped royal icing or buttercream details
+- Edible glitter or luster dust highlights on accents
+- Structural cake board visible at base
+
+This is a REAL bakery creation by a professional cake artist, photographed on a decorative cake stand in a bakery studio with warm, appetizing lighting. The viewer should immediately think "WOW, that's an amazing CAKE!" not "that looks like a figurine or toy." Full body/form visible from top to bottom.`,
         namePosition: 'on a decorative fondant banner/plaque integrated at the base',
         occasionPosition: 'on a fondant scroll or banner prominently displayed',
         photoPosition: null // No photo on main sculpted view
@@ -259,16 +276,20 @@ CRITICAL TEXT ON CAKE:
 
       // Different cake specifications based on style
       if (cakeStyle === 'sculpted' && view.name === 'main') {
-        // Sculpted main view - the cake IS the character
+        // Sculpted main view - the cake IS the character but MUST look like a cake
         prompt += `
-SCULPTED CAKE SPECIFICATIONS:
-- This is a 3D SCULPTED character cake - the entire cake IS SHAPED LIKE ${character || 'the character'}
-- Made entirely of edible materials: fondant, modeling chocolate, cake, buttercream
-- The character form should be immediately recognizable
-- Incredible detail in the sculpted features
+SCULPTED CAKE SPECIFICATIONS - MUST LOOK LIKE A REAL EDIBLE CAKE:
+- This is a 3D SCULPTED character cake INSPIRED BY ${character || 'the character'}
+- Made ENTIRELY of visible edible materials: fondant covering, modeling chocolate, cake layers inside, buttercream details
+- MUST show visible cake characteristics: fondant texture and seams, handcrafted tool marks, slight imperfections
+- The character should be STYLIZED for cake art - cute/rounded/simplified, NOT hyper-realistic like a figurine
+- Show the cake sitting on a cake board/drum with decorative piped border around the base
+- Include bakery elements: cake stand, decorative base, visible fondant work
+- Warm, appetizing FOOD PHOTOGRAPHY lighting (NOT cold studio CGI lighting)
 - Theme: ${theme || 'fun celebration'}
-- Color scheme: ${colors || 'vibrant character-accurate colors'}
-- Do NOT show a tiered/layered cake - this is a sculpted 3D figure cake`;
+- Color scheme: ${colors || 'vibrant but obviously edible-looking fondant colors'}
+- CRITICAL: Viewer must IMMEDIATELY recognize this as a handcrafted bakery creation, NOT a toy, figurine, or CGI render
+- Do NOT show a tiered/layered cake - this is a sculpted 3D figure cake that IS made of cake`;
       } else if (cakeStyle === 'sculpted' && view.name === 'top') {
         // Sculpted top view - standard decorated cake top
         prompt += `
@@ -293,11 +314,15 @@ Cake specifications:
 
       console.log(`Generating ${view.name} view...`);
 
-      // Prepare messages with system instruction
+      // Prepare messages with system instruction - use sculpted-specific system prompt when needed
+      const sculptedSystemPrompt = 'You are a professional food photographer specializing in custom sculpted cakes from high-end bakeries. Generate an image of a REAL EDIBLE CAKE that was sculpted by a master pastry chef. The cake should look appetizing and handcrafted - NOT like a plastic figurine, toy, or CGI render. Show visible fondant texture, cake structure, and professional bakery presentation. The lighting should be warm and appetizing like food photography.';
+      
+      const standardSystemPrompt = 'You are a professional food photographer. Generate a single high-quality photograph of ONE cake. Never generate collages, comparisons, or multiple cakes in one image.';
+      
       const messages: any[] = [
         {
           role: 'system',
-          content: 'You are a professional food photographer. Generate a single high-quality photograph of ONE cake. Never generate collages, comparisons, or multiple cakes in one image.'
+          content: (cakeStyle === 'sculpted' && view.name === 'main') ? sculptedSystemPrompt : standardSystemPrompt
         },
         {
           role: 'user',
