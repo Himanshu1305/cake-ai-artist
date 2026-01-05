@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Eye, Users, TrendingUp, FileText, ArrowLeft, Send, Calendar, BarChart3, Sparkles, Check, X, RefreshCw, Globe } from 'lucide-react';
+import { Eye, Users, TrendingUp, FileText, ArrowLeft, Send, Calendar, BarChart3, Sparkles, Check, X, RefreshCw, Globe, Share2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { format, subDays } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -16,6 +16,7 @@ interface BlogViewData {
   post_id: string;
   viewed_at: string;
   session_id: string | null;
+  referrer: string | null;
 }
 
 interface SubscriberData {
@@ -45,6 +46,53 @@ interface PendingPost {
   is_ai_generated: boolean;
   created_at: string;
 }
+
+interface ReferrerStats {
+  type: string;
+  count: number;
+  percentage: number;
+}
+
+interface PostReferrerStats {
+  postId: string;
+  title: string;
+  direct: number;
+  search: number;
+  social: number;
+  internal: number;
+  other: number;
+}
+
+// Referrer categorization helper
+const categorizeReferrer = (referrer: string | null): string => {
+  if (!referrer || referrer === '') return 'Direct';
+  const lower = referrer.toLowerCase();
+  
+  // Social Media
+  if (['facebook', 'twitter', 'instagram', 'linkedin', 'pinterest', 'tiktok', 'whatsapp', 't.co', 'fb.com'].some(s => lower.includes(s))) {
+    return 'Social';
+  }
+  
+  // Search Engines
+  if (['google', 'bing', 'duckduckgo', 'yahoo', 'baidu', 'yandex'].some(s => lower.includes(s))) {
+    return 'Search';
+  }
+  
+  // Internal (same domain)
+  if (lower.includes('cakeaiartist.com') || lower.includes('localhost')) {
+    return 'Internal';
+  }
+  
+  return 'Other';
+};
+
+const REFERRER_COLORS: Record<string, string> = {
+  Direct: 'hsl(var(--primary))',
+  Search: 'hsl(142, 76%, 36%)', // green
+  Social: 'hsl(280, 87%, 56%)', // purple
+  Internal: 'hsl(200, 80%, 50%)', // blue
+  Other: 'hsl(30, 80%, 55%)', // orange
+};
 
 // Blog post titles mapping
 const blogPostTitles: Record<string, string> = {
@@ -84,6 +132,11 @@ export default function AdminBlogAnalytics() {
   const [viewsOverTime, setViewsOverTime] = useState<{ date: string; views: number }[]>([]);
   const [subscriberGrowthData, setSubscriberGrowthData] = useState<{ date: string; subscribers: number }[]>([]);
   const [topPosts, setTopPosts] = useState<PostStats[]>([]);
+  
+  // Referrer data
+  const [referrerStats, setReferrerStats] = useState<ReferrerStats[]>([]);
+  const [postReferrerStats, setPostReferrerStats] = useState<PostReferrerStats[]>([]);
+  const [topReferrers, setTopReferrers] = useState<{ url: string; count: number }[]>([]);
   
   // Pending posts
   const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([]);
@@ -210,18 +263,52 @@ export default function AdminBlogAnalytics() {
       });
       setSubscriberGrowthData(subGrowth);
 
-      // Top performing posts
-      const postViewCounts: Record<string, { total30d: number; total7d: number; sessions: Set<string> }> = {};
+      // Top performing posts with referrer breakdown
+      const postViewCounts: Record<string, { 
+        total30d: number; 
+        total7d: number; 
+        sessions: Set<string>;
+        referrers: { direct: number; search: number; social: number; internal: number; other: number };
+      }> = {};
+      
+      // Referrer counts for pie chart
+      const referrerCounts: Record<string, number> = { Direct: 0, Search: 0, Social: 0, Internal: 0, Other: 0 };
+      
+      // Top specific referrers
+      const specificReferrers: Record<string, number> = {};
       
       views.forEach(view => {
         const postId = view.post_id;
+        const referrerType = categorizeReferrer(view.referrer);
+        
         if (!postViewCounts[postId]) {
-          postViewCounts[postId] = { total30d: 0, total7d: 0, sessions: new Set() };
+          postViewCounts[postId] = { 
+            total30d: 0, 
+            total7d: 0, 
+            sessions: new Set(),
+            referrers: { direct: 0, search: 0, social: 0, internal: 0, other: 0 }
+          };
         }
         
         const viewDate = new Date(view.viewed_at);
         if (viewDate >= thirtyDaysAgo) {
           postViewCounts[postId].total30d++;
+          referrerCounts[referrerType]++;
+          
+          // Track referrer by type for this post
+          const key = referrerType.toLowerCase() as keyof typeof postViewCounts[string]['referrers'];
+          postViewCounts[postId].referrers[key]++;
+          
+          // Track specific referrer URLs
+          if (view.referrer) {
+            try {
+              const url = new URL(view.referrer);
+              const host = url.hostname;
+              specificReferrers[host] = (specificReferrers[host] || 0) + 1;
+            } catch {
+              specificReferrers[view.referrer] = (specificReferrers[view.referrer] || 0) + 1;
+            }
+          }
         }
         if (viewDate >= sevenDaysAgo) {
           postViewCounts[postId].total7d++;
@@ -231,6 +318,25 @@ export default function AdminBlogAnalytics() {
         }
       });
 
+      // Calculate referrer percentages
+      const totalReferrerViews = Object.values(referrerCounts).reduce((a, b) => a + b, 0);
+      const referrerData = Object.entries(referrerCounts)
+        .filter(([_, count]) => count > 0)
+        .map(([type, count]) => ({
+          type,
+          count,
+          percentage: totalReferrerViews > 0 ? (count / totalReferrerViews) * 100 : 0,
+        }));
+      setReferrerStats(referrerData);
+
+      // Top specific referrers
+      const topRefs = Object.entries(specificReferrers)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([url, count]) => ({ url, count }));
+      setTopReferrers(topRefs);
+
+      // Posts with referrer breakdown
       const sortedPosts = Object.entries(postViewCounts)
         .map(([postId, stats]) => ({
           postId,
@@ -242,6 +348,21 @@ export default function AdminBlogAnalytics() {
         .sort((a, b) => b.views30d - a.views30d);
 
       setTopPosts(sortedPosts);
+
+      // Post referrer stats for table
+      const postRefStats = Object.entries(postViewCounts)
+        .map(([postId, stats]) => ({
+          postId,
+          title: blogPostTitles[postId] || postId,
+          direct: stats.referrers.direct,
+          search: stats.referrers.search,
+          social: stats.referrers.social,
+          internal: stats.referrers.internal,
+          other: stats.referrers.other,
+        }))
+        .filter(p => p.direct + p.search + p.social + p.internal + p.other > 0)
+        .sort((a, b) => (b.direct + b.search + b.social) - (a.direct + a.search + a.social));
+      setPostReferrerStats(postRefStats);
 
     } catch (error) {
       console.error('Error loading analytics:', error);
@@ -519,6 +640,143 @@ export default function AdminBlogAnalytics() {
                           <TableCell className="text-right font-medium">{post.views30d}</TableCell>
                           <TableCell className="text-right">{post.views7d}</TableCell>
                           <TableCell className="text-right">{post.uniqueSessions}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            {/* Referrer Insights Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Traffic Sources Pie Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Share2 className="h-5 w-5" />
+                    Traffic Sources
+                  </CardTitle>
+                  <CardDescription>Where your blog visitors come from (30 days)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {referrerStats.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      No referrer data available
+                    </div>
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                          <Pie
+                            data={referrerStats}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="count"
+                            label={({ type, percentage }) => `${type}: ${percentage.toFixed(0)}%`}
+                          >
+                            {referrerStats.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={REFERRER_COLORS[entry.type] || 'hsl(var(--muted))'} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => [value, 'Views']} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="mt-4 space-y-2">
+                        {referrerStats.map((stat) => (
+                          <div key={stat.type} className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: REFERRER_COLORS[stat.type] }}
+                              />
+                              <span>{stat.type}</span>
+                            </div>
+                            <span className="font-medium">{stat.count} views ({stat.percentage.toFixed(1)}%)</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Top Referrers List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Top Referrers
+                  </CardTitle>
+                  <CardDescription>Specific sites driving traffic (30 days)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {topReferrers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      No external referrers tracked yet
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {topReferrers.map((ref, index) => (
+                        <div key={ref.url} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground font-mono text-sm w-5">#{index + 1}</span>
+                            <span className="text-sm truncate max-w-[200px]" title={ref.url}>
+                              {ref.url}
+                            </span>
+                          </div>
+                          <span className="font-medium text-sm">{ref.count} views</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Article Performance by Source */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Article Performance by Source
+                </CardTitle>
+                <CardDescription>See which referrers drive views to each article</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Article</TableHead>
+                      <TableHead className="text-right">Direct</TableHead>
+                      <TableHead className="text-right">Search</TableHead>
+                      <TableHead className="text-right">Social</TableHead>
+                      <TableHead className="text-right">Internal</TableHead>
+                      <TableHead className="text-right">Other</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {postReferrerStats.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
+                          No referrer data available
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      postReferrerStats.slice(0, 10).map((post) => (
+                        <TableRow key={post.postId}>
+                          <TableCell className="font-medium truncate max-w-[200px]" title={post.title}>
+                            {post.title}
+                          </TableCell>
+                          <TableCell className="text-right">{post.direct}</TableCell>
+                          <TableCell className="text-right">{post.search}</TableCell>
+                          <TableCell className="text-right">{post.social}</TableCell>
+                          <TableCell className="text-right">{post.internal}</TableCell>
+                          <TableCell className="text-right">{post.other}</TableCell>
                         </TableRow>
                       ))
                     )}
