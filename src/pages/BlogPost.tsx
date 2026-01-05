@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Link, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home, Sparkles, Info } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { ArticleSchema } from "@/components/SEOSchema";
@@ -12,6 +14,24 @@ import { AuthorByline } from "@/components/AuthorByline";
 import { BlogCTABox } from "@/components/BlogCTABox";
 import { BlogExitIntentPopup } from "@/components/BlogExitIntentPopup";
 import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
+import { supabase } from "@/integrations/supabase/client";
+
+// Database blog post type
+interface DatabaseBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  read_time: string;
+  featured_image: string | null;
+  published_at: string | null;
+  is_ai_generated: boolean;
+  ai_disclosure: string | null;
+  meta_description: string | null;
+  keywords: string[] | null;
+}
 
 interface BlogPostData {
   title: string;
@@ -2019,13 +2039,74 @@ const blogPostsContent: Record<string, BlogPostData> = {
 
 const BlogPost = () => {
   const { id } = useParams();
+  const [dbPost, setDbPost] = useState<DatabaseBlogPost | null>(null);
+  const [loadingDbPost, setLoadingDbPost] = useState(true);
   
   // Track blog post view
   useBlogViewTracking(id);
   
-  const post = id ? blogPostsContent[id] : null;
-  const heroImage = id ? (post?.featuredImage || featuredImages[id]) : null;
+  // Fetch from database first
+  useEffect(() => {
+    const fetchDbPost = async () => {
+      if (!id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .eq('slug', id)
+          .eq('is_published', true)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching blog post:', error);
+        } else if (data) {
+          setDbPost(data);
+        }
+      } catch (err) {
+        console.error('Error fetching blog post:', err);
+      } finally {
+        setLoadingDbPost(false);
+      }
+    };
+
+    fetchDbPost();
+  }, [id]);
+  
+  // Check hardcoded posts as fallback
+  const hardcodedPost = id ? blogPostsContent[id] : null;
+  const heroImage = id ? (hardcodedPost?.featuredImage || featuredImages[id]) : null;
   const postUrl = `https://cakeaiartist.com/blog/${id}`;
+  
+  // Determine which post to show (database or hardcoded)
+  const isFromDatabase = !!dbPost;
+  const post = dbPost ? {
+    title: dbPost.title,
+    date: dbPost.published_at ? new Date(dbPost.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recent',
+    dateISO: dbPost.published_at ? new Date(dbPost.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    readTime: dbPost.read_time || '5 min read',
+    category: dbPost.category,
+    metaDescription: dbPost.meta_description || dbPost.excerpt,
+    keywords: dbPost.keywords?.join(', ') || '',
+    content: dbPost.content,
+    featuredImage: dbPost.featured_image,
+    relatedPosts: [] as { id: string; title: string; readTime: string }[],
+    isAiGenerated: dbPost.is_ai_generated,
+    aiDisclosure: dbPost.ai_disclosure || 'This article was written with AI assistance and reviewed by our editorial team.',
+  } : hardcodedPost ? {
+    ...hardcodedPost,
+    isAiGenerated: false,
+    aiDisclosure: '',
+  } : null;
+  
+  // Show loading while checking database
+  if (loadingDbPost) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   if (!post) {
     return <Navigate to="/blog" replace />;
@@ -2152,6 +2233,23 @@ const BlogPost = () => {
                   dangerouslySetInnerHTML={{ __html: secondHalf }}
                   style={{ lineHeight: '1.8' }}
                 />
+
+                {/* AI Disclosure */}
+                {post.isAiGenerated && (
+                  <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Badge variant="outline" className="gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          AI-Assisted Content
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {post.aiDisclosure}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Horizontal ad after article */}
                 <div className="mt-12">
