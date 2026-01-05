@@ -27,74 +27,99 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>This Week's Cake Inspiration</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-    <!-- Header -->
-    <div style="background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 40px 24px; text-align: center;">
-      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">🍰 Cake AI Artist</h1>
-      <p style="margin: 16px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Weekly Inspiration</p>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    
+    <!-- Logo Section -->
+    <div style="padding: 32px 24px 16px; text-align: center; background-color: #ffffff;">
+      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" 
+           alt="Cake AI Artist" 
+           style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #ec4899;" />
     </div>
     
-    <!-- Greeting -->
-    <div style="padding: 32px 24px 16px;">
-      <h2 style="margin: 0 0 8px; color: #111827; font-size: 24px;">Hey ${firstName}! 👋</h2>
-      <p style="margin: 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
+    <!-- Header Banner -->
+    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%); padding: 28px 24px; text-align: center;">
+      <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">This Week's Cake Inspiration</h1>
+      <div style="margin-top: 12px;">
+        <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; backdrop-filter: blur(4px);">
+          ✨ ${posts.length} Fresh Articles Just for You
+        </span>
+      </div>
+    </div>
+    
+    <!-- Personalized Greeting -->
+    <div style="padding: 28px 24px 20px;">
+      <h2 style="margin: 0 0 12px; color: #111827; font-size: 22px; font-weight: 600;">Hey ${firstName}!</h2>
+      <p style="margin: 0; color: #4b5563; font-size: 15px; line-height: 1.7;">
         ${hasNewAIContent 
-          ? "We've got fresh cake inspiration hot off the press! Check out our latest articles:" 
-          : "Here's your weekly dose of cake inspiration. We've handpicked the best articles just for you."}
+          ? "We've got fresh cake inspiration ready for you! Here are this week's most delicious reads—don't miss out:" 
+          : "Your weekly dose of creativity is here. We've handpicked the best articles to spark your next celebration:"}
       </p>
     </div>
     
     <!-- Featured Posts -->
-    <div style="padding: 16px 24px 32px;">
-      ${posts.map(post => `
-        <div style="margin-bottom: 24px; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
-          ${post.featured_image ? `<img src="${post.featured_image}" alt="${post.title}" style="width: 100%; height: 180px; object-fit: cover;">` : ''}
-          <div style="padding: 20px;">
-            <div style="margin-bottom: 12px;">
-              <span style="display: inline-block; background: linear-gradient(135deg, #fce7f3, #ede9fe); color: #7c3aed; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 16px; margin-right: 8px;">
-                ${post.category}
-              </span>
-              ${post.is_ai_generated ? `<span style="display: inline-block; background: #e5e7eb; color: #6b7280; font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 12px;">AI-Assisted</span>` : ''}
+    <div style="padding: 8px 24px 24px;">
+      ${posts.map((post, index) => `
+        <div style="margin-bottom: 20px; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="display: flex; flex-direction: row;">
+            ${post.featured_image ? `
+              <div style="width: 140px; min-width: 140px; height: 140px; background-image: url('${post.featured_image}'); background-size: cover; background-position: center;"></div>
+            ` : ''}
+            <div style="padding: 16px; flex: 1;">
+              <div style="margin-bottom: 8px;">
+                ${index === 0 ? `<span style="display: inline-block; background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 6px;">New</span>` : ''}
+                <span style="display: inline-block; background: #fce7f3; color: #be185d; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px;">
+                  ${post.category}
+                </span>
+              </div>
+              <h3 style="margin: 0 0 8px; color: #111827; font-size: 15px; font-weight: 600; line-height: 1.4;">
+                ${post.title}
+              </h3>
+              <p style="margin: 0 0 12px; color: #6b7280; font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                ${post.excerpt.substring(0, 100)}${post.excerpt.length > 100 ? '...' : ''}
+              </p>
+              <a href="https://cakeaiartist.com/blog/${post.slug}" style="display: inline-block; color: #ec4899; text-decoration: none; font-size: 13px; font-weight: 600;">
+                Read Article →
+              </a>
             </div>
-            <h3 style="margin: 0 0 12px; color: #111827; font-size: 18px; line-height: 1.4;">
-              ${post.title}
-            </h3>
-            <p style="margin: 0 0 16px; color: #6b7280; font-size: 14px; line-height: 1.6;">
-              ${post.excerpt}
-            </p>
-            <a href="https://cakeaiartist.com/blog/${post.slug}" style="display: inline-block; background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 8px;">
-              Read More →
-            </a>
           </div>
         </div>
       `).join('')}
     </div>
     
-    <!-- CTA Section -->
-    <div style="background: linear-gradient(135deg, #fce7f3, #ede9fe); padding: 32px 24px; text-align: center;">
-      <h3 style="margin: 0 0 8px; color: #111827; font-size: 20px;">Ready to Create Your Own?</h3>
-      <p style="margin: 0 0 16px; color: #6b7280; font-size: 14px;">
-        Turn these ideas into reality with our AI cake designer.
+    <!-- Primary CTA Section -->
+    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 36px 24px; text-align: center; margin: 0 24px 24px; border-radius: 16px;">
+      <h3 style="margin: 0 0 8px; color: #ffffff; font-size: 22px; font-weight: 700;">Ready to Create Something Special?</h3>
+      <p style="margin: 0 0 20px; color: rgba(255,255,255,0.9); font-size: 14px;">
+        Turn your inspiration into reality with AI
       </p>
-      <a href="https://cakeaiartist.com" style="display: inline-block; background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 14px 32px; border-radius: 8px;">
-        Try It Free 🎂
+      <a href="https://cakeaiartist.com" style="display: inline-block; background: #ffffff; color: #ec4899; text-decoration: none; font-size: 16px; font-weight: 700; padding: 14px 36px; border-radius: 50px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
+        ✨ Design Your Cake Now
       </a>
+      <p style="margin: 16px 0 0; color: rgba(255,255,255,0.8); font-size: 12px;">
+        Free to try • No credit card needed
+      </p>
     </div>
     
     <!-- AI Disclosure -->
     <div style="padding: 16px 24px; background: #f9fafb; text-align: center;">
-      <p style="margin: 0; color: #9ca3af; font-size: 11px;">
-        Some of our articles are crafted with AI assistance and reviewed by our team to bring you fresh inspiration every week.
+      <p style="margin: 0; color: #9ca3af; font-size: 11px; line-height: 1.5;">
+        Some articles are crafted with AI assistance and reviewed by our team to bring you fresh inspiration every week.
       </p>
     </div>
     
     <!-- Footer -->
-    <div style="padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
-      <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px;">
-        You're receiving this because you subscribed to Cake AI Artist blog updates.
+    <div style="padding: 24px; text-align: center; border-top: 1px solid #e5e7eb; background: #ffffff;">
+      <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" 
+           alt="Cake AI Artist" 
+           style="width: 40px; height: 40px; border-radius: 50%; margin-bottom: 12px;" />
+      <p style="margin: 0 0 8px; color: #6b7280; font-size: 12px;">
+        Made with ❤️ by Cake AI Artist
       </p>
-      <a href="https://cakeaiartist.com/blog/unsubscribe?email=EMAIL_PLACEHOLDER" style="color: #6b7280; font-size: 12px; text-decoration: underline;">
+      <p style="margin: 0 0 12px; color: #9ca3af; font-size: 11px;">
+        You're receiving this because you subscribed to our blog updates.
+      </p>
+      <a href="https://cakeaiartist.com/blog/unsubscribe?email=EMAIL_PLACEHOLDER" style="color: #9ca3af; font-size: 11px; text-decoration: underline;">
         Unsubscribe
       </a>
     </div>
