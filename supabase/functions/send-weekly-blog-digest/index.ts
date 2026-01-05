@@ -30,23 +30,16 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
     
-    <!-- Header Banner with Logo -->
-    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%); padding: 24px;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="width: 60px; vertical-align: middle;">
-            <img src="https://cakeaiartist.com/logo.png" 
-                 alt="Cake AI Artist" 
-                 style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);" />
-          </td>
-          <td style="vertical-align: middle; padding-left: 12px;">
-            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">This Week's Cake Inspiration</h1>
-            <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 16px; margin-top: 6px;">
-              ✨ ${posts.length} Fresh Articles
-            </span>
-          </td>
-        </tr>
-      </table>
+    <!-- Header Banner with Centered Logo -->
+    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%); padding: 28px 24px; text-align: center;">
+      <img src="https://cakeaiartist.com/logo.png" 
+           alt="Cake AI Artist" 
+           style="width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); margin-bottom: 12px;" />
+      <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">This Week's Cake Inspiration</h1>
+      <p style="margin: 4px 0 10px; color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 500;">AI-Powered Cake Design</p>
+      <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 16px;">
+        ✨ ${posts.length} Fresh Articles
+      </span>
     </div>
     
     <!-- Personalized Greeting -->
