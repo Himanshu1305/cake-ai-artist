@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, TrendingUp } from "lucide-react";
+import { Calendar, Clock, TrendingUp, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
@@ -9,8 +9,10 @@ import { BreadcrumbSchema } from "@/components/SEOSchema";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdSlot } from "@/components/AdSlot";
+import { useBlogViewCounts } from "@/hooks/useBlogViewCounts";
 
 const Blog = () => {
+  const { viewCounts } = useBlogViewCounts();
   const [email, setEmail] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
 
@@ -347,12 +349,10 @@ const Blog = () => {
     }
   ];
 
-  // Popular posts - select the best performing ones
-  const popularPosts = [
-    blogPosts.find(p => p.id === "creative-cake-ideas-birthday")!,
-    blogPosts.find(p => p.id === "perfect-birthday-messages")!,
-    blogPosts.find(p => p.id === "diwali-cake-ideas")!,
-  ].filter(Boolean);
+  // Popular posts - sorted by actual view counts
+  const popularPosts = [...blogPosts]
+    .sort((a, b) => (viewCounts[b.id] || 0) - (viewCounts[a.id] || 0))
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -468,7 +468,7 @@ const Blog = () => {
                       {post.excerpt}
                     </p>
                     
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         <span>{post.date}</span>
@@ -477,6 +477,12 @@ const Blog = () => {
                         <Clock className="h-4 w-4" />
                         <span>{post.readTime}</span>
                       </div>
+                      {viewCounts[post.id] > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-4 w-4" />
+                          <span>{viewCounts[post.id]} views</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>

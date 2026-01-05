@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { ArticleSchema } from "@/components/SEOSchema";
@@ -10,6 +10,8 @@ import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { AuthorByline } from "@/components/AuthorByline";
 import { BlogCTABox } from "@/components/BlogCTABox";
+import { BlogExitIntentPopup } from "@/components/BlogExitIntentPopup";
+import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
 
 interface BlogPostData {
   title: string;
@@ -2018,6 +2020,9 @@ const blogPostsContent: Record<string, BlogPostData> = {
 const BlogPost = () => {
   const { id } = useParams();
   
+  // Track blog post view
+  useBlogViewTracking(id);
+  
   const post = id ? blogPostsContent[id] : null;
   const heroImage = id ? (post?.featuredImage || featuredImages[id]) : null;
   const postUrl = `https://cakeaiartist.com/blog/${id}`;
@@ -2063,12 +2068,29 @@ const BlogPost = () => {
         url={postUrl}
       />
       
-      {/* Header with Logo */}
-      <header className="container mx-auto px-4 py-4 max-w-4xl">
-        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-          <span>Cake AI Artist</span>
-        </Link>
+      {/* Exit Intent Popup */}
+      <BlogExitIntentPopup />
+      
+      {/* Sticky Navigation Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-4 py-3 max-w-4xl flex justify-between items-center">
+          <Link to="/blog">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              All Articles
+            </Button>
+          </Link>
+          <Link to="/" className="inline-flex items-center gap-2 text-lg font-bold text-party-pink hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="Cake AI Artist" className="w-8 h-8 rounded-lg" />
+            <span className="hidden sm:inline">Cake AI Artist</span>
+          </Link>
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Home className="w-4 h-4" />
+              Home
+            </Button>
+          </Link>
+        </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
