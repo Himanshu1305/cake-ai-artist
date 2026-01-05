@@ -102,6 +102,66 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          ai_disclosure: string | null
+          author_name: string | null
+          category: string
+          content: string
+          created_at: string | null
+          excerpt: string
+          featured_image: string | null
+          id: string
+          is_ai_generated: boolean | null
+          is_published: boolean | null
+          keywords: string[] | null
+          meta_description: string | null
+          published_at: string | null
+          read_time: string | null
+          slug: string
+          target_country: string | null
+          title: string
+        }
+        Insert: {
+          ai_disclosure?: string | null
+          author_name?: string | null
+          category: string
+          content: string
+          created_at?: string | null
+          excerpt: string
+          featured_image?: string | null
+          id?: string
+          is_ai_generated?: boolean | null
+          is_published?: boolean | null
+          keywords?: string[] | null
+          meta_description?: string | null
+          published_at?: string | null
+          read_time?: string | null
+          slug: string
+          target_country?: string | null
+          title: string
+        }
+        Update: {
+          ai_disclosure?: string | null
+          author_name?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          excerpt?: string
+          featured_image?: string | null
+          id?: string
+          is_ai_generated?: boolean | null
+          is_published?: boolean | null
+          keywords?: string[] | null
+          meta_description?: string | null
+          published_at?: string | null
+          read_time?: string | null
+          slug?: string
+          target_country?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       blog_subscribers: {
         Row: {
           digest_frequency: string | null
