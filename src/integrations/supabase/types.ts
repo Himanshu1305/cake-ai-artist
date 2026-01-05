@@ -75,32 +75,65 @@ export type Database = {
           },
         ]
       }
+      blog_post_views: {
+        Row: {
+          id: string
+          post_id: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       blog_subscribers: {
         Row: {
+          digest_frequency: string | null
           email: string
           first_name: string | null
           id: string
           is_active: boolean | null
+          last_digest_sent_at: string | null
           last_name: string | null
           subscribed_at: string | null
           unsubscribed_at: string | null
           user_id: string | null
         }
         Insert: {
+          digest_frequency?: string | null
           email: string
           first_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_digest_sent_at?: string | null
           last_name?: string | null
           subscribed_at?: string | null
           unsubscribed_at?: string | null
           user_id?: string | null
         }
         Update: {
+          digest_frequency?: string | null
           email?: string
           first_name?: string | null
           id?: string
           is_active?: boolean | null
+          last_digest_sent_at?: string | null
           last_name?: string | null
           subscribed_at?: string | null
           unsubscribed_at?: string | null
