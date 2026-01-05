@@ -80,7 +80,7 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[]) => `
       <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px;">
         You're receiving this because you subscribed to Cake AI Artist blog updates.
       </p>
-      <a href="https://cakeaiartist.com/unsubscribe" style="color: #6b7280; font-size: 12px; text-decoration: underline;">
+      <a href="https://cakeaiartist.com/blog/unsubscribe?email=EMAIL_PLACEHOLDER" style="color: #6b7280; font-size: 12px; text-decoration: underline;">
         Unsubscribe
       </a>
     </div>
@@ -155,11 +155,14 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         const firstName = subscriber.first_name || "there";
 
+        const emailHtml = getWeeklyDigestEmail(firstName, featuredPosts)
+          .replace('EMAIL_PLACEHOLDER', encodeURIComponent(subscriber.email));
+        
         await resend.emails.send({
           from: "Cake AI Artist <blog@cakeaiartist.com>",
           to: [subscriber.email],
           subject: "🍰 This Week's Cake Inspiration | Cake AI Artist",
-          html: getWeeklyDigestEmail(firstName, featuredPosts),
+          html: emailHtml,
         });
 
         // Update last digest sent timestamp
