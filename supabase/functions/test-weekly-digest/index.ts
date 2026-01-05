@@ -30,21 +30,23 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
     
-    <!-- Logo Section -->
-    <div style="padding: 32px 24px 16px; text-align: center; background-color: #ffffff;">
-      <img src="https://cakeaiartist.com/logo.png" 
-           alt="Cake AI Artist" 
-           style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #ec4899;" />
-    </div>
-    
-    <!-- Header Banner -->
-    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%); padding: 28px 24px; text-align: center;">
-      <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">This Week's Cake Inspiration</h1>
-      <div style="margin-top: 12px;">
-        <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; backdrop-filter: blur(4px);">
-          ✨ ${posts.length} Fresh Articles Just for You
-        </span>
-      </div>
+    <!-- Header Banner with Logo -->
+    <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%); padding: 24px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="width: 60px; vertical-align: middle;">
+            <img src="https://cakeaiartist.com/logo.png" 
+                 alt="Cake AI Artist" 
+                 style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);" />
+          </td>
+          <td style="vertical-align: middle; padding-left: 12px;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">This Week's Cake Inspiration</h1>
+            <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 16px; margin-top: 6px;">
+              ✨ ${posts.length} Fresh Articles
+            </span>
+          </td>
+        </tr>
+      </table>
     </div>
     
     <!-- Personalized Greeting -->
@@ -109,14 +111,11 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
     </div>
     
     <!-- Footer -->
-    <div style="padding: 24px; text-align: center; border-top: 1px solid #e5e7eb; background: #ffffff;">
-      <img src="https://cakeaiartist.com/logo.png" 
-           alt="Cake AI Artist" 
-           style="width: 40px; height: 40px; border-radius: 50%; margin-bottom: 12px;" />
-      <p style="margin: 0 0 8px; color: #6b7280; font-size: 12px;">
+    <div style="padding: 20px 24px; text-align: center; border-top: 1px solid #e5e7eb; background: #ffffff;">
+      <p style="margin: 0 0 6px; color: #6b7280; font-size: 12px;">
         Made with ❤️ by Cake AI Artist
       </p>
-      <p style="margin: 0 0 12px; color: #9ca3af; font-size: 11px;">
+      <p style="margin: 0 0 8px; color: #9ca3af; font-size: 11px;">
         You're receiving this because you subscribed to our blog updates.
       </p>
       <a href="https://cakeaiartist.com/blog/unsubscribe?email=EMAIL_PLACEHOLDER" style="color: #9ca3af; font-size: 11px; text-decoration: underline;">
