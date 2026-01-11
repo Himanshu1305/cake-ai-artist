@@ -25,6 +25,7 @@ export const CookieConsent = () => {
       timestamp: new Date().toISOString(),
     };
     safeSetItem("cookieConsent", JSON.stringify(allAccepted));
+    setPreferences(allAccepted);
     setShowBanner(false);
     
     // Initialize Google Analytics and other tracking here
@@ -32,8 +33,13 @@ export const CookieConsent = () => {
       window.gtag("consent", "update", {
         analytics_storage: "granted",
         ad_storage: "granted",
+        ad_user_data: "granted",
+        ad_personalization: "granted",
       });
     }
+    
+    // Dispatch event to trigger AdSense loading
+    window.dispatchEvent(new CustomEvent("cookieConsentUpdated"));
   };
 
   const handleRejectAll = () => {
@@ -44,6 +50,7 @@ export const CookieConsent = () => {
       timestamp: new Date().toISOString(),
     };
     safeSetItem("cookieConsent", JSON.stringify(rejected));
+    setPreferences(rejected);
     setShowBanner(false);
 
     // Deny consent for tracking
@@ -51,8 +58,13 @@ export const CookieConsent = () => {
       window.gtag("consent", "update", {
         analytics_storage: "denied",
         ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
       });
     }
+    
+    // Dispatch event for consent update
+    window.dispatchEvent(new CustomEvent("cookieConsentUpdated"));
   };
 
   const handleSavePreferences = () => {
@@ -68,8 +80,13 @@ export const CookieConsent = () => {
       window.gtag("consent", "update", {
         analytics_storage: preferences.analytics ? "granted" : "denied",
         ad_storage: preferences.marketing ? "granted" : "denied",
+        ad_user_data: preferences.marketing ? "granted" : "denied",
+        ad_personalization: preferences.marketing ? "granted" : "denied",
       });
     }
+    
+    // Dispatch event to trigger AdSense loading if marketing consent is granted
+    window.dispatchEvent(new CustomEvent("cookieConsentUpdated"));
   };
 
   return (

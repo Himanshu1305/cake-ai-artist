@@ -57,9 +57,34 @@
     <!-- Google Fonts for Cake Text -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Sacramento&family=Satisfy&family=Cookie&family=Tangerine:wght@700&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Rochester&display=swap">
     
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8968285405550435"
-         crossorigin="anonymous"></script>
+    <!-- Google AdSense - Loaded conditionally based on consent -->
+    <!-- AdSense script will be loaded dynamically after user consent -->
+    <script>
+      // Only load AdSense after marketing cookie consent is granted
+      function loadAdSense() {
+        if (window.adSenseLoaded) return;
+        try {
+          var consent = localStorage.getItem('cookieConsent');
+          if (consent) {
+            var parsed = JSON.parse(consent);
+            if (parsed.marketing === true) {
+              var script = document.createElement('script');
+              script.async = true;
+              script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8968285405550435';
+              script.crossOrigin = 'anonymous';
+              document.head.appendChild(script);
+              window.adSenseLoaded = true;
+            }
+          }
+        } catch (e) {
+          console.error('Error checking consent for AdSense:', e);
+        }
+      }
+      // Check on page load
+      document.addEventListener('DOMContentLoaded', loadAdSense);
+      // Also check when consent is updated (custom event)
+      window.addEventListener('cookieConsentUpdated', loadAdSense);
+    </script>
     
     <!-- Critical CSS: Prevent scroll compensation layout shift on mobile portrait -->
     <style>

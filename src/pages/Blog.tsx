@@ -10,6 +10,7 @@ import { BreadcrumbSchema } from "@/components/SEOSchema";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdSlot } from "@/components/AdSlot";
+import { AD_SLOTS } from "@/config/adSlots";
 import { useBlogViewCounts } from "@/hooks/useBlogViewCounts";
 
 interface DatabaseBlogPost {
@@ -567,7 +568,7 @@ const Blog = () => {
               {/* Insert horizontal ad after every 6 posts */}
               {(index + 1) % 6 === 0 && index < allPosts.length - 1 && (
                 <div key={`ad-${index}`} className="col-span-full">
-                  <AdSlot size="horizontal" className="w-full max-w-3xl mx-auto my-4" />
+                  <AdSlot size="horizontal" slotId={AD_SLOTS.blog_horizontal} className="w-full max-w-3xl mx-auto my-4" />
                 </div>
               )}
             </>
@@ -576,7 +577,7 @@ const Blog = () => {
 
         {/* Ad before Newsletter */}
         <div className="mt-12 flex justify-center">
-          <AdSlot size="rectangle" className="max-w-[300px]" />
+          <AdSlot size="rectangle" slotId={AD_SLOTS.blog_rectangle} className="max-w-[300px]" />
         </div>
 
         {/* Newsletter Signup */}

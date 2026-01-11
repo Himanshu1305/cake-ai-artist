@@ -239,6 +239,54 @@ const Privacy = () => {
             </div>
           </Card>
 
+          {/* Third-Party Advertising and Cookies - Google AdSense Disclosure */}
+          <Card className="p-8 bg-surface-elevated border-party-orange/30 border-2 shadow-party">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-party-orange rounded-full flex items-center justify-center flex-shrink-0">
+                <Eye className="w-6 h-6 text-white" />
+              </div>
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold text-foreground">Third-Party Advertising and Cookies</h2>
+                <div className="text-foreground/80 space-y-4">
+                  <p>
+                    We use Google AdSense to display advertisements on our website. Google and its partners use cookies 
+                    to serve ads based on your prior visits to our website or other websites.
+                  </p>
+                  
+                  <div className="p-4 bg-background/50 rounded-lg border border-border">
+                    <p className="font-semibold text-foreground mb-2">How Google Uses Your Data</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Google may use cookies to personalize the ads you see</li>
+                      <li>These cookies enable Google and its partners to serve ads based on your visit to our site and/or other sites on the Internet</li>
+                      <li>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-party-pink hover:underline">Google Ads Settings</a></li>
+                      <li>Alternatively, visit <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-party-pink hover:underline">www.aboutads.info</a> to opt out of third-party vendor cookies for personalized advertising</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-4 bg-background/50 rounded-lg border border-border">
+                    <p className="font-semibold text-foreground mb-2">Your Consent Choices</p>
+                    <p className="text-sm">
+                      We only load advertising cookies after you provide consent through our cookie banner. 
+                      You can change your preferences at any time using the "Cookie Settings" link in the footer.
+                    </p>
+                  </div>
+                  
+                  <p className="text-sm">
+                    For more information on how Google uses data, please visit{" "}
+                    <a 
+                      href="https://policies.google.com/technologies/partner-sites" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-party-pink hover:underline font-medium"
+                    >
+                      Google's Privacy & Terms
+                    </a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Cookie Details */}
           <Card className="p-8 bg-surface-elevated border-party-pink/30 border-2 shadow-party">
             <div className="flex items-start gap-4">
