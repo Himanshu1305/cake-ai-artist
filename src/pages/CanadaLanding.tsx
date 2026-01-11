@@ -12,6 +12,7 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -168,7 +169,7 @@ const CanadaLanding = () => {
       />
 
       <FloatingEmojis />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="CA" />
 
       {/* Navigation */}
       <nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
@@ -224,11 +225,11 @@ const CanadaLanding = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse">
-              <p className="text-white font-bold text-lg"><span className="inline-block animate-bounce">🎊</span> NEW YEAR LIFETIME DEAL ENDS IN:</p>
+              <p className="text-white font-bold text-lg"><DynamicSaleLabel countryCode="CA" suffix="ENDS IN:" /></p>
             </motion.div>
             
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <CountdownTimer />
+              <CountdownTimer countryCode="CA" />
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">

@@ -433,6 +433,51 @@ export type Database = {
           },
         ]
       }
+      holiday_sales: {
+        Row: {
+          banner_text: string
+          country_code: string | null
+          created_at: string
+          end_date: string
+          holiday_emoji: string
+          holiday_name: string
+          id: string
+          is_active: boolean
+          priority: number
+          sale_label: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          banner_text: string
+          country_code?: string | null
+          created_at?: string
+          end_date: string
+          holiday_emoji?: string
+          holiday_name: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          sale_label: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          banner_text?: string
+          country_code?: string | null
+          created_at?: string
+          end_date?: string
+          holiday_emoji?: string
+          holiday_name?: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          sale_label?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       page_visits: {
         Row: {
           country_code: string | null

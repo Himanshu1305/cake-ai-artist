@@ -8,8 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings, FileText, Clock } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings, FileText, Clock, Calendar } from 'lucide-react';
 import { ScheduledTasksWidget } from '@/components/ScheduledTasksWidget';
+import { HolidaySalesManager } from '@/components/HolidaySalesManager';
 import { CountryPicker } from '@/components/CountryPicker';
 import { Helmet } from 'react-helmet-async';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -1432,6 +1433,9 @@ export default function Admin() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
+            {/* Holiday Sales Manager */}
+            <HolidaySalesManager />
+
             {/* Scheduled Tasks Widget */}
             <ScheduledTasksWidget />
 

@@ -9,17 +9,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { safeGetItem, safeSetItem } from '@/utils/storage';
+import { useHolidaySale } from '@/hooks/useHolidaySale';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
+  countryCode?: string;
 }
 
-export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
+export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBannerProps) => {
   const navigate = useNavigate();
+  const { sale, isLoading } = useHolidaySale({ countryCode });
 
-  // Check if sale is still active
-  const saleEndDate = new Date('2026-01-10T23:59:59');
-  const isSaleActive = new Date() < saleEndDate;
+  // Check if sale is still active based on dynamic data
+  const isSaleActive = sale ? new Date() < sale.endDate : false;
 
   // Check if user dismissed the banner (persisted for 24 hours)
   const [isDismissed, setIsDismissed] = useState(() => {
@@ -41,7 +43,7 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
     setIsDismissed(true);
   };
 
-  if (!isSaleActive || isDismissed) {
+  if (!isSaleActive || isDismissed || isLoading || !sale) {
     return null;
   }
 
@@ -68,15 +70,15 @@ export const UrgencyBanner = ({ onVisibilityChange }: UrgencyBannerProps) => {
                     <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
                     <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
                       <span className="bg-yellow-400 text-party-purple px-2 py-0.5 rounded-full text-xs font-bold animate-pulse shadow-lg">
-                        EXTENDED!
+                        {sale.saleLabel}
                       </span>
-                      <span>🎉 NEW YEAR LIFETIME DEAL - LIMITED SPOTS AT $49 - ENDS JAN 10</span>
+                      <span>{sale.bannerText}</span>
                     </div>
                   </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="bg-white text-gray-800 border shadow-lg">
-                <p className="font-medium">Extended by popular demand! Don't miss this limited-time offer.</p>
+                <p className="font-medium">{sale.holidayName} Special! Don't miss this limited-time offer.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

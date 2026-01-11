@@ -1,17 +1,25 @@
 import { useCountdown } from '@/hooks/useCountdown';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
+import { useHolidaySale } from '@/hooks/useHolidaySale';
 
 interface CountdownTimerProps {
   compact?: boolean;
   className?: string;
+  countryCode?: string;
+  /** Override endDate - if provided, skip fetching from database */
+  endDate?: Date;
 }
 
-// January 10, 2026 at 11:59:59 PM
-const SALE_END_DATE = new Date('2026-01-10T23:59:59');
+// Fallback date
+const DEFAULT_END_DATE = new Date('2026-12-31T23:59:59');
 
-export const CountdownTimer = ({ compact = false, className = '' }: CountdownTimerProps) => {
-  const { days, hours, minutes, seconds, isExpired } = useCountdown(SALE_END_DATE);
+export const CountdownTimer = ({ compact = false, className = '', countryCode, endDate: propEndDate }: CountdownTimerProps) => {
+  const { sale, isLoading } = useHolidaySale({ countryCode });
+  
+  // Use prop endDate if provided, otherwise use sale endDate, fallback to default
+  const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
+  const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
 
   // Auto-cleanup enabled: Shows "Sale Ended" after Dec 31, 2025
   // Check AdminSaleReminder component for options to extend or close
