@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import { ArticleSchema } from "@/components/SEOSchema";
 import { AdSlot } from "@/components/AdSlot";
 import { SidebarAd } from "@/components/SidebarAd";
+import { AD_SLOTS } from "@/config/adSlots";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { AuthorByline } from "@/components/AuthorByline";
@@ -2215,7 +2216,7 @@ const BlogPost = () => {
                 </div>
 
                 {/* In-article ad after intro */}
-                <AdSlot size="in-article" className="my-8" />
+                <AdSlot size="in-article" slotId={AD_SLOTS.article_in_content} className="my-8" />
 
                 {/* First half of content */}
                 <div 
@@ -2253,7 +2254,7 @@ const BlogPost = () => {
 
                 {/* Horizontal ad after article */}
                 <div className="mt-12">
-                  <AdSlot size="horizontal" className="w-full" />
+                  <AdSlot size="horizontal" slotId={AD_SLOTS.article_bottom} className="w-full" />
                 </div>
 
                 {/* Social Share Buttons - Bottom */}
@@ -2276,7 +2277,7 @@ const BlogPost = () => {
           </div>
 
           {/* Sidebar Ad (desktop only) */}
-          <SidebarAd />
+          <SidebarAd slotId={AD_SLOTS.article_sidebar} />
         </div>
 
         {/* Related Posts */}
