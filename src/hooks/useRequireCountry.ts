@@ -25,7 +25,8 @@ export const useRequireCountry = () => {
           .single();
 
         if (!profile?.country) {
-          navigate('/complete-profile');
+          // Defer navigation to avoid render-time conflicts
+          setTimeout(() => navigate('/complete-profile'), 0);
           return;
         }
 
