@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Calendar, Globe, RefreshCw } from 'lucide-react';
+import { Calendar, Globe, RefreshCw, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { SalePreviewModal } from './SalePreviewModal';
 
 interface HolidaySale {
   id: string;
@@ -46,6 +47,7 @@ export const HolidaySalesManager = () => {
   const [loading, setLoading] = useState(true);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [updating, setUpdating] = useState<Set<string>>(new Set());
+  const [previewSale, setPreviewSale] = useState<HolidaySale | null>(null);
 
   useEffect(() => {
     loadSales();
@@ -183,18 +185,19 @@ export const HolidaySalesManager = () => {
                 <TableHead>Banner Text</TableHead>
                 <TableHead>Dates</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-[80px]">Preview</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ) : filteredSales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No holiday sales found
                   </TableCell>
                 </TableRow>
@@ -244,6 +247,15 @@ export const HolidaySalesManager = () => {
                       <TableCell>
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setPreviewSale(sale)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })
@@ -271,6 +283,14 @@ export const HolidaySalesManager = () => {
             <span>Past end date</span>
           </div>
         </div>
+
+        {/* Preview Modal */}
+        <SalePreviewModal
+          sale={previewSale}
+          isOpen={!!previewSale}
+          onClose={() => setPreviewSale(null)}
+          onActivate={toggleActive}
+        />
       </CardContent>
     </Card>
   );
