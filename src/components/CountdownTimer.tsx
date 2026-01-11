@@ -17,14 +17,16 @@ const DEFAULT_END_DATE = new Date('2026-12-31T23:59:59');
 export const CountdownTimer = ({ compact = false, className = '', countryCode, endDate: propEndDate }: CountdownTimerProps) => {
   const { sale, isLoading } = useHolidaySale({ countryCode });
   
+  // Use prop endDate if provided, otherwise use sale endDate, fallback to default
+  const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
+  
+  // IMPORTANT: Call all hooks before any conditional returns (React Rules of Hooks)
+  const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
+  
   // If sale is default mode (no campaign), hide the countdown entirely
   if (!isLoading && sale?.isDefault && !propEndDate) {
     return null;
   }
-  
-  // Use prop endDate if provided, otherwise use sale endDate, fallback to default
-  const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
-  const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
 
   // Auto-cleanup enabled: Shows "Sale Ended" after countdown expires
   if (isExpired) {

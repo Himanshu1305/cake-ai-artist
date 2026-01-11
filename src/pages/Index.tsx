@@ -47,6 +47,10 @@ import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 
 const Index = () => {
   const navigate = useNavigate();
+  
+  // Call hooks at top level (React Rules of Hooks)
+  const dynamicCakeCount = useDynamicCakeCount();
+  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -885,7 +889,7 @@ const Index = () => {
         >
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <p className="text-4xl font-bold text-party-purple mb-2">{useDynamicCakeCount().toLocaleString()}+</p>
+              <p className="text-4xl font-bold text-party-purple mb-2">{dynamicCakeCount.toLocaleString()}+</p>
               <p className="text-muted-foreground">Cakes Created This Month</p>
             </div>
             <div>
