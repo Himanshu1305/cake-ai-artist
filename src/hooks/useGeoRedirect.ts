@@ -142,11 +142,11 @@ export const useGeoRedirect = () => {
       if (geoChecked) {
         debugLog('Using cached geo result:', geoChecked);
         setDetectedCountry(geoChecked);
-        // Redirect if country has a specific page
+        // Redirect if country has a specific page (defer to avoid render-time navigation)
         const targetRoute = getTargetRoute(geoChecked);
         if (targetRoute) {
           debugLog('Redirecting to:', targetRoute);
-          navigate(targetRoute, { replace: true });
+          setTimeout(() => navigate(targetRoute, { replace: true }), 0);
         }
         setIsLoading(false);
         return;
@@ -160,11 +160,11 @@ export const useGeoRedirect = () => {
         setDetectedCountry(countryCode);
         safeSetItem(GEO_CHECKED_KEY, countryCode, 'session');
 
-        // Redirect if country has specific landing page
+        // Redirect if country has specific landing page (defer to avoid render-time navigation)
         const targetRoute = getTargetRoute(countryCode);
         if (targetRoute) {
           debugLog('Redirecting to:', targetRoute);
-          navigate(targetRoute, { replace: true });
+          setTimeout(() => navigate(targetRoute, { replace: true }), 0);
         }
       } else {
         debugLog('Geo detection failed, not caching. User stays on current page.');
