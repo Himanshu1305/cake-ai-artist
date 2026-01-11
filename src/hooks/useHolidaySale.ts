@@ -7,25 +7,33 @@ export interface HolidaySale {
   emoji: string;
   saleLabel: string;
   bannerText: string;
-  endDate: Date;
+  endDate: Date | null;
   startDate: Date;
   countryCode: string | null;
+  isDefault: boolean; // True when this is a default/fallback sale (no countdown)
 }
 
 interface UseHolidaySaleOptions {
   countryCode?: string | null;
 }
 
-// Fallback sale data when no active sale is found
+// Fallback sale data when no active sale is found in database
 const FALLBACK_SALE: HolidaySale = {
   id: 'fallback',
-  holidayName: 'Limited Time Offer',
-  emoji: '🎉',
-  saleLabel: 'LIMITED TIME!',
-  bannerText: '🎉 LIMITED TIME OFFER - LIFETIME DEAL AT $49 - GET IT NOW',
-  endDate: new Date('2026-12-31T23:59:59'),
+  holidayName: 'Exclusive Lifetime Deal',
+  emoji: '✨',
+  saleLabel: 'EXCLUSIVE DEAL!',
+  bannerText: '✨ EXCLUSIVE OFFER - LIFETIME ACCESS AT $49 - LIMITED SPOTS REMAINING',
+  endDate: null, // No end date for default mode - no countdown
   startDate: new Date('2026-01-01T00:00:00'),
   countryCode: null,
+  isDefault: true,
+};
+
+// Check if a sale is a "default" type (ends in 2099 = permanent fallback)
+const isDefaultSale = (endDate: string): boolean => {
+  const year = new Date(endDate).getFullYear();
+  return year >= 2099;
 };
 
 export const useHolidaySale = ({ countryCode }: UseHolidaySaleOptions = {}) => {
@@ -62,15 +70,17 @@ export const useHolidaySale = ({ countryCode }: UseHolidaySaleOptions = {}) => {
         // If we found a country-specific sale, use it
         if (countryData && countryData.length > 0) {
           const saleData = countryData[0];
+          const isDefault = isDefaultSale(saleData.end_date);
           setSale({
             id: saleData.id,
             holidayName: saleData.holiday_name,
             emoji: saleData.holiday_emoji,
             saleLabel: saleData.sale_label,
             bannerText: saleData.banner_text,
-            endDate: new Date(saleData.end_date),
+            endDate: isDefault ? null : new Date(saleData.end_date),
             startDate: new Date(saleData.start_date),
             countryCode: saleData.country_code,
+            isDefault,
           });
           setIsLoading(false);
           return;
@@ -93,15 +103,17 @@ export const useHolidaySale = ({ countryCode }: UseHolidaySaleOptions = {}) => {
 
         if (globalData && globalData.length > 0) {
           const saleData = globalData[0];
+          const isDefault = isDefaultSale(saleData.end_date);
           setSale({
             id: saleData.id,
             holidayName: saleData.holiday_name,
             emoji: saleData.holiday_emoji,
             saleLabel: saleData.sale_label,
             bannerText: saleData.banner_text,
-            endDate: new Date(saleData.end_date),
+            endDate: isDefault ? null : new Date(saleData.end_date),
             startDate: new Date(saleData.start_date),
             countryCode: saleData.country_code,
+            isDefault,
           });
         } else {
           // No active sale found, use fallback
