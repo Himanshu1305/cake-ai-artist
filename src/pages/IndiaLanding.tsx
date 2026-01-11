@@ -12,6 +12,7 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -168,7 +169,7 @@ const IndiaLanding = () => {
       />
 
       <FloatingEmojis />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="IN" />
 
       {/* Navigation */}
       <nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
@@ -247,7 +248,7 @@ const IndiaLanding = () => {
               className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
             >
               <p className="text-white font-bold text-lg">
-                <span className="inline-block animate-bounce">🎊</span> NEW YEAR LIFETIME DEAL ENDS IN:
+                <DynamicSaleLabel countryCode="IN" suffix="ENDS IN:" />
               </p>
             </motion.div>
             
@@ -256,7 +257,7 @@ const IndiaLanding = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <CountdownTimer />
+              <CountdownTimer countryCode="IN" />
             </motion.div>
 
             <motion.h1

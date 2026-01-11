@@ -281,7 +281,7 @@ const Pricing = () => {
             <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
               🎉 NEW YEAR LIFETIME DEAL - ENDS DECEMBER 31ST 🎉
             </h2>
-            <CountdownTimer className="justify-center" />
+            <CountdownTimer className="justify-center" countryCode="US" />
           </motion.div>
         </div>
       </section>
@@ -540,7 +540,7 @@ const Pricing = () => {
           </p>
           <div className="flex flex-col items-center gap-4 mb-8">
             <SpotsRemainingCounter />
-            <CountdownTimer />
+            <CountdownTimer countryCode="US" />
           </div>
           <Button
             size="lg"

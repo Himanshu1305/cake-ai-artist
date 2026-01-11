@@ -9,6 +9,7 @@ import { AdminSaleReminder } from "@/components/AdminSaleReminder";
 import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { AdSlot } from "@/components/AdSlot";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
@@ -244,7 +245,7 @@ const Index = () => {
       {/* CursorSparkles temporarily disabled to fix blank page issue */}
       {/* <CursorSparkles /> */}
       <AdminSaleReminder />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="US" />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
       <LivePurchaseNotifications />
@@ -373,7 +374,7 @@ const Index = () => {
               className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
             >
               <p className="text-white font-bold text-lg">
-                <span className="inline-block animate-bounce">🎊</span> NEW YEAR LIFETIME DEAL ENDS IN:
+                <DynamicSaleLabel countryCode="US" suffix="ENDS IN:" />
               </p>
             </motion.div>
             
@@ -382,7 +383,7 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <CountdownTimer />
+              <CountdownTimer countryCode="US" />
             </motion.div>
 
             <motion.h1
