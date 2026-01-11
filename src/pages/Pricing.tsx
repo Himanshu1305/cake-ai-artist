@@ -4,7 +4,7 @@ import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ArrowLeft, Crown, Star, AlertCircle, Loader2 } from "lucide-react";
+import { Check, ArrowLeft, Crown, Star, AlertCircle, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
@@ -13,6 +13,7 @@ import { Helmet } from "react-helmet-async";
 import { ProductSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useHolidaySale } from "@/hooks/useHolidaySale";
 import {
   Accordion,
   AccordionContent,
@@ -34,6 +35,7 @@ const Pricing = () => {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const { sale } = useHolidaySale({ countryCode: "US" });
 
   // Load Razorpay script
   useEffect(() => {
@@ -270,18 +272,33 @@ const Pricing = () => {
         </div>
       </nav>
 
-      {/* Launch Banner */}
-      <section className="bg-gradient-party text-white py-6 px-4">
+      {/* Launch Banner - Dynamic based on campaign vs default mode */}
+      <section className={`${sale?.isDefault ? 'bg-gradient-gold' : 'bg-gradient-party'} text-white py-6 px-4`}>
         <div className="container mx-auto text-center">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
-              🎉 NEW YEAR LIFETIME DEAL - ENDS DECEMBER 31ST 🎉
-            </h2>
-            <CountdownTimer className="justify-center" countryCode="US" />
+            {sale?.isDefault ? (
+              // Default mode - no countdown, show spots
+              <>
+                <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
+                  <Sparkles className="w-8 h-8" />
+                  EXCLUSIVE LIFETIME DEAL - LIMITED SPOTS
+                  <Sparkles className="w-8 h-8" />
+                </h2>
+                <SpotsRemainingCounter tier="total" className="justify-center" />
+              </>
+            ) : (
+              // Campaign mode - show countdown
+              <>
+                <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
+                  {sale?.emoji} {sale?.holidayName?.toUpperCase()} - ENDS SOON {sale?.emoji}
+                </h2>
+                <CountdownTimer className="justify-center" countryCode="US" />
+              </>
+            )}
           </motion.div>
         </div>
       </section>
@@ -296,7 +313,10 @@ const Pricing = () => {
             Never Pay Again
           </p>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            First 200 Members Only • Limited Time Offer
+            {sale?.isDefault 
+              ? "Limited Spots Available • Exclusive Offer"
+              : "First 200 Members Only • Limited Time Offer"
+            }
           </p>
 
           {/* Pricing Cards */}

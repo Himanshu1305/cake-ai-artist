@@ -11,18 +11,22 @@ interface CountdownTimerProps {
   endDate?: Date;
 }
 
-// Fallback date
+// Fallback date - only used if explicitly passed
 const DEFAULT_END_DATE = new Date('2026-12-31T23:59:59');
 
 export const CountdownTimer = ({ compact = false, className = '', countryCode, endDate: propEndDate }: CountdownTimerProps) => {
   const { sale, isLoading } = useHolidaySale({ countryCode });
   
+  // If sale is default mode (no campaign), hide the countdown entirely
+  if (!isLoading && sale?.isDefault && !propEndDate) {
+    return null;
+  }
+  
   // Use prop endDate if provided, otherwise use sale endDate, fallback to default
   const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
   const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
 
-  // Auto-cleanup enabled: Shows "Sale Ended" after Dec 31, 2025
-  // Check AdminSaleReminder component for options to extend or close
+  // Auto-cleanup enabled: Shows "Sale Ended" after countdown expires
   if (isExpired) {
     return (
       <div className={`text-destructive font-bold ${className}`}>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X } from 'lucide-react';
+import { Zap, X, Sparkles } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/tooltip";
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { useHolidaySale } from '@/hooks/useHolidaySale';
+import { CountdownTimer } from '@/components/CountdownTimer';
+import { SpotsRemainingCounter } from '@/components/SpotsRemainingCounter';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -20,8 +22,9 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
   const navigate = useNavigate();
   const { sale, isLoading } = useHolidaySale({ countryCode });
 
-  // Check if sale is still active based on dynamic data
-  const isSaleActive = sale ? new Date() < sale.endDate : false;
+  // For default mode (no campaign), always show the banner
+  // For campaign mode, check if sale hasn't expired
+  const isSaleActive = sale ? (sale.isDefault || (sale.endDate && new Date() < sale.endDate)) : false;
 
   // Check if user dismissed the banner (persisted for 24 hours)
   const [isDismissed, setIsDismissed] = useState(() => {
@@ -51,6 +54,15 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
     navigate('/pricing');
   };
 
+  // Different styling for default mode vs campaign mode
+  const isDefaultMode = sale.isDefault;
+  const bannerBgClass = isDefaultMode 
+    ? 'bg-gradient-gold' // Elegant gold for default mode
+    : 'bg-gradient-party'; // Party colors for campaigns
+  const borderClass = isDefaultMode
+    ? 'border-gold'
+    : 'border-party-pink';
+
   return (
     <AnimatePresence>
       <motion.div
@@ -58,7 +70,7 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-gradient-party border-b-2 border-party-pink cursor-pointer"
+        className={`fixed top-0 left-0 right-0 z-50 ${bannerBgClass} border-b-2 ${borderClass} cursor-pointer`}
         onClick={handleBannerClick}
       >
         <div className="container mx-auto px-4 py-2 relative">
@@ -67,18 +79,34 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
               <TooltipTrigger asChild>
                 <div className="flex items-center justify-center gap-4 text-white pr-8">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
+                    {isDefaultMode ? (
+                      <Sparkles className="w-5 h-5 flex-shrink-0 animate-pulse" />
+                    ) : (
+                      <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
+                    )}
                     <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                      <span className="bg-yellow-400 text-party-purple px-2 py-0.5 rounded-full text-xs font-bold animate-pulse shadow-lg">
+                      <span className={`${isDefaultMode ? 'bg-white text-gold' : 'bg-yellow-400 text-party-purple'} px-2 py-0.5 rounded-full text-xs font-bold animate-pulse shadow-lg`}>
                         {sale.saleLabel}
                       </span>
                       <span>{sale.bannerText}</span>
+                      {/* Show countdown for campaigns, spots for default mode */}
+                      {!isDefaultMode && sale.endDate && (
+                        <CountdownTimer compact endDate={sale.endDate} className="ml-2" />
+                      )}
+                      {isDefaultMode && (
+                        <SpotsRemainingCounter tier="total" className="ml-2" />
+                      )}
                     </div>
                   </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="bg-white text-gray-800 border shadow-lg">
-                <p className="font-medium">{sale.holidayName} Special! Don't miss this limited-time offer.</p>
+                <p className="font-medium">
+                  {isDefaultMode 
+                    ? "Exclusive lifetime deal - limited spots available!"
+                    : `${sale.holidayName} Special! Don't miss this limited-time offer.`
+                  }
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
