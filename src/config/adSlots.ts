@@ -13,20 +13,20 @@
 
 export const AD_SLOTS = {
   // Homepage ads
-  homepage_horizontal: "", // Create: 728x90 Leaderboard
+  homepage_horizontal: "8100111510", // Leaderboard 728x90
   
   // Blog listing page ads
-  blog_horizontal: "", // Create: 728x90 Leaderboard for between posts
-  blog_rectangle: "", // Create: 300x250 Rectangle before newsletter
+  blog_horizontal: "8100111510", // Leaderboard 728x90
+  blog_rectangle: "8138628204", // Medium Rectangle 300x250
   
   // Blog post/article page ads
-  article_top: "", // Create: Responsive ad for top of article
-  article_sidebar: "", // Create: 300x250 Rectangle for sidebar
-  article_in_content: "", // Create: In-article (fluid) for within content
-  article_bottom: "", // Create: 728x90 Leaderboard for bottom
+  article_top: "3234620037", // Vertical (responsive)
+  article_sidebar: "8138628204", // Medium Rectangle 300x250
+  article_in_content: "6876667365", // In-article (fluid)
+  article_bottom: "8100111510", // Leaderboard 728x90
   
   // General sidebar ads
-  sidebar_rectangle: "", // Create: 300x250 Rectangle for sidebars
+  sidebar_rectangle: "8138628204", // Medium Rectangle 300x250
 } as const;
 
 // Type for ad slot keys

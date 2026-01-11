@@ -12,6 +12,7 @@ import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { AdSlot } from "@/components/AdSlot";
+import { AD_SLOTS } from "@/config/adSlots";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 // Temporarily disabled CursorSparkles to fix blank page issue
 // import { CursorSparkles } from "@/components/CursorSparkles";
@@ -969,7 +970,7 @@ const Index = () => {
 
       {/* Ad Banner before CTA */}
       <div className="container mx-auto px-4 py-8">
-        <AdSlot size="horizontal" className="max-w-3xl mx-auto" />
+        <AdSlot size="horizontal" slotId={AD_SLOTS.homepage_horizontal} className="max-w-3xl mx-auto" />
       </div>
 
       {/* CTA Section */}
