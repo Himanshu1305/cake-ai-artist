@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
+import { isSearchBot } from '@/utils/botDetection';
 
 const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
@@ -69,6 +70,12 @@ export const GeoRedirectWrapper = () => {
 
     const detectAndRedirect = async () => {
       try {
+        // Skip redirect for search engine bots to allow proper indexing
+        if (isSearchBot()) {
+          console.log('[GeoRedirect] Search bot detected, skipping redirect');
+          return;
+        }
+        
         const savedPreference = safeGetItem(COUNTRY_STORAGE_KEY);
         if (savedPreference) {
           setHasRedirected(true);

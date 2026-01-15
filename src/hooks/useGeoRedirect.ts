@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
+import { isSearchBot } from '@/utils/botDetection';
 
 const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
@@ -119,6 +120,13 @@ export const useGeoRedirect = () => {
 
   useEffect(() => {
     const detectAndRedirect = async () => {
+      // Skip redirect for search engine bots to allow proper indexing
+      if (isSearchBot()) {
+        debugLog('Search bot detected, skipping redirect');
+        setIsLoading(false);
+        return;
+      }
+      
       debugLog('Starting geo detection for path:', location.pathname);
       
       // Early exit: Only process redirectable routes
