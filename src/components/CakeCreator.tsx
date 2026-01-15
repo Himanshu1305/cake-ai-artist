@@ -946,9 +946,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        // Calculate cake dimensions (larger, less padding)
+        // Calculate cake dimensions - edge-to-edge
         const imgAspect = img.width / img.height;
-        const maxWidth = 1020;
+        const maxWidth = 1080; // Full width
         const maxHeight = 950;
         let drawWidth = maxWidth;
         let drawHeight = maxWidth / imgAspect;
@@ -958,11 +958,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           drawWidth = maxHeight * imgAspect;
         }
         
-        const topPadding = 40;
-        const gapAfterCake = 20;
-        const messagePadding = 25;
+        const topPadding = 0; // No top padding
+        const gapAfterCake = 0; // No gap
+        const messagePadding = 20;
         const lineHeight = 38;
-        const footerHeight = 50;
         
         // Word wrap function
         const wrapText = (text: string, maxWidth: number) => {
@@ -988,12 +987,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         };
         
         // Calculate message dimensions
-        const lines = wrapText(message, canvas.width - 120);
+        const lines = wrapText(message, canvas.width - 80);
         const messageBoxHeight = (lines.length * lineHeight) + (messagePadding * 2);
         
-        // Calculate total canvas height dynamically
-        const totalHeight = topPadding + drawHeight + gapAfterCake + messageBoxHeight + footerHeight;
-        canvas.height = Math.max(totalHeight, 1080); // Minimum height for social media
+        // Calculate total canvas height dynamically - no minimum
+        const totalHeight = topPadding + drawHeight + gapAfterCake + messageBoxHeight;
+        canvas.height = totalHeight;
         
         // Background gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -1007,15 +1006,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const y = topPadding;
         ctx.drawImage(img, x, y, drawWidth, drawHeight);
         
-        // Draw message box (dynamic height)
+        // Draw message area - simple pink strip
         const messageY = y + drawHeight + gapAfterCake;
         
-        // Message background with rounded corners effect
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-        ctx.shadowBlur = 15;
-        ctx.fillRect(30, messageY, canvas.width - 60, messageBoxHeight);
-        ctx.shadowBlur = 0;
+        // Pink strip behind message
+        ctx.fillStyle = '#fce7f3';
+        ctx.fillRect(0, messageY, canvas.width, messageBoxHeight);
         
         // Message text
         ctx.fillStyle = '#333';
@@ -1026,11 +1022,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         lines.forEach((line, i) => {
           ctx.fillText(line, canvas.width / 2, textStartY + (i * lineHeight));
         });
-        
-        // Footer (positioned just below message box)
-        ctx.font = '18px Arial';
-        ctx.fillStyle = '#999';
-        ctx.fillText('Created with ❤️ for ' + recipientName, canvas.width / 2, messageY + messageBoxHeight + 35);
         
         // Convert to blob
         canvas.toBlob((blob) => {
