@@ -29,13 +29,23 @@ declare global {
 
 const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
 
+// Country-specific pricing display
+const PRICING_DISPLAY: Record<string, { tier1: string; tier2: string; monthly: string; symbol: string; currency: string }> = {
+  IN: { tier1: "₹4,100", tier2: "₹8,200", monthly: "₹799", symbol: "₹", currency: "INR" },
+  GB: { tier1: "£39", tier2: "£78", monthly: "£7.99", symbol: "£", currency: "GBP" },
+  CA: { tier1: "CAD$67", tier2: "CAD$134", monthly: "CAD$12.99", symbol: "CAD$", currency: "CAD" },
+  AU: { tier1: "AUD$75", tier2: "AUD$150", monthly: "AUD$14.99", symbol: "AUD$", currency: "AUD" },
+  US: { tier1: "US$49", tier2: "US$99", monthly: "US$9.99", symbol: "US$", currency: "USD" },
+};
+
 const Pricing = () => {
   const navigate = useNavigate();
   const { isChecking: isCheckingCountry } = useRequireCountry();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [userCountry, setUserCountry] = useState<string>("US");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
-  const { sale } = useHolidaySale({ countryCode: "US" });
+  const { sale } = useHolidaySale({ countryCode: userCountry });
 
   // Load Razorpay script
   useEffect(() => {
@@ -50,14 +60,37 @@ const Pricing = () => {
     };
   }, []);
 
-  // Check auth state
+  // Check auth state and fetch user's country
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const fetchUserCountry = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('country')
+        .eq('id', userId)
+        .single();
+      
+      if (profile?.country) {
+        // Map UK to GB for edge function, keep others as-is
+        const countryCode = profile.country === 'UK' ? 'GB' : profile.country;
+        // Only set if it's a supported country, otherwise default to US
+        if (PRICING_DISPLAY[countryCode]) {
+          setUserCountry(countryCode);
+        }
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchUserCountry(session.user.id);
+      }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchUserCountry(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -92,10 +125,10 @@ const Pricing = () => {
     setIsLoading(tier);
 
     try {
-      // Create order via edge function
+      // Create order via edge function with user's country
       const { data: orderData, error: orderError } = await supabase.functions.invoke(
         "create-razorpay-order",
-        { body: { tier } }
+        { body: { tier, country: userCountry } }
       );
 
       if (orderError || !orderData) {
@@ -340,9 +373,9 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>First 50 Members Only</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">US$1,198 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">{PRICING_DISPLAY[userCountry]?.symbol || 'US$'}1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-gold">US$49</span>
+                      <span className="text-5xl font-bold text-gold">{PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}</span>
                       <span className="text-muted-foreground">once</span>
                     </div>
                   </div>
@@ -403,9 +436,9 @@ const Pricing = () => {
                   </CardTitle>
                   <CardDescription>Members 51-200</CardDescription>
                   <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">US$1,198 over 10 years</div>
+                    <div className="text-sm line-through text-muted-foreground">{PRICING_DISPLAY[userCountry]?.symbol || 'US$'}1,198 over 10 years</div>
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-silver">US$99</span>
+                      <span className="text-5xl font-bold text-silver">{PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'}</span>
                       <span className="text-muted-foreground">once</span>
                     </div>
                   </div>
@@ -459,10 +492,10 @@ const Pricing = () => {
                   <CardDescription>Flexible subscription</CardDescription>
                   <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">$9.99</span>
+                      <span className="text-5xl font-bold">{PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}</span>
                       <span className="text-muted-foreground">/month</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">or $119.88/year</p>
+                    <p className="text-sm text-muted-foreground mt-2">or {PRICING_DISPLAY[userCountry]?.symbol || 'US$'}119.88/year</p>
                   </div>
                 </CardHeader>
                 <CardContent>

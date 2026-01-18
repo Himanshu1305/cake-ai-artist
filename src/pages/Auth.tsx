@@ -191,7 +191,7 @@ const Auth = () => {
 
         if (error) throw error;
         toast.success("Logged in successfully!");
-        navigate("/");
+        // Navigation is handled by onAuthStateChange listener
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
