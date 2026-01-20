@@ -5,7 +5,7 @@ const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
-import { AdminSaleReminder } from "@/components/AdminSaleReminder";
+
 import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
@@ -249,7 +249,7 @@ const Index = () => {
       <FloatingEmojis />
       {/* CursorSparkles temporarily disabled to fix blank page issue */}
       {/* <CursorSparkles /> */}
-      <AdminSaleReminder />
+      
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="US" />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
