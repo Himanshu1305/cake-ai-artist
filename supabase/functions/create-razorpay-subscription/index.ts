@@ -97,7 +97,7 @@ serve(async (req) => {
     }
 
     // Get Razorpay credentials
-    const razorpayKeyId = Deno.env.get('SUPABASE_PUBLISHABLE_KEY');
+    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID');
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
 
     if (!razorpayKeyId || !razorpayKeySecret) {
