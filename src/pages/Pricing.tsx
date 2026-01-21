@@ -14,6 +14,8 @@ import { ProductSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useHolidaySale } from "@/hooks/useHolidaySale";
+import { useGeoContext } from "@/contexts/GeoContext";
+import { useRazorpayPayment, PaymentTier } from "@/hooks/useRazorpayPayment";
 import {
   Accordion,
   AccordionContent,
@@ -31,192 +33,90 @@ const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
 
 // Country-specific pricing display
 const PRICING_DISPLAY: Record<string, { tier1: string; tier2: string; monthly: string; symbol: string; currency: string }> = {
-  IN: { tier1: "₹4,100", tier2: "₹8,200", monthly: "₹799", symbol: "₹", currency: "INR" },
+  IN: { tier1: "₹4,100", tier2: "₹8,200", monthly: "₹899", symbol: "₹", currency: "INR" },
   GB: { tier1: "£39", tier2: "£78", monthly: "£7.99", symbol: "£", currency: "GBP" },
-  CA: { tier1: "CAD$67", tier2: "CAD$134", monthly: "CAD$12.99", symbol: "CAD$", currency: "CAD" },
+  CA: { tier1: "CAD$67", tier2: "CAD$134", monthly: "CAD$13.99", symbol: "CAD$", currency: "CAD" },
   AU: { tier1: "AUD$75", tier2: "AUD$150", monthly: "AUD$14.99", symbol: "AUD$", currency: "AUD" },
   US: { tier1: "US$49", tier2: "US$99", monthly: "US$9.99", symbol: "US$", currency: "USD" },
+};
+
+// Map country codes to monthly subscription tiers
+const MONTHLY_TIER_MAP: Record<string, PaymentTier> = {
+  IN: "monthly_inr",
+  GB: "monthly_gbp",
+  CA: "monthly_cad",
+  AU: "monthly_aud",
+  US: "monthly_usd",
 };
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { isChecking: isCheckingCountry } = useRequireCountry();
-  const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
   const [userCountry, setUserCountry] = useState<string>("US");
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const { detectedCountry } = useGeoContext();
   const { sale } = useHolidaySale({ countryCode: userCountry });
+  
+  // Use the Razorpay payment hook for all payment processing
+  const { 
+    handlePayment: processPayment, 
+    isLoading, 
+    user, 
+    razorpayLoaded 
+  } = useRazorpayPayment(userCountry);
 
-  // Load Razorpay script
+  // Determine user country with fallback chain: Profile > localStorage > GeoContext > US
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  // Check auth state and fetch user's country
-  useEffect(() => {
-    const fetchUserCountry = async (userId: string) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('country')
-        .eq('id', userId)
-        .single();
+    const determineCountry = async () => {
+      // Check localStorage preference first (set by footer country picker)
+      const savedPref = localStorage.getItem('user_country_preference');
       
-      if (profile?.country) {
-        // Map UK to GB for edge function, keep others as-is
-        const countryCode = profile.country === 'UK' ? 'GB' : profile.country;
-        // Only set if it's a supported country, otherwise default to US
-        if (PRICING_DISPLAY[countryCode]) {
-          setUserCountry(countryCode);
+      // If user is logged in, try to get their profile country
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('country')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.country) {
+          const countryCode = profile.country === 'UK' ? 'GB' : profile.country;
+          if (PRICING_DISPLAY[countryCode]) {
+            setUserCountry(countryCode);
+            return;
+          }
         }
       }
+      
+      // Fallback to localStorage preference
+      if (savedPref && PRICING_DISPLAY[savedPref]) {
+        setUserCountry(savedPref);
+        return;
+      }
+      
+      // Fallback to detected country from IP (GeoContext)
+      if (detectedCountry && PRICING_DISPLAY[detectedCountry]) {
+        setUserCountry(detectedCountry);
+        return;
+      }
+      
+      // Final fallback to US
+      setUserCountry("US");
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserCountry(session.user.id);
-      }
-    });
+    determineCountry();
+  }, [detectedCountry]);
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserCountry(session.user.id);
-      }
-    });
+  // Handler for lifetime deals (tier 1 and tier 2)
+  const handleLifetimePayment = (tier: "tier_1_49" | "tier_2_99") => {
+    processPayment(tier);
+  };
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handlePayment = async (tier: "tier_1_49" | "tier_2_99" | "monthly_usd") => {
-    // Monthly subscriptions - backend not ready yet
-    if (tier === "monthly_usd") {
-      toast.info("Monthly subscription coming very soon!", {
-        description: "For now, grab our Lifetime Deal at 96% off - never pay again!",
-        duration: 5000,
-      });
-      return;
-    }
-    // Check if user is logged in
-    if (!user) {
-      toast.error("Please sign in to continue", {
-        description: "You need to be logged in to purchase a lifetime deal.",
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
-        },
-      });
-      return;
-    }
-
-    if (!razorpayLoaded) {
-      toast.error("Payment system is loading, please try again in a moment.");
-      return;
-    }
-
-    setIsLoading(tier);
-
-    try {
-      // Create order via edge function with user's country
-      const { data: orderData, error: orderError } = await supabase.functions.invoke(
-        "create-razorpay-order",
-        { body: { tier, country: userCountry } }
-      );
-
-      if (orderError || !orderData) {
-        console.error("Order error:", orderError);
-        throw new Error(orderData?.error || "Failed to create order");
-      }
-
-      // Configure Razorpay checkout options
-      const options = {
-        key: RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Cake AI Artist",
-        description: tier === "tier_1_49" 
-          ? "New Year Special - Lifetime Access (Tier 1)" 
-          : "Launch Supporter - Lifetime Access (Tier 2)",
-        order_id: orderData.order_id,
-        prefill: {
-          email: orderData.user_email,
-          name: orderData.user_name,
-        },
-        theme: {
-          color: "#e84393",
-        },
-        handler: async function (response: any) {
-          // Verify payment on backend
-          try {
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
-              "verify-razorpay-payment",
-              {
-                body: {
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  tier: tier,
-                },
-              }
-            );
-
-            if (verifyError || !verifyData?.success) {
-              console.error("Verification error:", verifyError);
-              throw new Error(verifyData?.error || "Payment verification failed");
-            }
-
-            // Success!
-            toast.success("🎉 Welcome to the Lifetime Club!", {
-              description: `You're member #${verifyData.member_number}! Check your email for details.`,
-              duration: 10000,
-            });
-
-            // Redirect to home after success
-            setTimeout(() => {
-              navigate("/");
-            }, 2000);
-
-          } catch (verifyErr: any) {
-            console.error("Verification error:", verifyErr);
-            toast.error("Payment verification failed", {
-              description: "Please contact support@cakeaiartist.com with your payment details.",
-            });
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setIsLoading(null);
-            toast.info("Payment cancelled");
-          },
-        },
-      };
-
-      // Open Razorpay checkout
-      const razorpay = new window.Razorpay(options);
-      razorpay.on("payment.failed", function (response: any) {
-        console.error("Payment failed:", response.error);
-        toast.error("Payment failed", {
-          description: response.error.description || "Please try again or use a different payment method.",
-        });
-        setIsLoading(null);
-      });
-      razorpay.open();
-
-    } catch (error: any) {
-      console.error("Payment error:", error);
-      toast.error("Payment failed", {
-        description: error.message || "Please try again.",
-      });
-      setIsLoading(null);
-    }
+  // Handler for monthly subscriptions - uses country-specific tier
+  const handleMonthlyPayment = () => {
+    const monthlyTier = MONTHLY_TIER_MAP[userCountry] || "monthly_usd";
+    processPayment(monthlyTier);
   };
 
   const foundingFeatures = [
@@ -397,7 +297,7 @@ const Pricing = () => {
                 <CardFooter className="flex-col gap-2">
                   <Button
                     className="w-full btn-shimmer bg-gradient-gold hover:shadow-gold text-white font-bold py-6"
-                    onClick={() => handlePayment("tier_1_49")}
+                    onClick={() => handleLifetimePayment("tier_1_49")}
                     disabled={isLoading !== null}
                   >
                     {isLoading === "tier_1_49" ? (
@@ -460,7 +360,7 @@ const Pricing = () => {
                 <CardFooter className="flex-col gap-2">
                   <Button
                     className="w-full btn-shimmer bg-gradient-to-r from-slate-400 to-slate-500 hover:shadow-elegant text-white font-bold py-6"
-                    onClick={() => handlePayment("tier_2_99")}
+                    onClick={() => handleLifetimePayment("tier_2_99")}
                     disabled={isLoading !== null}
                   >
                     {isLoading === "tier_2_99" ? (
@@ -527,10 +427,10 @@ const Pricing = () => {
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => handlePayment('monthly_usd' as any)}
+                    onClick={() => handleMonthlyPayment()}
                     disabled={isLoading !== null}
                   >
-                    {isLoading === 'monthly_usd' ? (
+                    {isLoading?.startsWith('monthly_') ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Processing...
