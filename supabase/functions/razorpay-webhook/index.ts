@@ -127,12 +127,37 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
   const amount = payment.amount;
   const currency = payment.currency;
   const notes = payment.notes || {};
-  const userId = notes.user_id;
-  const tier = notes.tier;
+  let userId = notes.user_id;
+  let tier = notes.tier;
 
-  console.log("Payment captured:", { orderId, paymentId, amount, currency, userId, tier });
+  // Check if this is a subscription payment (has subscription_id)
+  const subscriptionId = payment.subscription_id;
+  
+  console.log("Payment captured:", { orderId, paymentId, amount, currency, userId, tier, subscriptionId });
+
+  // For subscription payments, look up user from subscriptions table if notes are empty
+  if (subscriptionId && (!userId || !tier)) {
+    console.log("Payment is for subscription, fetching subscription details:", subscriptionId);
+    
+    const { data: subData } = await supabase
+      .from("subscriptions")
+      .select("user_id, tier")
+      .eq("razorpay_subscription_id", subscriptionId)
+      .maybeSingle();
+    
+    if (subData) {
+      userId = subData.user_id;
+      tier = subData.tier;
+      console.log("Found subscription data:", { userId, tier });
+    }
+  }
 
   if (!userId || !tier) {
+    // For subscriptions without notes, let subscription.activated handle it
+    if (subscriptionId) {
+      console.log("Subscription payment without notes, will be handled by subscription.activated");
+      return { success: true, message: "Deferred to subscription.activated" };
+    }
     console.error("Missing user_id or tier in payment notes");
     return { success: false, message: "Missing metadata" };
   }
