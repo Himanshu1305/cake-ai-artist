@@ -172,6 +172,7 @@ export type Database = {
           last_digest_sent_at: string | null
           last_name: string | null
           subscribed_at: string | null
+          unsubscribe_token: string | null
           unsubscribed_at: string | null
           user_id: string | null
         }
@@ -184,6 +185,7 @@ export type Database = {
           last_digest_sent_at?: string | null
           last_name?: string | null
           subscribed_at?: string | null
+          unsubscribe_token?: string | null
           unsubscribed_at?: string | null
           user_id?: string | null
         }
@@ -196,6 +198,7 @@ export type Database = {
           last_digest_sent_at?: string | null
           last_name?: string | null
           subscribed_at?: string | null
+          unsubscribe_token?: string | null
           unsubscribed_at?: string | null
           user_id?: string | null
         }
@@ -890,6 +893,13 @@ export type Database = {
       }
     }
     Views: {
+      public_blog_stats: {
+        Row: {
+          post_id: string | null
+          view_count: number | null
+        }
+        Relationships: []
+      }
       public_featured_images: {
         Row: {
           created_at: string | null
