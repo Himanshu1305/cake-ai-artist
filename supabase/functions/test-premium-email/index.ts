@@ -7,8 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-test-secret",
 };
 
-// Test secret for authorization - change this to something secure
-const TEST_SECRET = "cake-test-email-2025";
+// Test secret for authorization - use environment variable
+const TEST_SECRET = Deno.env.get("TEST_EMAIL_SECRET");
 
 // Country-specific pricing for test emails
 const TEST_PRICING: Record<string, { amount: number; currency: string; symbol: string }> = {
@@ -26,6 +26,15 @@ serve(async (req) => {
   }
 
   try {
+    // Verify test secret is configured
+    if (!TEST_SECRET) {
+      console.error("TEST_EMAIL_SECRET not configured");
+      return new Response(
+        JSON.stringify({ error: "Test endpoint not configured" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Verify test secret
     const testSecret = req.headers.get("x-test-secret");
     if (testSecret !== TEST_SECRET) {

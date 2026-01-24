@@ -8,23 +8,20 @@ export const useBlogViewCounts = () => {
   useEffect(() => {
     const fetchViewCounts = async () => {
       try {
-        // Get views from last 30 days
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        
+        // Use the secure aggregated view that doesn't expose session IDs or user agents
         const { data, error } = await supabase
-          .from('blog_post_views')
-          .select('post_id')
-          .gte('viewed_at', thirtyDaysAgo);
+          .from('public_blog_stats')
+          .select('post_id, view_count');
 
         if (error) {
           console.error('Error fetching view counts:', error);
           return;
         }
 
-        // Count views per post
+        // Build the counts object from the aggregated view
         const counts: Record<string, number> = {};
-        data?.forEach(view => {
-          counts[view.post_id] = (counts[view.post_id] || 0) + 1;
+        data?.forEach(row => {
+          counts[row.post_id] = row.view_count;
         });
         
         setViewCounts(counts);

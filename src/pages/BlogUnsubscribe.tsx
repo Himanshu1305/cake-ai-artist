@@ -9,48 +9,53 @@ import { Helmet } from 'react-helmet-async';
 
 type Status = 'loading' | 'ready' | 'processing' | 'success' | 'error';
 
+interface SubscriberData {
+  id: string;
+  email: string;
+  is_active: boolean;
+  digest_frequency: string | null;
+}
+
 export default function BlogUnsubscribe() {
   const [searchParams] = useSearchParams();
-  const email = searchParams.get('email');
+  const token = searchParams.get('token');
   
   const [status, setStatus] = useState<Status>('loading');
   const [unsubscribeType, setUnsubscribeType] = useState<'digest' | 'all' | null>(null);
-  const [subscriberExists, setSubscriberExists] = useState(false);
+  const [subscriber, setSubscriber] = useState<SubscriberData | null>(null);
 
   useEffect(() => {
-    if (!email) {
+    if (!token) {
       setStatus('error');
       return;
     }
     
-    // Verify subscriber exists
+    // Verify subscriber exists by token (secure lookup)
     const checkSubscriber = async () => {
       const { data, error } = await supabase
         .from('blog_subscribers')
-        .select('id, is_active, digest_frequency')
-        .eq('email', decodeURIComponent(email))
+        .select('id, email, is_active, digest_frequency')
+        .eq('unsubscribe_token', token)
         .maybeSingle();
 
       if (error || !data) {
-        setSubscriberExists(false);
+        setSubscriber(null);
       } else {
-        setSubscriberExists(true);
+        setSubscriber(data);
       }
       setStatus('ready');
     };
 
     checkSubscriber();
-  }, [email]);
+  }, [token]);
 
   const handleUnsubscribe = async (type: 'digest' | 'all') => {
-    if (!email) return;
+    if (!subscriber) return;
 
     setStatus('processing');
     setUnsubscribeType(type);
 
     try {
-      const decodedEmail = decodeURIComponent(email);
-      
       const updateData = type === 'all' 
         ? { 
             is_active: false, 
@@ -63,7 +68,7 @@ export default function BlogUnsubscribe() {
       const { error } = await supabase
         .from('blog_subscribers')
         .update(updateData)
-        .eq('email', decodedEmail);
+        .eq('id', subscriber.id);
 
       if (error) throw error;
 
@@ -77,6 +82,13 @@ export default function BlogUnsubscribe() {
       setStatus('error');
       toast.error('Failed to process your request');
     }
+  };
+
+  // Mask email for privacy (show first 2 chars and domain)
+  const getMaskedEmail = (email: string) => {
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return email;
+    return `${local.substring(0, 2)}***@${domain}`;
   };
 
   return (
@@ -111,20 +123,20 @@ export default function BlogUnsubscribe() {
             {status === 'success' && unsubscribeType === 'digest' && (
               "You won't receive the weekly digest anymore, but you may still get important updates."
             )}
-            {status === 'error' && !email && (
-              "No email address provided. Please use the link from your email."
+            {status === 'error' && !token && (
+              "Invalid unsubscribe link. Please use the link from your email."
             )}
-            {status === 'error' && email && !subscriberExists && (
-              "We couldn't find this email in our subscriber list."
+            {status === 'error' && token && !subscriber && (
+              "This unsubscribe link is invalid or has expired."
             )}
-            {status === 'error' && email && subscriberExists && (
+            {status === 'error' && token && subscriber && (
               "There was a problem processing your request. Please try again."
             )}
-            {status === 'ready' && subscriberExists && (
+            {status === 'ready' && subscriber && (
               "Choose your email preference below."
             )}
-            {status === 'ready' && !subscriberExists && (
-              "This email address is not in our subscriber list."
+            {status === 'ready' && !subscriber && (
+              "This unsubscribe link is invalid or has expired."
             )}
             {status === 'loading' && "Loading..."}
             {status === 'processing' && "Processing your request..."}
@@ -132,12 +144,12 @@ export default function BlogUnsubscribe() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {status === 'ready' && subscriberExists && (
+          {status === 'ready' && subscriber && (
             <>
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
-                  <span className="break-all">{email ? decodeURIComponent(email) : ''}</span>
+                  <span className="break-all">{getMaskedEmail(subscriber.email)}</span>
                 </div>
               </div>
 
@@ -173,7 +185,7 @@ export default function BlogUnsubscribe() {
             </Link>
           )}
 
-          {status === 'ready' && !subscriberExists && (
+          {status === 'ready' && !subscriber && (
             <Link to="/blog" className="block">
               <Button variant="outline" className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />

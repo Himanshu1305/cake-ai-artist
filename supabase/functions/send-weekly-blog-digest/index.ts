@@ -111,7 +111,7 @@ const getWeeklyDigestEmail = (firstName: string, posts: BlogPost[], hasNewAICont
       <p style="margin: 0 0 8px; color: #9ca3af; font-size: 11px;">
         You're receiving this because you subscribed to our blog updates.
       </p>
-      <a href="https://cakeaiartist.com/blog/unsubscribe?email=EMAIL_PLACEHOLDER" style="color: #9ca3af; font-size: 11px; text-decoration: underline;">
+      <a href="UNSUBSCRIBE_PLACEHOLDER" style="color: #9ca3af; font-size: 11px; text-decoration: underline;">
         Unsubscribe
       </a>
     </div>
@@ -210,10 +210,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Using ${postsToSend.length} posts for digest (new AI content: ${hasNewAIContent})`);
 
-    // Get active subscribers
+    // Get active subscribers (include unsubscribe_token for secure unsubscribe links)
     const { data: subscribers, error: subError } = await supabase
       .from("blog_subscribers")
-      .select("*")
+      .select("id, email, first_name, unsubscribe_token")
       .eq("is_active", true)
       .or("digest_frequency.eq.weekly,digest_frequency.is.null");
 
@@ -237,9 +237,12 @@ const handler = async (req: Request): Promise<Response> => {
     for (const subscriber of subscribers) {
       try {
         const firstName = subscriber.first_name || "there";
+        
+        // Build secure unsubscribe link using token
+        const unsubscribeUrl = `https://cake-ai-artist.lovable.app/blog/unsubscribe?token=${subscriber.unsubscribe_token}`;
 
         const emailHtml = getWeeklyDigestEmail(firstName, postsToSend, hasNewAIContent)
-          .replace('EMAIL_PLACEHOLDER', encodeURIComponent(subscriber.email));
+          .replace('UNSUBSCRIBE_PLACEHOLDER', unsubscribeUrl);
         
         await resend.emails.send({
           from: "Cake AI Artist <blog@cakeaiartist.com>",
