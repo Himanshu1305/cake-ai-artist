@@ -341,7 +341,7 @@ const UKLanding = () => {
               )}
               
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"After Dec 31, this becomes £7.99/month forever"</p>
+                <p>"Once spots fill, price becomes £7.99/month"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
             </motion.div>

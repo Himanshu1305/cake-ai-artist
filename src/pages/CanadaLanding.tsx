@@ -273,7 +273,7 @@ const CanadaLanding = () => {
                 </Button>
               )}
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"After Dec 31, this becomes C$13.99/month forever"</p>
+                <p>"Once spots fill, price becomes C$13.99/month"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
             </motion.div>

@@ -58,8 +58,8 @@ const FAQ = () => {
             answer: "Lifetime members (first 200) = unlimited forever. Regular premium = 150/year. Free = 3/day with a 12/month cap. Most people find free is plenty, honestly."
           },
           {
-            question: "What's special about the New Year Lifetime Deal?",
-            answer: "First 200 people pay once ($49 or $99) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill or December 31st hits, this deal disappears."
+            question: "What's special about the Lifetime Deal?",
+            answer: "First 200 people pay once ($49 or $99) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill, this deal disappears."
           },
           {
             question: "Can I use this for my business?",
@@ -228,12 +228,12 @@ const FAQ = () => {
 
             <AccordionItem value="item-13" className="bg-background/50 px-6 rounded-lg border border-border/50">
               <AccordionTrigger className="text-left font-semibold">
-                What's special about the New Year Lifetime Deal?
+                What's special about the Lifetime Deal?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 First 200 people to claim it pay <strong>once</strong>—$49 or $99—and never pay again. Not yearly, not monthly. Once. Done. 
                 Unlimited generations forever, all future features included, priority support, exclusive badges. 
-                After those 200 spots fill up or December 31st arrives (whichever happens first), this offer's gone. Like, actually gone. We're not bringing it back.
+                After those 200 spots fill up, this offer's gone. Like, actually gone. We're not bringing it back.
               </AccordionContent>
             </AccordionItem>
 

@@ -131,12 +131,12 @@ const Pricing = () => {
 
   const faqItems = [
     {
-      question: "What happens after December 31st?",
-      answer: "After December 31, 2025, this New Year Lifetime Deal closes forever. New users will only be able to subscribe at $9.99/month. If you claim this lifetime deal, you'll have lifetime access regardless of future price changes."
+      question: "What happens when all spots fill up?",
+      answer: "Once all 200 lifetime member spots are claimed, this deal closes forever. New users will only be able to subscribe at $9.99/month. If you claim this lifetime deal now, you'll have lifetime access regardless of future price changes."
     },
     {
       question: "Can I upgrade from free to lifetime later?",
-      answer: "No, this is a one-time offer. Once the 200 spots are filled or December 31st passes (whichever comes first), this offer will never be available again."
+      answer: "This is a limited-time offer with only 200 spots available. Once all spots are filled, this offer will never be available again."
     },
     {
       question: "Is this really lifetime access?",
