@@ -114,7 +114,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Simulated progress during generation
+  // Simulated progress during generation - extended for longer AI generation times
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -122,15 +122,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
+    // Extended progress simulation to handle up to 3+ minute generation times
     const steps = [
       { progress: 5, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 15, step: "✨ Adding magical decorations...", delay: 3000 },
-      { progress: 30, step: "🌈 Mixing the perfect colors...", delay: 8000 },
-      { progress: 45, step: "🎀 Perfecting the details...", delay: 15000 },
-      { progress: 60, step: "💖 Sprinkling some magic...", delay: 22000 },
-      { progress: 75, step: "🌟 Creating something beautiful...", delay: 30000 },
-      { progress: 85, step: "✨ Adding final sparkles...", delay: 38000 },
-      { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 48000 },
+      { progress: 12, step: "✨ Adding magical decorations...", delay: 3000 },
+      { progress: 20, step: "🌈 Mixing the perfect colors...", delay: 8000 },
+      { progress: 28, step: "🎀 Shaping the perfect tiers...", delay: 15000 },
+      { progress: 36, step: "💖 Sprinkling some magic...", delay: 22000 },
+      { progress: 44, step: "🌟 Creating beautiful details...", delay: 30000 },
+      { progress: 52, step: "🎨 Adding artistic touches...", delay: 40000 },
+      { progress: 60, step: "✨ Perfecting the fondant...", delay: 50000 },
+      { progress: 68, step: "🍰 Adding final decorations...", delay: 60000 },
+      { progress: 75, step: "🎁 Wrapping up the magic...", delay: 75000 },
+      { progress: 82, step: "💫 Almost there, stay with us...", delay: 90000 },
+      { progress: 88, step: "🌟 Final touches in progress...", delay: 105000 },
+      { progress: 93, step: "✨ Just a moment more...", delay: 120000 },
+      { progress: 96, step: "🎉 Nearly ready to celebrate...", delay: 140000 },
+      { progress: 98, step: "🎂 Finishing up...", delay: 160000 },
     ];
 
     const timers: NodeJS.Timeout[] = [];
@@ -465,14 +473,26 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
   };
 
-  // Helper function with retry logic for network interruptions
+  // Helper function with retry logic and timeout for network interruptions
   const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
+    const TIMEOUT_MS = 180000; // 3 minute timeout for cake generation
+    
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const { data, error } = await supabase.functions.invoke(functionName, { body });
-        if (error) throw error;
-        return { data, error: null };
+        // Create timeout promise
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Generation timed out. The AI is taking longer than expected. Please try again.')), TIMEOUT_MS);
+        });
+        
+        // Race between actual call and timeout
+        const result = await Promise.race([
+          supabase.functions.invoke(functionName, { body }),
+          timeoutPromise
+        ]);
+        
+        if (result.error) throw result.error;
+        return { data: result.data, error: null };
       } catch (err) {
         lastError = err;
         console.log(`Attempt ${attempt + 1} failed:`, err);
@@ -744,6 +764,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             }
           } else if (error.message.includes('Rate limit')) {
             errorMessage = "You've hit the rate limit. Please wait a moment and try again.";
+          } else if (error.message.includes('timed out')) {
+            errorMessage = "Generation took too long. The AI service may be busy. Please try again in a moment.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
             errorMessage = "Connection was interrupted during generation. Please try again - your internet may have briefly disconnected.";
           } else if (error.message.includes('No images')) {
