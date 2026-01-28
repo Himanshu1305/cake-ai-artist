@@ -114,7 +114,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Simulated progress during generation - extended for longer AI generation times
+  // Simulated progress during generation - optimized for ~30 second generation
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -122,23 +122,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
-    // Extended progress simulation to handle up to 3+ minute generation times
+    // Progress simulation optimized for ~30 second generation with flash model
     const steps = [
-      { progress: 5, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 12, step: "✨ Adding magical decorations...", delay: 3000 },
-      { progress: 20, step: "🌈 Mixing the perfect colors...", delay: 8000 },
-      { progress: 28, step: "🎀 Shaping the perfect tiers...", delay: 15000 },
-      { progress: 36, step: "💖 Sprinkling some magic...", delay: 22000 },
-      { progress: 44, step: "🌟 Creating beautiful details...", delay: 30000 },
-      { progress: 52, step: "🎨 Adding artistic touches...", delay: 40000 },
-      { progress: 60, step: "✨ Perfecting the fondant...", delay: 50000 },
-      { progress: 68, step: "🍰 Adding final decorations...", delay: 60000 },
-      { progress: 75, step: "🎁 Wrapping up the magic...", delay: 75000 },
-      { progress: 82, step: "💫 Almost there, stay with us...", delay: 90000 },
-      { progress: 88, step: "🌟 Final touches in progress...", delay: 105000 },
-      { progress: 93, step: "✨ Just a moment more...", delay: 120000 },
-      { progress: 96, step: "🎉 Nearly ready to celebrate...", delay: 140000 },
-      { progress: 98, step: "🎂 Finishing up...", delay: 160000 },
+      { progress: 8, step: "🎂 Baking something special...", delay: 500 },
+      { progress: 20, step: "✨ Adding magical decorations...", delay: 3000 },
+      { progress: 35, step: "🌈 Mixing the perfect colors...", delay: 6000 },
+      { progress: 50, step: "🎀 Shaping the perfect tiers...", delay: 10000 },
+      { progress: 65, step: "💖 Sprinkling some magic...", delay: 15000 },
+      { progress: 78, step: "🌟 Creating beautiful details...", delay: 20000 },
+      { progress: 88, step: "✨ Adding final sparkles...", delay: 25000 },
+      { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 30000 },
+      // Extended steps in case generation takes longer
+      { progress: 97, step: "💫 Just a moment more...", delay: 40000 },
+      { progress: 98, step: "🎂 Finishing up...", delay: 50000 },
     ];
 
     const timers: NodeJS.Timeout[] = [];
@@ -475,14 +471,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Helper function with retry logic and timeout for network interruptions
   const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
-    const TIMEOUT_MS = 180000; // 3 minute timeout for cake generation
+    const TIMEOUT_MS = 60000; // 60 second timeout (flash model is much faster)
     
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         // Create timeout promise
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Generation timed out. The AI is taking longer than expected. Please try again.')), TIMEOUT_MS);
+          setTimeout(() => reject(new Error('Generation timed out. Please try again.')), TIMEOUT_MS);
         });
         
         // Race between actual call and timeout
