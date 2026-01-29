@@ -55,6 +55,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [gender, setGender] = useState("");
   const [character, setCharacter] = useState("");
   const [cakeStyle, setCakeStyle] = useState<"decorated" | "sculpted">("decorated");
+  const [generationQuality, setGenerationQuality] = useState<"fast" | "high">("fast");
   const [cakeType, setCakeType] = useState("");
   const [layers, setLayers] = useState("");
   const [theme, setTheme] = useState("");
@@ -114,7 +115,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Simulated progress during generation - optimized for ~30 second generation
+  // Simulated progress during generation - adapts based on quality mode
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -122,8 +123,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
-    // Progress simulation optimized for ~30 second generation with flash model
-    const steps = [
+    // Fast mode: ~30 seconds | High quality mode: ~2 minutes
+    const fastSteps = [
       { progress: 8, step: "🎂 Baking something special...", delay: 500 },
       { progress: 20, step: "✨ Adding magical decorations...", delay: 3000 },
       { progress: 35, step: "🌈 Mixing the perfect colors...", delay: 6000 },
@@ -132,10 +133,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       { progress: 78, step: "🌟 Creating beautiful details...", delay: 20000 },
       { progress: 88, step: "✨ Adding final sparkles...", delay: 25000 },
       { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 30000 },
-      // Extended steps in case generation takes longer
       { progress: 97, step: "💫 Just a moment more...", delay: 40000 },
       { progress: 98, step: "🎂 Finishing up...", delay: 50000 },
     ];
+
+    const highQualitySteps = [
+      { progress: 5, step: "🎂 Crafting your masterpiece...", delay: 500 },
+      { progress: 12, step: "✨ Adding intricate decorations...", delay: 8000 },
+      { progress: 20, step: "🌈 Mixing the perfect colors...", delay: 15000 },
+      { progress: 30, step: "🎀 Sculpting beautiful tiers...", delay: 25000 },
+      { progress: 40, step: "💖 Adding fine details...", delay: 35000 },
+      { progress: 50, step: "🌟 Creating textures...", delay: 50000 },
+      { progress: 60, step: "🎨 Refining the artistry...", delay: 65000 },
+      { progress: 70, step: "✨ Perfecting every detail...", delay: 80000 },
+      { progress: 80, step: "🍰 Adding finishing touches...", delay: 95000 },
+      { progress: 88, step: "🎁 Nearly there...", delay: 110000 },
+      { progress: 95, step: "🎉 Almost ready...", delay: 125000 },
+      { progress: 97, step: "💫 Final moments...", delay: 140000 },
+      { progress: 98, step: "🎂 Finishing up...", delay: 160000 },
+    ];
+
+    const steps = generationQuality === 'high' ? highQualitySteps : fastSteps;
 
     const timers: NodeJS.Timeout[] = [];
     
@@ -148,7 +166,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
 
     return () => timers.forEach(clearTimeout);
-  }, [isLoading]);
+  }, [isLoading, generationQuality]);
 
   // Regenerate specific view
   const handleRegenerateView = async (viewIndex: number) => {
@@ -471,7 +489,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Helper function with retry logic and timeout for network interruptions
   const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
-    const TIMEOUT_MS = 60000; // 60 second timeout (flash model is much faster)
+    // Dynamic timeout based on quality: 3 min for high quality, 1 min for fast
+    const TIMEOUT_MS = body?.quality === 'high' ? 180000 : 60000;
     
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -663,7 +682,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         
         toast({
           title: "Creating your cake...",
-          description: `AI is generating ${viewDescription} with your personalization!`,
+          description: generationQuality === 'high'
+            ? `AI is generating ${viewDescription} in high quality mode - this takes about 2 minutes!`
+            : `AI is generating ${viewDescription} with your personalization!`,
         });
 
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
@@ -677,7 +698,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           layers: cakeStyle === 'sculpted' ? undefined : (layers || undefined), // Ignore layers for sculpted
           theme: theme || undefined,
           colors: colors || undefined,
-          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined
+          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
+          quality: generationQuality,
         });
 
         if (error) {
@@ -1680,6 +1702,68 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             {/* Cake Customization */}
             <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
               <h3 className="text-lg font-medium text-foreground mb-2">Customize Your Cake</h3>
+              
+              {/* Generation Quality Toggle */}
+              <div className="space-y-3 pb-4 border-b border-border/50">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Generation Quality
+                </Label>
+                <div className="grid grid-cols-1 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setGenerationQuality('fast')}
+                    disabled={isLoading}
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                      generationQuality === 'fast'
+                        ? "border-party-purple bg-party-purple/10"
+                        : "border-border hover:border-party-purple/50"
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      generationQuality === 'fast' ? "border-party-purple" : "border-muted-foreground"
+                    }`}>
+                      {generationQuality === 'fast' && (
+                        <div className="w-3 h-3 rounded-full bg-party-purple" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">⚡ Fast</span>
+                        <span className="text-xs text-muted-foreground">(~30 seconds)</span>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setGenerationQuality('high')}
+                    disabled={isLoading}
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                      generationQuality === 'high'
+                        ? "border-party-purple bg-party-purple/10"
+                        : "border-border hover:border-party-purple/50"
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      generationQuality === 'high' ? "border-party-purple" : "border-muted-foreground"
+                    }`}>
+                      {generationQuality === 'high' && (
+                        <div className="w-3 h-3 rounded-full bg-party-purple" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">✨ High Quality</span>
+                        <span className="text-xs text-muted-foreground">(~2 minutes)</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Creates more detailed, refined cake images
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
