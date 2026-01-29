@@ -1026,12 +1026,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           return lines;
         };
         
-        // Calculate message dimensions
-        const lines = wrapText(message, canvas.width - 80);
-        const messageBoxHeight = (lines.length * lineHeight) + (messagePadding * 2);
+        // Calculate message dimensions only if message exists
+        const hasMessage = message && message.trim().length > 0;
+        const lines = hasMessage ? wrapText(message, canvas.width - 80) : [];
+        const messageBoxHeight = hasMessage ? (lines.length * lineHeight) + (messagePadding * 2) : 0;
         
-        // Calculate total canvas height dynamically - no minimum
-        const totalHeight = topPadding + drawHeight + gapAfterCake + messageBoxHeight;
+        // Calculate total canvas height dynamically - only include message if present
+        const totalHeight = topPadding + drawHeight + (hasMessage ? gapAfterCake + messageBoxHeight : 0);
         canvas.height = totalHeight;
         
         // Background gradient
@@ -1046,22 +1047,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const y = topPadding;
         ctx.drawImage(img, x, y, drawWidth, drawHeight);
         
-        // Draw message area - simple pink strip
-        const messageY = y + drawHeight + gapAfterCake;
-        
-        // Pink strip behind message
-        ctx.fillStyle = '#fce7f3';
-        ctx.fillRect(0, messageY, canvas.width, messageBoxHeight);
-        
-        // Message text
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 30px Arial, sans-serif';
-        ctx.textAlign = 'center';
-        
-        const textStartY = messageY + messagePadding + lineHeight - 8;
-        lines.forEach((line, i) => {
-          ctx.fillText(line, canvas.width / 2, textStartY + (i * lineHeight));
-        });
+        // Only draw message area if message exists
+        if (hasMessage) {
+          const messageY = y + drawHeight + gapAfterCake;
+          
+          // Pink strip behind message
+          ctx.fillStyle = '#fce7f3';
+          ctx.fillRect(0, messageY, canvas.width, messageBoxHeight);
+          
+          // Message text
+          ctx.fillStyle = '#333';
+          ctx.font = 'bold 30px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          
+          const textStartY = messageY + messagePadding + lineHeight - 8;
+          lines.forEach((line, i) => {
+            ctx.fillText(line, canvas.width / 2, textStartY + (i * lineHeight));
+          });
+        }
         
         // Convert to blob
         canvas.toBlob((blob) => {
@@ -1095,10 +1098,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       for (const index of Array.from(selectedImages)) {
         const imageUrl = generatedImages[index];
         
-        // Create composite image
+        // Create composite image (no fallback message - only user/AI generated messages)
         const compositeUrl = await createShareableImage(
           imageUrl,
-          displayedMessage || `Happy celebration for ${name}!`,
+          displayedMessage || "",
           name
         );
         
@@ -1154,10 +1157,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       const firstSelected = Array.from(selectedImages)[0];
       const imageUrl = generatedImages[firstSelected];
       
-      // Create composite
+      // Create composite (no fallback message - only user/AI generated messages)
       const compositeUrl = await createShareableImage(
         imageUrl,
-        displayedMessage || `Happy celebration for ${name}!`,
+        displayedMessage || "",
         name
       );
       
