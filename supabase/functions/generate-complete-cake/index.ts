@@ -22,6 +22,7 @@ const cakeRequestSchema = z.object({
   colors: z.string().max(100).optional().nullable(),
   userPhotoBase64: z.string().max(5000000).optional().nullable(), // ~3.75MB base64
   specificView: z.enum(['front', 'side', 'top', 'main']).optional().nullable(),
+  quality: z.enum(['fast', 'high']).optional().default('fast'),
 });
 
 serve(async (req) => {
@@ -83,10 +84,16 @@ serve(async (req) => {
       theme, 
       colors, 
       userPhotoBase64,
-      specificView
+      specificView,
+      quality
     } = validationResult.data;
 
-    console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle });
+    // Model selection based on quality setting
+    const imageModel = quality === 'high' 
+      ? 'google/gemini-3-pro-image-preview' 
+      : 'google/gemini-2.5-flash-image';
+
+    console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -231,7 +238,7 @@ Cake specifications:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-image',
+            model: imageModel,
             messages: topMessages,
             modalities: ['image', 'text']
           }),
@@ -338,7 +345,7 @@ Cake specifications:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: imageModel,
           messages: messages,
           modalities: ['image', 'text']
         }),
