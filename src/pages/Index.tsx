@@ -171,6 +171,7 @@ const Index = () => {
         <title>AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist</title>
         <meta name="description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required. People keep telling us they can't believe this works." />
         <meta name="keywords" content="AI cake designer, personalized birthday cake, custom cake design, virtual cake creator, cake design tool" />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist" />
         <meta property="og:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required." />
