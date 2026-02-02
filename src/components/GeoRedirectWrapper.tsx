@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
-import { isSearchBot } from '@/utils/botDetection';
+import { isSearchBot, hasNoRedirectParam } from '@/utils/botDetection';
 
 const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
@@ -64,18 +64,25 @@ export const GeoRedirectWrapper = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // CRITICAL: Synchronous bot check FIRST - before any async operations
+    // This prevents race conditions that could cause bots to be redirected
+    if (isSearchBot()) {
+      console.log('[GeoRedirect] Search bot detected, skipping all redirect logic');
+      return;
+    }
+    
+    // Check for URL escape hatch (e.g., ?noredirect or ?googlebot)
+    if (hasNoRedirectParam()) {
+      console.log('[GeoRedirect] noredirect param detected, skipping redirect');
+      return;
+    }
+
     if (hasRedirected || !REDIRECTABLE_ROUTES.includes(location.pathname)) {
       return;
     }
 
     const detectAndRedirect = async () => {
       try {
-        // Skip redirect for search engine bots to allow proper indexing
-        if (isSearchBot()) {
-          console.log('[GeoRedirect] Search bot detected, skipping redirect');
-          return;
-        }
-        
         const savedPreference = safeGetItem(COUNTRY_STORAGE_KEY);
         if (savedPreference) {
           setHasRedirected(true);
