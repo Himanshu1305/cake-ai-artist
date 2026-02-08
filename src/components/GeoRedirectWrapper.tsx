@@ -64,9 +64,14 @@ export const GeoRedirectWrapper = () => {
   const location = useLocation();
 
   useEffect(() => {
+    console.log('[GeoRedirect] Starting, pathname:', location.pathname);
+    
     // CRITICAL: Synchronous bot check FIRST - before any async operations
     // This prevents race conditions that could cause bots to be redirected
-    if (isSearchBot()) {
+    const botDetected = isSearchBot();
+    console.log('[GeoRedirect] isSearchBot result:', botDetected);
+    
+    if (botDetected) {
       console.log('[GeoRedirect] Search bot detected, skipping all redirect logic');
       return;
     }
@@ -76,6 +81,8 @@ export const GeoRedirectWrapper = () => {
       console.log('[GeoRedirect] noredirect param detected, skipping redirect');
       return;
     }
+
+    console.log('[GeoRedirect] hasRedirected:', hasRedirected, 'isRedirectable:', REDIRECTABLE_ROUTES.includes(location.pathname));
 
     if (hasRedirected || !REDIRECTABLE_ROUTES.includes(location.pathname)) {
       return;

@@ -1,4 +1,5 @@
 // Comprehensive bot detection patterns for SEO-safe geo-redirects
+// NOTE: Only specific bot identifiers - avoid generic patterns that cause false positives
 const BOT_PATTERNS = [
   // Google crawlers (priority - most important for SEO)
   'googlebot',
@@ -23,14 +24,13 @@ const BOT_PATTERNS = [
   'applebot',
   'msnbot',
   
-  // Social media crawlers
+  // Social media crawlers (specific bot names only)
   'facebookexternalhit',
   'twitterbot',
   'linkedinbot',
-  'whatsapp',
-  'pinterest',
   'slackbot',
   'telegrambot',
+  'whatsapp/',  // More specific with slash to avoid matching app user agents
   
   // SEO tools
   'petalbot',
@@ -39,12 +39,6 @@ const BOT_PATTERNS = [
   'dotbot',
   'rogerbot',
   'screaming frog',
-  
-  // Generic patterns (less specific, checked last)
-  'crawl',
-  'spider',
-  'bot/',
-  'bot;',
 ];
 
 /**
@@ -55,15 +49,31 @@ const BOT_PATTERNS = [
  */
 export const isSearchBot = (): boolean => {
   // SSR-safe: assume bot if navigator/window unavailable
-  if (typeof navigator === 'undefined') return true;
-  if (typeof window === 'undefined') return true;
+  if (typeof navigator === 'undefined') {
+    console.log('[BotDetection] navigator undefined, assuming bot');
+    return true;
+  }
+  if (typeof window === 'undefined') {
+    console.log('[BotDetection] window undefined, assuming bot');
+    return true;
+  }
   
   const userAgent = navigator.userAgent.toLowerCase();
   
   // Empty or missing user agent is suspicious - treat as bot
-  if (!userAgent || userAgent.trim() === '') return true;
+  if (!userAgent || userAgent.trim() === '') {
+    console.log('[BotDetection] Empty user agent, assuming bot');
+    return true;
+  }
   
-  return BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
+  const isBot = BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
+  
+  if (isBot) {
+    const matchedPattern = BOT_PATTERNS.find(p => userAgent.includes(p));
+    console.log('[BotDetection] Bot detected, matched pattern:', matchedPattern);
+  }
+  
+  return isBot;
 };
 
 /**
