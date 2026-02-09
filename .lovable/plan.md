@@ -1,164 +1,77 @@
 
 
-## Fix: India Geo-Redirect Not Working on Desktop
+## Fix: Countdown Timer Shows "327 Days" Flash on Page Load
 
-### Problem Identified
+### Problem Analysis
 
-The geo-redirect to `/india` is not working despite:
-1. ipapi.co correctly detecting `country_code: "IN"`
-2. GeoContext logging `[GeoContext] ipapi.co response: IN`
+When the page loads, the CountdownTimer briefly shows a large number (e.g., 327 days) before switching to the correct countdown. This happens because:
 
-**But NO logs from GeoRedirectWrapper** - meaning `isSearchBot()` is returning `true` prematurely, blocking all redirect logic.
+1. **Initial State Issue**: The `useHolidaySale` hook starts with `sale: null` and `isLoading: true`
+2. **Fallback Date Triggered**: While loading, `targetDate` falls back to `DEFAULT_END_DATE` (December 31, 2026)
+3. **Immediate Calculation**: The `useCountdown` hook calculates countdown to this far-future date
+4. **Flash of Wrong Content**: User sees "327 days" for 1-2 seconds until the real sale data loads
 
----
+### Visual Timeline
 
-### Root Cause
-
-The bot detection is **too aggressive** after the recent changes. Specifically, in `isSearchBot()`:
-
-```typescript
-// SSR-safe: assume bot if navigator/window unavailable
-if (typeof navigator === 'undefined') return true;
-if (typeof window === 'undefined') return true;
+```text
+Page Load                                  Sale Data Loaded
+    |                                            |
+    v                                            v
+[327d 5h 23m 15s]  -----(1-2 seconds)----->  [3d 12h 45m 30s]
+   (Wrong!)                                     (Correct!)
 ```
-
-While this is correct for SSR, the problem is that during React's initial render cycle (before hydration completes), these checks might incorrectly trigger in some edge cases.
-
-Additionally, there's a potential issue with how we're checking patterns - some user agents might inadvertently match patterns like:
-- `'spider'` - could match some rare browser extensions
-- `'pinterest'` - could match if Pinterest app is involved
-- `'crawl'` - very broad pattern
-
----
 
 ### Solution
 
-1. **Add Debug Logging**: Add console.log to see exactly what's happening with bot detection
-2. **Make Bot Detection Less Aggressive for Real Users**: Only check specific bot patterns, remove overly broad patterns
-3. **Fix Timing Issue**: Ensure the check only runs when React has fully hydrated
+**Don't render countdown until sale data is loaded.** Show a loading skeleton or nothing while `isLoading` is true.
 
 ---
 
 ### Code Changes
 
-#### File: `src/utils/botDetection.ts`
-
-**Add debugging and fix overly broad patterns:**
+#### File: `src/components/CountdownTimer.tsx`
 
 ```typescript
-// Remove these overly broad patterns that could cause false positives:
-// - 'crawl' (too generic)
-// - 'spider' (too generic) 
-// - 'pinterest' (could match Pinterest browser)
-
-// Updated BOT_PATTERNS - more specific, fewer false positives
-const BOT_PATTERNS = [
-  // Google crawlers (priority - most important for SEO)
-  'googlebot',
-  'googlebot-image',
-  'googlebot-news',
-  'googlebot-video',
-  'storebot-google',
-  'google-inspectiontool',
-  'googleweblight',
-  'chrome-lighthouse',
-  'google page speed',
-  'adsbot-google',
-  'mediapartners-google',
-  'google-safety',
+export const CountdownTimer = ({ compact = false, className = '', countryCode, endDate: propEndDate }: CountdownTimerProps) => {
+  const { sale, isLoading } = useHolidaySale({ countryCode });
   
-  // Other major search engines
-  'bingbot',
-  'slurp',
-  'duckduckbot',
-  'baiduspider',
-  'yandexbot',
-  'applebot',
-  'msnbot',
-  
-  // Social media crawlers (specific bot names)
-  'facebookexternalhit',
-  'twitterbot',
-  'linkedinbot',
-  'slackbot',
-  'telegrambot',
-  'whatsapp/',  // More specific with slash
-  
-  // SEO tools
-  'petalbot',
-  'semrushbot',
-  'ahrefsbot',
-  'dotbot',
-  'rogerbot',
-  'screaming frog',
-];
-
-export const isSearchBot = (): boolean => {
-  // SSR-safe: assume bot if navigator/window unavailable
-  if (typeof navigator === 'undefined') {
-    console.log('[BotDetection] navigator undefined, assuming bot');
-    return true;
-  }
-  if (typeof window === 'undefined') {
-    console.log('[BotDetection] window undefined, assuming bot');
-    return true;
+  // If using database-driven endDate and still loading, show nothing or skeleton
+  // This prevents the "327 days" flash from the DEFAULT_END_DATE fallback
+  if (!propEndDate && isLoading) {
+    if (compact) {
+      return (
+        <div className={`inline-flex items-center gap-1 font-mono ${className}`}>
+          <Clock className="w-4 h-4 animate-pulse" />
+          <span className="animate-pulse">--:--:--</span>
+        </div>
+      );
+    }
+    // Return loading skeleton for full-size timer
+    return (
+      <div className={`flex items-center justify-center gap-2 ${className}`}>
+        {['d', 'h', 'm', 's'].map((label) => (
+          <div key={label} className="flex flex-col items-center">
+            <div className="bg-surface-elevated border-2 border-border rounded-lg px-3 py-2 min-w-[60px] text-center animate-pulse">
+              <span className="text-2xl md:text-3xl font-bold font-mono text-muted-foreground">--</span>
+            </div>
+            <span className="text-xs text-muted-foreground mt-1 uppercase">{label}</span>
+          </div>
+        ))}
+      </div>
+    );
   }
   
-  const userAgent = navigator.userAgent.toLowerCase();
+  // Use prop endDate if provided, otherwise use sale endDate, fallback to default
+  const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
   
-  // Empty or missing user agent is suspicious - treat as bot
-  if (!userAgent || userAgent.trim() === '') {
-    console.log('[BotDetection] Empty user agent, assuming bot');
-    return true;
-  }
-  
-  const isBot = BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
-  
-  if (isBot) {
-    const matchedPattern = BOT_PATTERNS.find(p => userAgent.includes(p));
-    console.log('[BotDetection] Bot detected, matched pattern:', matchedPattern);
-  }
-  
-  return isBot;
+  // ... rest of component unchanged
 };
 ```
 
-**Key changes:**
-- Remove generic patterns: `'crawl'`, `'spider'`, `'bot/'`, `'bot;'`, `'pinterest'`
-- Add more specific patterns for social bots
-- Add debug logging to understand what's triggering
-
-#### File: `src/components/GeoRedirectWrapper.tsx`
-
-**Add debug logging:**
-
-```typescript
-useEffect(() => {
-  console.log('[GeoRedirect] Starting, pathname:', location.pathname);
-  
-  // CRITICAL: Synchronous bot check FIRST
-  const botDetected = isSearchBot();
-  console.log('[GeoRedirect] isSearchBot result:', botDetected);
-  
-  if (botDetected) {
-    console.log('[GeoRedirect] Search bot detected, skipping all redirect logic');
-    return;
-  }
-  
-  if (hasNoRedirectParam()) {
-    console.log('[GeoRedirect] noredirect param detected, skipping redirect');
-    return;
-  }
-
-  console.log('[GeoRedirect] hasRedirected:', hasRedirected, 'isRedirectable:', REDIRECTABLE_ROUTES.includes(location.pathname));
-  
-  if (hasRedirected || !REDIRECTABLE_ROUTES.includes(location.pathname)) {
-    return;
-  }
-
-  // ... rest of detectAndRedirect
-}, [location.pathname, hasRedirected, navigate]);
-```
+**Key Changes:**
+- Check `!propEndDate && isLoading` at the start
+- Show placeholder skeleton (`--:--:--` for compact, `--` boxes for full) while loading
+- Only calculate countdown after sale data is available
 
 ---
 
@@ -166,15 +79,27 @@ useEffect(() => {
 
 | File | Changes |
 |------|---------|
-| `src/utils/botDetection.ts` | Remove overly broad patterns (`crawl`, `spider`, `bot/`, `bot;`, `pinterest`), add debug logging |
-| `src/components/GeoRedirectWrapper.tsx` | Add debug logging to trace execution flow |
+| `src/components/CountdownTimer.tsx` | Add loading state handling with skeleton placeholder before countdown calculation |
 
 ---
 
-### Summary
+### Why This Fixes the Issue
 
-- **Issue**: Bot detection is too aggressive, blocking real users from geo-redirect
-- **Fix**: Remove generic patterns that could match legitimate browsers
-- **Debug**: Add console logging to trace the exact issue
-- **Result**: India users will correctly redirect to `/india` landing page
+| Before | After |
+|--------|-------|
+| Shows "327d 5h..." (DEFAULT_END_DATE) | Shows "--:--:--" skeleton |
+| Then switches to correct countdown | Then shows correct countdown |
+| **Jarring, confusing flash** | **Smooth loading experience** |
+
+---
+
+### Affected Pages
+
+This fix will improve the loading experience on:
+- `/australia` - Hero countdown
+- `/india` - Hero countdown  
+- `/uk` - Hero countdown
+- `/canada` - Hero countdown
+- Homepage (`/`) - UrgencyBanner countdown
+- ExitIntentModal - Countdown display
 
