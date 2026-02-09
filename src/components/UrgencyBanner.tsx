@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, X, Sparkles } from 'lucide-react';
@@ -15,11 +15,13 @@ import { SpotsRemainingCounter } from '@/components/SpotsRemainingCounter';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
+  onHeightChange?: (height: number) => void;
   countryCode?: string;
 }
 
-export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBannerProps) => {
+export const UrgencyBanner = ({ onVisibilityChange, onHeightChange, countryCode }: UrgencyBannerProps) => {
   const navigate = useNavigate();
+  const bannerRef = useRef<HTMLDivElement>(null);
   const { sale, isLoading } = useHolidaySale({ countryCode });
 
   // For default mode (no campaign), always show the banner
@@ -39,6 +41,31 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
   useEffect(() => {
     onVisibilityChange?.(isSaleActive && !isDismissed);
   }, [isSaleActive, isDismissed, onVisibilityChange]);
+
+  // Measure and report banner height dynamically
+  useEffect(() => {
+    if (!bannerRef.current || !onHeightChange) return;
+    
+    const updateHeight = () => {
+      if (bannerRef.current) {
+        onHeightChange(bannerRef.current.offsetHeight);
+      }
+    };
+    
+    updateHeight();
+    
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(bannerRef.current);
+    
+    return () => resizeObserver.disconnect();
+  }, [onHeightChange, isSaleActive, isDismissed, isLoading, sale]);
+
+  // Report 0 height when banner is hidden
+  useEffect(() => {
+    if (!isSaleActive || isDismissed || isLoading || !sale) {
+      onHeightChange?.(0);
+    }
+  }, [isSaleActive, isDismissed, isLoading, sale, onHeightChange]);
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation to /pricing
@@ -66,6 +93,7 @@ export const UrgencyBanner = ({ onVisibilityChange, countryCode }: UrgencyBanner
   return (
     <AnimatePresence>
       <motion.div
+        ref={bannerRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

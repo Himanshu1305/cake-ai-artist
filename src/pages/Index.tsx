@@ -55,6 +55,7 @@ const Index = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [bannerHeight, setBannerHeight] = useState(48); // Default estimate
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -251,14 +252,14 @@ const Index = () => {
       {/* CursorSparkles temporarily disabled to fix blank page issue */}
       {/* <CursorSparkles /> */}
       
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="US" />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="US" />
       <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
       <LiveActivityFeed />
       <LivePurchaseNotifications />
       <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />
       
       {/* Navigation Header */}
-      <nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
+      <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
