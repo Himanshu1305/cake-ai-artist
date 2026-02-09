@@ -32,6 +32,7 @@ import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 const AustraliaLanding = () => {
   const navigate = useNavigate();
   const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
   const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("AU");
@@ -169,10 +170,10 @@ const AustraliaLanding = () => {
       />
 
       <FloatingEmojis />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} countryCode="AU" />
+      <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="AU" />
 
       {/* Navigation */}
-      <nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300`}>
+      <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
