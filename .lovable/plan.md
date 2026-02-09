@@ -1,77 +1,148 @@
 
 
-## Fix: Countdown Timer Shows "327 Days" Flash on Page Load
+## Fix: Banner/Navigation Overlap Issue
 
-### Problem Analysis
+### Problem Identified
 
-When the page loads, the CountdownTimer briefly shows a large number (e.g., 327 days) before switching to the correct countdown. This happens because:
+The **UrgencyBanner** (fixed at top) and **Navigation bar** (sticky) have hardcoded offset values that don't account for dynamic banner height, causing overlap issues:
 
-1. **Initial State Issue**: The `useHolidaySale` hook starts with `sale: null` and `isLoading: true`
-2. **Fallback Date Triggered**: While loading, `targetDate` falls back to `DEFAULT_END_DATE` (December 31, 2026)
-3. **Immediate Calculation**: The `useCountdown` hook calculates countdown to this far-future date
-4. **Flash of Wrong Content**: User sees "327 days" for 1-2 seconds until the real sale data loads
-
-### Visual Timeline
-
-```text
-Page Load                                  Sale Data Loaded
-    |                                            |
-    v                                            v
-[327d 5h 23m 15s]  -----(1-2 seconds)----->  [3d 12h 45m 30s]
-   (Wrong!)                                     (Correct!)
+```typescript
+// Current hardcoded approach in Index.tsx
+<nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} ...`}>
 ```
 
-### Solution
+**Why this fails:**
+- UrgencyBanner height varies based on:
+  - Sale label text length
+  - Banner text content
+  - Countdown timer vs Spots counter
+  - Text wrapping on narrow screens
+- Hardcoded `top-16` (64px) / `top-12` (48px) doesn't match actual banner height
+- When banner content changes or wraps, navigation slides under or over the banner
 
-**Don't render countdown until sale data is loaded.** Show a loading skeleton or nothing while `isLoading` is true.
+### Visual Representation
+
+```text
+┌─────────────────────────────────────────────────────┐
+│ UrgencyBanner (fixed top-0, z-50)                   │
+│ 🎉 EXCLUSIVE DEAL  [content that may wrap]          │
+│                    Limited spots remaining          │
+│    ↑ Height varies: 40-80px depending on content    │
+├─────────────────────────────────────────────────────┤
+│ Navigation (sticky top-12/top-16)  ← HARDCODED!    │
+│ 🎂 Cake AI Artist    [links...]        Sign In     │
+│                                                     │
+│    ↑ If banner is 60px but nav is at 48px = OVERLAP│
+└─────────────────────────────────────────────────────┘
+```
 
 ---
 
-### Code Changes
+### Solution
 
-#### File: `src/components/CountdownTimer.tsx`
+**Use CSS custom property and JavaScript to dynamically calculate banner height:**
+
+1. **UrgencyBanner**: Add a ref to measure actual height and report it via CSS custom property or callback
+2. **Index.tsx** (and landing pages): Use the actual banner height for navigation offset
+3. **Alternative simpler approach**: Make UrgencyBanner not fixed, just static at top, so navigation naturally flows below it
+
+---
+
+### Implementation Options
+
+#### Option A: Static Banner (Simpler - Recommended)
+
+Change UrgencyBanner from `fixed` to static positioning, making it part of normal document flow. The navigation stays sticky below it without needing any offset calculation.
+
+**Pros:**
+- No JavaScript height calculation needed
+- Works perfectly on all screen sizes
+- No risk of overlap
+
+**Cons:**
+- Banner scrolls away when user scrolls (not always visible)
+- Users may prefer persistent banner
+
+#### Option B: Dynamic Height Measurement (More Complex)
+
+Measure the actual UrgencyBanner height and pass it to navigation for dynamic offset.
+
+**Pros:**
+- Banner stays fixed/visible while scrolling
+- Accurate positioning
+
+**Cons:**
+- Requires refs and state management
+- Slight complexity with SSR/hydration
+
+---
+
+### Recommended: Option B with Height Callback
+
+**File: `src/components/UrgencyBanner.tsx`**
+
+Add a height measurement callback:
 
 ```typescript
-export const CountdownTimer = ({ compact = false, className = '', countryCode, endDate: propEndDate }: CountdownTimerProps) => {
-  const { sale, isLoading } = useHolidaySale({ countryCode });
+interface UrgencyBannerProps {
+  onVisibilityChange?: (visible: boolean) => void;
+  onHeightChange?: (height: number) => void;  // NEW
+  countryCode?: string;
+}
+
+export const UrgencyBanner = ({ onVisibilityChange, onHeightChange, countryCode }) => {
+  const bannerRef = useRef<HTMLDivElement>(null);
   
-  // If using database-driven endDate and still loading, show nothing or skeleton
-  // This prevents the "327 days" flash from the DEFAULT_END_DATE fallback
-  if (!propEndDate && isLoading) {
-    if (compact) {
-      return (
-        <div className={`inline-flex items-center gap-1 font-mono ${className}`}>
-          <Clock className="w-4 h-4 animate-pulse" />
-          <span className="animate-pulse">--:--:--</span>
-        </div>
-      );
+  // Measure height on mount and resize
+  useEffect(() => {
+    if (!bannerRef.current || !onHeightChange) return;
+    
+    const updateHeight = () => {
+      if (bannerRef.current) {
+        onHeightChange(bannerRef.current.offsetHeight);
+      }
+    };
+    
+    updateHeight();
+    
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(bannerRef.current);
+    
+    return () => resizeObserver.disconnect();
+  }, [onHeightChange, isSaleActive, isDismissed]);
+
+  // Report 0 height when banner is hidden
+  useEffect(() => {
+    if (!isSaleActive || isDismissed || isLoading || !sale) {
+      onHeightChange?.(0);
     }
-    // Return loading skeleton for full-size timer
-    return (
-      <div className={`flex items-center justify-center gap-2 ${className}`}>
-        {['d', 'h', 'm', 's'].map((label) => (
-          <div key={label} className="flex flex-col items-center">
-            <div className="bg-surface-elevated border-2 border-border rounded-lg px-3 py-2 min-w-[60px] text-center animate-pulse">
-              <span className="text-2xl md:text-3xl font-bold font-mono text-muted-foreground">--</span>
-            </div>
-            <span className="text-xs text-muted-foreground mt-1 uppercase">{label}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  }, [isSaleActive, isDismissed, isLoading, sale, onHeightChange]);
   
-  // Use prop endDate if provided, otherwise use sale endDate, fallback to default
-  const targetDate = propEndDate || (sale?.endDate) || DEFAULT_END_DATE;
-  
-  // ... rest of component unchanged
+  return (
+    <motion.div ref={bannerRef} ... >
+      ...
+    </motion.div>
+  );
 };
 ```
 
-**Key Changes:**
-- Check `!propEndDate && isLoading` at the start
-- Show placeholder skeleton (`--:--:--` for compact, `--` boxes for full) while loading
-- Only calculate countdown after sale data is available
+**File: `src/pages/Index.tsx`** (and all landing pages)
+
+```typescript
+const [bannerHeight, setBannerHeight] = useState(48); // Default estimate
+
+// In JSX:
+<UrgencyBanner 
+  onVisibilityChange={setIsBannerVisible} 
+  onHeightChange={setBannerHeight}
+  countryCode="US" 
+/>
+
+<nav 
+  className="sticky z-40 bg-gradient-to-b ..."
+  style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}
+>
+```
 
 ---
 
@@ -79,27 +150,31 @@ export const CountdownTimer = ({ compact = false, className = '', countryCode, e
 
 | File | Changes |
 |------|---------|
-| `src/components/CountdownTimer.tsx` | Add loading state handling with skeleton placeholder before countdown calculation |
+| `src/components/UrgencyBanner.tsx` | Add `onHeightChange` prop, useRef, ResizeObserver to measure and report height |
+| `src/pages/Index.tsx` | Add `bannerHeight` state, pass callback to UrgencyBanner, use inline style for nav top offset |
+| `src/pages/IndiaLanding.tsx` | Same changes as Index.tsx |
+| `src/pages/UKLanding.tsx` | Same changes as Index.tsx |
+| `src/pages/CanadaLanding.tsx` | Same changes as Index.tsx |
+| `src/pages/AustraliaLanding.tsx` | Same changes as Index.tsx |
 
 ---
 
-### Why This Fixes the Issue
+### Technical Details
 
-| Before | After |
-|--------|-------|
-| Shows "327d 5h..." (DEFAULT_END_DATE) | Shows "--:--:--" skeleton |
-| Then switches to correct countdown | Then shows correct countdown |
-| **Jarring, confusing flash** | **Smooth loading experience** |
+**ResizeObserver** is used because:
+- Banner height can change when sale data loads (skeleton → actual content)
+- Text can reflow on window resize
+- Countdown timer content changes every second (though height stays stable)
+
+**Default height of 48px** ensures navigation doesn't jump on initial render before measurement completes.
 
 ---
 
-### Affected Pages
+### Expected Result
 
-This fix will improve the loading experience on:
-- `/australia` - Hero countdown
-- `/india` - Hero countdown  
-- `/uk` - Hero countdown
-- `/canada` - Hero countdown
-- Homepage (`/`) - UrgencyBanner countdown
-- ExitIntentModal - Countdown display
+After implementation:
+- Navigation bar will always appear directly below the UrgencyBanner
+- No overlap regardless of banner content length
+- Dynamic adjustment when window resizes or banner content changes
+- Smooth experience across all device sizes
 
