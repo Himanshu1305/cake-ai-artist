@@ -23,6 +23,30 @@ export const CountdownTimer = ({ compact = false, className = '', countryCode, e
   // IMPORTANT: Call all hooks before any conditional returns (React Rules of Hooks)
   const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
   
+  // Show loading skeleton while fetching sale data (prevents "327 days" flash)
+  if (!propEndDate && isLoading) {
+    if (compact) {
+      return (
+        <div className={`inline-flex items-center gap-1 font-mono text-muted-foreground ${className}`}>
+          <Clock className="w-4 h-4 animate-pulse" />
+          <span className="animate-pulse">--:--:--</span>
+        </div>
+      );
+    }
+    return (
+      <div className={`flex items-center justify-center gap-2 ${className}`}>
+        {['d', 'h', 'm', 's'].map((label) => (
+          <div key={label} className="flex flex-col items-center">
+            <div className="bg-surface-elevated border-2 border-border rounded-lg px-3 py-2 min-w-[60px] text-center animate-pulse">
+              <span className="text-2xl md:text-3xl font-bold font-mono text-muted-foreground">--</span>
+            </div>
+            <span className="text-xs text-muted-foreground mt-1 uppercase">{label}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
   // If sale is default mode (no campaign), hide the countdown entirely
   if (!isLoading && sale?.isDefault && !propEndDate) {
     return null;
