@@ -75,6 +75,218 @@ function generateInvoiceNumber(memberNumber: string): string {
   return `CAI-${year}-${numericPart.padStart(4, '0')}`;
 }
 
+// Convert number to words for formal invoice (e.g., 4100 -> "Four Thousand One Hundred")
+function numberToWords(num: number): string {
+  if (num === 0) return "Zero";
+  
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  
+  function convertChunk(n: number): string {
+    if (n === 0) return "";
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");
+    return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + convertChunk(n % 100) : "");
+  }
+  
+  // Use Indian numbering: Crore, Lakh, Thousand, Hundred
+  const rounded = Math.round(num);
+  if (rounded >= 10000000) {
+    const crore = Math.floor(rounded / 10000000);
+    const remainder = rounded % 10000000;
+    return convertChunk(crore) + " Crore" + (remainder ? " " + numberToWords(remainder) : "");
+  }
+  if (rounded >= 100000) {
+    const lakh = Math.floor(rounded / 100000);
+    const remainder = rounded % 100000;
+    return convertChunk(lakh) + " Lakh" + (remainder ? " " + numberToWords(remainder) : "");
+  }
+  if (rounded >= 1000) {
+    const thousand = Math.floor(rounded / 1000);
+    const remainder = rounded % 1000;
+    return convertChunk(thousand) + " Thousand" + (remainder ? " " + numberToWords(remainder) : "");
+  }
+  return convertChunk(rounded);
+}
+
+function getGSTInvoiceEmailHtml(
+  firstName: string,
+  memberNumber: string,
+  tier: string,
+  amount: number, // in paise
+  paymentId: string,
+  orderId: string,
+  invoiceNumber: string,
+  purchaseDate: string,
+  paymentType: "lifetime" | "subscription"
+): string {
+  const totalAmount = amount / 100; // Convert paise to rupees
+  const baseAmount = totalAmount / 1.18;
+  const igstAmount = totalAmount - baseAmount;
+  
+  let itemDescription: string;
+  if (paymentType === "subscription") {
+    itemDescription = "Cake AI Artist - Monthly Premium Subscription";
+  } else {
+    itemDescription = tier === "tier_1_49"
+      ? "Cake AI Artist - Lifetime Access, Tier 1 (First 50 Members)"
+      : "Cake AI Artist - Lifetime Access, Tier 2 (Next 150 Members)";
+  }
+  
+  const amountInWords = numberToWords(Math.round(totalAmount)) + " INR Only";
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice - ${invoiceNumber}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="650" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #ddd;">
+          
+          <!-- Company Header -->
+          <tr>
+            <td style="padding: 30px 35px; border-bottom: 2px solid #333;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <h2 style="margin: 0 0 8px; color: #222; font-size: 22px; font-weight: 700;">USD Vision AI LLP</h2>
+                    <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.6;">
+                      ZENITH NALLANGDALA, HCU Main Road,<br/>
+                      CUC Sub Post Office, Gachibowli, Hyderabad,<br/>
+                      Rangareddy, Telangana, 500046
+                    </p>
+                    <p style="margin: 8px 0 0; color: #333; font-size: 13px;">
+                      <strong>GSTIN:</strong> 36AAJFU0315K1Z5 &nbsp;&nbsp; <strong>PAN:</strong> AAJFU0315K
+                    </p>
+                    <p style="margin: 4px 0 0; color: #333; font-size: 13px;">
+                      <strong>State:</strong> Telangana &nbsp;&nbsp; <strong>State Code:</strong> 36
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- TAX INVOICE Title -->
+          <tr>
+            <td style="background-color: #1a1a2e; padding: 15px 35px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 3px;">
+                TAX INVOICE
+              </h1>
+            </td>
+          </tr>
+          
+          <!-- Bill To + Invoice Details -->
+          <tr>
+            <td style="padding: 25px 35px; border-bottom: 1px solid #eee;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" valign="top">
+                    <p style="margin: 0 0 5px; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Bill To</p>
+                    <p style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${firstName || "Customer"}</p>
+                    <p style="margin: 4px 0 0; color: #555; font-size: 13px;">Member: ${memberNumber}</p>
+                  </td>
+                  <td width="50%" valign="top" style="text-align: right;">
+                    <p style="margin: 0 0 5px; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Invoice Details</p>
+                    <p style="margin: 0; color: #333; font-size: 13px;"><strong>Invoice No:</strong> ${invoiceNumber}</p>
+                    <p style="margin: 4px 0 0; color: #333; font-size: 13px;"><strong>Date:</strong> ${purchaseDate}</p>
+                    <p style="margin: 4px 0 0; color: #333; font-size: 13px;"><strong>Payment ID:</strong> <span style="font-family: monospace; font-size: 11px;">${paymentId}</span></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Item Table -->
+          <tr>
+            <td style="padding: 0 35px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                <!-- Table Header -->
+                <tr style="background-color: #f8f8f8;">
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 5%;">#</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 40%;">Description</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 8%;">Qty</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 15%;">SAC Code</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 16%;">Gross Amt</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 16%;">Net Amt</td>
+                </tr>
+                <!-- Item Row -->
+                <tr>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee;">1</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee;">${itemDescription}</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">1</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">997331</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${baseAmount.toFixed(2)}</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${baseAmount.toFixed(2)}</td>
+                </tr>
+                <!-- IGST Row -->
+                <tr style="background-color: #fafafa;">
+                  <td colspan="4" style="padding: 12px 10px; font-size: 14px; color: #555; border-bottom: 1px solid #eee;"></td>
+                  <td style="padding: 12px 10px; font-size: 13px; color: #555; border-bottom: 1px solid #eee; text-align: right;">IGST @ 18%</td>
+                  <td style="padding: 12px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${igstAmount.toFixed(2)}</td>
+                </tr>
+                <!-- Grand Total Row -->
+                <tr style="background-color: #1a1a2e;">
+                  <td colspan="4" style="padding: 15px 10px;"></td>
+                  <td style="padding: 15px 10px; font-size: 15px; font-weight: 700; color: #ffffff; text-align: right;">Grand Total</td>
+                  <td style="padding: 15px 10px; font-size: 17px; font-weight: 700; color: #ffffff; text-align: right;">₹${totalAmount.toFixed(2)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Amount in Words -->
+          <tr>
+            <td style="padding: 0 35px 20px;">
+              <div style="background-color: #f8f9fa; border-radius: 6px; padding: 15px; border-left: 4px solid #1a1a2e;">
+                <p style="margin: 0; color: #333; font-size: 13px;">
+                  <strong>Amount in words:</strong> ${amountInWords}
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Tax Notes -->
+          <tr>
+            <td style="padding: 0 35px 25px;">
+              <table width="100%" cellpadding="6" cellspacing="0">
+                <tr>
+                  <td style="color: #666; font-size: 12px;">Tax payable on reverse charge: <strong>No</strong></td>
+                </tr>
+                <tr>
+                  <td style="color: #666; font-size: 12px;">Supply meant for inter-state trade/commerce (IGST applicable)</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px 35px; border-top: 1px solid #ddd;">
+              <p style="color: #888; font-size: 12px; margin: 0; text-align: center;">
+                This is a computer-generated invoice and does not require a physical signature.
+              </p>
+              <p style="color: #aaa; font-size: 11px; margin: 8px 0 0; text-align: center;">
+                USD Vision AI LLP | GSTIN: 36AAJFU0315K1Z5 | support@cakeaiartist.com
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
 function getWelcomeTitle(paymentType: "lifetime" | "subscription" | "admin_grant"): string {
   switch (paymentType) {
     case "lifetime":
@@ -552,6 +764,15 @@ function getPaymentConfirmationEmailHtml(
               <p style="color: #888; font-size: 13px; margin: 0; line-height: 1.6;">
                 💬 Questions about your ${isSubscription ? "subscription" : "purchase"}? Contact us at 
                 <a href="mailto:support@cakeaiartist.com" style="color: #c44569; text-decoration: none;">support@cakeaiartist.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- GST Note -->
+          <tr>
+            <td style="padding: 0 30px 20px;">
+              <p style="color: #888; font-size: 12px; margin: 0; line-height: 1.6; background-color: #f8f9fa; padding: 12px 15px; border-radius: 6px; border-left: 3px solid #ccc;">
+                All prices are inclusive of applicable taxes (GST). Issued by USD Vision AI LLP, GSTIN: 36AAJFU0315K1Z5
               </p>
             </td>
           </tr>
@@ -1124,36 +1345,60 @@ const handler = async (req: Request): Promise<Response> => {
     // Only send confirmation/invoice email for paid users (lifetime or subscription)
     // Admin grants only receive the single welcome email above
     if (paymentType !== "admin_grant") {
-      let confirmSubject: string;
-      switch (paymentType) {
-        case "lifetime":
-          confirmSubject = `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`;
-          break;
-        case "subscription":
-          confirmSubject = `🔄 Subscription Confirmed - Cake AI Artist Monthly Premium`;
-          break;
-        default:
-          confirmSubject = `🧾 Payment Confirmed - Cake AI Artist`;
-      }
+      if (currency === "INR") {
+        // Send formal GST Tax Invoice for INR payments
+        const gstInvoiceSubject = `🧾 Tax Invoice - Cake AI Artist (${invoiceNumber})`;
+        const gstInvoiceHtml = getGSTInvoiceEmailHtml(
+          firstName,
+          memberNumber,
+          tier,
+          amount,
+          razorpay_payment_id,
+          razorpay_order_id,
+          invoiceNumber,
+          purchaseDate,
+          paymentType
+        );
+        await sendEmail(
+          profile.email,
+          gstInvoiceSubject,
+          gstInvoiceHtml,
+          "billing@cakeaiartist.com",
+          "USD Vision AI LLP"
+        );
+      } else {
+        // Send standard payment confirmation with GST note for non-INR
+        let confirmSubject: string;
+        switch (paymentType) {
+          case "lifetime":
+            confirmSubject = `🧾 Payment Confirmed - Cake AI Artist Lifetime Access (Invoice ${invoiceNumber})`;
+            break;
+          case "subscription":
+            confirmSubject = `🔄 Subscription Confirmed - Cake AI Artist Monthly Premium`;
+            break;
+          default:
+            confirmSubject = `🧾 Payment Confirmed - Cake AI Artist`;
+        }
 
-      const invoiceHtml = getPaymentConfirmationEmailHtml(
-        firstName,
-        memberNumber,
-        tier,
-        displayAmount,
-        razorpay_payment_id,
-        razorpay_order_id,
-        invoiceNumber,
-        purchaseDate,
-        paymentType
-      );
-      await sendEmail(
-        profile.email,
-        confirmSubject,
-        invoiceHtml,
-        "billing@cakeaiartist.com",
-        "Cake AI Artist Billing"
-      );
+        const invoiceHtml = getPaymentConfirmationEmailHtml(
+          firstName,
+          memberNumber,
+          tier,
+          displayAmount,
+          razorpay_payment_id,
+          razorpay_order_id,
+          invoiceNumber,
+          purchaseDate,
+          paymentType
+        );
+        await sendEmail(
+          profile.email,
+          confirmSubject,
+          invoiceHtml,
+          "billing@cakeaiartist.com",
+          "Cake AI Artist Billing"
+        );
+      }
       console.log("Both premium emails sent successfully to:", profile.email);
     } else {
       console.log("Single welcome email sent for admin grant to:", profile.email);
