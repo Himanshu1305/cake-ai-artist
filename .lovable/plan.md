@@ -1,180 +1,120 @@
 
 
-## Fix: Banner/Navigation Overlap Issue
+## Feature: GST Tax Invoice for All Payments (Lifetime + Monthly Subscriptions)
 
-### Problem Identified
+### Overview
 
-The **UrgencyBanner** (fixed at top) and **Navigation bar** (sticky) have hardcoded offset values that don't account for dynamic banner height, causing overlap issues:
+Replace the current basic payment confirmation email with a **formal GST-compliant Tax Invoice** for **all INR payments** (both lifetime and monthly subscriptions), and add a "prices inclusive of GST" note for all non-INR currencies.
 
-```typescript
-// Current hardcoded approach in Index.tsx
-<nav className={`sticky ${isBannerVisible ? 'top-16 md:top-12' : 'top-0'} ...`}>
-```
+### Company Details
 
-**Why this fails:**
-- UrgencyBanner height varies based on:
-  - Sale label text length
-  - Banner text content
-  - Countdown timer vs Spots counter
-  - Text wrapping on narrow screens
-- Hardcoded `top-16` (64px) / `top-12` (48px) doesn't match actual banner height
-- When banner content changes or wraps, navigation slides under or over the banner
+| Field | Value |
+|-------|-------|
+| Company Name | USD Vision AI LLP |
+| GSTIN | 36AAJFU0315K1Z5 |
+| PAN | AAJFU0315K |
+| SAC Code | 997331 |
+| Address | ZENITH NALLANGDALA, HCU Main Road, CUC Sub Post Office, Gachibowli, Hyderabad, Rangareddy, Telangana, 500046 |
+| State Code | 36 (Telangana) |
 
-### Visual Representation
+### Tax Calculation (GST Inclusive, 18% IGST)
+
+Formula: Base = Total / 1.18, IGST = Total - Base
+
+| Payment Type | Total (INR) | Base Amount | IGST (18%) |
+|-------------|-------------|-------------|------------|
+| Tier 1 Lifetime | 4,100 | 3,474.58 | 625.42 |
+| Tier 2 Lifetime | 8,200 | 6,949.15 | 1,250.85 |
+| Monthly Subscription | 899 | 761.86 | 137.14 |
+
+IGST is used (not CGST+SGST) because the seller is in Telangana and buyers are from various states (inter-state e-commerce supply).
+
+---
+
+### Changes to `supabase/functions/send-premium-emails/index.ts`
+
+#### 1. Add `numberToWords()` helper function
+
+Converts numeric amounts to words (e.g., 4100 to "Four Thousand One Hundred INR Only") for the formal invoice requirement.
+
+#### 2. Add `getGSTInvoiceEmailHtml()` function
+
+New function generating a formal tax invoice with:
+- **Header**: "USD Vision AI LLP" with full address, GSTIN, PAN
+- **Title**: "TAX INVOICE"
+- **Bill To**: Buyer name, email
+- **Item Table**: Description, Qty (1), SAC Code (997331), Gross Amount, GST Rate (18%), Net Amount
+- **Tax row**: IGST @ 18% breakdown
+- **Grand Total**: Full amount
+- **Amount in words**: e.g., "Four Thousand One Hundred INR Only"
+- **Footer**: "Tax payable on reverse charge: No", "Computer-generated invoice, no signature required"
+
+This function works for **both** lifetime and monthly subscription payments -- the item description adapts:
+- Lifetime: "Cake AI Artist - Lifetime Access, Tier 1 (First 50 Members)"
+- Monthly: "Cake AI Artist - Monthly Premium Subscription"
+
+#### 3. Modify email routing logic (lines ~1126-1156)
 
 ```text
-┌─────────────────────────────────────────────────────┐
-│ UrgencyBanner (fixed top-0, z-50)                   │
-│ 🎉 EXCLUSIVE DEAL  [content that may wrap]          │
-│                    Limited spots remaining          │
-│    ↑ Height varies: 40-80px depending on content    │
-├─────────────────────────────────────────────────────┤
-│ Navigation (sticky top-12/top-16)  ← HARDCODED!    │
-│ 🎂 Cake AI Artist    [links...]        Sign In     │
-│                                                     │
-│    ↑ If banner is 60px but nav is at 48px = OVERLAP│
-└─────────────────────────────────────────────────────┘
+if currency === "INR":
+    -> Send getGSTInvoiceEmailHtml() instead of getPaymentConfirmationEmailHtml()
+    -> Subject: "Tax Invoice - Cake AI Artist (Invoice CAI-2025-XXXX)"
+else (USD, GBP, CAD, AUD):
+    -> Send existing getPaymentConfirmationEmailHtml()
+    -> Append note at bottom: "All prices are inclusive of applicable taxes (GST). Issued by USD Vision AI LLP, GSTIN: 36AAJFU0315K1Z5"
 ```
 
----
+#### 4. Update existing `getPaymentConfirmationEmailHtml()` for non-INR
 
-### Solution
+Add a small GST note section before the footer for all non-INR currencies:
 
-**Use CSS custom property and JavaScript to dynamically calculate banner height:**
-
-1. **UrgencyBanner**: Add a ref to measure actual height and report it via CSS custom property or callback
-2. **Index.tsx** (and landing pages): Use the actual banner height for navigation offset
-3. **Alternative simpler approach**: Make UrgencyBanner not fixed, just static at top, so navigation naturally flows below it
+> "All prices are inclusive of applicable taxes (GST). Issued by USD Vision AI LLP, GSTIN: 36AAJFU0315K1Z5"
 
 ---
 
-### Implementation Options
+### Invoice Layout (INR customers)
 
-#### Option A: Static Banner (Simpler - Recommended)
-
-Change UrgencyBanner from `fixed` to static positioning, making it part of normal document flow. The navigation stays sticky below it without needing any offset calculation.
-
-**Pros:**
-- No JavaScript height calculation needed
-- Works perfectly on all screen sizes
-- No risk of overlap
-
-**Cons:**
-- Banner scrolls away when user scrolls (not always visible)
-- Users may prefer persistent banner
-
-#### Option B: Dynamic Height Measurement (More Complex)
-
-Measure the actual UrgencyBanner height and pass it to navigation for dynamic offset.
-
-**Pros:**
-- Banner stays fixed/visible while scrolling
-- Accurate positioning
-
-**Cons:**
-- Requires refs and state management
-- Slight complexity with SSR/hydration
-
----
-
-### Recommended: Option B with Height Callback
-
-**File: `src/components/UrgencyBanner.tsx`**
-
-Add a height measurement callback:
-
-```typescript
-interface UrgencyBannerProps {
-  onVisibilityChange?: (visible: boolean) => void;
-  onHeightChange?: (height: number) => void;  // NEW
-  countryCode?: string;
-}
-
-export const UrgencyBanner = ({ onVisibilityChange, onHeightChange, countryCode }) => {
-  const bannerRef = useRef<HTMLDivElement>(null);
-  
-  // Measure height on mount and resize
-  useEffect(() => {
-    if (!bannerRef.current || !onHeightChange) return;
-    
-    const updateHeight = () => {
-      if (bannerRef.current) {
-        onHeightChange(bannerRef.current.offsetHeight);
-      }
-    };
-    
-    updateHeight();
-    
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(bannerRef.current);
-    
-    return () => resizeObserver.disconnect();
-  }, [onHeightChange, isSaleActive, isDismissed]);
-
-  // Report 0 height when banner is hidden
-  useEffect(() => {
-    if (!isSaleActive || isDismissed || isLoading || !sale) {
-      onHeightChange?.(0);
-    }
-  }, [isSaleActive, isDismissed, isLoading, sale, onHeightChange]);
-  
-  return (
-    <motion.div ref={bannerRef} ... >
-      ...
-    </motion.div>
-  );
-};
+```text
++--------------------------------------------------+
+|  USD Vision AI LLP                               |
+|  ZENITH NALLANGDALA, HCU Main Road,             |
+|  CUC Sub Post Office, Gachibowli, Hyderabad,    |
+|  Rangareddy, Telangana, 500046                   |
+|  GSTIN: 36AAJFU0315K1Z5  PAN: AAJFU0315K       |
++--------------------------------------------------+
+|              TAX INVOICE                         |
++--------------------------------------------------+
+| Bill To: [Name]        Invoice No: CAI-2025-0001|
+| Email: [email]         Invoice Date: 10/02/2026 |
++--------------------------------------------------+
+| # | Description        | Qty | SAC    | Gross   |
+|---|--------------------+-----+--------+---------|
+| 1 | Cake AI Artist -   |  1  | 997331 | 3474.58 |
+|   | Lifetime Access    |     |        |         |
+|   | OR Monthly Premium |     |        |         |
++--------------------------------------------------+
+| IGST @ 18%                          |    625.42 |
++--------------------------------------------------+
+| Grand Total                         |   4100.00 |
++--------------------------------------------------+
+| Amount in words: Four Thousand One Hundred INR   |
++--------------------------------------------------+
+| Tax payable on reverse charge: No                |
+| Computer-generated invoice, no signature required|
++--------------------------------------------------+
 ```
-
-**File: `src/pages/Index.tsx`** (and all landing pages)
-
-```typescript
-const [bannerHeight, setBannerHeight] = useState(48); // Default estimate
-
-// In JSX:
-<UrgencyBanner 
-  onVisibilityChange={setIsBannerVisible} 
-  onHeightChange={setBannerHeight}
-  countryCode="US" 
-/>
-
-<nav 
-  className="sticky z-40 bg-gradient-to-b ..."
-  style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}
->
-```
-
----
 
 ### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/UrgencyBanner.tsx` | Add `onHeightChange` prop, useRef, ResizeObserver to measure and report height |
-| `src/pages/Index.tsx` | Add `bannerHeight` state, pass callback to UrgencyBanner, use inline style for nav top offset |
-| `src/pages/IndiaLanding.tsx` | Same changes as Index.tsx |
-| `src/pages/UKLanding.tsx` | Same changes as Index.tsx |
-| `src/pages/CanadaLanding.tsx` | Same changes as Index.tsx |
-| `src/pages/AustraliaLanding.tsx` | Same changes as Index.tsx |
+| `supabase/functions/send-premium-emails/index.ts` | Add `numberToWords()`, add `getGSTInvoiceEmailHtml()`, modify confirmation email routing (INR gets GST invoice, others get existing receipt + GST note) |
 
----
+### No Upstream Changes Needed
 
-### Technical Details
+The function already receives `amount`, `currency`, `tier`, and user details from both:
+- `verify-razorpay-payment` (lifetime payments)
+- `razorpay-webhook` (subscription payments)
 
-**ResizeObserver** is used because:
-- Banner height can change when sale data loads (skeleton → actual content)
-- Text can reflow on window resize
-- Countdown timer content changes every second (though height stays stable)
-
-**Default height of 48px** ensures navigation doesn't jump on initial render before measurement completes.
-
----
-
-### Expected Result
-
-After implementation:
-- Navigation bar will always appear directly below the UrgencyBanner
-- No overlap regardless of banner content length
-- Dynamic adjustment when window resizes or banner content changes
-- Smooth experience across all device sizes
+No changes to payment flow or other edge functions required.
 
