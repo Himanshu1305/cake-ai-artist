@@ -210,12 +210,14 @@ function getGSTInvoiceEmailHtml(
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
                 <!-- Table Header -->
                 <tr style="background-color: #f8f8f8;">
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 5%;">#</td>
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 40%;">Description</td>
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 8%;">Qty</td>
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 15%;">SAC Code</td>
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 16%;">Gross Amt</td>
-                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 16%;">Net Amt</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 5%;">Sl No.</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; width: 30%;">Description</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 6%;">Qty</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 12%;">SAC Code</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 14%;">Gross Amt (INR)</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 10%;">GST Rate</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: center; width: 9%;">Discount</td>
+                  <td style="padding: 12px 10px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 2px solid #ddd; text-transform: uppercase; text-align: right; width: 14%;">Net Amt (INR)</td>
                 </tr>
                 <!-- Item Row -->
                 <tr>
@@ -223,47 +225,52 @@ function getGSTInvoiceEmailHtml(
                   <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee;">${itemDescription}</td>
                   <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">1</td>
                   <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">997331</td>
-                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${baseAmount.toFixed(2)}</td>
-                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${baseAmount.toFixed(2)}</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${totalAmount.toFixed(2)}</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">18%</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: center;">--</td>
+                  <td style="padding: 15px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${totalAmount.toFixed(2)}</td>
                 </tr>
-                <!-- IGST Row -->
-                <tr style="background-color: #fafafa;">
-                  <td colspan="4" style="padding: 12px 10px; font-size: 14px; color: #555; border-bottom: 1px solid #eee;"></td>
-                  <td style="padding: 12px 10px; font-size: 13px; color: #555; border-bottom: 1px solid #eee; text-align: right;">IGST @ 18%</td>
-                  <td style="padding: 12px 10px; font-size: 14px; color: #333; border-bottom: 1px solid #eee; text-align: right;">₹${igstAmount.toFixed(2)}</td>
+                <!-- Total Row -->
+                <tr style="background-color: #f8f8f8;">
+                  <td colspan="4" style="padding: 12px 10px; font-size: 14px; font-weight: 700; color: #333; border-bottom: 1px solid #ddd; text-align: right;">Total</td>
+                  <td style="padding: 12px 10px; font-size: 14px; font-weight: 700; color: #333; border-bottom: 1px solid #ddd; text-align: right;">₹${totalAmount.toFixed(2)}</td>
+                  <td style="padding: 12px 10px; border-bottom: 1px solid #ddd;"></td>
+                  <td style="padding: 12px 10px; border-bottom: 1px solid #ddd;"></td>
+                  <td style="padding: 12px 10px; font-size: 14px; font-weight: 700; color: #333; border-bottom: 1px solid #ddd; text-align: right;">₹${totalAmount.toFixed(2)}</td>
                 </tr>
-                <!-- Grand Total Row -->
+              </table>
+            </td>
+          </tr>
+          
+          <!-- IGST Breakdown -->
+          <tr>
+            <td style="padding: 0 35px 10px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding: 10px; font-size: 13px; color: #555; border-bottom: 1px solid #eee;">
+                    <strong>IGST @ 18%:</strong> ₹${igstAmount.toFixed(2)}
+                  </td>
+                  <td style="padding: 10px; font-size: 13px; color: #555; border-bottom: 1px solid #eee; text-align: right;">
+                    <em>${numberToWords(Math.round(igstAmount))} Rupees Only</em>
+                  </td>
+                </tr>
                 <tr style="background-color: #1a1a2e;">
-                  <td colspan="4" style="padding: 15px 10px;"></td>
-                  <td style="padding: 15px 10px; font-size: 15px; font-weight: 700; color: #ffffff; text-align: right;">Grand Total</td>
-                  <td style="padding: 15px 10px; font-size: 17px; font-weight: 700; color: #ffffff; text-align: right;">₹${totalAmount.toFixed(2)}</td>
+                  <td style="padding: 14px 10px; font-size: 15px; font-weight: 700; color: #ffffff;">
+                    Grand Total: ₹${totalAmount.toFixed(2)}
+                  </td>
+                  <td style="padding: 14px 10px; font-size: 13px; color: #ffffff; text-align: right;">
+                    <em>${amountInWords}</em>
+                  </td>
                 </tr>
               </table>
             </td>
           </tr>
           
-          <!-- Amount in Words -->
+          <!-- Authorised Signatory -->
           <tr>
-            <td style="padding: 0 35px 20px;">
-              <div style="background-color: #f8f9fa; border-radius: 6px; padding: 15px; border-left: 4px solid #1a1a2e;">
-                <p style="margin: 0; color: #333; font-size: 13px;">
-                  <strong>Amount in words:</strong> ${amountInWords}
-                </p>
-              </div>
-            </td>
-          </tr>
-          
-          <!-- Tax Notes -->
-          <tr>
-            <td style="padding: 0 35px 25px;">
-              <table width="100%" cellpadding="6" cellspacing="0">
-                <tr>
-                  <td style="color: #666; font-size: 12px;">Tax payable on reverse charge: <strong>No</strong></td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 12px;">Supply meant for inter-state trade/commerce (IGST applicable)</td>
-                </tr>
-              </table>
+            <td style="padding: 20px 35px 10px; text-align: right;">
+              <p style="margin: 0; color: #333; font-size: 13px; font-weight: 600;">For USD Vision AI LLP</p>
+              <p style="margin: 4px 0 0; color: #555; font-size: 12px;">Authorised Signatory</p>
             </td>
           </tr>
           
@@ -275,6 +282,9 @@ function getGSTInvoiceEmailHtml(
               </p>
               <p style="color: #aaa; font-size: 11px; margin: 8px 0 0; text-align: center;">
                 USD Vision AI LLP | GSTIN: 36AAJFU0315K1Z5 | support@cakeaiartist.com
+              </p>
+              <p style="color: #aaa; font-size: 11px; margin: 6px 0 0; text-align: center;">
+                E. &amp; O.E
               </p>
             </td>
           </tr>
@@ -1364,7 +1374,7 @@ const handler = async (req: Request): Promise<Response> => {
           gstInvoiceSubject,
           gstInvoiceHtml,
           "billing@cakeaiartist.com",
-          "USD Vision AI LLP"
+          "Cake AI Artist"
         );
       } else {
         // Send standard payment confirmation with GST note for non-INR
