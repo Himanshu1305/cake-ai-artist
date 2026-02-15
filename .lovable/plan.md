@@ -1,52 +1,55 @@
 
 
-## Fix GST Tax Invoice: Sender Name + Simplified Layout
+## Fix Homepage Indexing: Stop Geo-Redirect from Blocking Google
 
-### Changes to `supabase/functions/send-premium-emails/index.ts`
+### Problem
 
-### 1. Fix Email Sender Name (line 1367)
+Google Search Console reports "Page with redirect" for `http://cakeaiartist.com/`. When we fetched the live homepage, it returned **UK page content** (GBP pricing, "British celebrations") instead of the US homepage. This confirms the geo-redirect is firing for non-Googlebot crawlers and potentially for Google's own rendering service in some scenarios.
 
-Change sender name from `"USD Vision AI LLP"` to `"Cake AI Artist"`. The from address `billing@cakeaiartist.com` is already correct.
+The root cause: `GeoRedirectWrapper` includes `/` in `REDIRECTABLE_ROUTES`, causing the homepage to redirect visitors based on IP geolocation. Even with bot detection, this creates SEO problems because:
+- Google may classify the page as a redirect even if Googlebot itself isn't redirected
+- Google's various crawler types may not all be caught by bot detection
+- The redirect happens client-side after React renders, which Google's systems can detect
 
-### 2. Simplify Invoice Table Layout (lines 209-241)
+### Solution
 
-Replace the current table with a cleaner 3-row structure matching the reference invoice:
+**Remove `/` from `REDIRECTABLE_ROUTES`** in both `GeoRedirectWrapper.tsx` and `useGeoRedirect.ts`. The homepage should always serve US content at `/` for all visitors. Country-specific pages (`/uk`, `/india`, etc.) are already linked in the footer country selector and discoverable via sitemap.
 
-**Current (wrong):** Shows base amount (3,474.58) as Gross/Net, then IGST row, then Grand Total.
+This is the standard SEO-safe approach: serve canonical content at the canonical URL, and let users discover localized versions through navigation or hreflang tags (which are already in `index.html`).
 
-**New layout:**
+### Files to Modify
 
-| Sl No. | Description | Qty | SAC Code | Gross Amount (INR) | GST Rate | Discount | Net Amount (INR) |
-|--------|-------------|-----|----------|--------------------|----------|----------|------------------|
-| 1 | Cake AI Artist - Lifetime Access... | 1 | 997331 | 4,100.00 | 18% | -- | 4,100.00 |
-| **Total** | | | | **4,100.00** | | | **4,100.00** |
+**1. `src/components/GeoRedirectWrapper.tsx` (line 14)**
 
-Then below the table:
-- **IGST @ 18%**: amount (e.g., 625.42) with amount in words
-- **Grand Total**: 4,100.00 with amount in words
+Change:
+```
+const REDIRECTABLE_ROUTES = ['/', '/pricing'];
+```
+To:
+```
+const REDIRECTABLE_ROUTES = ['/pricing'];
+```
 
-This matches the reference invoice format -- Gross Amount is the full amount, GST breakdown is shown separately below, and Grand Total equals the full amount.
+**2. `src/hooks/useGeoRedirect.ts` (line 43)**
 
-### 3. Remove "Tax payable on reverse charge" lines (lines 257-267)
+Change:
+```
+const REDIRECTABLE_ROUTES = ['/', '/pricing'];
+```
+To:
+```
+const REDIRECTABLE_ROUTES = ['/pricing'];
+```
 
-Remove the reverse charge and inter-state supply notes per user request to keep it simple. Keep only the "Whether tax payable on reverse charge: No" line above the table (matching reference placement at line ~205 area, before the item table).
+### What This Means
 
-### 4. Add "For USD Vision AI LLP / Authorised signatory" and "E. & O.E" to footer
+- The homepage `/` will always show US content (USD pricing) for everyone, including Google
+- The `/pricing` page will still geo-redirect to localized pricing pages
+- Country landing pages (`/uk`, `/canada`, `/australia`, `/india`) remain accessible via footer selector, direct links, and sitemap
+- Hreflang tags in `index.html` already tell Google about all localized versions
+- No content is lost -- users can still reach their country page through the footer country picker
 
-Add these two lines in the footer section (lines 271-279) to match the reference invoice format. The company header already shows "USD Vision AI LLP" which stays as-is since it's the registered entity.
+### After Deployment
 
-### Summary of Changes
-
-| What | Current | New |
-|------|---------|-----|
-| Email sender name | "USD Vision AI LLP" | "Cake AI Artist" |
-| Gross Amount column | Base amount (excl. GST) | Full amount (incl. GST) |
-| Net Amount column | Base amount | Full amount |
-| Table rows | Base + IGST + Grand Total | Full amount + Total row |
-| Below table | Tax notes about reverse charge | IGST breakdown with words, Grand Total with words |
-| Footer | Just computer-generated note | + "For USD Vision AI LLP / Authorised signatory" + "E. & O.E" |
-
-### File
-
-`supabase/functions/send-premium-emails/index.ts` -- modify `getGSTInvoiceEmailHtml()` function (lines ~139-287) and sender name (line 1367).
+Request re-indexing of `https://cakeaiartist.com/` in Google Search Console to clear the "Page with redirect" classification.
 
