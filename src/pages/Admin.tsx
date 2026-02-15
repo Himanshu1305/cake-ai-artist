@@ -91,6 +91,9 @@ export default function Admin() {
   const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
   const [grantingPremium, setGrantingPremium] = useState<Set<string>>(new Set());
   const [selectedEmailType, setSelectedEmailType] = useState<'halted' | 'expired' | 'cancelled' | 'none'>('expired');
+  const [conversionEmailDialog, setConversionEmailDialog] = useState(false);
+  const [sendingConversionEmail, setSendingConversionEmail] = useState(false);
+  const [freeUserCount, setFreeUserCount] = useState(0);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
     premiumUsers: 0,
@@ -679,6 +682,33 @@ export default function Admin() {
     loadAnalytics();
   };
 
+  const openConversionEmailDialog = async () => {
+    // Count free users
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .or('is_premium.is.null,is_premium.eq.false');
+    setFreeUserCount(count || 0);
+    setConversionEmailDialog(true);
+  };
+
+  const sendConversionEmails = async () => {
+    setSendingConversionEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-conversion-email', {
+        body: { sendToAll: true },
+      });
+      if (error) throw error;
+      toast.success(`Conversion emails sent to ${data.sent} free users (${data.failed} failed)`);
+    } catch (err: any) {
+      console.error('Failed to send conversion emails:', err);
+      toast.error('Failed to send conversion emails');
+    } finally {
+      setSendingConversionEmail(false);
+      setConversionEmailDialog(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -767,6 +797,23 @@ export default function Admin() {
             <AlertDialogCancel onClick={() => setSelectedEmailType('expired')}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemovePremium}>
               Remove Premium
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Conversion Email Dialog */}
+      <AlertDialog open={conversionEmailDialog} onOpenChange={setConversionEmailDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Conversion Emails</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will send a Premium upgrade email to <strong>{freeUserCount}</strong> free users (excluding those who opted out of marketing emails). Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sendingConversionEmail}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={sendConversionEmails} disabled={sendingConversionEmail}>
+              {sendingConversionEmail ? 'Sending...' : `Send to ${freeUserCount} Users`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1433,6 +1480,23 @@ export default function Admin() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
+            {/* Conversion Email */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Conversion Email Campaign
+                </CardTitle>
+                <CardDescription>Send upgrade emails to free users encouraging them to go Premium</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={openConversionEmailDialog} variant="default" className="gap-2">
+                  <Mail className="w-4 h-4" />
+                  Send Conversion Email to Free Users
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Holiday Sales Manager */}
             <HolidaySalesManager />
 
