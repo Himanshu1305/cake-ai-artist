@@ -39,7 +39,7 @@ const getTargetRoute = (countryCode: string): string | null => {
   return null;
 };
 
-const REDIRECTABLE_ROUTES = ['/', '/pricing'];
+const REDIRECTABLE_ROUTES = ['/pricing'];
 
 // Helper to check for debug mode
 const isDebugMode = () => {
