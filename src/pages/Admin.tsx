@@ -93,6 +93,7 @@ export default function Admin() {
   const [selectedEmailType, setSelectedEmailType] = useState<'halted' | 'expired' | 'cancelled' | 'none'>('expired');
   const [conversionEmailDialog, setConversionEmailDialog] = useState(false);
   const [sendingConversionEmail, setSendingConversionEmail] = useState(false);
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [freeUserCount, setFreeUserCount] = useState(0);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
@@ -690,6 +691,22 @@ export default function Admin() {
       .or('is_premium.is.null,is_premium.eq.false');
     setFreeUserCount(count || 0);
     setConversionEmailDialog(true);
+  };
+
+  const sendTestConversionEmail = async () => {
+    setSendingTestEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-conversion-email', {
+        body: { testEmail: 'himanshu1305@gmail.com' },
+      });
+      if (error) throw error;
+      toast.success('Test conversion email sent to himanshu1305@gmail.com');
+    } catch (err: any) {
+      console.error('Failed to send test email:', err);
+      toast.error('Failed to send test email');
+    } finally {
+      setSendingTestEmail(false);
+    }
   };
 
   const sendConversionEmails = async () => {
@@ -1489,7 +1506,11 @@ export default function Admin() {
                 </CardTitle>
                 <CardDescription>Send upgrade emails to free users encouraging them to go Premium</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex gap-3">
+                <Button onClick={sendTestConversionEmail} variant="outline" className="gap-2" disabled={sendingTestEmail}>
+                  <Mail className="w-4 h-4" />
+                  {sendingTestEmail ? 'Sending...' : 'Send Test Email'}
+                </Button>
                 <Button onClick={openConversionEmailDialog} variant="default" className="gap-2">
                   <Mail className="w-4 h-4" />
                   Send Conversion Email to Free Users

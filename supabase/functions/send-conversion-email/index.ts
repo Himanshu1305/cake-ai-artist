@@ -184,13 +184,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const body = await req.json();
-    const { sendToAll, userId } = body;
+    const { sendToAll, userId, testEmail } = body;
 
     // Log task start
     const { data: taskRun } = await supabaseAdmin
       .from("scheduled_task_runs")
       .insert({
-        task_name: "conversion-email",
+        task_name: testEmail ? "conversion-email-test" : "conversion-email",
         status: "running",
         started_at: new Date().toISOString(),
       })
@@ -199,7 +199,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     let freeUsers: { id: string; email: string; first_name: string | null }[] = [];
 
-    if (sendToAll) {
+    if (testEmail) {
+      // Test mode: send directly to the provided email, skip all checks
+      freeUsers = [{ id: "test", email: testEmail, first_name: "Admin" }];
+    } else if (sendToAll) {
       // Get all free users who have marketing_emails enabled (or no settings row = default opt-in)
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from("profiles")
