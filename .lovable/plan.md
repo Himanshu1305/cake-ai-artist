@@ -1,29 +1,28 @@
 
 
-## Add "Send Test Email" Button for Conversion Email Preview
+## Activate Occasion Reminders System
 
-### What This Does
-Adds a "Send Test Email" button next to the existing bulk send button in the Admin dashboard. Clicking it sends the conversion email only to `himanshu1305@gmail.com` (the admin) so you can preview the email before sending to all free users. After adding the button, a test email will be triggered immediately.
+Everything is already built -- we just need to wire it up and fix a few things.
 
 ### Changes
 
-**1. `src/pages/Admin.tsx`**
+**1. Fix email template URL**
+- In `supabase/functions/send-anniversary-reminders/index.ts`, replace the placeholder `https://your-app-url.com/cake-creator` with `https://cakeaiartist.com/cake-creator`
 
-- Add a new `sendTestConversionEmail` function that calls `send-conversion-email` with `{ testEmail: "himanshu1305@gmail.com" }` instead of `sendToAll: true`
-- Add a "Send Test Email" button next to the existing "Send Conversion Email to Free Users" button in the Conversion Email Campaign card
-- Add loading state for the test email button
+**2. Set up the daily cron job**
+- Run SQL to schedule the edge function to run daily at 9 AM UTC using `pg_cron` and `pg_net`
 
-**2. `supabase/functions/send-conversion-email/index.ts`**
+**3. Add to Admin dashboard monitoring**
+- Add "anniversary-reminders" to the `ScheduledTasksWidget` so you can see its status and manually trigger it
+- Add a "Send Test Reminder" button so you can preview the reminder email
 
-- Add handling for a new `testEmail` parameter in the request body
-- When `testEmail` is provided, skip the free-user query and send the conversion email directly to that single email address
-- This bypasses the premium/marketing-opt-in checks since it's just a preview
+**4. Add CRON_SECRET for security**
+- Add a `CRON_SECRET` secret to prevent unauthorized calls to the function
+- The cron job will include this secret in its request headers
 
-### Flow
+### What Already Works (No Changes Needed)
+- Edge function logic (queries occasions 7 days out, checks opt-in, deduplicates via reminder_logs)
+- Database tables (reminder_logs, user_settings with anniversary_reminders column)
+- Settings page toggle for users to opt in/out
+- Occasion date capture in Cake Creator
 
-1. Admin clicks "Send Test Email" on the dashboard
-2. Edge function receives `{ testEmail: "himanshu1305@gmail.com" }`
-3. Sends the conversion email to that address only
-4. Admin previews in inbox, then uses the existing bulk send button when satisfied
-
-### After implementation, a test email will be sent automatically to `himanshu1305@gmail.com`.
