@@ -135,7 +135,7 @@ serve(async (req) => {
               </p>
               <p style="font-size: 16px; line-height: 1.5;">
                 Don't forget to prepare something special! 
-                <a href="https://your-app-url.com/cake-creator" style="color: #0066cc; text-decoration: none;">
+                <a href="https://cakeaiartist.com/cake-creator" style="color: #0066cc; text-decoration: none;">
                   Create a personalized cake design
                 </a> to make the day memorable.
               </p>
