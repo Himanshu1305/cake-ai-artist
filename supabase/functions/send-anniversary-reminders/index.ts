@@ -13,12 +13,35 @@ serve(async (req) => {
   }
 
   try {
-    // SECURITY: Verify cron secret for scheduled function calls
+    // SECURITY: Allow either valid cron secret OR valid admin JWT
     const cronSecret = req.headers.get('X-Cron-Secret');
     const expectedSecret = Deno.env.get('CRON_SECRET');
-    
-    if (expectedSecret && cronSecret !== expectedSecret) {
-      console.error('Invalid cron secret');
+    const authHeader = req.headers.get('Authorization');
+
+    let isAuthorized = false;
+
+    // Check cron secret first (for scheduled calls)
+    if (expectedSecret && cronSecret === expectedSecret) {
+      isAuthorized = true;
+    }
+
+    // If no valid cron secret, check for valid JWT (admin manual trigger)
+    if (!isAuthorized && authHeader) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.39.3");
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await authClient.auth.getUser(token);
+      if (!authError && user) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      console.error('Unauthorized request - neither valid cron secret nor valid JWT');
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Invalid secret' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
