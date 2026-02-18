@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Clock, RefreshCw, Play, CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Clock, RefreshCw, Play, CheckCircle2, XCircle, Loader2, AlertCircle, Send } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 interface TaskRun {
@@ -49,6 +49,15 @@ const SCHEDULED_TASKS: Omit<ScheduledTask, 'lastRun'>[] = [
     scheduleHuman: 'Every Sunday at 02:30 UTC',
     functionName: 'send-weekly-blog-digest',
   },
+  {
+    name: 'anniversary-reminders',
+    displayName: 'Anniversary Reminders',
+    icon: '🎂',
+    description: 'Sends reminder emails for occasions coming up in 7 days',
+    schedule: '0 9 * * *', // Daily at 9 AM UTC
+    scheduleHuman: 'Every day at 09:00 UTC',
+    functionName: 'send-anniversary-reminders',
+  },
 ];
 
 // Calculate next run time from cron schedule
@@ -58,23 +67,27 @@ function getNextRunTime(schedule: string): Date {
 
   const [minute, hour, , , dayOfWeek] = parts;
   const now = new Date();
-  const targetDay = parseInt(dayOfWeek);
   const targetHour = parseInt(hour);
   const targetMinute = parseInt(minute);
 
-  // Find the next occurrence
   let next = new Date(now);
   next.setUTCHours(targetHour, targetMinute, 0, 0);
 
-  // Calculate days until target day
-  const currentDay = now.getUTCDay();
-  let daysUntil = targetDay - currentDay;
-  
-  if (daysUntil < 0 || (daysUntil === 0 && now >= next)) {
-    daysUntil += 7;
+  if (dayOfWeek === '*') {
+    // Daily schedule
+    if (now >= next) {
+      next = addDays(next, 1);
+    }
+  } else {
+    const targetDay = parseInt(dayOfWeek);
+    const currentDay = now.getUTCDay();
+    let daysUntil = targetDay - currentDay;
+    if (daysUntil < 0 || (daysUntil === 0 && now >= next)) {
+      daysUntil += 7;
+    }
+    next = addDays(next, daysUntil);
   }
 
-  next = addDays(next, daysUntil);
   return next;
 }
 
@@ -86,7 +99,6 @@ export function ScheduledTasksWidget() {
 
   const loadTaskRuns = useCallback(async () => {
     try {
-      // Fetch the latest run for each task
       const taskNames = SCHEDULED_TASKS.map(t => t.name);
       
       const { data, error } = await supabase
@@ -100,7 +112,6 @@ export function ScheduledTasksWidget() {
         return;
       }
 
-      // Map last run to each task
       const tasksWithRuns: ScheduledTask[] = SCHEDULED_TASKS.map(task => {
         const lastRun = (data as TaskRun[])?.find(run => run.task_name === task.name) || null;
         return { ...task, lastRun };
@@ -116,7 +127,6 @@ export function ScheduledTasksWidget() {
 
   useEffect(() => {
     loadTaskRuns();
-    // Auto-refresh every 30 seconds
     const interval = setInterval(loadTaskRuns, 30000);
     return () => clearInterval(interval);
   }, [loadTaskRuns]);
@@ -130,30 +140,44 @@ export function ScheduledTasksWidget() {
 
   const handleRunNow = async (task: ScheduledTask) => {
     setRunningTask(task.name);
-    
     try {
       let body = {};
       if (task.functionName === 'generate-blog-post') {
         body = { generate_weekly_batch: true };
       }
 
-      const { data, error } = await supabase.functions.invoke(task.functionName, {
-        body,
-      });
-
+      const { data, error } = await supabase.functions.invoke(task.functionName, { body });
       if (error) throw error;
 
       toast.success(`${task.displayName} completed successfully`, {
         description: data?.message || `Processed ${data?.records_processed || 0} records`,
       });
 
-      // Refresh task runs after execution
       await loadTaskRuns();
     } catch (error: any) {
       console.error('Error running task:', error);
       toast.error(`Failed to run ${task.displayName}`, {
         description: error.message || 'Unknown error occurred',
       });
+    } finally {
+      setRunningTask(null);
+    }
+  };
+
+  const handleSendTestReminder = async () => {
+    setRunningTask('anniversary-reminders-test');
+    try {
+      const { data, error } = await supabase.functions.invoke('send-anniversary-reminders', {
+        body: {},
+      });
+      if (error) throw error;
+      toast.success('Test reminder check completed', {
+        description: data?.sent > 0
+          ? `${data.sent} reminder(s) sent for upcoming occasions`
+          : data?.message || 'No upcoming occasions found in the next 7 days',
+      });
+    } catch (error: any) {
+      toast.error('Test reminder failed', { description: error.message });
     } finally {
       setRunningTask(null);
     }
@@ -202,23 +226,19 @@ export function ScheduledTasksWidget() {
 
   const formatLastRun = (run: TaskRun | null) => {
     if (!run) return 'Never';
-    
     const date = new Date(run.completed_at || run.started_at);
     const timeAgo = getTimeAgo(date);
-    
     let detail = '';
     if (run.status === 'success' && run.records_processed > 0) {
       detail = ` (${run.records_processed} ${run.records_processed === 1 ? 'record' : 'records'})`;
     } else if (run.result_message) {
       detail = ` - ${run.result_message}`;
     }
-
     return `${timeAgo}${detail}`;
   };
 
   const getTimeAgo = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -270,6 +290,7 @@ export function ScheduledTasksWidget() {
         {tasks.map((task) => {
           const nextRun = getNextRunTime(task.schedule);
           const isRunning = runningTask === task.name;
+          const isTestRunning = runningTask === 'anniversary-reminders-test';
 
           return (
             <div
@@ -284,24 +305,46 @@ export function ScheduledTasksWidget() {
                     <p className="text-sm text-muted-foreground">{task.description}</p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleRunNow(task)}
-                  disabled={isRunning}
-                >
-                  {isRunning ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Running...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3 h-3 mr-1" />
-                      Run Now
-                    </>
+                <div className="flex gap-2">
+                  {task.name === 'anniversary-reminders' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleSendTestReminder}
+                      disabled={isTestRunning || !!runningTask}
+                    >
+                      {isTestRunning ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3 mr-1" />
+                          Test Email
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRunNow(task)}
+                    disabled={isRunning || !!runningTask}
+                  >
+                    {isRunning ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Running...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3 h-3 mr-1" />
+                        Run Now
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
