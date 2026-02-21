@@ -58,6 +58,15 @@ const SCHEDULED_TASKS: Omit<ScheduledTask, 'lastRun'>[] = [
     scheduleHuman: 'Every day at 09:00 UTC',
     functionName: 'send-anniversary-reminders',
   },
+  {
+    name: 'weekly-upgrade-nudge',
+    displayName: 'Weekly Upgrade Nudge',
+    icon: '💎',
+    description: 'Sends rotating upgrade emails to free users (4 template variants)',
+    schedule: '0 10 * * 1', // Monday at 10 AM UTC
+    scheduleHuman: 'Every Monday at 10:00 UTC',
+    functionName: 'send-weekly-upgrade-nudge',
+  },
 ];
 
 // Calculate next run time from cron schedule
@@ -178,6 +187,28 @@ export function ScheduledTasksWidget() {
       });
     } catch (error: any) {
       toast.error('Test reminder failed', { description: error.message });
+    } finally {
+      setRunningTask(null);
+    }
+  };
+
+  const handleTestUpgradeNudge = async () => {
+    setRunningTask('weekly-upgrade-nudge-test');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        toast.error('Could not get your email for test send');
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('send-weekly-upgrade-nudge', {
+        body: { testEmail: user.email },
+      });
+      if (error) throw error;
+      toast.success('Test upgrade nudge sent', {
+        description: `Variant ${data?.variant} sent to ${user.email}`,
+      });
+    } catch (error: any) {
+      toast.error('Test nudge failed', { description: error.message });
     } finally {
       setRunningTask(null);
     }
@@ -314,6 +345,26 @@ export function ScheduledTasksWidget() {
                       disabled={isTestRunning || !!runningTask}
                     >
                       {isTestRunning ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3 mr-1" />
+                          Test Email
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {task.name === 'weekly-upgrade-nudge' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleTestUpgradeNudge}
+                      disabled={runningTask === 'weekly-upgrade-nudge-test' || !!runningTask}
+                    >
+                      {runningTask === 'weekly-upgrade-nudge-test' ? (
                         <>
                           <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                           Sending...

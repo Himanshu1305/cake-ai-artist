@@ -826,6 +826,33 @@ export type Database = {
         }
         Relationships: []
       }
+      upgrade_nudge_logs: {
+        Row: {
+          created_at: string
+          id: string
+          sent_at: string
+          template_variant: number
+          user_id: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sent_at?: string
+          template_variant: number
+          user_id: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sent_at?: string
+          template_variant?: number
+          user_id?: string
+          week_number?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
