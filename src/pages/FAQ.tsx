@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
+import { useGeoContext } from "@/contexts/GeoContext";
 import {
   Accordion,
   AccordionContent,
@@ -11,7 +13,21 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+const PRICING_LOOKUP: Record<string, { tier1: string; tier2: string }> = {
+  IN: { tier1: '₹4,100', tier2: '₹8,200' },
+  GB: { tier1: '£39', tier2: '£78' },
+  CA: { tier1: 'C$67', tier2: 'C$134' },
+  AU: { tier1: 'A$75', tier2: 'A$150' },
+  US: { tier1: '$49', tier2: '$99' },
+};
+
 const FAQ = () => {
+  const { detectedCountry } = useGeoContext();
+  const pricing = useMemo(() => {
+    const saved = localStorage.getItem('user_country_preference');
+    const country = saved || detectedCountry || 'US';
+    return PRICING_LOOKUP[country] || PRICING_LOOKUP['US'];
+  }, [detectedCountry]);
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
@@ -59,7 +75,7 @@ const FAQ = () => {
           },
           {
             question: "What's special about the Lifetime Deal?",
-            answer: "First 200 people pay once ($49 or $99) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill, this deal disappears."
+            answer: `First 200 people pay once (${pricing.tier1} or ${pricing.tier2}) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill, this deal disappears.`
           },
           {
             question: "Can I use this for my business?",
@@ -231,7 +247,7 @@ const FAQ = () => {
                 What's special about the Lifetime Deal?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                First 200 people to claim it pay <strong>once</strong>—$49 or $99—and never pay again. Not yearly, not monthly. Once. Done. 
+                First 200 people to claim it pay <strong>once</strong>—{pricing.tier1} or {pricing.tier2}—and never pay again. Not yearly, not monthly. Once. Done. 
                 Unlimited generations forever, all future features included, priority support, exclusive badges. 
                 After those 200 spots fill up, this offer's gone. Like, actually gone. We're not bringing it back.
               </AccordionContent>

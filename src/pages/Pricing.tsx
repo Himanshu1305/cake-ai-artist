@@ -132,7 +132,7 @@ const Pricing = () => {
   const faqItems = [
     {
       question: "What happens when all spots fill up?",
-      answer: "Once all 200 lifetime member spots are claimed, this deal closes forever. New users will only be able to subscribe at $9.99/month. If you claim this lifetime deal now, you'll have lifetime access regardless of future price changes."
+      answer: `Once all 200 lifetime member spots are claimed, this deal closes forever. New users will only be able to subscribe at ${PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}/month. If you claim this lifetime deal now, you'll have lifetime access regardless of future price changes.`
     },
     {
       question: "Can I upgrade from free to lifetime later?",
@@ -152,11 +152,11 @@ const Pricing = () => {
     },
     {
       question: "What's the difference between Tier 1 and Tier 2?",
-      answer: "Both tiers offer identical features and lifetime access. Tier 1 is limited to the first 50 members and costs $49, while Tier 2 is for members 51-200 and costs $99. Both receive the same benefits, but Tier 1 members get a special gold badge, while Tier 2 members get a silver badge."
+      answer: `Both tiers offer identical features and lifetime access. Tier 1 is limited to the first 50 members and costs ${PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}, while Tier 2 is for members 51-200 and costs ${PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'}. Both receive the same benefits, but Tier 1 members get a special gold badge, while Tier 2 members get a silver badge.`
     },
     {
       question: "Why should I buy now vs waiting?",
-      answer: "This is the cheapest Cake AI Artist will ever be. At regular pricing of $9.99/month ($119.88/year), you'd spend $1,198.80 over 10 years. Founding members pay just $49-$99 once and save over $1,100. This offer will never be repeated."
+      answer: `This is the cheapest Cake AI Artist will ever be. At regular pricing of ${PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}/month, founding members pay just ${PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}-${PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'} once and save big. This offer will never be repeated.`
     },
   ];
 
@@ -291,7 +291,7 @@ const Pricing = () => {
                     ))}
                   </ul>
                   <div className="mt-6 p-3 bg-gold/10 rounded-lg border border-gold/30">
-                    <p className="text-sm font-bold text-gold">💰 Save $1,149.80 forever</p>
+                    <p className="text-sm font-bold text-gold">💰 Save {userCountry === 'IN' ? '₹1,06,000+' : userCountry === 'GB' ? '£921+' : userCountry === 'CA' ? 'C$1,600+' : userCountry === 'AU' ? 'A$1,700+' : '$1,149+'} forever</p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
@@ -354,7 +354,7 @@ const Pricing = () => {
                     ))}
                   </ul>
                   <div className="mt-6 p-3 bg-silver/10 rounded-lg border border-silver/30">
-                    <p className="text-sm font-bold text-silver">💰 Save $1,099.80 forever</p>
+                    <p className="text-sm font-bold text-silver">💰 Save {userCountry === 'IN' ? '₹1,04,000+' : userCountry === 'GB' ? '£883+' : userCountry === 'CA' ? 'C$1,530+' : userCountry === 'AU' ? 'A$1,650+' : '$1,099+'} forever</p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
@@ -395,7 +395,7 @@ const Pricing = () => {
                       <span className="text-5xl font-bold">{PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}</span>
                       <span className="text-muted-foreground">/month</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">or {PRICING_DISPLAY[userCountry]?.symbol || 'US$'}119.88/year</p>
+                    <p className="text-sm text-muted-foreground mt-2">or {userCountry === 'IN' ? '₹10,788' : userCountry === 'GB' ? '£96' : userCountry === 'CA' ? 'C$168' : userCountry === 'AU' ? 'A$180' : '$120'}/year</p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -419,7 +419,7 @@ const Pricing = () => {
                   </ul>
                   <div className="mt-6 p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      = $1,198.80 over 10 years
+                      = {userCountry === 'IN' ? '₹1,07,880' : userCountry === 'GB' ? '£959' : userCountry === 'CA' ? 'C$1,679' : userCountry === 'AU' ? 'A$1,799' : '$1,199'} over 10 years
                     </p>
                   </div>
                 </CardContent>
@@ -493,7 +493,7 @@ const Pricing = () => {
           </p>
           <div className="flex flex-col items-center gap-4 mb-8">
             <SpotsRemainingCounter />
-            <CountdownTimer countryCode="US" />
+            <CountdownTimer countryCode={userCountry} />
           </div>
           <Button
             size="lg"
