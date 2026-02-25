@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState, useMemo } from "react";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 // Lazy load CakeCreator for better initial page performance
 const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
@@ -47,6 +48,18 @@ import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { detectedCountry } = useGeoContext();
+  
+  // Dynamic pricing based on detected country
+  const countryPricing = useMemo(() => {
+    const pricing: Record<string, { price: string; code: string }> = {
+      IN: { price: '₹4,100', code: 'IN' },
+      GB: { price: '£39', code: 'GB' },
+      CA: { price: 'C$67', code: 'CA' },
+      AU: { price: 'A$75', code: 'AU' },
+    };
+    return pricing[detectedCountry || ''] || { price: '$49', code: 'US' };
+  }, [detectedCountry]);
   
   // Call hooks at top level (React Rules of Hooks)
   const dynamicCakeCount = useDynamicCakeCount();
@@ -380,8 +393,8 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
             >
-              <p className="text-white font-bold text-lg">
-                <DynamicSaleLabel countryCode="US" suffix="ENDS IN:" />
+              <p className="text-white font-bold text-sm md:text-lg">
+                <DynamicSaleLabel countryCode={countryPricing.code} suffix="ENDS IN:" />
               </p>
             </motion.div>
             
@@ -390,16 +403,16 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <CountdownTimer countryCode="US" />
+              <CountdownTimer countryCode={countryPricing.code} />
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-2xl md:text-6xl font-bold text-white drop-shadow-lg"
+              className="text-xl md:text-4xl lg:text-6xl font-bold text-white drop-shadow-lg break-words"
             >
-              Get LIFETIME ACCESS for just $49
+              Get LIFETIME ACCESS for just {countryPricing.price}
             </motion.h1>
 
             <motion.div
@@ -408,8 +421,8 @@ const Index = () => {
               transition={{ delay: 0.4 }}
               className="space-y-2"
             >
-              <span className="text-white text-sm md:text-2xl font-semibold drop-shadow-md block">
-                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
+              <span className="text-white text-xs md:text-2xl font-semibold drop-shadow-md block">
+                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline" />
               </span>
             </motion.div>
 
