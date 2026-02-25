@@ -2489,17 +2489,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           description: "Please wait while we save your cakes",
                         });
                         
-                        const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
-                        await saveGeneratedImage(selectedUrls);
-                        
-                        setIsSavingToGallery(false);
-                        haptic.success();
-                        
-                        toast({
-                          title: "🎉 Woohoo! Saved to Your Gallery!",
-                          description: `${selectedImages.size} stunning cake${selectedImages.size > 1 ? 's' : ''} saved! ✨ Want to show off? Head to Gallery → Click the ⭐ star to feature your masterpiece on our HOMEPAGE!`,
-                          className: "bg-gradient-to-r from-party-purple via-party-pink to-party-orange border-2 border-party-gold text-white shadow-2xl",
-                        });
+                        try {
+                          const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
+                          await saveGeneratedImage(selectedUrls);
+                          
+                          haptic.success();
+                          
+                          toast({
+                            title: "🎉 Woohoo! Saved to Your Gallery!",
+                            description: `${selectedImages.size} stunning cake${selectedImages.size > 1 ? 's' : ''} saved! ✨ Want to show off? Head to Gallery → Click the ⭐ star to feature your masterpiece on our HOMEPAGE!`,
+                            className: "bg-gradient-to-r from-party-purple via-party-pink to-party-orange border-2 border-party-gold text-white shadow-2xl",
+                          });
+                        } catch (err) {
+                          console.error('Save to gallery failed:', err);
+                          toast({
+                            title: "❌ Save failed",
+                            description: "Something went wrong saving your cakes. Please try again.",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setIsSavingToGallery(false);
+                        }
                       }}
                       disabled={selectedImages.size === 0 || isSavingToGallery}
                       className="w-full py-6 bg-party-purple hover:bg-party-purple/90 transition-all duration-300 text-white font-semibold"

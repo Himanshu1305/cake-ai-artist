@@ -476,7 +476,7 @@ const CanadaLanding = () => {
       {/* Pricing */}
       <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-4">Special New Year Lifetime Deal</h2>
+          <h2 className="text-3xl font-bold text-center text-foreground mb-4">Exclusive Lifetime Deal</h2>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <Card className="text-center h-full">

@@ -165,7 +165,7 @@ const Pricing = () => {
       <Helmet>
         <title>Pricing - Lifetime Access for $49. Seriously. | Cake AI Artist</title>
         <meta name="description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever. After that, it's $9.99/month. Your call." />
-        <meta name="keywords" content="cake AI pricing, lifetime cake access, new year deal, AI cake subscription" />
+        <meta name="keywords" content="cake AI pricing, lifetime cake access, exclusive deal, AI cake subscription" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
         <meta property="og:title" content="Pricing - Lifetime Access for $49. Seriously. | Cake AI Artist" />
         <meta property="og:description" content="First 200 people pay once and never pay again. $49 gets you unlimited cake designs forever." />
@@ -187,7 +187,7 @@ const Pricing = () => {
       />
       
       <ProductSchema 
-        name="Cake AI Artist New Year Special - Tier 1"
+        name="Cake AI Artist Exclusive Lifetime Deal - Tier 1"
         description="Lifetime access to AI-powered personalized cake designs. First 50 members only."
         price="49"
         priceCurrency="USD"
@@ -269,7 +269,7 @@ const Pricing = () => {
                 <CardHeader className="pt-8">
                   <CardTitle className="text-2xl flex items-center justify-center gap-2">
                     <Crown className="w-6 h-6 text-gold" />
-                    New Year Special
+                    Lifetime Deal
                   </CardTitle>
                   <CardDescription>First 50 Members Only</CardDescription>
                   <div className="mt-4">
