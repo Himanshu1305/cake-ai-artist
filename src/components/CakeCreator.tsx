@@ -771,6 +771,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             }
           } else if (error.message.includes('Rate limit')) {
             errorMessage = "You've hit the rate limit. Please wait a moment and try again.";
+          } else if (error.message.includes('CREDITS_EXHAUSTED') || error.message.includes('402') || error.message.includes('credits')) {
+            errorMessage = "AI generation credits are temporarily exhausted. Please try again later.";
           } else if (error.message.includes('timed out')) {
             errorMessage = "Generation took too long. The AI service may be busy. Please try again in a moment.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
