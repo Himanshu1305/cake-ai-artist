@@ -1,31 +1,38 @@
 
 
-## Impact Analysis
+## Plan: Improve Cake Card Presentation and Remove Share Text
 
-The CORS header fix has **no negative impact** on any existing functionality — adding extra allowed headers is purely additive. Browsers simply ignore headers they don't send. However, there's a broader finding:
+### Changes
 
-### All 22 Edge Functions Have the Same Old CORS Headers
+**1. Remove "Check out this amazing cake" share text**
 
-Every single backend function in the project uses the outdated CORS headers missing the newer client platform fields. This means the same mobile CORS failure could potentially affect **any** function called from mobile, including:
+**File: `src/components/CakeCreator.tsx`** (lines 1158, 1168-1172)
+- Change `shareText` to just `${name}'s Birthday Cake 🎂`
+- In `navigator.share()`, set `title` to the short label and **remove the `text` field entirely** so no extra promotional text appears below the shared image on mobile
 
-- **Payment functions** (create-razorpay-order, verify-razorpay-payment, check-payment-status) — could block mobile payments
-- **save-image-to-storage** — could fail to save generated cakes on mobile
-- **generate-logo** — logo generation could fail on mobile
-- **generate-party-pack** — party pack generation could fail on mobile
-- **detect-country** — geo detection could fail on mobile
-- **delete-user-account** — account deletion could fail on mobile
+**File: `src/pages/Gallery.tsx`** (line 138)
+- Remove `"Check out this amazing personalized cake! 🎂✨"` — replace with a minimal label like `"Personalized Cake 🎂"`
 
-### Recommended Plan Update
+**2. Fix wasted space / black bars in shareable card**
 
-Instead of only fixing `generate-complete-cake`, update CORS headers in **all 22 edge functions** to include the full set:
+**File: `src/components/CakeCreator.tsx`** — `createShareableImage` function (lines 961-1073)
+- Currently draws the full AI-generated image preserving its aspect ratio, which includes black bars at top/bottom
+- Change to **center-crop** (like CSS `object-cover`): use the 9-argument `drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)` to crop the source image to fill the full 1080px width at a 4:5 or 1:1 aspect ratio, eliminating black padding
+- Remove the background gradient fill since the image will fill edge-to-edge with no visible background
 
-```
-authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
-```
+**3. Tighten image grid display**
 
-Functions with extra custom headers (like `x-razorpay-signature` or `x-test-secret`) will keep those in addition.
+**File: `src/components/CakeCreator.tsx`** (lines 2137, 2231, 2317)
+- Change `aspect-square` to `aspect-[4/5]` on image containers so the displayed grid matches the shareable card proportions and shows more of the cake without excessive cropping
 
-The 402 error handling will still only be added to `generate-complete-cake` and `CakeCreator.tsx` as originally planned, since those are the only AI generation functions affected.
+### Files Changed
 
-**Zero risk of breaking anything** — this change only *allows* more headers through, it doesn't restrict or change any behavior.
+| File | Change |
+|------|--------|
+| `src/components/CakeCreator.tsx` | Remove share text, crop black bars in shareable image, adjust grid aspect ratio |
+| `src/pages/Gallery.tsx` | Remove promotional share text |
+
+### Impact
+- No backend changes. Pure frontend/cosmetic improvements.
+- Shared images will look tighter and more professional with no black bars and no promotional text.
 
