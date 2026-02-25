@@ -1,87 +1,64 @@
 
 
-## Plan: Fix 4 Issues — Stuck Saving, Mobile Text Truncation, Wrong Currency, and Generic Deal Name
+## Plan: Remove All Hardcoded USD Pricing — Use Dynamic Country-Based Amounts
 
----
+### Problem
+Three files contain hardcoded `$49`, `$99`, `$9.99`, `$1,149.80`, `$1,099.80`, `$120/year`, `$119.88/year`, and `$1,198.80` amounts that ignore the user's detected country. An Indian user seeing "$49" instead of "₹4,100" is confusing and reduces conversion.
 
-### Issue 1: "Saving" state never resolves
+### Scope of Hardcoded $ Found
 
-**Root cause:** In `src/components/CakeCreator.tsx` (lines 2471-2503), the Save to Gallery button sets `isSavingToGallery = true` before calling `saveGeneratedImage`, then sets it to `false` after. But there is no `try/catch/finally` — if `saveGeneratedImage` throws (e.g., network error, storage error), the flag stays `true` forever and the button shows "Saving..." indefinitely.
+| File | Hardcoded USD instances |
+|------|----------------------|
+| `src/pages/Index.tsx` | Hero pricing grid: "$120/year forever", "$49 ONCE", "$1,149.80 over 10 years", "$9.99/month" (lines 438-460) |
+| `src/pages/Pricing.tsx` | Savings badges: "$1,149.80 forever" and "$1,099.80 forever" (lines 294, 357). FAQ answers: "$9.99/month", "$49", "$99", "$119.88/year", "$1,198.80" (lines 135, 155, 159). SEO meta tags: "$49" in title/description (lines 166-179). Monthly "$1,198.80 over 10 years" comparison box (line 410 area) |
+| `src/pages/FAQ.tsx` | FAQ answers: "$49 or $99" (lines 62, 234) |
 
-**Fix:** Wrap the save call in a `try/catch/finally` block so `setIsSavingToGallery(false)` always runs, even on error. Show an error toast on failure.
+### What Will NOT Change
+- SEO meta tags in Pricing.tsx `<Helmet>` — these are for search engine crawlers and should remain in USD (international SEO standard)
+- Schema.org `ProductSchema` price/currency — must remain USD per structured data spec
+- `estimatedCost` in HowToSchema — schema.org standard, keep USD
+- Country landing pages (IndiaLanding, UKLanding, etc.) — already use local currency correctly
+- Admin.tsx hardcoded "USD" — internal admin tool, correct as-is
 
-**File:** `src/components/CakeCreator.tsx` (lines ~2484-2502)
+### Plan
 
----
+**File: `src/pages/Index.tsx`**
 
-### Issue 2: Mobile text truncation in hero
+Expand the `countryPricing` object (line 54-62) to include savings and monthly amounts:
 
-**Root cause:** From the screenshot, "Get LIFETIME ACCESS for just $49" is cut off on the right side. The heading text is too wide for mobile screens. The `text-2xl` size combined with the long string overflows the container.
+```typescript
+const countryPricing = useMemo(() => {
+  const pricing: Record<string, { price: string; monthly: string; yearly: string; savings: string; code: string }> = {
+    IN: { price: '₹4,100', monthly: '₹899/mo', yearly: '₹10,788/year', savings: '₹1,06,000+', code: 'IN' },
+    GB: { price: '£39', monthly: '£7.99/mo', yearly: '£96/year', savings: '£921+', code: 'GB' },
+    CA: { price: 'C$67', monthly: 'C$13.99/mo', yearly: 'C$168/year', savings: 'C$1,600+', code: 'CA' },
+    AU: { price: 'A$75', monthly: 'A$14.99/mo', yearly: 'A$180/year', savings: 'A$1,700+', code: 'AU' },
+  };
+  return pricing[detectedCountry || ''] || { price: '$49', monthly: '$9.99/mo', yearly: '$120/year', savings: '$1,149+', code: 'US' };
+}, [detectedCountry]);
+```
 
-**Fix in `src/pages/Index.tsx`:**
-- Reduce hero heading to `text-xl md:text-2xl lg:text-6xl` on mobile
-- Add `break-words` or wrap text more aggressively
-- Reduce padding/font size on the sale label badge for mobile
-- The "Founding Member Special" + spots counter line also overflows — reduce to `text-xs md:text-sm` on mobile
+Then replace all hardcoded values in the hero pricing grid (lines 438-461) with `countryPricing.price`, `countryPricing.monthly`, `countryPricing.savings`, etc.
 
-**Fix in `src/pages/IndiaLanding.tsx`:**
-- Apply same responsive text sizing to the hero section heading and sale labels
+**File: `src/pages/Pricing.tsx`**
 
----
+- Add a `SAVINGS_DISPLAY` object alongside `PRICING_DISPLAY` with country-specific savings amounts, yearly totals, and 10-year costs
+- Replace the hardcoded savings badges on lines 294 and 357 with `SAVINGS_DISPLAY[userCountry]` values
+- Replace hardcoded amounts in FAQ answers (lines 135, 155, 159) with dynamic values from `PRICING_DISPLAY[userCountry]`
+- Replace the monthly card's "$1,198.80 over 10 years" with a dynamic calculation
+- The FAQ items array will need to become a function of `userCountry` so values are interpolated
 
-### Issue 3: Wrong currency (showing USD instead of INR for Indian users)
+**File: `src/pages/FAQ.tsx`**
 
-**Root cause:** The Index.tsx homepage hardcodes `countryCode="US"` in `<DynamicSaleLabel>` and `<CountdownTimer>` (line 384, 393), and hardcodes "$49" in the heading (line 402). When geo-redirect fails or user lands on the US homepage directly, they see USD pricing regardless of their actual location.
-
-The geo-redirect system should redirect Indian users to `/india`, but the screenshots show the user is on the US homepage seeing "$49". This means either the redirect failed or the user navigated back to `/`.
-
-**Fix:** Instead of hardcoding "US" on the Index page, detect the user's country dynamically (from `useGeoContext` or localStorage preference) and display the correct currency. Replace the hardcoded "$49" with a dynamic pricing lookup from the same `PRICING_DISPLAY` object used in `Pricing.tsx`.
-
-**File:** `src/pages/Index.tsx`
-- Import `useGeoContext` and `PRICING_DISPLAY` equivalent
-- Use detected country to show correct price in the hero heading
-- Pass correct `countryCode` to `<DynamicSaleLabel>` and `<CountdownTimer>`
-
----
-
-### Issue 4: "New Year" deal naming — replace with generic term
-
-**Root cause:** Multiple pages still reference "Special New Year Lifetime Deal" or "New Year Special" as hardcoded text:
-- `src/pages/IndiaLanding.tsx` line 697
-- `src/pages/UKLanding.tsx` line 696
-- `src/pages/AustraliaLanding.tsx` line 479
-- `src/pages/Pricing.tsx` lines 190, 272
-- `src/pages/HowItWorks.tsx` line 460
-- `src/pages/CanadaLanding.tsx` (likely similar)
-
-**Fix:** Replace all "New Year" references in pricing sections with a generic label like **"Exclusive Lifetime Deal"** or **"Special Lifetime Deal"**. Blog posts about New Year cakes should remain unchanged (they are content, not pricing labels).
-
-**Files:**
-- `src/pages/IndiaLanding.tsx` — "Special New Year Lifetime Deal" → "Exclusive Lifetime Deal"
-- `src/pages/UKLanding.tsx` — same
-- `src/pages/AustraliaLanding.tsx` — same
-- `src/pages/CanadaLanding.tsx` — same
-- `src/pages/Pricing.tsx` — "New Year Special" → "Lifetime Deal", SEO schema name update
-- `src/pages/HowItWorks.tsx` — "New Year Lifetime Deal" → "Lifetime Deal"
-
----
+- Import `useGeoContext` to detect country
+- Add a pricing lookup (same `PRICING_DISPLAY` structure)
+- Replace "$49 or $99" in FAQ answers (lines 62, 234) with dynamic `tier1`/`tier2` values based on detected country
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/CakeCreator.tsx` | Wrap save-to-gallery in try/catch/finally to fix stuck "Saving..." state |
-| `src/pages/Index.tsx` | Dynamic country detection for pricing display; fix mobile text overflow |
-| `src/pages/IndiaLanding.tsx` | Rename "New Year" → generic; fix mobile text sizing |
-| `src/pages/UKLanding.tsx` | Rename "New Year" → generic |
-| `src/pages/AustraliaLanding.tsx` | Rename "New Year" → generic |
-| `src/pages/CanadaLanding.tsx` | Rename "New Year" → generic |
-| `src/pages/Pricing.tsx` | Rename "New Year Special" → "Lifetime Deal" |
-| `src/pages/HowItWorks.tsx` | Rename "New Year Lifetime Deal" → "Lifetime Deal" |
-
-### Impact
-- Fixes the critical "forever saving" bug that blocks users from using the gallery
-- Ensures Indian users see INR pricing on the homepage
-- Removes outdated "New Year" branding across all pages
-- Fixes text truncation on mobile hero sections
+| `src/pages/Index.tsx` | Expand `countryPricing` to include monthly/yearly/savings; replace hardcoded $ in hero grid |
+| `src/pages/Pricing.tsx` | Add savings display object; dynamize FAQ answers and savings badges |
+| `src/pages/FAQ.tsx` | Import geo context; replace hardcoded $49/$99 with country-appropriate amounts |
 
