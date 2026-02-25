@@ -1314,13 +1314,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       )}
 
       {/* Input Form */}
-      <Card className="p-8 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party backdrop-blur-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
+      <Card className="p-4 md:p-8 bg-gradient-celebration/20 border-party-pink/30 border-2 shadow-party backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <div className="text-center space-y-1 md:space-y-2">
+            <h2 className="text-xl md:text-3xl font-bold text-foreground flex items-center justify-center gap-2">
               🎂 Create Your Dream Cake ✨
             </h2>
-            <p className="text-foreground/80 text-lg">Enter a name and let the magic begin! 🎉</p>
+            <p className="text-foreground/80 text-sm md:text-lg">Enter a name and let the magic begin! 🎉</p>
           </div>
           
           <div className="space-y-6">
@@ -1334,8 +1334,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             />
 
             {/* Context Fields for AI */}
-            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-2">Help AI personalize your message</h3>
+            <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-base md:text-lg font-medium text-foreground mb-1 md:mb-2">Help AI personalize your message</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -1689,8 +1689,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               </div>
 
             {/* Cake Customization */}
-            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-2">Customize Your Cake</h3>
+            <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-base md:text-lg font-medium text-foreground mb-1 md:mb-2">Customize Your Cake</h3>
               
               {/* Generation Quality Toggle */}
               <div className="space-y-3 pb-4 border-b border-border/50">
@@ -1849,8 +1849,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
 
             {/* Save as Memory - Who is this for & Occasion Date */}
-            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-2">Save as a Memory</h3>
+            <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
+              <h3 className="text-base md:text-lg font-medium text-foreground mb-1 md:mb-2">Save as a Memory</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="recipientName" className="text-sm font-medium flex items-center gap-2">
@@ -1888,7 +1888,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             </div>
 
             {/* Custom Message Section */}
-            <div className="space-y-4 p-4 bg-surface rounded-lg border border-border">
+            <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />

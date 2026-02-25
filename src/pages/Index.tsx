@@ -370,7 +370,7 @@ const Index = () => {
         <img
           src={partyHero}
           alt="Vibrant birthday party celebration"
-          className="w-full h-auto md:h-[600px] object-cover"
+          className="w-full min-h-[520px] md:h-[600px] object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
@@ -397,7 +397,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
+              className="text-2xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
               Get LIFETIME ACCESS for just $49
             </motion.h1>
@@ -408,7 +408,7 @@ const Index = () => {
               transition={{ delay: 0.4 }}
               className="space-y-2"
             >
-              <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
+              <span className="text-white text-sm md:text-2xl font-semibold drop-shadow-md block">
                 Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
               </span>
             </motion.div>
@@ -419,7 +419,7 @@ const Index = () => {
               transition={{ delay: 0.5 }}
               className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto"
             >
-              <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
+              <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Regular price:</p>
                   <p className="text-lg font-bold line-through text-muted-foreground">$120/year forever</p>
@@ -443,7 +443,7 @@ const Index = () => {
                 <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </Button>
               
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+              <div className="mt-4 space-y-1 text-sm text-muted-foreground hidden md:block">
                 <p>"Once spots fill, price becomes $9.99/month"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
@@ -452,8 +452,21 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Main Creator Section - Moved Up for mobile */}
+      <div id="creator" className="container mx-auto px-4 py-8 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Ready to Create?</h2>
+            <p className="text-sm md:text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
+          </div>
+          <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
+            <CakeCreator />
+          </Suspense>
+        </div>
+      </div>
+
       {/* Feature Highlight */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-6 md:py-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-party opacity-30 rounded-2xl blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
@@ -491,18 +504,7 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Creator Section - Moved Up for better UX */}
-      <div id="creator" className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Create?</h2>
-            <p className="text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
-          </div>
-          <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
-            <CakeCreator />
-          </Suspense>
-        </div>
-      </div>
+      {/* (Creator section moved above Feature Highlight) */}
 
       {/* Why Choose Section */}
       <div className="container mx-auto px-4 py-12">
