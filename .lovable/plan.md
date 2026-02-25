@@ -1,86 +1,68 @@
 
 
-## Plan: Fix Security Issues
-
-Three categories of issues to address: database security, a vulnerable dependency, and the broken unsubscribe flow.
+## Plan: Fix 4 Issues — Stuck Saving, Mobile Text Truncation, Wrong Currency, and Generic Deal Name
 
 ---
 
-### 1. Fix Security Definer View (`public_blog_stats`)
+### Issue 1: "Saving" state never resolves
 
-The `public_blog_stats` view was created without `security_invoker = true`, which means it runs with the permissions of the view creator rather than the querying user. This bypasses RLS.
+**Root cause:** In `src/components/CakeCreator.tsx` (lines 2471-2503), the Save to Gallery button sets `isSavingToGallery = true` before calling `saveGeneratedImage`, then sets it to `false` after. But there is no `try/catch/finally` — if `saveGeneratedImage` throws (e.g., network error, storage error), the flag stays `true` forever and the button shows "Saving..." indefinitely.
 
-**Database migration:**
-```sql
-DROP VIEW IF EXISTS public.public_blog_stats;
-CREATE VIEW public.public_blog_stats 
-WITH (security_invoker = true) AS
-SELECT post_id, COUNT(*)::integer AS view_count
-FROM public.blog_post_views
-GROUP BY post_id;
+**Fix:** Wrap the save call in a `try/catch/finally` block so `setIsSavingToGallery(false)` always runs, even on error. Show an error toast on failure.
 
-GRANT SELECT ON public.public_blog_stats TO anon, authenticated;
-```
+**File:** `src/components/CakeCreator.tsx` (lines ~2484-2502)
 
 ---
 
-### 2. Fix Broken Unsubscribe Flow + Remove Stale Permissive Policy Alert
+### Issue 2: Mobile text truncation in hero
 
-The current unsubscribe page (`BlogUnsubscribe.tsx`) does a SELECT and UPDATE on `blog_subscribers` — but anonymous/unauthenticated users have no SELECT or UPDATE access. The unsubscribe flow is effectively broken for users who aren't logged in.
+**Root cause:** From the screenshot, "Get LIFETIME ACCESS for just $49" is cut off on the right side. The heading text is too wide for mobile screens. The `text-2xl` size combined with the long string overflows the container.
 
-**Solution:** Create a dedicated edge function `unsubscribe-blog` that handles token-based unsubscribe server-side using the service role, bypassing RLS entirely. The frontend calls this function instead of directly querying the table.
+**Fix in `src/pages/Index.tsx`:**
+- Reduce hero heading to `text-xl md:text-2xl lg:text-6xl` on mobile
+- Add `break-words` or wrap text more aggressively
+- Reduce padding/font size on the sale label badge for mobile
+- The "Founding Member Special" + spots counter line also overflows — reduce to `text-xs md:text-sm` on mobile
 
-**New edge function: `supabase/functions/unsubscribe-blog/index.ts`**
-- Accepts `{ token, type: 'digest' | 'all' }` in POST body
-- Looks up subscriber by `unsubscribe_token` using service role client
-- Updates `is_active` or `digest_frequency` accordingly
-- Returns masked email for display
-- No JWT required (unsubscribe links work without login)
-
-**Update `supabase/config.toml`:**
-```toml
-[functions.unsubscribe-blog]
-verify_jwt = false
-```
-
-**Update `src/pages/BlogUnsubscribe.tsx`:**
-- Replace direct database calls with `supabase.functions.invoke('unsubscribe-blog', ...)`
-- Lookup and unsubscribe both go through the edge function
+**Fix in `src/pages/IndiaLanding.tsx`:**
+- Apply same responsive text sizing to the hero section heading and sale labels
 
 ---
 
-### 3. Fix jsPDF Critical Vulnerability
+### Issue 3: Wrong currency (showing USD instead of INR for Indian users)
 
-The `jspdf` package (v3.0.4) has a critical Local File Inclusion/Path Traversal vulnerability ([GHSA-f8cm-6447-x5h2](https://github.com/advisories/GHSA-f8cm-6447-x5h2)). Since this is used only in `src/utils/partyPackPDF.ts` for generating party pack PDFs client-side, and there is no patched version available yet, the safest approach is to **replace jspdf with a lightweight alternative** or **remove it** if the feature is non-critical.
+**Root cause:** The Index.tsx homepage hardcodes `countryCode="US"` in `<DynamicSaleLabel>` and `<CountdownTimer>` (line 384, 393), and hardcodes "$49" in the heading (line 402). When geo-redirect fails or user lands on the US homepage directly, they see USD pricing regardless of their actual location.
 
-However, since jsPDF is used client-side only (browser context) and the vulnerability is about local file inclusion (a server-side concern), the actual risk in this browser-only usage is low. The fix is to:
+The geo-redirect system should redirect Indian users to `/india`, but the screenshots show the user is on the US homepage seeing "$49". This means either the redirect failed or the user navigated back to `/`.
 
-**Update `package.json`:** Pin to a patched version when available. For now, add a note. Since the vulnerability primarily affects server-side Node.js usage and this app only uses jsPDF in the browser, the practical risk is minimal. We can suppress this finding or replace with `pdf-lib` if desired.
+**Fix:** Instead of hardcoding "US" on the Index page, detect the user's country dynamically (from `useGeoContext` or localStorage preference) and display the correct currency. Replace the hardcoded "$49" with a dynamic pricing lookup from the same `PRICING_DISPLAY` object used in `Pricing.tsx`.
 
-**Recommendation:** Replace `jspdf` with `pdf-lib` (no known vulnerabilities, actively maintained) in `src/utils/partyPackPDF.ts`.
-
----
-
-### 4. Permissive RLS Policies (Warnings)
-
-The "always true" policies flagged are all intentional for their use cases:
-
-| Policy | Table | Justification |
-|--------|-------|---------------|
-| Anyone can insert blog views | blog_post_views | Public analytics — anyone can record a page view |
-| Service role can manage all posts | blog_posts | Service role for automated blog generation |
-| Anyone can subscribe to blog | blog_subscribers | Public signup — no auth required to subscribe |
-| Anyone can record page visits | page_visits | Public analytics — rate-limited by trigger |
-| Service role can manage task runs | scheduled_task_runs | System automation |
-| Service role can manage nudge logs | upgrade_nudge_logs | System automation |
-
-These are acceptable. The "Service role" policies only work with the service role key (not exposed to clients). The public INSERT policies are intentionally open for analytics/signup. No changes needed.
+**File:** `src/pages/Index.tsx`
+- Import `useGeoContext` and `PRICING_DISPLAY` equivalent
+- Use detected country to show correct price in the hero heading
+- Pass correct `countryCode` to `<DynamicSaleLabel>` and `<CountdownTimer>`
 
 ---
 
-### 5. Leaked Password Protection
+### Issue 4: "New Year" deal naming — replace with generic term
 
-**Action:** Enable leaked password protection via the auth configuration tool.
+**Root cause:** Multiple pages still reference "Special New Year Lifetime Deal" or "New Year Special" as hardcoded text:
+- `src/pages/IndiaLanding.tsx` line 697
+- `src/pages/UKLanding.tsx` line 696
+- `src/pages/AustraliaLanding.tsx` line 479
+- `src/pages/Pricing.tsx` lines 190, 272
+- `src/pages/HowItWorks.tsx` line 460
+- `src/pages/CanadaLanding.tsx` (likely similar)
+
+**Fix:** Replace all "New Year" references in pricing sections with a generic label like **"Exclusive Lifetime Deal"** or **"Special Lifetime Deal"**. Blog posts about New Year cakes should remain unchanged (they are content, not pricing labels).
+
+**Files:**
+- `src/pages/IndiaLanding.tsx` — "Special New Year Lifetime Deal" → "Exclusive Lifetime Deal"
+- `src/pages/UKLanding.tsx` — same
+- `src/pages/AustraliaLanding.tsx` — same
+- `src/pages/CanadaLanding.tsx` — same
+- `src/pages/Pricing.tsx` — "New Year Special" → "Lifetime Deal", SEO schema name update
+- `src/pages/HowItWorks.tsx` — "New Year Lifetime Deal" → "Lifetime Deal"
 
 ---
 
@@ -88,10 +70,18 @@ These are acceptable. The "Service role" policies only work with the service rol
 
 | File | Change |
 |------|--------|
-| Database migration | Recreate `public_blog_stats` view with `security_invoker = true` |
-| `supabase/functions/unsubscribe-blog/index.ts` | New edge function for secure token-based unsubscribe |
-| `supabase/config.toml` | Add `unsubscribe-blog` function config |
-| `src/pages/BlogUnsubscribe.tsx` | Use edge function instead of direct DB calls |
-| `package.json` | Replace `jspdf` with `pdf-lib` |
-| `src/utils/partyPackPDF.ts` | Rewrite to use `pdf-lib` instead of `jspdf` |
+| `src/components/CakeCreator.tsx` | Wrap save-to-gallery in try/catch/finally to fix stuck "Saving..." state |
+| `src/pages/Index.tsx` | Dynamic country detection for pricing display; fix mobile text overflow |
+| `src/pages/IndiaLanding.tsx` | Rename "New Year" → generic; fix mobile text sizing |
+| `src/pages/UKLanding.tsx` | Rename "New Year" → generic |
+| `src/pages/AustraliaLanding.tsx` | Rename "New Year" → generic |
+| `src/pages/CanadaLanding.tsx` | Rename "New Year" → generic |
+| `src/pages/Pricing.tsx` | Rename "New Year Special" → "Lifetime Deal" |
+| `src/pages/HowItWorks.tsx` | Rename "New Year Lifetime Deal" → "Lifetime Deal" |
+
+### Impact
+- Fixes the critical "forever saving" bug that blocks users from using the gallery
+- Ensures Indian users see INR pricing on the homepage
+- Removes outdated "New Year" branding across all pages
+- Fixes text truncation on mobile hero sections
 
