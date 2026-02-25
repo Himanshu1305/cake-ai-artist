@@ -1,82 +1,97 @@
 
 
-## Mobile UI Analysis and Improvement Plan
+## Plan: Fix Security Issues
 
-### Critical Bug: Page Crashes on Mobile
+Three categories of issues to address: database security, a vulnerable dependency, and the broken unsubscribe flow.
 
-The homepage **crashes entirely on mobile** due to the `MobileSelect` component. The `useIsMobile()` hook returns `false` on the initial render (because `useState` starts as `undefined`, and `!!undefined === false`). This means:
+---
 
-1. First render: `isMobile = false` -- renders the Radix `<Select>` component
-2. Effect fires, detects mobile: `isMobile = true` -- tries to switch to `<Sheet>`
-3. The Radix Select crashes during this unmount/remount transition
+### 1. Fix Security Definer View (`public_blog_stats`)
 
-This is the "Something went wrong" error visible in the browser tool screenshot. **This must be fixed first** before any UI improvements matter.
+The `public_blog_stats` view was created without `security_invoker = true`, which means it runs with the permissions of the view creator rather than the querying user. This bypasses RLS.
 
-### Mobile UI Issues Identified (from code analysis)
+**Database migration:**
+```sql
+DROP VIEW IF EXISTS public.public_blog_stats;
+CREATE VIEW public.public_blog_stats 
+WITH (security_invoker = true) AS
+SELECT post_id, COUNT(*)::integer AS view_count
+FROM public.blog_post_views
+GROUP BY post_id;
 
-**1. Hero Section Text Overlap**
-- The hero image is `h-auto` on mobile (no fixed height), while the overlay contains: sale badge, countdown timer (4 large boxes), large heading ("Get LIFETIME ACCESS for just $49"), founding member text, AND a pricing comparison card with 3 columns and a CTA button
-- All of this is `absolute inset-0` positioned over the image, causing severe overlap and illegibility on small screens
-- The pricing grid uses `grid md:grid-cols-3` -- on mobile it stacks to 1 column, making the overlay taller than the image
+GRANT SELECT ON public.public_blog_stats TO anon, authenticated;
+```
 
-**2. CakeCreator Too Far Down**
-- User must scroll past: urgency banner, nav, hero section (with large image), feature highlight section (image + text + button), THEN reach the creator
-- On mobile this is roughly 3-4 full screen scrolls before reaching the main action
-- The "Start Creating Your Cake Now" button scrolls to the creator, but it's buried
+---
 
-**3. Excessive Padding/Spacing**
-- CakeCreator Card has `p-8` -- wastes ~32px on each side on a 375px screen (17% of width)
-- Container sections have `py-12` and `py-16` between them -- too much vertical space on mobile
-- Form heading "Create Your Dream Cake" is `text-3xl` which is too large for mobile
+### 2. Fix Broken Unsubscribe Flow + Remove Stale Permissive Policy Alert
 
-**4. Form Layout**
-- The form has many sections stacked vertically: name input, context fields (occasion/relation/gender/character), character style info, photo upload, cake customization (quality, type, layers, theme, colors), save as memory, message options, login banner, and finally the generate button
-- On mobile this creates a very long form (~8+ screen scrolls) before reaching the submit button
+The current unsubscribe page (`BlogUnsubscribe.tsx`) does a SELECT and UPDATE on `blog_subscribers` — but anonymous/unauthenticated users have no SELECT or UPDATE access. The unsubscribe flow is effectively broken for users who aren't logged in.
 
-### Plan
+**Solution:** Create a dedicated edge function `unsubscribe-blog` that handles token-based unsubscribe server-side using the service role, bypassing RLS entirely. The frontend calls this function instead of directly querying the table.
 
-**File: `src/components/ui/mobile-select.tsx`**
-- Fix the crash by handling the `undefined` initial state of `useIsMobile()`. Use the raw value from the hook (before `!!` conversion) and render nothing or a skeleton during the initial `undefined` state, OR always render the Sheet version if `isMobile` is `undefined` and the component detects it's a narrow viewport via CSS/initial check
+**New edge function: `supabase/functions/unsubscribe-blog/index.ts`**
+- Accepts `{ token, type: 'digest' | 'all' }` in POST body
+- Looks up subscriber by `unsubscribe_token` using service role client
+- Updates `is_active` or `digest_frequency` accordingly
+- Returns masked email for display
+- No JWT required (unsubscribe links work without login)
 
-**File: `src/pages/Index.tsx`**
+**Update `supabase/config.toml`:**
+```toml
+[functions.unsubscribe-blog]
+verify_jwt = false
+```
 
-*Hero section (lines 367-453):*
-- On mobile, simplify the hero overlay: hide the pricing comparison grid (`hidden md:grid`), reduce heading to `text-2xl`, reduce countdown timer size
-- Set a minimum height on the hero image container for mobile: `min-h-[500px]` or similar so overlay content fits
-- Move or hide the "Once spots fill" and "This offer will NEVER be repeated" text on mobile
+**Update `src/pages/BlogUnsubscribe.tsx`:**
+- Replace direct database calls with `supabase.functions.invoke('unsubscribe-blog', ...)`
+- Lookup and unsubscribe both go through the edge function
 
-*Page structure (lines 455-505):*
-- On mobile, move the CakeCreator section ABOVE the feature highlight so users can start creating immediately
-- Reduce `py-16` to `py-8` on the creator section for mobile
-- Reduce `py-12` to `py-6` on other sections for mobile
+---
 
-**File: `src/components/CakeCreator.tsx`**
+### 3. Fix jsPDF Critical Vulnerability
 
-*Form card (line 1317):*
-- Change `p-8` to `p-4 md:p-8` to reduce padding on mobile
+The `jspdf` package (v3.0.4) has a critical Local File Inclusion/Path Traversal vulnerability ([GHSA-f8cm-6447-x5h2](https://github.com/advisories/GHSA-f8cm-6447-x5h2)). Since this is used only in `src/utils/partyPackPDF.ts` for generating party pack PDFs client-side, and there is no patched version available yet, the safest approach is to **replace jspdf with a lightweight alternative** or **remove it** if the feature is non-critical.
 
-*Form heading (lines 1319-1324):*
-- Change `text-3xl` to `text-xl md:text-3xl` for the heading
-- Change `text-lg` to `text-sm md:text-lg` for the subtitle
+However, since jsPDF is used client-side only (browser context) and the vulnerability is about local file inclusion (a server-side concern), the actual risk in this browser-only usage is low. The fix is to:
 
-*Form sections (lines 1337, 1692, 1852, 1891):*
-- Reduce padding in subsection cards from `p-4` to `p-3 md:p-4`
-- Consider collapsing optional sections (cake customization, save as memory, photo upload) into an Accordion on mobile so the form is shorter and the generate button is reachable sooner
+**Update `package.json`:** Pin to a patched version when available. For now, add a note. Since the vulnerability primarily affects server-side Node.js usage and this app only uses jsPDF in the browser, the practical risk is minimal. We can suppress this finding or replace with `pdf-lib` if desired.
 
-*Generate button:*
-- On mobile, consider making it sticky at the bottom of the screen when the form is valid, so users don't have to scroll all the way down
+**Recommendation:** Replace `jspdf` with `pdf-lib` (no known vulnerabilities, actively maintained) in `src/utils/partyPackPDF.ts`.
+
+---
+
+### 4. Permissive RLS Policies (Warnings)
+
+The "always true" policies flagged are all intentional for their use cases:
+
+| Policy | Table | Justification |
+|--------|-------|---------------|
+| Anyone can insert blog views | blog_post_views | Public analytics — anyone can record a page view |
+| Service role can manage all posts | blog_posts | Service role for automated blog generation |
+| Anyone can subscribe to blog | blog_subscribers | Public signup — no auth required to subscribe |
+| Anyone can record page visits | page_visits | Public analytics — rate-limited by trigger |
+| Service role can manage task runs | scheduled_task_runs | System automation |
+| Service role can manage nudge logs | upgrade_nudge_logs | System automation |
+
+These are acceptable. The "Service role" policies only work with the service role key (not exposed to clients). The public INSERT policies are intentionally open for analytics/signup. No changes needed.
+
+---
+
+### 5. Leaked Password Protection
+
+**Action:** Enable leaked password protection via the auth configuration tool.
+
+---
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/ui/mobile-select.tsx` | Fix crash: handle `undefined` initial state of `useIsMobile()` |
-| `src/pages/Index.tsx` | Simplify hero on mobile, reorder sections to put creator higher, reduce spacing |
-| `src/components/CakeCreator.tsx` | Reduce padding/font sizes on mobile, collapse optional sections, consider sticky generate button |
-
-### Impact
-- Fixes the critical crash on mobile devices
-- Reduces scroll distance to the cake creator by ~60%
-- Makes the form more compact and the generate button more accessible
-- Hero section becomes legible on small screens
+| Database migration | Recreate `public_blog_stats` view with `security_invoker = true` |
+| `supabase/functions/unsubscribe-blog/index.ts` | New edge function for secure token-based unsubscribe |
+| `supabase/config.toml` | Add `unsubscribe-blog` function config |
+| `src/pages/BlogUnsubscribe.tsx` | Use edge function instead of direct DB calls |
+| `package.json` | Replace `jspdf` with `pdf-lib` |
+| `src/utils/partyPackPDF.ts` | Rewrite to use `pdf-lib` instead of `jspdf` |
 
