@@ -14,7 +14,8 @@ export const PremiumComparison = ({ show }: PremiumComparisonProps) => {
   if (!show) return null;
 
   const features = [
-    { name: "Unlimited generations", free: false, premium: true },
+    { name: "Cake generations", free: "5 total", premium: "150/year" },
+    { name: "Gallery slots", free: "5", premium: "30" },
     { name: "4K high-resolution downloads", free: false, premium: true },
     { name: "No watermark", free: false, premium: true },
     { name: "Priority processing", free: false, premium: true },
