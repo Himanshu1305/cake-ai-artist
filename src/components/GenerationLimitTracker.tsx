@@ -40,9 +40,9 @@ export const GenerationLimitTracker = ({ current, limit, isPremium }: Generation
       className="bg-surface-elevated border border-border rounded-lg p-4 mb-6"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-foreground font-medium">Daily Creations</span>
+        <span className="text-foreground font-medium">Free Generations</span>
         <span className="text-foreground text-sm">
-          {remaining}/{limit} left today
+          {remaining}/{limit} remaining
         </span>
       </div>
       
@@ -56,7 +56,7 @@ export const GenerationLimitTracker = ({ current, limit, isPremium }: Generation
         >
           <div>
             <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-              {remaining === 0 ? "You're out of free cakes for today" : "Last free cake for today!"}
+              {remaining === 0 ? "You've used all free generations" : "Last free generation!"}
             </p>
             <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
               Upgrade for unlimited creations

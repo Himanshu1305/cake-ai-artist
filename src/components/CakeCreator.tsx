@@ -110,8 +110,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     "moana", "rapunzel", "cinderella", "snow-white", "woody", "buzz-lightyear",
     "batman", "wonder-woman", "iron-man", "thor", "winnie-the-pooh", "paw-patrol"
   ];
-  const FREE_DAILY_LIMIT = 3;            // 3 generations per day for free users
-  const FREE_MONTHLY_LIMIT = 12;         // 12 generations per month for free users
+  const FREE_TOTAL_LIMIT = 5;             // 5 total lifetime generations for free users
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
@@ -576,21 +575,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           return;
         }
       } else {
-        // Check daily limit for free users
-        if (dailyGenerations >= FREE_DAILY_LIMIT) {
+        // Check total lifetime limit for free users
+        if (totalGenerations >= FREE_TOTAL_LIMIT) {
           toast({
-            title: "Daily limit reached",
-            description: `You've used all ${FREE_DAILY_LIMIT} free generations today. Come back tomorrow or upgrade to Premium for ${PREMIUM_GENERATION_LIMIT}/year!`,
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        // Check monthly limit for free users
-        if (monthlyGenerations >= FREE_MONTHLY_LIMIT) {
-          toast({
-            title: "Monthly limit reached",
-            description: `You've used all ${FREE_MONTHLY_LIMIT} free generations this month. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT}/year!`,
+            title: "Free generations used up",
+            description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
             variant: "destructive",
           });
           return;
@@ -1278,7 +1267,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <p className="text-xs text-foreground/70">
                 {isPremium 
                   ? `${generationCount} / ${isAdmin ? ADMIN_GENERATION_LIMIT : PREMIUM_GENERATION_LIMIT} generations used this year`
-                  : `${dailyGenerations}/${FREE_DAILY_LIMIT} today • ${monthlyGenerations}/${FREE_MONTHLY_LIMIT} this month`}
+                  : `${totalGenerations}/${FREE_TOTAL_LIMIT} free generations used`}
               </p>
             </div>
             <div className="flex gap-2">

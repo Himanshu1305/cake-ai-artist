@@ -60,7 +60,7 @@ const Terms = () => {
                 We provide both free and premium subscription tiers with different feature sets.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Free users can generate up to 3 cakes per day. Premium subscribers get unlimited generations, 
+                Free users can generate up to 5 cakes total. Premium subscribers get 150 generations per year, 
                 priority processing, and access to advanced customization features.
               </p>
             </section>
