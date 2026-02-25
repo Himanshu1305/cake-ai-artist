@@ -1,27 +1,28 @@
 
 
-## Plan: Merge Conversion Email into Weekly Upgrade Nudge
+## Plan: Add Warm Rapport-Building Lines to Each Email Variant
 
-The two systems are redundant — both send upgrade emails to free users via Brevo. The "Weekly Upgrade Nudge" is the superior system (4 variants, localized pricing, dedup tracking). We should remove the Conversion Email Campaign and keep only the Weekly Upgrade Nudge.
+**File:** `supabase/functions/send-weekly-upgrade-nudge/index.ts`
 
-### Changes
+Currently each variant jumps straight from "Hey {name}! 👋" into the sales pitch. We'll add 2-3 warm, appreciative lines after the greeting to build rapport before presenting the upgrade content.
 
-**1. `src/pages/Admin.tsx`**
-- Remove the entire "Conversion Email Campaign" card (Send Test Email + Send Conversion Email to Free Users)
-- Remove all related state: `sendingConversionEmail`, `sendingTestEmail`, `freeUserCount`, `conversionEmailDialog`
-- Remove `sendTestConversionEmail`, `openConversionDialog`, `sendConversionEmails` functions
-- Remove the AlertDialog for conversion email confirmation
-- The "Weekly Upgrade Nudge" card remains as the single email campaign section
+### Implementation
 
-**2. `supabase/functions/send-conversion-email/index.ts`**
-- Delete this edge function entirely — it's now fully replaced by `send-weekly-upgrade-nudge`
+Refactor `getEmailHtml` to insert a new `<tr><td>` row between the greeting and the variant body. Each variant gets its own rapport paragraph:
 
-**3. `supabase/config.toml`**
-- Remove the `[functions.send-conversion-email]` entry (if present)
+**Variant 1 (Feature Spotlight):**
+> We love seeing what you create — you've already made some amazing designs! 🎨 Whether it's for a birthday, anniversary, or just for fun, your creativity keeps inspiring us. Here's something cool we think you'll love:
 
-**4. Update `send-weekly-upgrade-nudge/index.ts` conversion email template**
-- The conversion email had the updated "5 total" and "5 gallery slots" numbers but the nudge already has these from the earlier update — no content changes needed
+**Variant 2 (By the Numbers):**
+> You're part of a growing community of creative cake designers, and we're so glad you're here. 💜 Every design you create adds something special to our platform. We wanted to share a quick look at how you can unlock even more creative freedom:
 
-### Result
-One clean "Weekly Upgrade Nudge" section in Admin with "Send Test Nudge" and "Send Nudge to Free Users" buttons. No duplicate functionality.
+**Variant 3 (Success Stories):**
+> Every great cake starts with a spark of creativity — and yours is clearly shining! ✨ We've watched our community grow into something truly special, and you're a big part of that. Here's what some fellow creators have been up to:
+
+**Variant 4 (Urgency):**
+> Thank you for being part of the Cake AI Artist family — your creativity inspires us every day. 💛 We built this tool because we believe everyone deserves beautiful cake designs, and seeing what you create makes it all worth it. We have something special to share with you:
+
+### Technical Detail
+
+In `getEmailHtml`, a new row will be added after the greeting `<td>` and before the variant `body`. The motivational text will be styled as `color:#555; font-size:15px; line-height:1.6` to match the existing body text style.
 
