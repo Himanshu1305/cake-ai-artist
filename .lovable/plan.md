@@ -1,24 +1,27 @@
 
 
-## Plan: Redeploy the Weekly Upgrade Nudge Edge Function
+## Plan: Merge Conversion Email into Weekly Upgrade Nudge
 
-### Problem
+The two systems are redundant — both send upgrade emails to free users via Brevo. The "Weekly Upgrade Nudge" is the superior system (4 variants, localized pricing, dedup tracking). We should remove the Conversion Email Campaign and keep only the Weekly Upgrade Nudge.
 
-The `send-weekly-upgrade-nudge/index.ts` file was updated with all the fixes (localized pricing, correct admin greeting, updated free tier numbers), but the **deployed edge function** is still running the old version. The test email reflects the old deployed code, not the updated file.
+### Changes
 
-### Fix
+**1. `src/pages/Admin.tsx`**
+- Remove the entire "Conversion Email Campaign" card (Send Test Email + Send Conversion Email to Free Users)
+- Remove all related state: `sendingConversionEmail`, `sendingTestEmail`, `freeUserCount`, `conversionEmailDialog`
+- Remove `sendTestConversionEmail`, `openConversionDialog`, `sendConversionEmails` functions
+- Remove the AlertDialog for conversion email confirmation
+- The "Weekly Upgrade Nudge" card remains as the single email campaign section
 
-Redeploy the `send-weekly-upgrade-nudge` edge function so the live version matches the updated source code. After redeployment, the test email will show:
+**2. `supabase/functions/send-conversion-email/index.ts`**
+- Delete this edge function entirely — it's now fully replaced by `send-weekly-upgrade-nudge`
 
-- Localized pricing (₹4,100 for India instead of $49)
-- Admin's actual first name instead of "Admin"
-- "5 total" generations for free tier in the comparison table
-- "5" gallery slots for free tier
+**3. `supabase/config.toml`**
+- Remove the `[functions.send-conversion-email]` entry (if present)
 
-### Steps
+**4. Update `send-weekly-upgrade-nudge/index.ts` conversion email template**
+- The conversion email had the updated "5 total" and "5 gallery slots" numbers but the nudge already has these from the earlier update — no content changes needed
 
-1. Trigger a redeployment of the `send-weekly-upgrade-nudge` edge function
-2. Send a test email to verify all 5 fixes are applied
-
-No code changes needed — the file already contains the correct content.
+### Result
+One clean "Weekly Upgrade Nudge" section in Admin with "Send Test Nudge" and "Send Nudge to Free Users" buttons. No duplicate functionality.
 
