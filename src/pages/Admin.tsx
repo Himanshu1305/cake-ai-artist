@@ -95,6 +95,10 @@ export default function Admin() {
   const [sendingConversionEmail, setSendingConversionEmail] = useState(false);
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [freeUserCount, setFreeUserCount] = useState(0);
+  const [sendingNudgeTest, setSendingNudgeTest] = useState(false);
+  const [sendingNudgeAll, setSendingNudgeAll] = useState(false);
+  const [nudgeDialog, setNudgeDialog] = useState(false);
+  const [nudgeFreeCount, setNudgeFreeCount] = useState(0);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalUsers: 0,
     premiumUsers: 0,
@@ -726,6 +730,48 @@ export default function Admin() {
     }
   };
 
+  const sendTestNudgeEmail = async () => {
+    setSendingNudgeTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-weekly-upgrade-nudge', {
+        body: { testEmail: 'himanshu1305@gmail.com' },
+      });
+      if (error) throw error;
+      toast.success(`Test nudge email (variant ${data.variant}) sent to himanshu1305@gmail.com`);
+    } catch (err: any) {
+      console.error('Failed to send test nudge:', err);
+      toast.error('Failed to send test nudge email');
+    } finally {
+      setSendingNudgeTest(false);
+    }
+  };
+
+  const openNudgeDialog = async () => {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .or('is_premium.is.null,is_premium.eq.false');
+    setNudgeFreeCount(count || 0);
+    setNudgeDialog(true);
+  };
+
+  const sendNudgeEmails = async () => {
+    setSendingNudgeAll(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-weekly-upgrade-nudge', {
+        body: {},
+      });
+      if (error) throw error;
+      toast.success(`Nudge emails: ${data.sent} sent, ${data.failed} failed, ${data.skipped} skipped (variant ${data.variant})`);
+    } catch (err: any) {
+      console.error('Failed to send nudge emails:', err);
+      toast.error('Failed to send nudge emails');
+    } finally {
+      setSendingNudgeAll(false);
+      setNudgeDialog(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -831,6 +877,23 @@ export default function Admin() {
             <AlertDialogCancel disabled={sendingConversionEmail}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={sendConversionEmails} disabled={sendingConversionEmail}>
               {sendingConversionEmail ? 'Sending...' : `Send to ${freeUserCount} Users`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Weekly Nudge Dialog */}
+      <AlertDialog open={nudgeDialog} onOpenChange={setNudgeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Weekly Upgrade Nudge</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will send a weekly nudge email to <strong>{nudgeFreeCount}</strong> free users (excluding opted-out and already-sent this week). Continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sendingNudgeAll}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={sendNudgeEmails} disabled={sendingNudgeAll}>
+              {sendingNudgeAll ? 'Sending...' : `Send to Free Users`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1518,7 +1581,27 @@ export default function Admin() {
               </CardContent>
             </Card>
 
-            {/* Holiday Sales Manager */}
+            {/* Weekly Upgrade Nudge */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Weekly Upgrade Nudge
+                </CardTitle>
+                <CardDescription>Rotating weekly emails to free users (4 template variants based on week number)</CardDescription>
+              </CardHeader>
+              <CardContent className="flex gap-3">
+                <Button onClick={sendTestNudgeEmail} variant="outline" className="gap-2" disabled={sendingNudgeTest}>
+                  <Mail className="w-4 h-4" />
+                  {sendingNudgeTest ? 'Sending...' : 'Send Test Nudge'}
+                </Button>
+                <Button onClick={openNudgeDialog} variant="default" className="gap-2">
+                  <Mail className="w-4 h-4" />
+                  Send Nudge to Free Users
+                </Button>
+              </CardContent>
+            </Card>
+
             <HolidaySalesManager />
 
             {/* Scheduled Tasks Widget */}
