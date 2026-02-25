@@ -5,7 +5,7 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 // Input validation schema
@@ -248,6 +248,7 @@ Cake specifications:
           const errorText = await imageResponse.text();
           console.error(`Image generation failed for ${view.name}:`, imageResponse.status, errorText);
           if (imageResponse.status === 429) throw new Error('RATE_LIMIT');
+          if (imageResponse.status === 402) throw new Error('CREDITS_EXHAUSTED');
           if (imageResponse.status === 503 && retries > 0) {
             console.log(`Retrying ${view.name} view after 503 error (${retries} retries left)...`);
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -358,6 +359,10 @@ Cake specifications:
         // Handle rate limits gracefully
         if (imageResponse.status === 429) {
           throw new Error('RATE_LIMIT');
+        }
+        
+        if (imageResponse.status === 402) {
+          throw new Error('CREDITS_EXHAUSTED');
         }
         
         // Retry on 503 errors (upstream connection issues)
