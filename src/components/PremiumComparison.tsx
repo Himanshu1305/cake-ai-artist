@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Crown, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useGeoContext } from "@/contexts/GeoContext";
+
+const MONTHLY_PRICE: Record<string, string> = {
+  IN: '₹899/mo', GB: '£7.99/mo', CA: 'C$13.99/mo', AU: 'A$14.99/mo'
+};
 
 interface PremiumComparisonProps {
   show: boolean;
@@ -10,6 +15,8 @@ interface PremiumComparisonProps {
 
 export const PremiumComparison = ({ show }: PremiumComparisonProps) => {
   const navigate = useNavigate();
+  const { detectedCountry } = useGeoContext();
+  const monthlyLabel = MONTHLY_PRICE[detectedCountry || ''] || '$9.99/month';
 
   if (!show) return null;
 
@@ -94,7 +101,7 @@ export const PremiumComparison = ({ show }: PremiumComparisonProps) => {
           size="lg"
         >
           <Crown className="h-4 w-4" />
-          Upgrade to Premium - $9.99/month
+          Upgrade to Premium - {monthlyLabel}
         </Button>
         
         <p className="text-center text-xs text-muted-foreground mt-3">
