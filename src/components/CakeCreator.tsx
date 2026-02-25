@@ -977,25 +977,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        // Calculate cake dimensions - edge-to-edge
-        const imgAspect = img.width / img.height;
-        const maxWidth = 1080; // Full width
-        const maxHeight = 950;
-        let drawWidth = maxWidth;
-        let drawHeight = maxWidth / imgAspect;
+        // Center-crop the image to fill 1080px width (like object-cover)
+        const canvasWidth = 1080;
+        const targetAspect = 4 / 5; // 4:5 portrait ratio
+        const targetHeight = canvasWidth / targetAspect; // 1350px
         
-        if (drawHeight > maxHeight) {
-          drawHeight = maxHeight;
-          drawWidth = maxHeight * imgAspect;
-        }
-        
-        const topPadding = 0; // No top padding
-        const gapAfterCake = 0; // No gap
         const messagePadding = 20;
         const lineHeight = 38;
         
         // Word wrap function
-        const wrapText = (text: string, maxWidth: number) => {
+        const wrapText = (text: string, maxW: number) => {
           ctx.font = 'bold 30px Arial, sans-serif';
           const words = text.split(' ');
           const lines: string[] = [];
@@ -1005,7 +996,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const testLine = currentLine + (currentLine ? ' ' : '') + word;
             const metrics = ctx.measureText(testLine);
             
-            if (metrics.width > maxWidth && currentLine) {
+            if (metrics.width > maxW && currentLine) {
               lines.push(currentLine);
               currentLine = word;
             } else {
@@ -1019,28 +1010,33 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         
         // Calculate message dimensions only if message exists
         const hasMessage = message && message.trim().length > 0;
-        const lines = hasMessage ? wrapText(message, canvas.width - 80) : [];
+        const lines = hasMessage ? wrapText(message, canvasWidth - 80) : [];
         const messageBoxHeight = hasMessage ? (lines.length * lineHeight) + (messagePadding * 2) : 0;
         
-        // Calculate total canvas height dynamically - only include message if present
-        const totalHeight = topPadding + drawHeight + (hasMessage ? gapAfterCake + messageBoxHeight : 0);
+        // Total canvas height: cropped image + optional message
+        const totalHeight = targetHeight + messageBoxHeight;
         canvas.height = totalHeight;
         
-        // Background gradient
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#fff1f2');
-        gradient.addColorStop(1, '#fce7f3');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Center-crop source image to fill canvas (object-cover style)
+        const imgAspect = img.width / img.height;
+        const canvasAspect = canvasWidth / targetHeight;
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
         
-        // Draw cake image (centered)
-        const x = (canvas.width - drawWidth) / 2;
-        const y = topPadding;
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        if (imgAspect > canvasAspect) {
+          // Image is wider — crop sides
+          sw = img.height * canvasAspect;
+          sx = (img.width - sw) / 2;
+        } else {
+          // Image is taller — crop top/bottom
+          sh = img.width / canvasAspect;
+          sy = (img.height - sh) / 2;
+        }
+        
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvasWidth, targetHeight);
         
         // Only draw message area if message exists
         if (hasMessage) {
-          const messageY = y + drawHeight + gapAfterCake;
+          const messageY = targetHeight;
           
           // Pink strip behind message
           ctx.fillStyle = '#fce7f3';
@@ -1155,7 +1151,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         name
       );
       
-      const shareText = `Check out this amazing cake I created for ${name}! 🎂✨`;
+      const shareTitle = `${name}'s Birthday Cake 🎂`;
       
       // Convert blob URL to actual blob for sharing
       const response = await fetch(compositeUrl);
@@ -1167,8 +1163,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         try {
           await navigator.share({
             files: [file],
-            title: shareText,
-            text: shareText,
+            title: shareTitle,
           });
           toast({
             title: "Shared successfully! 🎉",
@@ -2134,7 +2129,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                               haptic.light();
                               setPreviewImageIndex(index);
                             }}
-                            className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+            className="cursor-pointer hover:opacity-90 transition-opacity aspect-[4/5] overflow-hidden"
                           >
                             <img
                               src={imageUrl || '/placeholder.svg'}
@@ -2228,7 +2223,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             haptic.light();
                             setPreviewImageIndex(3);
                           }}
-                          className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+                          className="cursor-pointer hover:opacity-90 transition-opacity aspect-[4/5] overflow-hidden"
                         >
                           <img
                             src={generatedImages[3] || '/placeholder.svg'}
@@ -2314,7 +2309,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           haptic.light();
                           setPreviewImageIndex(index);
                         }}
-                        className="cursor-pointer hover:opacity-90 transition-opacity aspect-square overflow-hidden"
+                        className="cursor-pointer hover:opacity-90 transition-opacity aspect-[4/5] overflow-hidden"
                       >
                         <img
                           src={imageUrl || '/placeholder.svg'}

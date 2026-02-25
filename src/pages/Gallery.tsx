@@ -135,7 +135,7 @@ const Gallery = () => {
   };
 
   const handleShare = (platform: string, prompt: string) => {
-    const shareText = `Check out this amazing personalized cake! 🎂✨`;
+    const shareText = `Personalized Cake 🎂`;
     const shareUrl = window.location.origin;
     
     let shareLink = "";
