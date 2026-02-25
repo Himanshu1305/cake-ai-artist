@@ -1,26 +1,31 @@
 
 
-## Plan: Enhance Rapport Lines with Gratitude for Trust
+## Impact Analysis
 
-**File:** `supabase/functions/send-weekly-upgrade-nudge/index.ts`
+The CORS header fix has **no negative impact** on any existing functionality — adding extra allowed headers is purely additive. Browsers simply ignore headers they don't send. However, there's a broader finding:
 
-The current rapport lines appreciate creativity but don't explicitly thank users for choosing and trusting Cake AI Artist. We'll weave gratitude for their trust into each variant's rapport paragraph.
+### All 22 Edge Functions Have the Same Old CORS Headers
 
-### Updated Rapport Lines
+Every single backend function in the project uses the outdated CORS headers missing the newer client platform fields. This means the same mobile CORS failure could potentially affect **any** function called from mobile, including:
 
-**Variant 1 (Feature Spotlight):**
-> We love seeing what you create — you've already made some amazing designs! 🎨 Whether it's for a birthday, anniversary, or just for fun, your creativity keeps inspiring us. Thank you for trusting Cake AI Artist to bring your ideas to life. Here's something cool we think you'll love:
+- **Payment functions** (create-razorpay-order, verify-razorpay-payment, check-payment-status) — could block mobile payments
+- **save-image-to-storage** — could fail to save generated cakes on mobile
+- **generate-logo** — logo generation could fail on mobile
+- **generate-party-pack** — party pack generation could fail on mobile
+- **detect-country** — geo detection could fail on mobile
+- **delete-user-account** — account deletion could fail on mobile
 
-**Variant 2 (By the Numbers):**
-> You're part of a growing community of creative cake designers, and we're so glad you're here. 💜 Every design you create adds something special to our platform. We're truly grateful you chose us to help with your cake creations. We wanted to share a quick look at how you can unlock even more creative freedom:
+### Recommended Plan Update
 
-**Variant 3 (Success Stories):**
-> Every great cake starts with a spark of creativity — and yours is clearly shining! ✨ We've watched our community grow into something truly special, and you're a big part of that. It means the world to us that you trust Cake AI Artist with your celebrations. Here's what some fellow creators have been up to:
+Instead of only fixing `generate-complete-cake`, update CORS headers in **all 22 edge functions** to include the full set:
 
-**Variant 4 (Urgency):**
-> Thank you for being part of the Cake AI Artist family — your creativity inspires us every day. 💛 We built this tool because we believe everyone deserves beautiful cake designs, and we're so grateful you chose to create with us. Seeing what you make truly makes it all worth it. We have something special to share with you:
+```
+authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+```
 
-### Technical Detail
+Functions with extra custom headers (like `x-razorpay-signature` or `x-test-secret`) will keep those in addition.
 
-Update the `rapportLines` object in `getEmailHtml` (lines ~67-70) with the revised text. No structural changes needed.
+The 402 error handling will still only be added to `generate-complete-cake` and `CakeCreator.tsx` as originally planned, since those are the only AI generation functions affected.
+
+**Zero risk of breaking anything** — this change only *allows* more headers through, it doesn't restrict or change any behavior.
 
