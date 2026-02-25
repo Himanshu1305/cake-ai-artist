@@ -10,6 +10,21 @@ const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+const PRICING_MAP: Record<string, string> = {
+  IN: "₹4,100",
+  GB: "£39",
+  CA: "C$67",
+  AU: "A$75",
+  US: "$49",
+};
+
+function getLocalizedPrice(countryCode?: string | null): string {
+  if (countryCode && PRICING_MAP[countryCode.toUpperCase()]) {
+    return PRICING_MAP[countryCode.toUpperCase()];
+  }
+  return PRICING_MAP.US;
+}
+
 function getISOWeekNumber(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -22,17 +37,19 @@ function getTemplateVariant(weekNumber: number): number {
   return (weekNumber % 4) + 1;
 }
 
-function getSubjectLine(variant: number): string {
+function getSubjectLine(variant: number, localizedPrice?: string): string {
   switch (variant) {
     case 1: return "🎉 Did you know? Party Packs are included with Premium!";
     case 2: return "📊 Free vs Premium — The numbers speak for themselves";
     case 3: return "⭐ See what other creators are making with Premium";
-    case 4: return "⏰ Lifetime Deal won't last forever — lock in $49 today";
+    case 4: return `⏰ Lifetime Deal won't last forever — lock in ${localizedPrice || "$49"} today`;
     default: return "🎂 Upgrade your Cake AI Artist experience";
   }
 }
 
-function getEmailHtml(firstName: string, variant: number, unsubscribeUrl: string): string {
+function getEmailHtml(firstName: string, variant: number, unsubscribeUrl: string, countryCode?: string | null): string {
+  const localizedPrice = getLocalizedPrice(countryCode);
+  
   const header = `
     <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
     <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8f5f2;">
@@ -105,12 +122,12 @@ function getEmailHtml(firstName: string, variant: number, unsubscribeUrl: string
             </tr>
             <tr>
               <td style="padding:10px 15px;font-size:14px;color:#333;border-bottom:1px solid #f0f0f0;">Cake Generations</td>
-              <td style="padding:10px 15px;font-size:14px;color:#ef4444;text-align:center;border-bottom:1px solid #f0f0f0;">5/day</td>
+              <td style="padding:10px 15px;font-size:14px;color:#ef4444;text-align:center;border-bottom:1px solid #f0f0f0;">5 total</td>
               <td style="padding:10px 15px;font-size:14px;color:#8B5CF6;font-weight:600;text-align:center;border-bottom:1px solid #f0f0f0;">150/year</td>
             </tr>
             <tr style="background:#fafafa;">
               <td style="padding:10px 15px;font-size:14px;color:#333;border-bottom:1px solid #f0f0f0;">Gallery Slots</td>
-              <td style="padding:10px 15px;font-size:14px;color:#ef4444;text-align:center;border-bottom:1px solid #f0f0f0;">20</td>
+              <td style="padding:10px 15px;font-size:14px;color:#ef4444;text-align:center;border-bottom:1px solid #f0f0f0;">5</td>
               <td style="padding:10px 15px;font-size:14px;color:#8B5CF6;font-weight:600;text-align:center;border-bottom:1px solid #f0f0f0;">30</td>
             </tr>
             <tr>
@@ -152,7 +169,7 @@ function getEmailHtml(firstName: string, variant: number, unsubscribeUrl: string
         </td></tr>`;
       break;
 
-    case 4: // Urgency / Limited Time
+    case 4: // Urgency / Limited Time — with localized pricing
       body = `
         <tr><td style="padding:10px 30px 20px;">
           <h2 style="margin:0 0 12px;color:#1a1a2e;font-size:20px;">⏰ The Lifetime Deal Won't Last Forever</h2>
@@ -161,7 +178,7 @@ function getEmailHtml(firstName: string, variant: number, unsubscribeUrl: string
           </p>
           <div style="background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);border-radius:16px;padding:25px;text-align:center;margin-bottom:15px;">
             <p style="margin:0 0 5px;color:rgba(255,255,255,0.85);font-size:13px;text-transform:uppercase;letter-spacing:2px;">Lifetime Deal</p>
-            <p style="margin:0 0 8px;color:#ffffff;font-size:36px;font-weight:800;">Starting at $49</p>
+            <p style="margin:0 0 8px;color:#ffffff;font-size:36px;font-weight:800;">Starting at ${localizedPrice}</p>
             <p style="margin:0;color:rgba(255,255,255,0.9);font-size:14px;">One-time payment • Lifetime access • No monthly fees</p>
           </div>
           <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">
@@ -230,16 +247,31 @@ serve(async (req) => {
       .select()
       .single();
 
-    // Test mode
+    // Test mode — query admin's actual name from profiles
     if (testEmail) {
-      const html = getEmailHtml("Admin", variant, "https://cakeaiartist.com/settings");
+      // Look up the admin's actual profile name
+      let adminFirstName = "there";
+      const { data: adminProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("first_name, country")
+        .eq("email", testEmail)
+        .maybeSingle();
+      
+      if (adminProfiles?.first_name) {
+        adminFirstName = adminProfiles.first_name;
+      }
+      
+      const adminCountry = adminProfiles?.country || null;
+      const localizedPrice = getLocalizedPrice(adminCountry);
+      
+      const html = getEmailHtml(adminFirstName, variant, "https://cakeaiartist.com/settings", adminCountry);
       const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: { "api-key": BREVO_API_KEY!, "Content-Type": "application/json" },
         body: JSON.stringify({
           sender: { name: "Cake AI Artist", email: "welcome@cakeaiartist.com" },
           to: [{ email: testEmail }],
-          subject: `[TEST] ${getSubjectLine(variant)}`,
+          subject: `[TEST] ${getSubjectLine(variant, localizedPrice)}`,
           htmlContent: html,
         }),
       });
@@ -259,10 +291,10 @@ serve(async (req) => {
       });
     }
 
-    // Production: get all free users
+    // Production: get all free users with country
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
-      .select("id, email, first_name")
+      .select("id, email, first_name, country")
       .or("is_premium.is.null,is_premium.eq.false");
 
     if (profilesError) throw profilesError;
@@ -308,7 +340,9 @@ serve(async (req) => {
     for (const user of eligibleUsers) {
       try {
         const unsubscribeUrl = `https://cakeaiartist.com/settings`;
-        const html = getEmailHtml(user.first_name || "", variant, unsubscribeUrl);
+        const userCountry = user.country || null;
+        const localizedPrice = getLocalizedPrice(userCountry);
+        const html = getEmailHtml(user.first_name || "", variant, unsubscribeUrl, userCountry);
 
         const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
           method: "POST",
@@ -316,13 +350,12 @@ serve(async (req) => {
           body: JSON.stringify({
             sender: { name: "Cake AI Artist", email: "welcome@cakeaiartist.com" },
             to: [{ email: user.email, name: user.first_name || "" }],
-            subject: getSubjectLine(variant),
+            subject: getSubjectLine(variant, localizedPrice),
             htmlContent: html,
           }),
         });
 
         if (brevoRes.ok) {
-          // Log to nudge logs (upsert to handle unique constraint)
           await supabaseAdmin.from("upgrade_nudge_logs").upsert({
             user_id: user.id,
             template_variant: variant,
@@ -357,11 +390,11 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true, variant, weekNumber, sent: sentCount,
       failed: failCount, skipped: profiles.length - eligibleUsers.length,
-      total: profiles.length,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error: any) {
-    console.error("Error in send-weekly-upgrade-nudge:", error);
+    console.error("Weekly upgrade nudge error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
