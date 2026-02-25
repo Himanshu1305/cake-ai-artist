@@ -52,13 +52,13 @@ const Index = () => {
   
   // Dynamic pricing based on detected country
   const countryPricing = useMemo(() => {
-    const pricing: Record<string, { price: string; code: string }> = {
-      IN: { price: '₹4,100', code: 'IN' },
-      GB: { price: '£39', code: 'GB' },
-      CA: { price: 'C$67', code: 'CA' },
-      AU: { price: 'A$75', code: 'AU' },
+    const pricing: Record<string, { price: string; monthly: string; yearly: string; savings: string; code: string }> = {
+      IN: { price: '₹4,100', monthly: '₹899/month', yearly: '₹10,788/year', savings: '₹1,06,000+', code: 'IN' },
+      GB: { price: '£39', monthly: '£7.99/month', yearly: '£96/year', savings: '£921+', code: 'GB' },
+      CA: { price: 'C$67', monthly: 'C$13.99/month', yearly: 'C$168/year', savings: 'C$1,600+', code: 'CA' },
+      AU: { price: 'A$75', monthly: 'A$14.99/month', yearly: 'A$180/year', savings: 'A$1,700+', code: 'AU' },
     };
-    return pricing[detectedCountry || ''] || { price: '$49', code: 'US' };
+    return pricing[detectedCountry || ''] || { price: '$49', monthly: '$9.99/month', yearly: '$120/year', savings: '$1,149+', code: 'US' };
   }, [detectedCountry]);
   
   // Call hooks at top level (React Rules of Hooks)
@@ -435,15 +435,15 @@ const Index = () => {
               <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Regular price:</p>
-                  <p className="text-lg font-bold line-through text-muted-foreground">$120/year forever</p>
+                  <p className="text-lg font-bold line-through text-muted-foreground">{countryPricing.yearly} forever</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Your price:</p>
-                  <p className="text-3xl font-bold text-gold">$49 ONCE</p>
+                  <p className="text-3xl font-bold text-gold">{countryPricing.price} ONCE</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">You save:</p>
-                  <p className="text-lg font-bold text-party-pink">$1,149.80 over 10 years</p>
+                  <p className="text-lg font-bold text-party-pink">{countryPricing.savings} over 10 years</p>
                 </div>
               </div>
               
@@ -457,7 +457,7 @@ const Index = () => {
               </Button>
               
               <div className="mt-4 space-y-1 text-sm text-muted-foreground hidden md:block">
-                <p>"Once spots fill, price becomes $9.99/month"</p>
+                <p>"Once spots fill, price becomes {countryPricing.monthly}"</p>
                 <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
               </div>
             </motion.div>
