@@ -9,20 +9,14 @@ import { Helmet } from 'react-helmet-async';
 
 type Status = 'loading' | 'ready' | 'processing' | 'success' | 'error';
 
-interface SubscriberData {
-  id: string;
-  email: string;
-  is_active: boolean;
-  digest_frequency: string | null;
-}
-
 export default function BlogUnsubscribe() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   
   const [status, setStatus] = useState<Status>('loading');
   const [unsubscribeType, setUnsubscribeType] = useState<'digest' | 'all' | null>(null);
-  const [subscriber, setSubscriber] = useState<SubscriberData | null>(null);
+  const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (!token) {
@@ -30,65 +24,52 @@ export default function BlogUnsubscribe() {
       return;
     }
     
-    // Verify subscriber exists by token (secure lookup)
     const checkSubscriber = async () => {
-      const { data, error } = await supabase
-        .from('blog_subscribers')
-        .select('id, email, is_active, digest_frequency')
-        .eq('unsubscribe_token', token)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase.functions.invoke('unsubscribe-blog', {
+          body: { token, action: 'lookup' },
+        });
 
-      if (error || !data) {
-        setSubscriber(null);
-      } else {
-        setSubscriber(data);
+        if (error || !data?.maskedEmail) {
+          setMaskedEmail(null);
+          setStatus('error');
+          return;
+        }
+
+        setMaskedEmail(data.maskedEmail);
+        setIsActive(data.isActive);
+        setStatus('ready');
+      } catch {
+        setStatus('error');
       }
-      setStatus('ready');
     };
 
     checkSubscriber();
   }, [token]);
 
   const handleUnsubscribe = async (type: 'digest' | 'all') => {
-    if (!subscriber) return;
+    if (!token) return;
 
     setStatus('processing');
     setUnsubscribeType(type);
 
     try {
-      const updateData = type === 'all' 
-        ? { 
-            is_active: false, 
-            unsubscribed_at: new Date().toISOString() 
-          }
-        : { 
-            digest_frequency: 'none' as const
-          };
+      const action = type === 'all' ? 'unsubscribe_all' : 'unsubscribe_digest';
+      const { data, error } = await supabase.functions.invoke('unsubscribe-blog', {
+        body: { token, action },
+      });
 
-      const { error } = await supabase
-        .from('blog_subscribers')
-        .update(updateData)
-        .eq('id', subscriber.id);
-
-      if (error) throw error;
+      if (error || !data?.success) throw new Error('Failed');
 
       setStatus('success');
       toast.success(type === 'all' 
         ? 'You have been unsubscribed from all emails'
         : 'You have been unsubscribed from the weekly digest'
       );
-    } catch (error) {
-      console.error('Unsubscribe error:', error);
+    } catch {
       setStatus('error');
       toast.error('Failed to process your request');
     }
-  };
-
-  // Mask email for privacy (show first 2 chars and domain)
-  const getMaskedEmail = (email: string) => {
-    const [local, domain] = email.split('@');
-    if (local.length <= 2) return email;
-    return `${local.substring(0, 2)}***@${domain}`;
   };
 
   return (
@@ -126,16 +107,13 @@ export default function BlogUnsubscribe() {
             {status === 'error' && !token && (
               "Invalid unsubscribe link. Please use the link from your email."
             )}
-            {status === 'error' && token && !subscriber && (
+            {status === 'error' && token && (
               "This unsubscribe link is invalid or has expired."
             )}
-            {status === 'error' && token && subscriber && (
-              "There was a problem processing your request. Please try again."
-            )}
-            {status === 'ready' && subscriber && (
+            {status === 'ready' && maskedEmail && (
               "Choose your email preference below."
             )}
-            {status === 'ready' && !subscriber && (
+            {status === 'ready' && !maskedEmail && (
               "This unsubscribe link is invalid or has expired."
             )}
             {status === 'loading' && "Loading..."}
@@ -144,12 +122,12 @@ export default function BlogUnsubscribe() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {status === 'ready' && subscriber && (
+          {status === 'ready' && maskedEmail && (
             <>
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
-                  <span className="break-all">{getMaskedEmail(subscriber.email)}</span>
+                  <span className="break-all">{maskedEmail}</span>
                 </div>
               </div>
 
@@ -185,7 +163,7 @@ export default function BlogUnsubscribe() {
             </Link>
           )}
 
-          {status === 'ready' && !subscriber && (
+          {status === 'ready' && !maskedEmail && (
             <Link to="/blog" className="block">
               <Button variant="outline" className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />
