@@ -1,84 +1,58 @@
 
 
-## Weekly Upgrade Reminder Email for Free Users
+## Plan: Change Free User Limit to 5 Total Generations (Lifetime)
 
-### What We'll Build
-A new automated weekly email sent every Monday at 10 AM UTC to all free (non-premium) users who haven't opted out of marketing emails. The email will highlight premium benefits, showcase a recent blog post or cake design tip, and include a strong call-to-action to upgrade.
+### What Changes
 
-### Why a New Function (Not Reusing Existing Ones)
-- `send-conversion-email` uses Brevo and is designed for one-time admin-triggered blasts -- not suitable for automated weekly scheduling
-- `send-weekly-blog-digest` targets blog subscribers (a different audience) and focuses on blog content
-- A dedicated function keeps concerns separate and allows independent scheduling, monitoring, and opt-out logic
+Replace the current daily (3/day) and monthly (12/month) rolling limits for free users with a **hard total lifetime limit of 5 generations**. Once used, free users must upgrade to continue creating.
 
-### Plan
+### Changes Required
 
-**1. Create new edge function: `send-weekly-upgrade-nudge`**
-- Uses Brevo (same as conversion email) for delivery
-- Queries all free users from `profiles` where `is_premium = false` or `is_premium IS NULL`
-- Checks `user_settings.marketing_emails` to respect opt-outs
-- Tracks sends in a new `upgrade_nudge_logs` table to avoid sending duplicates in the same week
-- Logs runs to `scheduled_task_runs` for admin monitoring
-- Rotates through 4 different email templates weekly (so users don't get the same email every week):
-  - Week 1: "Feature Spotlight" -- highlights Party Pack Generator
-  - Week 2: "By the Numbers" -- shows what premium users create (150 vs 5 generations)
-  - Week 3: "Success Stories" -- social proof and user testimonials
-  - Week 4: "Limited Time" -- urgency-based with lifetime deal pricing
-- Each email includes an unsubscribe link that toggles `marketing_emails` off
+**1. `src/components/CakeCreator.tsx`**
+- Remove `FREE_DAILY_LIMIT` (3) and `FREE_MONTHLY_LIMIT` (12) constants
+- Add `FREE_TOTAL_LIMIT = 5`
+- Replace the two separate limit checks (daily + monthly) with a single check: `totalGenerations >= FREE_TOTAL_LIMIT`
+- Update the toast messages to say "You've used all 5 free generations" instead of daily/monthly messaging
+- Update the UI text (line ~1281) from `dailyGenerations/FREE_DAILY_LIMIT today • monthlyGenerations/FREE_MONTHLY_LIMIT this month` to `totalGenerations/5 free generations used`
+- The `totalGenerations` state already exists and is already computed by summing all `generation_tracking` rows for the user (lines 430-439), so no new query needed
 
-**2. Create database table: `upgrade_nudge_logs`**
-- Columns: `id`, `user_id`, `template_variant` (1-4), `sent_at`, `week_number` (ISO week)
-- RLS: service role can manage, users can view their own
-- Prevents duplicate sends within the same ISO week
+**2. `src/components/GenerationLimitTracker.tsx`**
+- Change label from "Daily Creations" to "Free Generations"
+- Change `remaining/limit left today` to `remaining/limit remaining`
+- Update the warning text from "out of free cakes for today" to "out of free generations"
 
-**3. Schedule daily cron job**
-- Runs every Monday at 10:00 AM UTC via `pg_cron`
-- Uses `CRON_SECRET` header for security (same pattern as anniversary reminders)
-- Also supports manual admin trigger via JWT auth
+**3. `src/components/PremiumComparison.tsx`**
+- Update comparison row from "Unlimited generations" (free: false) to show "5 total" for free, "150/year" for premium
+- Update gallery slots row: free shows "5" instead of implying unlimited
 
-**4. Add to Admin dashboard**
-- Add "Weekly Upgrade Nudge" to `ScheduledTasksWidget`
-- Include "Run Now" and "Test Email" buttons
-- Show which template variant will be used next
+**4. `supabase/functions/send-weekly-upgrade-nudge/index.ts`**
+- **Variant 2 (comparison table)**: Change "5/day" to "5 total" for free tier, gallery slots from "20" to "5"
+- **Variant 4 (urgency)**: Add localized pricing using `profiles.country` field (pricing map: IN=₹4,100, GB=£39, CA=C$67, AU=A$75, default=$49)
+- **Test mode** (line 235): Query admin's actual `first_name` from profiles instead of hardcoding "Admin"
+- **Production mode**: Query `profiles.country` alongside `id, email, first_name` to pass localized price into variant 4 HTML
+- Update `getEmailHtml` signature to accept optional `countryCode` parameter
+- Update subject line for variant 4 to use localized price
 
-**5. Add `send-weekly-upgrade-nudge` to `config.toml`**
-- Set `verify_jwt = false` (uses CRON_SECRET + JWT dual auth like anniversary reminders)
+**5. Database migration: Update `enforce_image_limit` trigger**
+- Change free user gallery slot limit from 20 to 5
 
-### Email Design
-- Matches existing brand style (purple/pink gradient header, logo, same footer)
-- Mobile-responsive HTML tables
-- Clear CTA button linking to `https://cakeaiartist.com/pricing`
-- Footer with unsubscribe link and company info
+**6. `src/pages/Terms.tsx`**
+- Update line "Free users can generate up to 3 cakes per day" to "Free users can generate up to 5 cakes total"
 
 ### Technical Details
 
 ```text
-Edge Function Flow:
-  
-  Request (cron or admin)
-       |
-  Auth check (CRON_SECRET or JWT)
-       |
-  Query free users from profiles
-       |
-  Filter out marketing_emails = false
-       |
-  Check upgrade_nudge_logs for this week
-       |
-  Determine template variant (week_number % 4)
-       |
-  Send via Brevo API
-       |
-  Log to upgrade_nudge_logs + scheduled_task_runs
+Current limit flow (free users):
+  dailyGenerations >= 3  → blocked (resets daily)
+  monthlyGenerations >= 12 → blocked (resets monthly)
+
+New limit flow (free users):
+  totalGenerations >= 5  → blocked (never resets)
 ```
 
-### No New Secrets Needed
-- `BREVO_API_KEY` -- already configured
-- `CRON_SECRET` -- already configured
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` -- already available
+The `totalGenerations` state is already computed in `CakeCreator.tsx` (lines 430-439) by summing all `generation_tracking.count` rows for the user. No new database queries or schema changes needed for tracking — only the `enforce_image_limit` trigger needs updating for gallery slots.
 
-### Files to Create/Modify
-- **New**: `supabase/functions/send-weekly-upgrade-nudge/index.ts`
-- **New**: Database migration for `upgrade_nudge_logs` table
-- **Modify**: `src/components/ScheduledTasksWidget.tsx` (add new task entry)
-- **Config**: `supabase/config.toml` (add function config -- auto-managed)
-- **New**: Cron job via SQL insert
+### No Changes Needed
+- `generation_tracking` table schema stays the same (rows still accumulate, we just sum them all now)
+- Premium/admin limits unchanged (150/year and 500/year respectively)
+
