@@ -23,7 +23,7 @@ const MAX_SPARKLES = 20;
 export const CursorSparkles = () => {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const nextIdRef = useRef(0);
-  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const timeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   useEffect(() => {
     let lastSparkleTime = 0;

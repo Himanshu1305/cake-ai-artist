@@ -1,17 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X, Sparkles } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { X, Sparkles } from 'lucide-react';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
-import { useHolidaySale } from '@/hooks/useHolidaySale';
-import { CountdownTimer } from '@/components/CountdownTimer';
-import { SpotsRemainingCounter } from '@/components/SpotsRemainingCounter';
+import { useDynamicCakeCount } from '@/hooks/useDynamicCakeCount';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -19,131 +11,80 @@ interface UrgencyBannerProps {
   countryCode?: string;
 }
 
-export const UrgencyBanner = ({ onVisibilityChange, onHeightChange, countryCode }: UrgencyBannerProps) => {
+export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBannerProps) => {
   const navigate = useNavigate();
   const bannerRef = useRef<HTMLDivElement>(null);
-  const { sale, isLoading } = useHolidaySale({ countryCode });
+  const cakeCount = useDynamicCakeCount();
 
-  // For default mode (no campaign), always show the banner
-  // For campaign mode, check if sale hasn't expired
-  const isSaleActive = sale ? (sale.isDefault || (sale.endDate && new Date() < sale.endDate)) : false;
-
-  // Check if user dismissed the banner (persisted for 24 hours)
   const [isDismissed, setIsDismissed] = useState(() => {
     const dismissed = safeGetItem('urgency_banner_dismissed');
     if (dismissed) {
       const dismissedTime = parseInt(dismissed, 10);
-      return Date.now() - dismissedTime < 24 * 60 * 60 * 1000; // 24 hours
+      return Date.now() - dismissedTime < 24 * 60 * 60 * 1000;
     }
     return false;
   });
 
   useEffect(() => {
-    onVisibilityChange?.(isSaleActive && !isDismissed);
-  }, [isSaleActive, isDismissed, onVisibilityChange]);
+    onVisibilityChange?.(!isDismissed);
+  }, [isDismissed, onVisibilityChange]);
 
-  // Measure and report banner height dynamically
   useEffect(() => {
     if (!bannerRef.current || !onHeightChange) return;
-    
-    const updateHeight = () => {
-      if (bannerRef.current) {
-        onHeightChange(bannerRef.current.offsetHeight);
-      }
+    const update = () => {
+      if (bannerRef.current) onHeightChange(bannerRef.current.offsetHeight);
     };
-    
-    updateHeight();
-    
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(bannerRef.current);
-    
-    return () => resizeObserver.disconnect();
-  }, [onHeightChange, isSaleActive, isDismissed, isLoading, sale]);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(bannerRef.current);
+    return () => ro.disconnect();
+  }, [onHeightChange, isDismissed]);
 
-  // Report 0 height when banner is hidden
   useEffect(() => {
-    if (!isSaleActive || isDismissed || isLoading || !sale) {
-      onHeightChange?.(0);
-    }
-  }, [isSaleActive, isDismissed, isLoading, sale, onHeightChange]);
+    if (isDismissed) onHeightChange?.(0);
+  }, [isDismissed, onHeightChange]);
 
   const handleDismiss = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation to /pricing
+    e.stopPropagation();
     safeSetItem('urgency_banner_dismissed', Date.now().toString());
     setIsDismissed(true);
   };
 
-  if (!isSaleActive || isDismissed || isLoading || !sale) {
-    return null;
-  }
+  if (isDismissed) return null;
 
-  const handleBannerClick = () => {
-    navigate('/pricing');
-  };
+  const handleClick = () => navigate('/pricing');
 
-  // Different styling for default mode vs campaign mode
-  const isDefaultMode = sale.isDefault;
-  const bannerBgClass = isDefaultMode 
-    ? 'bg-gradient-gold' // Elegant gold for default mode
-    : 'bg-gradient-party'; // Party colors for campaigns
-  const borderClass = isDefaultMode
-    ? 'border-gold'
-    : 'border-party-pink';
+  const displayCount = Math.max(cakeCount, 100).toLocaleString();
 
   return (
     <AnimatePresence>
       <motion.div
         ref={bannerRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`fixed top-0 left-0 right-0 z-50 ${bannerBgClass} border-b-2 ${borderClass} cursor-pointer`}
-        onClick={handleBannerClick}
+        transition={{ duration: 0.4 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-surface via-gold/10 to-surface border-b border-gold/30 backdrop-blur-sm cursor-pointer"
+        onClick={handleClick}
       >
         <div className="container mx-auto px-4 py-2 relative">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center justify-center gap-4 text-white pr-8">
-                  <div className="flex items-center gap-2">
-                    {isDefaultMode ? (
-                      <Sparkles className="w-5 h-5 flex-shrink-0 animate-pulse" />
-                    ) : (
-                      <Zap className="w-5 h-5 flex-shrink-0 animate-pulse" />
-                    )}
-                    <div className="flex items-center gap-2 flex-wrap text-sm md:text-base font-semibold">
-                      <span className={`${isDefaultMode ? 'bg-white text-gold' : 'bg-yellow-400 text-party-purple'} px-2 py-0.5 rounded-full text-xs font-bold animate-pulse shadow-lg`}>
-                        {sale.saleLabel}
-                      </span>
-                      <span>{sale.bannerText}</span>
-                      {/* Show countdown for campaigns, spots for default mode */}
-                      {!isDefaultMode && sale.endDate && (
-                        <CountdownTimer compact endDate={sale.endDate} className="ml-2" />
-                      )}
-                      {isDefaultMode && (
-                        <SpotsRemainingCounter tier="total" className="ml-2" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-white text-gray-800 border shadow-lg">
-                <p className="font-medium">
-                  {isDefaultMode 
-                    ? "Exclusive lifetime deal - limited spots available!"
-                    : `${sale.holidayName} Special! Don't miss this limited-time offer.`
-                  }
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center justify-center gap-2 pr-8 text-foreground">
+            <Sparkles className="w-4 h-4 flex-shrink-0 text-gold" />
+            <p className="text-xs md:text-sm font-medium tracking-wide">
+              <span className="hidden sm:inline">Join </span>
+              <span className="font-bold text-gold">{displayCount}+</span>
+              <span className="hidden sm:inline"> creators designing AI cakes</span>
+              <span className="sm:hidden"> creators</span>
+              <span className="mx-2 text-muted-foreground">·</span>
+              <span className="text-muted-foreground">Start free, no signup needed</span>
+            </p>
+          </div>
           <button
             onClick={handleDismiss}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-foreground/10 rounded-full transition-colors"
             aria-label="Dismiss banner"
           >
-            <X className="w-4 h-4 text-white" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
       </motion.div>

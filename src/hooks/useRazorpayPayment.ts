@@ -28,7 +28,7 @@ export const useRazorpayPayment = (country: string = "US") => {
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   const [currentSubscriptionId, setCurrentSubscriptionId] = useState<string | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load Razorpay script
   useEffect(() => {

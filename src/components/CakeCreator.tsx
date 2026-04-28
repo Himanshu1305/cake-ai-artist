@@ -154,7 +154,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
     const steps = generationQuality === 'high' ? highQualitySteps : fastSteps;
 
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
     
     steps.forEach(({ progress, step, delay }) => {
       const timer = setTimeout(() => {
