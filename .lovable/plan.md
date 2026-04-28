@@ -1,37 +1,48 @@
-# Fix: Community Gallery shows "No featured cakes yet"
+## Goal
 
-## Root cause
+Make the candles on the homepage feel like they're really burning — with realistic flickering, subtle swaying, and a warm glow halo.
 
-The Community Gallery and homepage carousel both query the view `public_featured_images`, which selects `featured = true` rows from `generated_images`.
+## Important Reality Check
 
-That view is defined with `security_invoker=true`, meaning RLS on the underlying `generated_images` table is enforced as the **calling role** (anon / authenticated user). Looking at the policies on `generated_images`, there is **no policy** that lets anon users — or any non-owner — read rows, even featured ones. So the REST API returns `[]`.
+The cake images shown in "Recent Creations from Our Community" and the hero carousel are **AI-generated static photos** — the candle flames are baked into the pixels. We cannot animate flames *inside* a static image.
 
-Verified via network inspection: every request to `public_featured_images` returns an empty array (`Response Body: []`), even though direct SQL as the service role returns 9 featured rows.
+What we **can** do (and what looks great):
 
-The homepage **looks** like it works because `Index.tsx` falls back to 3 hardcoded static images (`featuredCake1/2/3`) when the query returns empty. The Community Gallery has no such fallback, so it shows the empty state.
+1. Build a reusable **animated SVG flame component** (`<AnimatedFlame />`) — pure CSS, no JS, no extra renders.
+2. Add **decorative animated candle rows** in key spots on the homepage (above the hero, near the "Create your cake" CTA, in the celebration banner) so the page itself feels alive with burning candles.
+3. Upgrade the existing `floating-flame` / `dancing-flame` CSS to be more realistic — multi-layer flicker (yellow core + orange outer + warm glow halo), slight horizontal sway, and randomized timing per candle so they don't all flutter in sync.
 
-## Fix
+## What Will Change
 
-Add an RLS policy on `public.generated_images` that allows **anyone** (anon + authenticated) to SELECT rows where `featured = true`. The view already restricts the column set to safe public fields (`id, image_url, created_at, occasion_type`) — no PII is exposed.
+### 1. New component: `src/components/AnimatedFlame.tsx`
+A pure-SVG/CSS flame with three layered parts:
+- Outer orange/red glow (slow flicker)
+- Inner yellow flame core (fast flicker + subtle sway)
+- Warm radial halo behind it (gentle pulse)
 
-### Migration
+Props: `size` (sm/md/lg), `swayDelay` (so a row of candles flickers out of sync).
 
-```sql
-CREATE POLICY "Anyone can view featured images"
-  ON public.generated_images
-  FOR SELECT
-  TO anon, authenticated
-  USING (featured = true);
-```
+### 2. New component: `src/components/CandleRow.tsx`
+Renders 5–7 little gold candles with `<AnimatedFlame />` on top, each with a randomized delay. Used as a decorative banner.
 
-This is the minimal change. Existing owner/admin policies remain untouched, so non-featured images stay private to their owner.
+### 3. `src/index.css` — enhanced flame keyframes
+- New keyframes: `flame-flicker-realistic` (scaleY + skewX + opacity micro-jitter), `flame-sway` (tiny horizontal rotation), `flame-glow-pulse` (halo breathing).
+- Improve existing `.floating-flame` / `.dancing-flame` to use the new keyframes with multi-layer drop-shadows for a warmer, more candle-like glow.
 
-## After the migration
+### 4. `src/pages/Index.tsx` — placement
+- Add a `<CandleRow />` right above the main hero headline (subtle, decorative).
+- Add a `<CandleRow />` inside/above the celebration/CTA section.
+- Keep all existing content untouched.
 
-- `/community` will populate with the 9+ featured cakes already in the DB.
-- The homepage carousel will start showing real featured cakes instead of the 3 static fallbacks.
-- "Most Popular This Week" (`PopularCakesSection`) will also start working — it uses the same view.
+## Technical Details
 
-## Files
+- **CSS-only animations** (per project memory rule — no JS animation loops).
+- Each flame uses 3 stacked SVG `<path>` elements with independent `animation-delay` and `animation-duration` so the flicker looks organic, not robotic.
+- `will-change: transform, opacity` only on the flame layer to keep GPU usage low.
+- `prefers-reduced-motion: reduce` → flames hold steady (accessibility).
+- No new dependencies. No backend changes.
 
-- New SQL migration only. No code changes needed in `Index.tsx`, `CommunityGallery.tsx`, or `PopularCakesSection.tsx`.
+## Out of Scope
+
+- Animating flames *inside* existing AI-generated cake photos (not technically possible without regenerating each image).
+- If you later want the cake photos themselves to have animated flames, that would require either (a) regenerating cakes with transparent flame regions and overlaying SVG flames at fixed coordinates, or (b) generating short MP4/WebP loops per cake. Happy to plan that as a follow-up if desired.
