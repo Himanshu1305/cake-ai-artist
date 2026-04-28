@@ -20,6 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import celebrationCake from "@/assets/celebration-cake.jpg";
 import heroCake from "@/assets/hero-cake.jpg";
+import { HeroCakeWithFlames } from "@/components/HeroCakeWithFlames";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
 import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
