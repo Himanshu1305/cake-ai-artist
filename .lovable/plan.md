@@ -1,33 +1,37 @@
-# Fix two homepage issues
+# Fix: Community Gallery shows "No featured cakes yet"
 
-## Issue 1 — Old page sometimes loads on refresh
-**Cause:** Browser/CDN is caching `index.html`, so refreshes occasionally serve a stale build that still references old JS bundles. The new homepage redesign only appears when a fresh `index.html` is fetched.
+## Root cause
 
-**Fix:** Add cache-control meta tags in `index.html` to prevent the HTML shell from being cached. Hashed JS/CSS assets stay cacheable; only the entry HTML is forced to revalidate.
+The Community Gallery and homepage carousel both query the view `public_featured_images`, which selects `featured = true` rows from `generated_images`.
 
-```html
-<!-- in index.html <head> -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+That view is defined with `security_invoker=true`, meaning RLS on the underlying `generated_images` table is enforced as the **calling role** (anon / authenticated user). Looking at the policies on `generated_images`, there is **no policy** that lets anon users — or any non-owner — read rows, even featured ones. So the REST API returns `[]`.
+
+Verified via network inspection: every request to `public_featured_images` returns an empty array (`Response Body: []`), even though direct SQL as the service role returns 9 featured rows.
+
+The homepage **looks** like it works because `Index.tsx` falls back to 3 hardcoded static images (`featuredCake1/2/3`) when the query returns empty. The Community Gallery has no such fallback, so it shows the empty state.
+
+## Fix
+
+Add an RLS policy on `public.generated_images` that allows **anyone** (anon + authenticated) to SELECT rows where `featured = true`. The view already restricts the column set to safe public fields (`id, image_url, created_at, occasion_type`) — no PII is exposed.
+
+### Migration
+
+```sql
+CREATE POLICY "Anyone can view featured images"
+  ON public.generated_images
+  FOR SELECT
+  TO anon, authenticated
+  USING (featured = true);
 ```
 
-This guarantees every refresh fetches the latest HTML, which loads the latest hashed bundles.
+This is the minimal change. Existing owner/admin policies remain untouched, so non-featured images stay private to their owner.
 
-## Issue 2 — "See examples" goes to wrong page
-**Current:** Button at `src/pages/Index.tsx:429` navigates to `/use-cases` (a marketing/copy page about use cases), not real cake images.
+## After the migration
 
-**Fix:** Change the click handler to navigate to `/community` — the Community Gallery page that displays AI-generated cake images (same images as "Recent Creations from Our Community" on the homepage, but a full browseable grid).
+- `/community` will populate with the 9+ featured cakes already in the DB.
+- The homepage carousel will start showing real featured cakes instead of the 3 static fallbacks.
+- "Most Popular This Week" (`PopularCakesSection`) will also start working — it uses the same view.
 
-```tsx
-// Index.tsx ~line 429
-onClick={() => navigate('/community')}
-```
+## Files
 
-## Files to edit
-- `index.html` — add no-cache meta tags
-- `src/pages/Index.tsx` — change "See examples" target route to `/community`
-
-## Notes
-- The runtime errors in the console (AdSense `availableWidth=0`, Firefox extension `e.features`) are unrelated third-party issues and not part of this fix.
-- If stale loads persist after the meta-tag fix, the next step would be a hard service-worker / browser cache clear — but the meta tags resolve it for all future deploys.
+- New SQL migration only. No code changes needed in `Index.tsx`, `CommunityGallery.tsx`, or `PopularCakesSection.tsx`.
