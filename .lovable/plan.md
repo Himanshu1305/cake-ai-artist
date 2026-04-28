@@ -1,39 +1,30 @@
-I agree this homepage image has to look polished, and the current separate overlay approach is too fragile. The better fix is to stop trying to position seven independent DOM flames over a baked-in photo and instead use one single pre-rendered animated hero asset where the flames are already composited into the image.
+## Problem
 
-## Plan
+The animated hero image `src/assets/hero-cake-animated.webp` was generated with **19 frames but no per-frame duration metadata** (every frame has `duration=None`, totaling 0ms). Browsers can't play a 0ms animation, so they freeze on frame 0 — that's why the flames look static even though the file is technically "animated."
 
-1. Create a new animated hero image asset
-   - Use the existing `src/assets/hero-cake.jpg` as the base.
-   - Generate a looping animated WebP/GIF-style asset with subtle flickering flames already composited into the cake image.
-   - The baked-in original flame areas will be covered inside the generated frames, then replacement flame shapes will be drawn in the exact same pixel positions.
-   - Use the same 3:2 aspect ratio as the current hero image so the layout does not shift.
+## Fix
 
-2. Replace the live overlay implementation
-   - Update `HeroCakeWithFlames` so it renders the new animated image directly.
-   - Remove the separate mask layer and seven separate `AnimatedFlame` overlays from the hero image.
-   - Keep the same rounded corners, shadow, eager loading, and accessibility alt text.
+Regenerate the same animated WebP, but this time write an explicit frame duration so browsers actually loop the animation.
 
-3. Keep the animation reliable across screen sizes
-   - Because the flicker is baked into the image itself, it will scale perfectly with the image on desktop, tablet, and mobile.
-   - There will be no coordinate drift, no percentage-position mismatch, and no mask/overlay alignment issue.
+### Steps
 
-4. Keep a fallback
-   - If the browser cannot play the animated asset, keep the original static hero image as a fallback.
-   - Prefer animated WebP for quality and smaller file size; GIF can be used only if needed, but WebP is usually much cleaner for this kind of photo.
+1. Re-run the flame compositing script with the same 7 flame coordinates already validated:
+   `(425, 155), (501, 130), (555, 195), (608, 140), (670, 155), (715, 140), (790, 165)`
+2. Generate ~16 frames of subtle warm radial-glow flicker over those coordinates (varying glow size, opacity, slight color shift between amber/yellow per frame for an organic flicker).
+3. Save with PIL using:
+   - `save_all=True`
+   - `append_images=frames[1:]`
+   - `duration=80` (ms per frame -> ~12 fps, smooth flame flicker)
+   - `loop=0` (infinite)
+   - `lossless=False`, `quality=85`, `method=6` (good size/quality tradeoff)
+4. Verify after writing: re-open the file and assert each frame's `duration` is set and `n_frames > 1`.
+5. Visually QA on the homepage at the user's current viewport (1071x772) to confirm the flames now flicker.
 
-5. QA visually before finishing
-   - Check the homepage at the current viewport size.
-   - Verify the animated flames sit exactly on the candles.
-   - Verify no old flame halos peek through awkwardly.
-   - Verify the image still looks premium and loads normally.
+### Files touched
 
-## Technical details
+- `src/assets/hero-cake-animated.webp` — regenerated with valid frame durations
+- No component changes needed; `HeroCakeWithFlames.tsx` already renders this asset
 
-- Files to change:
-  - `src/components/HeroCakeWithFlames.tsx`
-  - Add a new generated asset under `src/assets/`, likely `hero-cake-animated.webp`
-- Files likely no longer needed for the hero after this change:
-  - `AnimatedFlame` can stay in the project if used elsewhere, but `HeroCakeWithFlames` will no longer depend on it.
-- No backend or database changes are needed.
+### Why this will work
 
-This approach is the most robust way to make the homepage look perfect: one image, one animation, no drifting overlays.
+The current asset is the right approach (single composited image, no overlay drift). It just lacks the timing metadata that tells the browser when to advance frames. Adding `duration=80` per frame is a one-line fix to the generation script and produces a properly looping animated WebP.
