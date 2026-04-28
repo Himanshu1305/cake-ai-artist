@@ -1,47 +1,39 @@
-## Root cause
+I agree this homepage image has to look polished, and the current separate overlay approach is too fragile. The better fix is to stop trying to position seven independent DOM flames over a baked-in photo and instead use one single pre-rendered animated hero asset where the flames are already composited into the image.
 
-My previous coordinate measurements from the source asset were wrong. By measuring directly from the rendered preview (a clean 626×418 crop of the actual hero image as displayed), the wick tops are at **y ≈ 22-30%**, not 14-21%. So all my animated flames were rendering ~10% of image-height ABOVE the wicks, in the dark space — leaving the original baked-in flames fully visible.
+## Plan
 
-A second issue: even the masks weren't big enough to cover real flames had they been correctly placed. Real flames span ~7-8% of image height each; masks need to be at least that tall and fully centered on the flame body (not the wick tip).
+1. Create a new animated hero image asset
+   - Use the existing `src/assets/hero-cake.jpg` as the base.
+   - Generate a looping animated WebP/GIF-style asset with subtle flickering flames already composited into the cake image.
+   - The baked-in original flame areas will be covered inside the generated frames, then replacement flame shapes will be drawn in the exact same pixel positions.
+   - Use the same 3:2 aspect ratio as the current hero image so the layout does not shift.
 
-## Fix
+2. Replace the live overlay implementation
+   - Update `HeroCakeWithFlames` so it renders the new animated image directly.
+   - Remove the separate mask layer and seven separate `AnimatedFlame` overlays from the hero image.
+   - Keep the same rounded corners, shadow, eager loading, and accessibility alt text.
 
-Edit `src/components/HeroCakeWithFlames.tsx`:
+3. Keep the animation reliable across screen sizes
+   - Because the flicker is baked into the image itself, it will scale perfectly with the image on desktop, tablet, and mobile.
+   - There will be no coordinate drift, no percentage-position mismatch, and no mask/overlay alignment issue.
 
-### 1. Corrected wick-tip coordinates (measured from rendered preview)
+4. Keep a fallback
+   - If the browser cannot play the animated asset, keep the original static hero image as a fallback.
+   - Prefer animated WebP for quality and smaller file size; GIF can be used only if needed, but WebP is usually much cleaner for this kind of photo.
 
-```ts
-const FLAMES = [
-  { x: 35.9, y: 27.5, delay: 0.0,  size: "md" },  // back-left
-  { x: 42.3, y: 22.7, delay: 0.3,  size: "md" },
-  { x: 47.1, y: 29.9, delay: 0.6,  size: "md" },  // front (shorter candle, lower wick)
-  { x: 53.5, y: 25.1, delay: 0.15, size: "md" },
-  { x: 59.9, y: 22.7, delay: 0.45, size: "md" },  // tallest
-  { x: 66.3, y: 25.1, delay: 0.2,  size: "md" },
-  { x: 72.7, y: 26.3, delay: 0.5,  size: "md" },  // back-right
-];
-```
+5. QA visually before finishing
+   - Check the homepage at the current viewport size.
+   - Verify the animated flames sit exactly on the candles.
+   - Verify no old flame halos peek through awkwardly.
+   - Verify the image still looks premium and loads normally.
 
-### 2. Bigger, taller masks fully covering each real flame
+## Technical details
 
-Each real flame body extends ~8% upward from the wick tip. Mask should:
-- Be ~6.5% wide × ~14% tall (taller than current 12%)
-- Be centered ~5% above the wick tip (so it covers the full flame body, not just the base)
-- Use a near-opaque core (rgba 0.99) with strong blur so edges blend into the dark backdrop
-- Use the image's actual dark background color (very dark warm brown ~rgb(20,12,6)) instead of pure black for seamless blending
+- Files to change:
+  - `src/components/HeroCakeWithFlames.tsx`
+  - Add a new generated asset under `src/assets/`, likely `hero-cake-animated.webp`
+- Files likely no longer needed for the hero after this change:
+  - `AnimatedFlame` can stay in the project if used elsewhere, but `HeroCakeWithFlames` will no longer depend on it.
+- No backend or database changes are needed.
 
-```ts
-// mask centered at (f.x, f.y - 5%), 6.5% × 14%
-background: "radial-gradient(ellipse at center, rgba(20,12,6,0.99) 0%, rgba(20,12,6,0.95) 40%, rgba(20,12,6,0.6) 75%, transparent 100%)",
-filter: "blur(4px)",
-```
-
-### 3. Keep flame anchoring at wick tip
-
-`translate(-50%, -100%)` so animated flame's bottom sits on the wick tip — already correct.
-
-## Files
-
-- **Edit only**: `src/components/HeroCakeWithFlames.tsx` — replace `FLAMES` array, bump mask size and tweak gradient color/blur.
-
-No other files. No CSS, no backend.
+This approach is the most robust way to make the homepage look perfect: one image, one animation, no drifting overlays.
