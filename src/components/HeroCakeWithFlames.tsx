@@ -8,8 +8,9 @@ import { AnimatedFlame } from "./AnimatedFlame";
  * them is near-black, so masks blend invisibly), and animated SVG flames
  * are placed on top at each wick tip position.
  *
- * Positions are tuned for src/assets/hero-cake.jpg (1200x800, 3:2).
- * Container preserves the natural 3:2 aspect to keep coordinates stable.
+ * Coordinates are measured directly from the rendered preview crop of
+ * src/assets/hero-cake.jpg (1200x800, 3:2). The image displays at its
+ * natural 3:2 aspect.
  */
 
 interface FlameSpec {
@@ -19,15 +20,15 @@ interface FlameSpec {
   size: "sm" | "md" | "lg";
 }
 
-// Wick-top positions (where flame attaches to wick) in the 1200x800 source
+// Wick-top positions measured from a 626x418 rendered crop
 const FLAMES: FlameSpec[] = [
-  { x: 36.7, y: 17.5, delay: 0.0, size: "md" },
-  { x: 43.3, y: 14.4, delay: 0.3, size: "md" },
-  { x: 47.1, y: 21.3, delay: 0.6, size: "md" },
-  { x: 53.8, y: 16.9, delay: 0.15, size: "md" },
-  { x: 60.4, y: 18.1, delay: 0.45, size: "md" },
-  { x: 65.8, y: 16.3, delay: 0.2, size: "md" },
-  { x: 72.9, y: 17.5, delay: 0.5, size: "md" },
+  { x: 35.9, y: 27.5, delay: 0.0, size: "md" },  // back-left
+  { x: 42.3, y: 22.7, delay: 0.3, size: "md" },
+  { x: 47.1, y: 29.9, delay: 0.6, size: "md" },  // front (shorter wick)
+  { x: 53.5, y: 25.1, delay: 0.15, size: "md" },
+  { x: 59.9, y: 22.7, delay: 0.45, size: "md" }, // tallest
+  { x: 66.3, y: 25.1, delay: 0.2, size: "md" },
+  { x: 72.7, y: 26.3, delay: 0.5, size: "md" },  // back-right
 ];
 
 interface Props {
@@ -48,7 +49,9 @@ export const HeroCakeWithFlames = ({
         loading="eager"
       />
 
-      {/* Mask layer: dark blobs covering baked-in flames */}
+      {/* Mask layer: dark blobs covering baked-in flames.
+          Each mask is centered ~5% above the wick tip to fully cover the
+          flame body, which extends roughly 8% upward from the wick. */}
       <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
         {FLAMES.map((f, i) => (
           <div
@@ -56,20 +59,19 @@ export const HeroCakeWithFlames = ({
             className="absolute"
             style={{
               left: `${f.x}%`,
-              // Center mask above the wick tip, covering the flame body
-              top: `${f.y - 4}%`,
-              width: "7%",
-              height: "12%",
+              top: `${f.y - 5}%`,
+              width: "6.5%",
+              height: "14%",
               transform: "translate(-50%, -50%)",
               background:
-                "radial-gradient(ellipse at center, rgba(8,6,5,0.98) 0%, rgba(8,6,5,0.92) 35%, rgba(8,6,5,0.6) 70%, transparent 100%)",
-              filter: "blur(3px)",
+                "radial-gradient(ellipse at center, rgba(20,12,6,0.99) 0%, rgba(20,12,6,0.95) 40%, rgba(20,12,6,0.6) 75%, transparent 100%)",
+              filter: "blur(4px)",
             }}
           />
         ))}
       </div>
 
-      {/* Animated flames layer: anchored bottom-center on each wick tip */}
+      {/* Animated flames layer: bottom anchored on each wick tip */}
       <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
         {FLAMES.map((f, i) => (
           <div
@@ -78,7 +80,6 @@ export const HeroCakeWithFlames = ({
             style={{
               left: `${f.x}%`,
               top: `${f.y}%`,
-              // Bottom of the flame sits exactly on the wick tip
               transform: "translate(-50%, -100%)",
             }}
           >
