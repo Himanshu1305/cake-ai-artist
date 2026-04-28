@@ -426,7 +426,7 @@ const Index = () => {
                   size="lg"
                   variant="outline"
                   className="border-gold/40 text-foreground hover:bg-gold/5 text-base md:text-lg px-7 py-6 font-semibold"
-                  onClick={() => navigate('/use-cases')}
+                  onClick={() => navigate('/community')}
                 >
                   See examples
                 </Button>
