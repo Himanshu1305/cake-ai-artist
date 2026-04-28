@@ -8,9 +8,6 @@ import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 
 import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
-import { CountdownTimer } from "@/components/CountdownTimer";
-import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
-import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { AdSlot } from "@/components/AdSlot";
 import { AD_SLOTS } from "@/config/adSlots";
@@ -20,7 +17,6 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import partyHero from "@/assets/party-hero.jpg";
 import celebrationCake from "@/assets/celebration-cake.jpg";
 import heroCake from "@/assets/hero-cake.jpg";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
@@ -377,93 +373,99 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section - Founding Member Sale */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
-        <img
-          src={partyHero}
-          alt="Vibrant birthday party celebration"
-          className="w-full min-h-[520px] md:h-[600px] object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4 max-w-4xl">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse"
-            >
-              <p className="text-white font-bold text-sm md:text-lg">
-                <DynamicSaleLabel countryCode={countryPricing.code} suffix="ENDS IN:" />
-              </p>
-            </motion.div>
-            
+      {/* Hero Section - Premium / Elegant */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-surface via-background to-party-pink/5">
+        {/* Decorative blurred gold orbs */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -left-16 w-96 h-96 rounded-full bg-gold/20 blur-3xl" />
+          <div className="absolute top-1/3 -right-20 w-[28rem] h-[28rem] rounded-full bg-party-pink/15 blur-3xl" />
+          <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
+        </div>
+
+        <div className="container relative mx-auto px-4 py-12 md:py-24">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+            {/* Left: copy */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ duration: 0.6 }}
+              className="order-2 md:order-1 text-center md:text-left"
             >
-              <CountdownTimer countryCode={countryPricing.code} />
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-xl md:text-4xl lg:text-6xl font-bold text-white drop-shadow-lg break-words"
-            >
-              Get LIFETIME ACCESS for just {countryPricing.price}
-            </motion.h1>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="space-y-2"
-            >
-              <span className="text-white text-xs md:text-2xl font-semibold drop-shadow-md block">
-                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline" />
-              </span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto"
-            >
-              <div className="hidden md:grid md:grid-cols-3 gap-4 text-center mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Regular price:</p>
-                  <p className="text-lg font-bold line-through text-muted-foreground">{countryPricing.yearly} forever</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Your price:</p>
-                  <p className="text-3xl font-bold text-gold">{countryPricing.price} ONCE</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">You save:</p>
-                  <p className="text-lg font-bold text-party-pink">{countryPricing.savings} over 10 years</p>
-                </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-surface-elevated/60 backdrop-blur-sm mb-6">
+                <Star className="w-3.5 h-3.5 text-gold fill-gold" />
+                <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.18em] text-foreground/80">
+                  AI Cake Design Studio
+                </span>
               </div>
-              
-              <Button
-                size="lg"
-                className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow animate-rainbow-shimmer relative overflow-hidden group"
-                onClick={() => navigate('/pricing')}
-              >
-                <span className="relative z-10">Claim Your Lifetime Deal Now →</span>
-                <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
-              </Button>
-              
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground hidden md:block">
-                <p>"Once spots fill, price becomes {countryPricing.monthly}"</p>
-                <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
+
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                Beautiful,{" "}
+                <span className="bg-gradient-gold bg-clip-text text-transparent">
+                  personalized
+                </span>{" "}
+                cakes — designed by AI in 30 seconds.
+              </h1>
+
+              <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
+                Describe any occasion. Get a stunning custom cake design you can
+                share, save, or take to your local baker.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Button
+                  size="lg"
+                  className="bg-gradient-gold hover:shadow-gold text-base md:text-lg px-7 py-6 font-semibold btn-shimmer"
+                  onClick={() => {
+                    const el = document.getElementById('creator');
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                >
+                  Design Your Cake Free →
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-gold/40 text-foreground hover:bg-gold/5 text-base md:text-lg px-7 py-6 font-semibold"
+                  onClick={() => navigate('/use-cases')}
+                >
+                  See examples
+                </Button>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm text-muted-foreground">
+                <div className="flex items-center gap-0.5">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-gold text-gold" />
+                  ))}
+                </div>
+                <span className="font-semibold text-foreground">4.9</span>
+                <span>·</span>
+                <span>{Math.max(dynamicCakeCount, 100).toLocaleString()}+ cakes designed</span>
+                <span className="hidden sm:inline">·</span>
+                <span className="hidden sm:inline">No signup to start</span>
+              </div>
+            </motion.div>
+
+            {/* Right: hero image */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="order-1 md:order-2 relative mx-auto w-full max-w-md md:max-w-none"
+            >
+              <div className="relative animate-float">
+                <div className="absolute -inset-6 bg-gradient-to-tr from-gold/30 via-party-pink/20 to-transparent blur-2xl rounded-full" />
+                <img
+                  src={heroCake}
+                  alt="AI-designed celebration cake"
+                  className="relative w-full h-auto rounded-3xl shadow-elegant ring-1 ring-gold/30 object-cover aspect-square md:aspect-[4/5]"
+                  loading="eager"
+                />
               </div>
             </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Creator Section - Moved Up for mobile */}
       <div id="creator" className="container mx-auto px-4 py-8 md:py-16">
