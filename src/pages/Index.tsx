@@ -20,6 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import celebrationCake from "@/assets/celebration-cake.jpg";
 import heroCake from "@/assets/hero-cake.jpg";
+import { HeroCakeWithFlames } from "@/components/HeroCakeWithFlames";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
 import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
@@ -458,12 +459,7 @@ const Index = () => {
             >
               <div className="relative animate-float">
                 <div className="absolute -inset-6 bg-gradient-to-tr from-gold/30 via-party-pink/20 to-transparent blur-2xl rounded-full" />
-                <img
-                  src={heroCake}
-                  alt="AI-designed celebration cake"
-                  className="relative w-full h-auto rounded-3xl shadow-elegant ring-1 ring-gold/30 object-cover aspect-square md:aspect-[4/5]"
-                  loading="eager"
-                />
+                <HeroCakeWithFlames />
               </div>
             </motion.div>
           </div>
