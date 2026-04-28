@@ -1,48 +1,47 @@
-## Problem
+## Root cause
 
-In the current preview, the animated flames are floating in the dark space **above** the cake, while the original baked-in flames are still clearly visible sitting on the candle wicks. Two issues are stacking:
+My previous coordinate measurements from the source asset were wrong. By measuring directly from the rendered preview (a clean 626×418 crop of the actual hero image as displayed), the wick tops are at **y ≈ 22-30%**, not 14-21%. So all my animated flames were rendering ~10% of image-height ABOVE the wicks, in the dark space — leaving the original baked-in flames fully visible.
 
-1. **Animated flames are translated too far up.** The current `translate(-50%, -55%)` pushes each flame ~18px above its tip coordinate, so they end up above the real flames instead of replacing them.
-2. **Masks are too small and offset wrong.** Current mask is only `5.5% × 10%` of the image and centered slightly *above* the flame, so the original flames stay visible.
+A second issue: even the masks weren't big enough to cover real flames had they been correctly placed. Real flames span ~7-8% of image height each; masks need to be at least that tall and fully centered on the flame body (not the wick tip).
 
 ## Fix
 
-Rewrite the overlay logic in `src/components/HeroCakeWithFlames.tsx`:
+Edit `src/components/HeroCakeWithFlames.tsx`:
 
-### 1. Re-map coordinates from the actual image
-Use **wick-tip coordinates** (where the wick ends and the flame begins), not flame-tip coordinates. From inspection of `hero-cake.jpg` (1200×800), the 7 wick tops are approximately:
+### 1. Corrected wick-tip coordinates (measured from rendered preview)
 
-| # | x %  | wick-top y % | notes |
-|---|------|--------------|-------|
-| 1 | 35.0 | 21           | back-left |
-| 2 | 41.5 | 18           | |
-| 3 | 47.0 | 26           | front, shorter candle |
-| 4 | 54.0 | 19           | |
-| 5 | 60.0 | 18           | tallest |
-| 6 | 66.0 | 19           | |
-| 7 | 73.0 | 20           | back-right |
+```ts
+const FLAMES = [
+  { x: 35.9, y: 27.5, delay: 0.0,  size: "md" },  // back-left
+  { x: 42.3, y: 22.7, delay: 0.3,  size: "md" },
+  { x: 47.1, y: 29.9, delay: 0.6,  size: "md" },  // front (shorter candle, lower wick)
+  { x: 53.5, y: 25.1, delay: 0.15, size: "md" },
+  { x: 59.9, y: 22.7, delay: 0.45, size: "md" },  // tallest
+  { x: 66.3, y: 25.1, delay: 0.2,  size: "md" },
+  { x: 72.7, y: 26.3, delay: 0.5,  size: "md" },  // back-right
+];
+```
 
-### 2. Anchor the animated flame at the wick tip
-Change transform from `translate(-50%, -55%)` to `translate(-50%, -100%)` so the flame's **bottom** sits on the wick tip (matching how a real flame attaches to a wick).
+### 2. Bigger, taller masks fully covering each real flame
 
-### 3. Make masks bigger and properly placed
-Each mask should fully cover the original flame, which extends roughly from the wick tip upward by ~7–9% of image height. Use:
-- Width: ~7% of image
-- Height: ~12% of image
-- Anchor: centered on `(x, y - 4%)` — i.e. above the wick tip, covering the flame body
-- Stronger gradient core (opacity 0.98) and slightly larger blur (3px) for a clean blend with the dark background
+Each real flame body extends ~8% upward from the wick tip. Mask should:
+- Be ~6.5% wide × ~14% tall (taller than current 12%)
+- Be centered ~5% above the wick tip (so it covers the full flame body, not just the base)
+- Use a near-opaque core (rgba 0.99) with strong blur so edges blend into the dark backdrop
+- Use the image's actual dark background color (very dark warm brown ~rgb(20,12,6)) instead of pure black for seamless blending
 
-### 4. Layer ordering
-Render mask layer first, then animated flames on top. Keep the existing `pointer-events-none` and `overflow-hidden rounded-3xl`.
+```ts
+// mask centered at (f.x, f.y - 5%), 6.5% × 14%
+background: "radial-gradient(ellipse at center, rgba(20,12,6,0.99) 0%, rgba(20,12,6,0.95) 40%, rgba(20,12,6,0.6) 75%, transparent 100%)",
+filter: "blur(4px)",
+```
 
-## Verification
+### 3. Keep flame anchoring at wick tip
 
-After implementing, the animated flames should appear directly on top of the wicks, and the original flames should be invisible (blended into the dark background).
-
-If after this round any single flame is still slightly off, only minor per-candle nudges will be needed (1–2% adjustments).
+`translate(-50%, -100%)` so animated flame's bottom sits on the wick tip — already correct.
 
 ## Files
 
-- **Edit**: `src/components/HeroCakeWithFlames.tsx` — update `FLAMES` config, mask size/position, flame transform.
+- **Edit only**: `src/components/HeroCakeWithFlames.tsx` — replace `FLAMES` array, bump mask size and tweak gradient color/blur.
 
-No other files affected. No new dependencies, no CSS changes, no backend.
+No other files. No CSS, no backend.
