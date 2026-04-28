@@ -12,6 +12,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { AdSlot } from "@/components/AdSlot";
 import { AD_SLOTS } from "@/config/adSlots";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
+import { CandleRow } from "@/components/CandleRow";
 // Temporarily disabled CursorSparkles to fix blank page issue
 // import { CursorSparkles } from "@/components/CursorSparkles";
 import { Footer } from "@/components/Footer";
@@ -391,6 +392,8 @@ const Index = () => {
               transition={{ duration: 0.6 }}
               className="order-2 md:order-1 text-center md:text-left"
             >
+              <CandleRow count={5} size="sm" className="mb-4 md:justify-start justify-center" />
+
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-surface-elevated/60 backdrop-blur-sm mb-6">
                 <Star className="w-3.5 h-3.5 text-gold fill-gold" />
                 <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.18em] text-foreground/80">
@@ -632,6 +635,7 @@ const Index = () => {
       {/* Cake Carousel */}
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-8">
+          <CandleRow count={7} size="md" className="mb-6" />
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Recent Creations from Our Community
           </h2>
