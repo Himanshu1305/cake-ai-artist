@@ -40,7 +40,7 @@ function showSimulatedNotification() {
 
 export const LivePurchaseNotifications = () => {
   const notificationCountRef = useRef(0);
-  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const timeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
   const isMountedRef = useRef(true);
 
   useEffect(() => {
