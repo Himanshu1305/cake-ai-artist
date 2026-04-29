@@ -59,7 +59,7 @@ export const SoftwareApplicationSchema = () => {
       "worstRating": "1"
     },
     "availableCountry": ["US", "CA", "GB", "AU"],
-    "description": "AI-powered cake designer for creating personalized celebration cakes. Design beautiful birthday, anniversary, and party cakes in seconds.",
+    "description": "Best AI cake designer for personalized birthday, anniversary and celebration cakes. Design beautiful custom cakes in 30 seconds — free to try.",
     "url": "https://cakeaiartist.com"
   };
 

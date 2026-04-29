@@ -34,8 +34,10 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema, FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { PopularCakesSection } from "@/components/PopularCakesSection";
+import { CakeWall } from "@/components/CakeWall";
+import { HomepageFAQ, HOMEPAGE_FAQS } from "@/components/HomepageFAQ";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
@@ -180,27 +182,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist</title>
-        <meta name="description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required. People keep telling us they can't believe this works." />
-        <meta name="keywords" content="AI cake designer, personalized birthday cake, custom cake design, virtual cake creator, cake design tool" />
+        <title>Best AI Cake Designer — Personalized Cakes in 30 Seconds</title>
+        <meta name="description" content="Cake AI Artist is the best AI cake designer for birthdays, anniversaries & celebrations. Create stunning personalized cakes in 30 seconds — free to try, no design skills needed." />
+        <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, AI cake design, custom birthday cake design, personalized cake generator, virtual cake maker, AI birthday cake creator, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
+        <meta name="theme-color" content="#ec4899" />
+        <meta name="application-name" content="Cake AI Artist" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist" />
-        <meta property="og:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required." />
+        <meta property="og:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds | Cake AI Artist" />
+        <meta property="og:description" content="The best AI cake designer for personalized birthday, anniversary and celebration cakes. Design beautiful custom cakes in 30 seconds — free to try." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds" />
-        <meta name="twitter:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try." />
+        <meta name="twitter:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds" />
+        <meta name="twitter:description" content="Design beautiful personalized cakes in 30 seconds with the best AI cake designer. Free to try." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta name="twitter:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
       </Helmet>
       
       <OrganizationSchema 
         name="Cake AI Artist"
         url="https://cakeaiartist.com"
-        description="AI-powered personalized cake design platform for birthdays, anniversaries, and celebrations"
+        description="Best AI cake designer for personalized birthday, anniversary and celebration cakes. Design custom cakes in 30 seconds."
       />
       
       <WebSiteSchema 
@@ -209,6 +217,10 @@ const Index = () => {
       />
       
       <SoftwareApplicationSchema />
+
+      <FAQSchema faqs={HOMEPAGE_FAQS.map(f => ({ question: f.question, answer: f.answer }))} />
+
+      <BreadcrumbSchema items={[{ name: "Home", url: "https://cakeaiartist.com/" }]} />
       
       <ProductReviewSchema
         itemName="Cake AI Artist - AI Cake Designer"
@@ -403,16 +415,15 @@ const Index = () => {
               </div>
 
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-                Beautiful,{" "}
+                The Best{" "}
                 <span className="bg-gradient-gold bg-clip-text text-transparent">
-                  personalized
+                  AI Cake Designer
                 </span>{" "}
-                cakes — designed by AI in 30 seconds.
+                for Personalized Birthday Cakes
               </h1>
 
               <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
-                Describe any occasion. Get a stunning custom cake design you can
-                share, save, or take to your local baker.
+                Design beautiful, personalized cakes in 30 seconds. Type a name, pick an occasion, get a stunning custom cake you can share, save, or take to your local baker.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
@@ -450,17 +461,14 @@ const Index = () => {
               </div>
             </motion.div>
 
-            {/* Right: hero image */}
+            {/* Right: cake wall — proof of breadth & quality */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.1 }}
               className="order-1 md:order-2 relative mx-auto w-full max-w-md md:max-w-none"
             >
-              <div className="relative animate-float">
-                <div className="absolute -inset-6 bg-gradient-to-tr from-gold/30 via-party-pink/20 to-transparent blur-2xl rounded-full" />
-                <HeroCakeWithFlames />
-              </div>
+              <CakeWall cakeCount={Math.max(dynamicCakeCount, 5000)} />
             </motion.div>
           </div>
         </div>
@@ -470,7 +478,7 @@ const Index = () => {
       <div id="creator" className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Ready to Create?</h2>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Try the Best Personalized Cake Designer — Free</h2>
             <p className="text-sm md:text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
           </div>
           <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
@@ -486,14 +494,14 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-party opacity-30 rounded-2xl blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
             <img
               src={celebrationCake}
-              alt="Beautiful celebration cake"
+              alt="Beautiful personalized celebration cake designed by AI"
               className="relative w-full h-80 md:h-96 object-contain rounded-2xl shadow-party transition-transform duration-500 hover:scale-105"
             />
           </div>
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-foreground">
-              Create Beautiful Personalized Cakes in Seconds
-            </h1>
+            <h2 className="text-4xl font-bold text-foreground">
+              Beautiful Personalized Cakes, Designed by AI in 30 Seconds
+            </h2>
             <p className="text-xl text-foreground/80 leading-relaxed">
               Here&apos;s the thing about celebrations—they&apos;re only as special as the thought you put into them. 
               But when you&apos;re juggling everything else, who has three hours to browse stock photos? 
@@ -522,7 +530,7 @@ const Index = () => {
 
       {/* Why Choose Section */}
       <div className="container mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Love This</h2>
+        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Call Us the Best AI Cake Design Tool</h2>
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {[
             {
@@ -633,7 +641,7 @@ const Index = () => {
         <div className="text-center mb-8">
           <CandleRow count={7} size="md" className="mb-6" />
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Recent Creations from Our Community
+            1,000s of AI-Designed Cakes for Every Occasion
           </h2>
           <p className="text-xl text-muted-foreground mb-2">
             Real cakes made by real people. Yours could be here next!
@@ -799,7 +807,7 @@ const Index = () => {
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
-          What People Actually Say
+          Why People Call Us the Best AI Cake Designer
         </h2>
         <Carousel 
           className="w-full max-w-5xl mx-auto mb-12"
@@ -1000,7 +1008,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-party-purple/20 to-party-pink/20 rounded-2xl p-12 text-center">
           <h2 className="text-4xl font-bold mb-4 text-foreground">
-            Join 10,000+ Happy Creators
+            Best Value Personalized Cake Designer — Join 10,000+ Creators
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Stop wasting time on generic designs. Start creating cakes that actually mean something.
@@ -1040,6 +1048,9 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Homepage FAQ — SEO + rich results */}
+      <HomepageFAQ />
 
       {/* Footer */}
       <Footer />
