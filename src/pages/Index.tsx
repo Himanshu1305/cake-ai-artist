@@ -1049,6 +1049,9 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Homepage FAQ — SEO + rich results */}
+      <HomepageFAQ />
+
       {/* Footer */}
       <Footer />
     </div>
