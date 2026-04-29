@@ -17,6 +17,11 @@ export const HOMEPAGE_FAQS = [
       "An AI cake designer takes the details that matter — name, age, occasion, colors, theme — and turns them into a unique cake image. Cake AI Artist runs purpose-built models that understand cake structure (layers, frosting, toppers, candles) so the result actually looks like a cake you'd order, not a generic AI rendering.",
   },
   {
+    question: "Can I design cakes for occasions other than birthdays?",
+    answer:
+      "Absolutely. While birthdays are our most popular use case, Cake AI Artist designs personalized cakes for any occasion — anniversaries, weddings, baby showers, retirements, graduations, Diwali, Holi, Christmas, Eid, Easter and more. Just pick your occasion in the creator and the AI tailors the cake design, message, decorations and color palette to match.",
+  },
+  {
     question: "Is Cake AI Artist good for birthdays, anniversaries and weddings?",
     answer:
       "Yes — it's designed for every celebration. Birthdays, anniversaries, weddings, baby showers, retirements, graduations and more. Each occasion has its own templates, color palettes and message styles, so the cake design feels right for the moment.",

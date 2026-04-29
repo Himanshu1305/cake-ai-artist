@@ -138,20 +138,20 @@ const CanadaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer Canada — Personalized Birthday Cakes | Cake AI Artist</title>
-        <meta name="description" content="Canada's best AI cake designer. Personalized cakes for birthdays, Canada Day & hockey parties — designed by AI in 30 seconds." />
-        <meta name="keywords" content="best ai cake designer canada, best cake designer canada, best personalized cakes canada, personalized cake canada, birthday cake design toronto, ai cake maker canada, virtual cake creator canada" />
+        <title>Best AI Cake Designer Canada — Personalized Birthday & Celebration Cakes | Cake AI Artist</title>
+        <meta name="description" content="Canada's best AI cake designer for personalized birthday cakes & every occasion — anniversaries, weddings, baby showers, Canada Day & hockey parties. Designed in 30 seconds." />
+        <meta name="keywords" content="best ai cake designer canada, best cake designer canada, best personalized cakes canada, personalized birthday cake canada, anniversary cake canada, wedding cake design canada, baby shower cake, canada day cake, ai cake maker canada, virtual cake creator canada" />
         <link rel="canonical" href="https://cakeaiartist.com/canada" />
         <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
-        <meta property="og:title" content="Best AI Cake Designer Canada — Personalized Birthday Cakes" />
-        <meta property="og:description" content="Canada's best AI cake designer. Personalized cakes for every Canadian celebration." />
+        <meta property="og:title" content="Best AI Cake Designer Canada — Personalized Birthday & Celebration Cakes" />
+        <meta property="og:description" content="Canada's best AI cake designer for personalized birthday cakes & every Canadian celebration — weddings, anniversaries, Canada Day & more." />
         <meta property="og:url" content="https://cakeaiartist.com/canada" />
         <meta property="og:locale" content="en_CA" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer Canada — Personalized Birthday Cakes" />
-        <meta name="twitter:description" content="Canada's best AI cake designer. Personalized cakes in 30 seconds." />
+        <meta name="twitter:title" content="Best AI Cake Designer Canada — Personalized Birthday & Celebration Cakes" />
+        <meta name="twitter:description" content="Canada's best AI cake designer for birthdays, Canada Day & every celebration." />
       </Helmet>
 
       <OrganizationSchema 
