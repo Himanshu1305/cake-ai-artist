@@ -393,7 +393,7 @@ const Index = () => {
               transition={{ duration: 0.6 }}
               className="order-2 md:order-1 text-center md:text-left"
             >
-              <CandleRow count={5} size="sm" className="mb-4 md:justify-start justify-center" />
+              
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-surface-elevated/60 backdrop-blur-sm mb-6">
                 <Star className="w-3.5 h-3.5 text-gold fill-gold" />
