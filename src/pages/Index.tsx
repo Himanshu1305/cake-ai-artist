@@ -415,16 +415,15 @@ const Index = () => {
               </div>
 
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-                Beautiful,{" "}
+                The Best{" "}
                 <span className="bg-gradient-gold bg-clip-text text-transparent">
-                  personalized
+                  AI Cake Designer
                 </span>{" "}
-                cakes — designed by AI in 30 seconds.
+                for Personalized Birthday Cakes
               </h1>
 
               <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
-                Describe any occasion. Get a stunning custom cake design you can
-                share, save, or take to your local baker.
+                Design beautiful, personalized cakes in 30 seconds. Type a name, pick an occasion, get a stunning custom cake you can share, save, or take to your local baker.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
@@ -462,17 +461,14 @@ const Index = () => {
               </div>
             </motion.div>
 
-            {/* Right: hero image */}
+            {/* Right: cake wall — proof of breadth & quality */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.1 }}
               className="order-1 md:order-2 relative mx-auto w-full max-w-md md:max-w-none"
             >
-              <div className="relative animate-float">
-                <div className="absolute -inset-6 bg-gradient-to-tr from-gold/30 via-party-pink/20 to-transparent blur-2xl rounded-full" />
-                <HeroCakeWithFlames />
-              </div>
+              <CakeWall cakeCount={Math.max(dynamicCakeCount, 5000)} />
             </motion.div>
           </div>
         </div>
