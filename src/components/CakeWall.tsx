@@ -78,7 +78,7 @@ export const CakeWall = ({ cakeCount = 5000 }: CakeWallProps) => {
             type="button"
             onClick={() => t.src && setLightbox(t.src)}
             style={{ animationDelay: t.delay }}
-            className={`group relative ${t.span ?? ""} ${t.rotate} animate-wall-bob bg-white rounded-2xl p-1.5 shadow-party hover:shadow-2xl hover:scale-105 hover:rotate-0 transition-all duration-300 overflow-hidden`}
+            className={`group relative ${t.span ?? ""} ${t.rotate} animate-wall-bob bg-white rounded-2xl p-1.5 shadow-party transition-transform duration-300 ease-out overflow-hidden hover:[animation-play-state:paused] hover:scale-110 hover:-translate-y-2 hover:rotate-0 hover:z-20 hover:shadow-[0_25px_60px_-10px_hsl(var(--party-pink)/0.55)]`}
             aria-label={t.alt}
           >
             <div className="w-full h-full rounded-xl overflow-hidden bg-gradient-to-br from-party-pink/10 to-party-purple/10">
@@ -93,7 +93,7 @@ export const CakeWall = ({ cakeCount = 5000 }: CakeWallProps) => {
                   loading="lazy"
                   width={400}
                   height={400}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                 />
               )}
             </div>
