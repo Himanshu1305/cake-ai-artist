@@ -34,8 +34,10 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema, FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { PopularCakesSection } from "@/components/PopularCakesSection";
+import { CakeWall } from "@/components/CakeWall";
+import { HomepageFAQ, HOMEPAGE_FAQS } from "@/components/HomepageFAQ";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
@@ -180,27 +182,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist</title>
-        <meta name="description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required. People keep telling us they can't believe this works." />
-        <meta name="keywords" content="AI cake designer, personalized birthday cake, custom cake design, virtual cake creator, cake design tool" />
+        <title>Best AI Cake Designer — Personalized Cakes in 30 Seconds</title>
+        <meta name="description" content="Cake AI Artist is the best AI cake designer for birthdays, anniversaries & celebrations. Create stunning personalized cakes in 30 seconds — free to try, no design skills needed." />
+        <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, AI cake design, custom birthday cake design, personalized cake generator, virtual cake maker, AI birthday cake creator, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
+        <meta name="theme-color" content="#ec4899" />
+        <meta name="application-name" content="Cake AI Artist" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds | Cake AI Artist" />
-        <meta property="og:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try, no design skills required." />
+        <meta property="og:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds | Cake AI Artist" />
+        <meta property="og:description" content="The best AI cake designer for personalized birthday, anniversary and celebration cakes. Design beautiful custom cakes in 30 seconds — free to try." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer - Beautiful Personalized Cakes in 30 Seconds" />
-        <meta name="twitter:description" content="Type a name, pick an occasion, get a stunning cake design. It's that simple. Free to try." />
+        <meta name="twitter:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds" />
+        <meta name="twitter:description" content="Design beautiful personalized cakes in 30 seconds with the best AI cake designer. Free to try." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta name="twitter:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
       </Helmet>
       
       <OrganizationSchema 
         name="Cake AI Artist"
         url="https://cakeaiartist.com"
-        description="AI-powered personalized cake design platform for birthdays, anniversaries, and celebrations"
+        description="Best AI cake designer for personalized birthday, anniversary and celebration cakes. Design custom cakes in 30 seconds."
       />
       
       <WebSiteSchema 
@@ -209,6 +217,10 @@ const Index = () => {
       />
       
       <SoftwareApplicationSchema />
+
+      <FAQSchema faqs={HOMEPAGE_FAQS.map(f => ({ question: f.question, answer: f.answer }))} />
+
+      <BreadcrumbSchema items={[{ name: "Home", url: "https://cakeaiartist.com/" }]} />
       
       <ProductReviewSchema
         itemName="Cake AI Artist - AI Cake Designer"
