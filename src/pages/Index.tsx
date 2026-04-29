@@ -478,7 +478,7 @@ const Index = () => {
       <div id="creator" className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Ready to Create?</h2>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Try the Best Personalized Cake Designer — Free</h2>
             <p className="text-sm md:text-xl text-muted-foreground">Takes about 30 seconds. No credit card needed to start.</p>
           </div>
           <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading cake creator...</div>}>
@@ -494,7 +494,7 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-party opacity-30 rounded-2xl blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
             <img
               src={celebrationCake}
-              alt="Beautiful celebration cake"
+              alt="Beautiful personalized celebration cake designed by AI"
               className="relative w-full h-80 md:h-96 object-contain rounded-2xl shadow-party transition-transform duration-500 hover:scale-105"
             />
           </div>
