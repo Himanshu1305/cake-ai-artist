@@ -207,6 +207,24 @@ All colors MUST be HSL.
     }
   }
 
+  /* Cake wall — gentle continuous bob for each tile */
+  @keyframes wall-bob {
+    0%, 100% {
+      transform: translateY(0px) var(--tw-rotate, rotate(0));
+    }
+    50% {
+      transform: translateY(-8px) var(--tw-rotate, rotate(0));
+    }
+  }
+  .animate-wall-bob {
+    animation: wall-bob 5s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-wall-bob {
+      animation: none;
+    }
+  }
+
   /* Shimmer effect */
   .shimmer {
     background: linear-gradient(
