@@ -138,20 +138,20 @@ const AustraliaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer Australia — Personalised Birthday Cakes | Cake AI Artist</title>
-        <meta name="description" content="Australia's best AI cake designer. Personalised cakes for birthdays, Australia Day & beach parties — designed by AI in seconds." />
-        <meta name="keywords" content="best ai cake designer australia, best cake designer australia, best personalised cakes australia, personalised cake australia, birthday cake design sydney, ai cake maker au, virtual cake creator australia" />
+        <title>Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes | Cake AI Artist</title>
+        <meta name="description" content="Australia's best AI cake designer for personalised birthday cakes & every occasion — anniversaries, weddings, baby showers, Australia Day & beach parties. Designed in seconds." />
+        <meta name="keywords" content="best ai cake designer australia, best cake designer australia, best personalised cakes australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, baby shower cake, australia day cake, ai cake maker au, virtual cake creator australia" />
         <link rel="canonical" href="https://cakeaiartist.com/australia" />
         <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
-        <meta property="og:title" content="Best AI Cake Designer Australia — Personalised Birthday Cakes" />
-        <meta property="og:description" content="Australia's best AI cake designer. Personalised cakes for every Aussie celebration." />
+        <meta property="og:title" content="Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes" />
+        <meta property="og:description" content="Australia's best AI cake designer for personalised birthday cakes & every Aussie celebration — weddings, anniversaries, Australia Day & more." />
         <meta property="og:url" content="https://cakeaiartist.com/australia" />
         <meta property="og:locale" content="en_AU" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer Australia — Personalised Birthday Cakes" />
-        <meta name="twitter:description" content="Australia's best AI cake designer. Personalised cakes in seconds." />
+        <meta name="twitter:title" content="Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes" />
+        <meta name="twitter:description" content="Australia's best AI cake designer for birthdays, Australia Day & every celebration." />
       </Helmet>
 
       <OrganizationSchema 

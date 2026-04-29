@@ -183,15 +183,15 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer — Personalized Cakes in 30 Seconds</title>
-        <meta name="description" content="Cake AI Artist is the best AI cake designer for birthdays, anniversaries & celebrations. Create stunning personalized cakes in 30 seconds — free to try, no design skills needed." />
-        <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, AI cake design, custom birthday cake design, personalized cake generator, virtual cake maker, AI birthday cake creator, online cake design tool" />
+        <title>Best AI Cake Designer — Personalized Birthday & Celebration Cakes | Cake AI Artist</title>
+        <meta name="description" content="Cake AI Artist is the best AI cake designer for personalized birthday cakes & every occasion — anniversaries, weddings, baby showers, Diwali & more. Designed in 30 seconds, free to try." />
+        <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, personalized birthday cake, AI cake design, custom cake design, anniversary cake design, wedding cake AI, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta name="theme-color" content="#ec4899" />
         <meta name="application-name" content="Cake AI Artist" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds | Cake AI Artist" />
-        <meta property="og:description" content="The best AI cake designer for personalized birthday, anniversary and celebration cakes. Design beautiful custom cakes in 30 seconds — free to try." />
+        <meta property="og:title" content="Best AI Cake Designer — Personalized Birthday & Celebration Cakes | Cake AI Artist" />
+        <meta property="og:description" content="The best AI cake designer for personalized birthday cakes & every celebration — anniversaries, weddings, baby showers & more. Designed in 30 seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
@@ -200,8 +200,8 @@ const Index = () => {
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer — Personalized Cakes in 30 Seconds" />
-        <meta name="twitter:description" content="Design beautiful personalized cakes in 30 seconds with the best AI cake designer. Free to try." />
+        <meta name="twitter:title" content="Best AI Cake Designer — Personalized Birthday & Celebration Cakes" />
+        <meta name="twitter:description" content="Design beautiful personalized cakes for birthdays & every occasion in 30 seconds. Free to try." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta name="twitter:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
       </Helmet>
@@ -421,11 +421,11 @@ const Index = () => {
                 <span className="bg-gradient-gold bg-clip-text text-transparent">
                   AI Cake Designer
                 </span>{" "}
-                for Personalized Birthday Cakes
+                for Personalized Birthday Cakes & Every Celebration
               </h1>
 
               <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
-                Design beautiful, personalized cakes in 30 seconds. Type a name, pick an occasion, get a stunning custom cake you can share, save, or take to your local baker.
+                Birthdays, anniversaries, weddings, baby showers, Diwali, retirements — design any personalized cake in 30 seconds. Just type a name, pick the occasion, and get a stunning cake you can share, save, or take to your local baker.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
