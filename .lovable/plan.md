@@ -1,65 +1,61 @@
-# Option A: Birthday-led + "& Celebration" widening
+# Geo Check Results + Remove "Offer Ends In" Banner from Pricing
 
-Apply the chosen direction across homepage and 4 country landing pages. Birthday stays the lead keyword (highest search volume + your core hook), but every page now explicitly invites non-birthday visitors so we capture anniversary / wedding / baby shower / Diwali searches without diluting the main ranking signal.
+## 1. Geo / location APIs — health check
 
----
+I tested the live geo stack end-to-end. **Everything is working correctly.**
 
-## 1. Homepage (`src/pages/Index.tsx` + `index.html`)
+### Verification
+- **Edge function `detect-country`** — called directly: returned `200 OK` with `{"country_code": "NL", "source": "cloudflare"}`. The Cloudflare `cf-ipcountry` header path is firing as expected.
+- **Client fallback chain (in `GeoContext.tsx`)** — order is correct:
+  1. `ipapi.co/json/` (3s timeout)
+  2. Edge function `detect-country` (Cloudflare header)
+  3. Stored country preference
+- **`GeoRedirectWrapper`** — sync bot check first (good for SEO), `?noredirect` escape hatch present, redirects only on `/pricing`, results cached in `localStorage` so users aren't re-redirected.
 
-**`<title>`** (both files)
-> Best AI Cake Designer — Personalized Birthday & Celebration Cakes | Cake AI Artist
+### Country → page mapping (confirmed in `useGeoRedirect.ts` + `GeoRedirectWrapper.tsx`)
+```text
+IN          → /india
+GB / UK     → /uk
+CA          → /canada
+AU          → /australia
+Asia/Pac    → /australia
+Europe/MENA → /uk
+US/other    → / (homepage, USD)
+```
 
-**`<meta description>`** (both files)
-> Cake AI Artist is the best AI cake designer for personalized birthday cakes & every occasion — anniversaries, weddings, baby showers, Diwali & more. Designed in 30 seconds, free to try.
+### Pricing on each page (verified in code)
+- **`/india`** — uses `useRazorpayPayment("IN")` → `₹4,100` shown.
+- **`/uk`** — uses `useRazorpayPayment("GB")` → `£39` shown.
+- **`/canada`** — uses `useRazorpayPayment("CA")` → `C$67` shown.
+- **`/australia`** — uses `useRazorpayPayment("AU")` → `A$75` shown.
+- **`/` (homepage)** — `countryPricing` memo reads `detectedCountry` from `GeoContext` and shows IN/GB/CA/AU prices when detected, else USD `$49`.
+- **`/pricing`** — also reads `useGeoContext()` for currency.
 
-**`<meta keywords>`** — add: `anniversary cake design, wedding cake AI, baby shower cake, diwali cake` alongside existing birthday terms.
+**Conclusion: no fixes needed for geo/pricing. The system is healthy.**
 
-**Open Graph + Twitter** — mirror the new title/description.
-
-**Visible H1** (line 419)
-> The Best **AI Cake Designer** for Personalized Birthday Cakes & Every Celebration
-
-**Sub-headline** (line 427)
-> Birthdays, anniversaries, weddings, baby showers, Diwali, retirements — design any personalized cake in 30 seconds. Just type a name, pick the occasion, and get a stunning cake you can share, save, or take to your local baker.
-
----
-
-## 2. Country pages (Helmet meta only — keep their conversion-focused price H1s)
-
-Each page's `<title>`, `<meta description>`, OG, and Twitter tags get the same widening pattern with the country-specific local occasion already in place.
-
-| Page | New title |
-|---|---|
-| `/india` | Best AI Cake Designer in India — Personalized Birthday & Celebration Cakes \| Cake AI Artist |
-| `/uk` | Best AI Cake Designer UK — Personalised Birthday & Celebration Cakes \| Cake AI Artist |
-| `/canada` | Best AI Cake Designer Canada — Personalized Birthday & Celebration Cakes \| Cake AI Artist |
-| `/australia` | Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes \| Cake AI Artist |
-
-Descriptions add "& every celebration" and list 2–3 country-relevant occasions (Diwali for India, royal/garden parties for UK, Canada Day for Canada, Australia Day for Australia).
-
-Keywords arrays append: `anniversary cake, wedding cake design, baby shower cake` (+ local occasion keyword already present).
+The only theoretical risk would be a user on a brand-new device with both ipapi.co rate-limited *and* an edge function cold-start failure — handled gracefully by falling back to USD homepage.
 
 ---
 
-## 3. Add one FAQ entry to capture non-birthday searches
+## 2. Remove the "offer ends in" banner from pricing page
 
-In `src/components/HomepageFAQ.tsx` add:
+`src/pages/Pricing.tsx` currently shows two countdown/urgency elements:
 
-**Q:** Can I design cakes for occasions other than birthdays?
-**A:** Yes — Cake AI Artist designs personalized cakes for any occasion: anniversaries, weddings, baby showers, retirements, Diwali, Holi, Christmas, graduation parties and more. Pick your occasion in the creator and the AI tailors the cake design, message and decorations to match.
+- **Lines 208–237** — the big top banner: *"EXCLUSIVE LIFETIME DEAL - LIMITED SPOTS"* (default mode) or *"{Holiday} - ENDS SOON"* with `<CountdownTimer />` (campaign mode).
+- **Line 496** — a second `<CountdownTimer />` inside the bottom CTA section.
 
-This also flows into the existing `FAQSchema` so it shows in Google's rich-result FAQ snippets.
+### Changes
 
----
+1. **Remove the entire top urgency banner section** (lines 208–237).
+2. **Remove the bottom `<CountdownTimer />`** at line 496 (keep `<SpotsRemainingCounter />` for soft scarcity since spots are real).
+3. Leave `CountdownTimer` import in place only if still used elsewhere; if unused after these edits, remove the import too.
 
-## Files edited
+### Result
+- Pricing page loads cleanly with the hero headline and pricing cards — no countdown, no "ends in" pressure.
+- Spots-remaining counter stays (genuine scarcity, not a fake clock).
+- Country-specific pricing logic on `/pricing` is untouched.
 
-- `src/pages/Index.tsx` — Helmet block + H1 + sub-headline
-- `index.html` — title, description, keywords, OG, Twitter
-- `src/pages/IndiaLanding.tsx` — Helmet block
-- `src/pages/UKLanding.tsx` — Helmet block
-- `src/pages/CanadaLanding.tsx` — Helmet block
-- `src/pages/AustraliaLanding.tsx` — Helmet block
-- `src/components/HomepageFAQ.tsx` — append one FAQ entry
+### Files edited
+- `src/pages/Pricing.tsx` — remove top banner section + bottom countdown.
 
-No design, layout, animation, or backend changes. Pure copy + meta updates.
+No backend, geo, or other page changes.

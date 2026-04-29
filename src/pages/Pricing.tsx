@@ -205,36 +205,7 @@ const Pricing = () => {
         </div>
       </nav>
 
-      {/* Launch Banner - Dynamic based on campaign vs default mode */}
-      <section className={`${sale?.isDefault ? 'bg-gradient-gold' : 'bg-gradient-party'} text-white py-6 px-4`}>
-        <div className="container mx-auto text-center">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {sale?.isDefault ? (
-              // Default mode - no countdown, show spots
-              <>
-                <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
-                  <Sparkles className="w-8 h-8" />
-                  EXCLUSIVE LIFETIME DEAL - LIMITED SPOTS
-                  <Sparkles className="w-8 h-8" />
-                </h2>
-                <SpotsRemainingCounter tier="total" className="justify-center" />
-              </>
-            ) : (
-              // Campaign mode - show countdown
-              <>
-                <h2 className="text-2xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2">
-                  {sale?.emoji} {sale?.holidayName?.toUpperCase()} - ENDS SOON {sale?.emoji}
-                </h2>
-                <CountdownTimer className="justify-center" countryCode="US" />
-              </>
-            )}
-          </motion.div>
-        </div>
-      </section>
+      {/* Launch banner removed per request — no urgency / "ends in" countdown on pricing page */}
 
       {/* Hero Section */}
       <section className="py-16 px-4">
@@ -493,7 +464,6 @@ const Pricing = () => {
           </p>
           <div className="flex flex-col items-center gap-4 mb-8">
             <SpotsRemainingCounter />
-            <CountdownTimer countryCode={userCountry} />
           </div>
           <Button
             size="lg"
