@@ -499,9 +499,9 @@ const Index = () => {
             />
           </div>
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-foreground">
-              Create Beautiful Personalized Cakes in Seconds
-            </h1>
+            <h2 className="text-4xl font-bold text-foreground">
+              Beautiful Personalized Cakes, Designed by AI in 30 Seconds
+            </h2>
             <p className="text-xl text-foreground/80 leading-relaxed">
               Here&apos;s the thing about celebrations—they&apos;re only as special as the thought you put into them. 
               But when you&apos;re juggling everything else, who has three hours to browse stock photos? 
@@ -530,7 +530,7 @@ const Index = () => {
 
       {/* Why Choose Section */}
       <div className="container mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Love This</h2>
+        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Call Us the Best AI Cake Design Tool</h2>
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {[
             {
@@ -641,7 +641,7 @@ const Index = () => {
         <div className="text-center mb-8">
           <CandleRow count={7} size="md" className="mb-6" />
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Recent Creations from Our Community
+            1,000s of AI-Designed Cakes for Every Occasion
           </h2>
           <p className="text-xl text-muted-foreground mb-2">
             Real cakes made by real people. Yours could be here next!
@@ -807,7 +807,7 @@ const Index = () => {
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
-          What People Actually Say
+          Why People Call Us the Best AI Cake Designer
         </h2>
         <Carousel 
           className="w-full max-w-5xl mx-auto mb-12"
@@ -1008,7 +1008,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-party-purple/20 to-party-pink/20 rounded-2xl p-12 text-center">
           <h2 className="text-4xl font-bold mb-4 text-foreground">
-            Join 10,000+ Happy Creators
+            Best Value Personalized Cake Designer — Join 10,000+ Creators
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Stop wasting time on generic designs. Start creating cakes that actually mean something.
