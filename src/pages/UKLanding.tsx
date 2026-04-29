@@ -9,6 +9,7 @@ import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download,
 import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
+import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
@@ -137,15 +138,20 @@ const UKLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer UK - Beautiful Personalised Cakes | Cake AI Artist</title>
-        <meta name="description" content="Create stunning personalised cakes for British celebrations. Perfect for birthdays, royal celebrations, garden parties. Trusted by customers across the UK." />
-        <meta name="keywords" content="UK cake designer, British celebration cakes, personalised birthday cake UK, AI cake design UK, virtual cake creator UK" />
+        <title>Best AI Cake Designer UK — Personalised Birthday Cakes | Cake AI Artist</title>
+        <meta name="description" content="The UK's best AI cake designer. Design personalised birthday, wedding & garden party cakes in seconds. Loved by thousands of British families." />
+        <meta name="keywords" content="best ai cake designer uk, best cake designer uk, best personalised cakes uk, personalised cake uk, birthday cake design britain, ai cake maker england, virtual cake creator uk" />
         <link rel="canonical" href="https://cakeaiartist.com/uk" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
-        <meta property="og:title" content="AI Cake Designer UK - Beautiful Personalised Cakes" />
-        <meta property="og:description" content="Create stunning personalised cakes for British celebrations. Trusted by customers across the UK." />
+        <meta property="og:title" content="Best AI Cake Designer UK — Personalised Birthday Cakes" />
+        <meta property="og:description" content="The UK's best AI cake designer. Personalised cakes for every British celebration, designed in seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/uk" />
         <meta property="og:locale" content="en_GB" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Best AI Cake Designer UK — Personalised Birthday Cakes" />
+        <meta name="twitter:description" content="The UK's best AI cake designer. Personalised cakes designed in seconds." />
       </Helmet>
 
       <OrganizationSchema 

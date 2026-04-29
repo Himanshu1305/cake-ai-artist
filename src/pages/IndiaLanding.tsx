@@ -9,6 +9,7 @@ import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Downloa
 import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
+import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
@@ -137,15 +138,20 @@ const IndiaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer India - Beautiful Personalised Cakes | Cake AI Artist</title>
-        <meta name="description" content="Create stunning personalised cakes for Indian celebrations. Perfect for Diwali, Holi, birthdays, and anniversaries. Trusted by customers across India." />
-        <meta name="keywords" content="India cake designer, Diwali cake ideas, Holi cake design, personalised birthday cake India, AI cake design India, virtual cake creator India, Chhota Bheem cake, Motu Patlu cake" />
+        <title>Best AI Cake Designer in India — Personalized Birthday Cakes | Cake AI Artist</title>
+        <meta name="description" content="India's best AI cake designer. Create personalized cakes for birthdays, Diwali & anniversaries in 30 seconds. Loved by 5,000+ Indian families." />
+        <meta name="keywords" content="best ai cake designer india, best cake designer india, best personalized cakes india, personalized cake india, birthday cake design india, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
         <link rel="canonical" href="https://cakeaiartist.com/india" />
         <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
-        <meta property="og:title" content="AI Cake Designer India - Beautiful Personalised Cakes" />
-        <meta property="og:description" content="Create stunning personalised cakes for Diwali, Holi, and Indian celebrations. Trusted by customers across India." />
+        <meta property="og:title" content="Best AI Cake Designer in India — Personalized Birthday Cakes" />
+        <meta property="og:description" content="India's best AI cake designer. Personalized cakes for Diwali, birthdays & every Indian celebration." />
         <meta property="og:url" content="https://cakeaiartist.com/india" />
         <meta property="og:locale" content="en_IN" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Best AI Cake Designer in India — Personalized Birthday Cakes" />
+        <meta name="twitter:description" content="India's best AI cake designer. Personalized cakes designed in 30 seconds." />
       </Helmet>
 
       <OrganizationSchema 

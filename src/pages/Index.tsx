@@ -12,6 +12,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { AdSlot } from "@/components/AdSlot";
 import { AD_SLOTS } from "@/config/adSlots";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
+import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 // Temporarily disabled CursorSparkles to fix blank page issue
 // import { CursorSparkles } from "@/components/CursorSparkles";
@@ -272,6 +273,7 @@ const Index = () => {
       />
       
       <FloatingEmojis />
+      <ConfettiRain count={36} />
       {/* CursorSparkles temporarily disabled to fix blank page issue */}
       {/* <CursorSparkles /> */}
       
