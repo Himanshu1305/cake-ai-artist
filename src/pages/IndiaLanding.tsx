@@ -176,6 +176,7 @@ const IndiaLanding = () => {
       />
 
       <FloatingEmojis />
+      <ConfettiRain count={32} />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="IN" />
 
       {/* Navigation */}
