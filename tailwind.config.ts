@@ -78,6 +78,28 @@ export default {
           gold: "hsl(var(--party-gold))",
           orange: "hsl(var(--party-orange))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        brand: {
+          whatsapp: "hsl(var(--brand-whatsapp))",
+          pinterest: "hsl(var(--brand-pinterest))",
+          facebook: "hsl(var(--brand-facebook))",
+          twitter: "hsl(var(--brand-twitter))",
+        },
+      },
+      fontFamily: {
+        display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-gold': 'var(--gradient-gold)',
