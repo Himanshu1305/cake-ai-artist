@@ -713,7 +713,7 @@ const Gallery = () => {
               <div className="relative">
                 <img
                   src={resolveImageUrl(selectedCakeForPartyPack.image_url)}
-                  alt="Selected cake"
+                  alt={selectedCakeForPartyPack.prompt || "Personalized AI-designed cake"}
                   className="w-full h-48 object-cover rounded-lg"
                 />
               </div>
