@@ -18,10 +18,12 @@ const Privacy = () => {
         <meta property="og:description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data and ensure secure use of the best AI cake generator." />
         <meta property="og:url" content="https://cakeaiartist.com/privacy" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Privacy Policy - Your Data Protection | Cake AI Artist" />
         <meta name="twitter:description" content="Read Cake AI Artist's privacy policy. Learn how we protect your data." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       {/* Header with Logo */}
