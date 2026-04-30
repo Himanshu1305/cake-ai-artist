@@ -554,6 +554,8 @@ const CanadaLanding = () => {
         </div>
       </section>
 
+      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <StickyMobileCTA />
       <Footer />
     </div>
   );
