@@ -205,7 +205,7 @@ const CommunityGallery = () => {
                 <div className="relative aspect-square">
                   <img
                     src={image.image_url}
-                    alt={image.occasion_type || "Cake design"}
+                    alt={image.occasion_type ? `Personalized ${image.occasion_type} cake designed by AI — Cake AI Artist` : "AI-designed personalized celebration cake — Cake AI Artist"}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
