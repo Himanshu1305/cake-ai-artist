@@ -442,7 +442,7 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-gold/40 text-foreground hover:bg-gold/5 text-base md:text-lg px-7 py-6 font-semibold"
+                  className="bg-surface-elevated border-2 border-gold/50 text-foreground hover:bg-gold/10 hover:border-gold shadow-sm text-base md:text-lg px-7 py-6 font-semibold"
                   onClick={() => navigate('/community')}
                 >
                   See examples
