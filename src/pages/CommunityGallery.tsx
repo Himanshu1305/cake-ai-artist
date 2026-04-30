@@ -122,19 +122,20 @@ const CommunityGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>Community Gallery - Best Virtual Cake Designs | Cake AI Artist</title>
-        <meta name="description" content="Explore amazing virtual cakes created with the best AI cake generator. Get inspired by featured cake creations from users worldwide." />
-        <meta name="keywords" content="best virtual cake gallery, featured AI cake designs, cake inspiration, best AI cake examples" />
+        <title>AI Cake Gallery — Personalized Cake Design Ideas & Inspiration</title>
+        <meta name="description" content="Browse thousands of personalized AI-designed cakes for birthdays, anniversaries, weddings & more. Get inspired and design your own custom cake in 30 seconds." />
+        <meta name="keywords" content="AI cake gallery, personalized cake design ideas, custom cake inspiration, AI birthday cake examples, best cake designs, virtual cake gallery" />
         <link rel="canonical" href="https://cakeaiartist.com/community" />
-        <meta property="og:title" content="Community Gallery - Best Virtual Cake Designs | Cake AI Artist" />
-        <meta property="og:description" content="Explore amazing virtual cakes created with the best AI cake generator. Get inspired by featured cake creations from users worldwide." />
+        <meta property="og:title" content="AI Cake Gallery — Personalized Cake Design Ideas & Inspiration" />
+        <meta property="og:description" content="Browse thousands of personalized AI-designed cakes. Get inspired by real community creations." />
         <meta property="og:url" content="https://cakeaiartist.com/community" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Personalized AI cake design gallery — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Community Gallery - Best Virtual Cake Designs" />
-        <meta name="twitter:description" content="Explore amazing virtual cakes created with the best AI cake generator." />
+        <meta name="twitter:title" content="AI Cake Gallery — Personalized Cake Design Ideas & Inspiration" />
+        <meta name="twitter:description" content="Browse thousands of personalized AI-designed cakes from our community." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
 
