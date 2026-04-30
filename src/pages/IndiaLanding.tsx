@@ -560,7 +560,7 @@ const IndiaLanding = () => {
             <div className="space-y-4">
               <img 
                 src={resolveImageUrl(selectedCarouselImage.image_url)} 
-                alt="Community creation" 
+                alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist India"}
                 className="w-full h-auto rounded-lg"
               />
               <Button
