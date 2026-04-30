@@ -149,6 +149,13 @@ export const Footer = () => {
                       <span>{country.name}</span>
                     </button>
                   ))}
+                  <button
+                    onClick={handleAutoDetect}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-party-pink/10 flex items-center gap-2 transition-colors text-foreground border-t border-border"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Auto-detect my region</span>
+                  </button>
                 </div>
               )}
             </div>
