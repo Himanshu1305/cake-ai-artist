@@ -774,7 +774,7 @@ const Index = () => {
             <div className="space-y-4">
               <img 
                 src={resolveImageUrl(selectedCarouselImage.image_url)} 
-                alt="Community creation" 
+                alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake from Cake AI Artist community"}
                 className="w-full h-auto rounded-lg"
               />
               <div className="space-y-3">
