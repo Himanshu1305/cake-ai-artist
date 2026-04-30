@@ -491,9 +491,9 @@ const AustraliaLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Free</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">A$0</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />5 cakes per day</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Basic characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Standard quality</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />5 cakes per day</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />Basic characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />Standard quality</li>
                   </ul>
                   <Link to="/auth"><Button variant="outline" className="w-full">Get Started</Button></Link>
                 </CardContent>
@@ -506,9 +506,9 @@ const AustraliaLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Lifetime Deal</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">A$75</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Unlimited cakes forever</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Party Pack Generator</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />Unlimited cakes forever</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />All characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />Party Pack Generator</li>
                   </ul>
                   <Button className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
                     {isLoading === 'tier_1_49' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Get Lifetime Access'}
@@ -522,9 +522,9 @@ const AustraliaLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">A$14.99/mo</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />150 cakes per year</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Cancel anytime</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />150 cakes per year</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />All characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" />Cancel anytime</li>
                   </ul>
                   <Button 
                     variant="outline" 
