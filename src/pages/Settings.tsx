@@ -304,7 +304,7 @@ export default function Settings() {
             <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
             <span>Cake AI Artist</span>
           </Link>
-          <h1 className="text-xl font-bold text-foreground">Settings</h1>
+          <h2 className="text-xl font-bold text-foreground">Settings</h2>
           <div className="w-24"></div>
         </div>
       </nav>

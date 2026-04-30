@@ -138,9 +138,9 @@ export default function AdminLogoGenerator() {
           </Button>
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+            <h2 className="text-3xl font-bold text-foreground mb-2">
               Logo Generator
-            </h1>
+            </h2>
             <p className="text-muted-foreground">
               Generate and preview all 5 logo variations for Cake AI Artist
             </p>
