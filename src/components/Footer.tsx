@@ -34,7 +34,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
         <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/logo.png" alt="Cake AI Artist" className="w-12 h-12 rounded-lg" />
+              <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-12 h-12 rounded-lg" />
               <h3 className="font-bold text-lg">Cake AI Artist</h3>
             </div>
             <p className="text-sm opacity-90">

@@ -184,7 +184,7 @@ const IndiaLanding = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
-              <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+              <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
               <span>Cake AI Artist</span>
             </Link>
             
@@ -213,7 +213,7 @@ const IndiaLanding = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
                 <div className="flex items-center gap-2 mb-6">
-                  <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+                  <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
                   <span className="text-lg font-bold text-party-pink">Cake AI Artist</span>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -558,7 +558,7 @@ const IndiaLanding = () => {
         <DialogContent className="max-w-4xl">
           {selectedCarouselImage && (
             <div className="space-y-4">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src={resolveImageUrl(selectedCarouselImage.image_url)} 
                 alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist India"}
                 className="w-full h-auto rounded-lg"

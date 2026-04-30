@@ -200,7 +200,7 @@ const Pricing = () => {
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+            <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
             <span>Cake AI Artist</span>
           </Link>
         </div>

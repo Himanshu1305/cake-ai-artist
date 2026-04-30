@@ -184,7 +184,7 @@ const AustraliaLanding = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
-              <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+              <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
               <span>Cake AI Artist</span>
             </Link>
             
@@ -209,7 +209,7 @@ const AustraliaLanding = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
                 <div className="flex items-center gap-2 mb-6">
-                  <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+                  <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
                   <span className="text-lg font-bold text-party-pink">Cake AI Artist</span>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -229,7 +229,7 @@ const AustraliaLanding = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
-        <img src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
+        <img loading="lazy" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse">
@@ -294,7 +294,7 @@ const AustraliaLanding = () => {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="relative group">
             <div className="absolute inset-0 bg-gradient-party opacity-30 rounded-2xl blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
-            <img src={celebrationCake} alt="Beautiful celebration cake" className="relative w-full h-80 md:h-96 object-contain rounded-2xl shadow-party transition-transform duration-500 hover:scale-105" />
+            <img loading="lazy" decoding="async" src={celebrationCake} alt="Beautiful celebration cake" className="relative w-full h-80 md:h-96 object-contain rounded-2xl shadow-party transition-transform duration-500 hover:scale-105" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="space-y-6">
             <h2 className="text-4xl font-bold text-foreground">Create Beautiful Personalised Cakes in Seconds</h2>
@@ -382,7 +382,7 @@ const AustraliaLanding = () => {
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all cursor-pointer" onClick={() => setSelectedCarouselImage(cake)}>
-                      <img src={resolveImageUrl(cake.image_url)} alt={cake.prompt ? `Personalized AI cake design Australia — ${cake.prompt}` : "Personalized AI-designed cake by Cake AI Artist Australia user"} className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
+                      <img loading="lazy" decoding="async" src={resolveImageUrl(cake.image_url)} alt={cake.prompt ? `Personalized AI cake design Australia — ${cake.prompt}` : "Personalized AI-designed cake by Cake AI Artist Australia user"} className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                         <p className="text-white text-sm font-semibold">Click to view</p>
                       </div>
@@ -395,7 +395,7 @@ const AustraliaLanding = () => {
                 <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-party-pink/30 hover:border-party-pink transition-all">
-                      <img src={cake} alt={`Featured cake ${idx + 1}`} className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
+                      <img loading="lazy" decoding="async" src={cake} alt={`Featured cake ${idx + 1}`} className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
                     </div>
                   </div>
                 </CarouselItem>
@@ -412,7 +412,7 @@ const AustraliaLanding = () => {
         <DialogContent className="max-w-4xl">
           {selectedCarouselImage && (
             <div className="space-y-4">
-              <img src={resolveImageUrl(selectedCarouselImage.image_url)} alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist Australia"} className="w-full h-auto rounded-lg" />
+              <img loading="lazy" decoding="async" src={resolveImageUrl(selectedCarouselImage.image_url)} alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist Australia"} className="w-full h-auto rounded-lg" />
               <Button onClick={() => handleDownloadCarouselImage(selectedCarouselImage.image_url, selectedCarouselImage.prompt)} className="w-full">
                 <Download className="mr-2 h-4 w-4" />Download Image
               </Button>
