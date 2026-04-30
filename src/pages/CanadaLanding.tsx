@@ -412,7 +412,7 @@ const CanadaLanding = () => {
         <DialogContent className="max-w-4xl">
           {selectedCarouselImage && (
             <div className="space-y-4">
-              <img src={resolveImageUrl(selectedCarouselImage.image_url)} alt="Community creation" className="w-full h-auto rounded-lg" />
+              <img src={resolveImageUrl(selectedCarouselImage.image_url)} alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist Canada"} className="w-full h-auto rounded-lg" />
               <Button onClick={() => handleDownloadCarouselImage(selectedCarouselImage.image_url, selectedCarouselImage.prompt)} className="w-full">
                 <Download className="mr-2 h-4 w-4" />Download Image
               </Button>
