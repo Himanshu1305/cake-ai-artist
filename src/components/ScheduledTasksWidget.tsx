@@ -227,7 +227,7 @@ export function ScheduledTasksWidget() {
     switch (run.status) {
       case 'success':
         return (
-          <Badge className="bg-green-600 gap-1">
+          <Badge className="bg-success gap-1">
             <CheckCircle2 className="w-3 h-3" />
             Success
           </Badge>
@@ -241,7 +241,7 @@ export function ScheduledTasksWidget() {
         );
       case 'running':
         return (
-          <Badge className="bg-yellow-600 gap-1">
+          <Badge className="bg-warning gap-1">
             <Loader2 className="w-3 h-3 animate-spin" />
             Running
           </Badge>

@@ -1254,7 +1254,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               <p className="text-sm font-medium text-foreground flex items-center gap-2">
                 {isPremium ? (
                   <>
-                    <Crown className="w-4 h-4 text-yellow-500" />
+                    <Crown className="w-4 h-4 text-warning" />
                     Premium User
                   </>
                 ) : (
@@ -1593,7 +1593,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <Label className="text-sm font-medium flex items-center gap-2 mb-3">
                     <Upload className="w-4 h-4" />
                     Upload Custom Image for Cake (Optional)
-                    {!isPremium && <Crown className="w-4 h-4 text-yellow-500" />}
+                    {!isPremium && <Crown className="w-4 h-4 text-warning" />}
                   </Label>
                   <p className="text-xs text-muted-foreground mb-3">
                     Upload a photo to create a custom photo cake. Best with square or portrait images.
@@ -2667,7 +2667,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           onClick={() => handleShare('whatsapp')}
                           disabled={selectedImages.size === 0}
                           variant="outline"
-                          className="border-green-500 hover:bg-green-500 hover:text-white"
+                          className="border-success hover:bg-success hover:text-white"
                         >
                           <MessageCircle className="w-4 h-4 mr-1" />
                           {isMobile ? "📱" : "💻"} WhatsApp
