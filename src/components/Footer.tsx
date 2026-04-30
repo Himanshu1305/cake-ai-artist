@@ -1,9 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Globe, ChevronDown, RotateCcw } from 'lucide-react';
 import { useGeoContext } from '@/contexts/GeoContext';
+
+const PREF_KEY = 'user_country_preference';
+const PREF_EXPLICIT_KEY = 'user_country_preference_explicit';
+const MIGRATION_KEY = 'user_country_pref_migrated_v1';
 
 const countries = [
   { code: 'US', name: 'United States', flag: '🇺🇸', path: '/' },
