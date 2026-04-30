@@ -1,9 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Globe, ChevronDown, RotateCcw } from 'lucide-react';
 import { useGeoContext } from '@/contexts/GeoContext';
+
+const PREF_KEY = 'user_country_preference';
+const PREF_EXPLICIT_KEY = 'user_country_preference_explicit';
+const MIGRATION_KEY = 'user_country_pref_migrated_v1';
 
 const countries = [
   { code: 'US', name: 'United States', flag: '🇺🇸', path: '/' },
@@ -41,16 +45,43 @@ export const Footer = () => {
   const { detectedCountry } = useGeoContext();
   const location = useLocation();
 
+  // One-time migration: any existing saved preference from older versions is treated as
+  // non-explicit (auto-saved) so geo-detection can self-correct it.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(MIGRATION_KEY)) {
+        if (localStorage.getItem(PREF_KEY) && !localStorage.getItem(PREF_EXPLICIT_KEY)) {
+          // leave PREF_KEY as-is, just ensure explicit flag is absent
+          localStorage.removeItem(PREF_EXPLICIT_KEY);
+        }
+        localStorage.setItem(MIGRATION_KEY, '1');
+      }
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+
   const currentCountry = useMemo(() => {
-    // 1. Explicit user choice (footer picker)
-    const saved = safeGetItem('user_country_preference');
-    if (saved) {
+    const saved = safeGetItem(PREF_KEY);
+    const isExplicit = safeGetItem(PREF_EXPLICIT_KEY) === '1';
+    const geoCode = resolveCountryCode(detectedCountry, location.pathname);
+
+    // Explicit user pick always wins
+    if (saved && isExplicit) {
       const match = countries.find(c => c.code === saved);
       if (match) return match;
     }
-    // 2. Geo-detected + URL hint fallback
-    const code = resolveCountryCode(detectedCountry, location.pathname);
-    return countries.find(c => c.code === code) || countries[0];
+
+    // Non-explicit (legacy/auto) saved value: prefer live geo if it disagrees,
+    // and silently update the saved value so it stays consistent.
+    if (saved && !isExplicit && detectedCountry) {
+      if (saved !== geoCode) {
+        safeSetItem(PREF_KEY, geoCode);
+      }
+      return countries.find(c => c.code === geoCode) || countries[0];
+    }
+
+    return countries.find(c => c.code === geoCode) || countries[0];
   }, [detectedCountry, location.pathname]);
 
   const handleCookieSettings = (e: React.MouseEvent) => {
@@ -59,9 +90,22 @@ export const Footer = () => {
   };
 
   const handleCountryChange = (country: typeof countries[0]) => {
-    safeSetItem('user_country_preference', country.code);
+    safeSetItem(PREF_KEY, country.code);
+    safeSetItem(PREF_EXPLICIT_KEY, '1');
     setShowCountryPicker(false);
     window.location.href = country.path;
+  };
+
+  const handleAutoDetect = () => {
+    try {
+      localStorage.removeItem(PREF_KEY);
+      localStorage.removeItem(PREF_EXPLICIT_KEY);
+      sessionStorage.removeItem('geo_detection_done');
+    } catch {
+      /* ignore */
+    }
+    setShowCountryPicker(false);
+    window.location.href = '/';
   };
 
   return (
@@ -105,6 +149,13 @@ export const Footer = () => {
                       <span>{country.name}</span>
                     </button>
                   ))}
+                  <button
+                    onClick={handleAutoDetect}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-party-pink/10 flex items-center gap-2 transition-colors text-foreground border-t border-border"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Auto-detect my region</span>
+                  </button>
                 </div>
               )}
             </div>

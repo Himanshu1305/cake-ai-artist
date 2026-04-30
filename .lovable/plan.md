@@ -1,55 +1,68 @@
-## Issues found
+# Fix: Footer still shows United Kingdom for India users
 
-### 1. Footer always shows "United States"
-`src/components/Footer.tsx` reads only `localStorage.user_country_preference` and falls back to `'US'`. That key is only written when the user (a) manually picks a country in the footer/picker, or (b) hits a redirectable route like `/pricing`. On the homepage (`/`), the geo detection result is stored in `sessionStorage` under `geo_detection_done` (via `GeoContext` / `useGeoRedirect`) but the footer never reads it — so Indian visitors landing on `/` see "United States".
+## Root cause
 
-### 2. Surabhi Dixit was charged after premium was removed
-Verified in DB:
-- `profiles.is_premium = true`, `subscription_status = 'active'`, `subscription_id = sub_S6ZSWlskYzvWFw`
-- `subscriptions.status = 'active'`, last charged 2026-04-20, next period ends 2026-05-20
+The footer resolves the displayed country in this priority:
 
-Root cause: in `src/pages/Admin.tsx` `handleRemovePremium` only flips `profiles.is_premium = false` locally. It never tells Razorpay to cancel the subscription, so Razorpay keeps auto-charging every cycle. There is also no `cancel-subscription` edge function in the project at all (users can't self-cancel either, despite Terms saying they can).
+1. `localStorage["user_country_preference"]` (explicit picker choice) — **always wins**
+2. Geo-detected country from `GeoContext` (ipapi.co → server fallback)
+3. URL path hint (`/india`, `/uk`, etc.)
+4. Default `US`
 
----
+A stale value (`"UK"`) is sitting in localStorage from an earlier session — likely set when the user (or a prior preview test) clicked the country picker, or visited `/uk`. Because step 1 wins unconditionally, geo-detection (which correctly returns `IN`) is ignored and the footer keeps showing United Kingdom forever.
 
-## Plan
+There is currently no logic that:
+- Clears or overrides a stale preference when it conflicts with the actual detected country.
+- Lets the user "reset to auto-detect."
+- Re-validates the saved preference against geo data on a new session.
 
-### A. Footer country defaulting (frontend only)
-Update `src/components/Footer.tsx` to resolve the displayed country with this priority:
-1. `localStorage.user_country_preference` (explicit user choice)
-2. `useGeoContext().detectedCountry` (auto-detected this session)
-3. URL-based hint: `/india` → IN, `/uk` → UK, `/canada` → CA, `/australia` → AU, otherwise US
-4. Final fallback: US
+## Fix
 
-Map the detected ISO code (`GB` → UK, unsupported codes → US) to one of the 5 supported entries. Re-render when `detectedCountry` resolves so the flag updates from the loading state.
+### 1. Smarter preference resolution in `src/components/Footer.tsx`
 
-### B. Cancel Razorpay subscription on premium removal (backend + admin UI)
+Change the priority so explicit user choice still wins, but a **stale/auto-saved preference** doesn't permanently override correct geo detection:
 
-1. **New edge function** `supabase/functions/cancel-razorpay-subscription/index.ts`
-   - Auth: requires a valid JWT. Allow if (a) caller is the subscription owner, or (b) caller has `admin` role via `has_role()`.
-   - Input: `{ userId: string, cancelAtCycleEnd?: boolean }` (default `true`).
-   - Look up the user's active `subscriptions` row (or `profiles.subscription_id`).
-   - Call Razorpay `POST https://api.razorpay.com/v1/subscriptions/{id}/cancel` with `{ cancel_at_cycle_end: 1 | 0 }` using Basic auth (`RAZORPAY_KEY_ID:RAZORPAY_KEY_SECRET`).
-   - On success, update `subscriptions.status = 'cancelled'` and `profiles.subscription_status = 'cancelled'`. (Existing `razorpay-webhook` `subscription.cancelled` handler will also fire for safety.)
-   - Add a deploy-time config block in `supabase/config.toml` only if needed (function should keep `verify_jwt = true`).
+- Read the saved preference, but also read a new flag `user_country_preference_explicit` (set only when the user manually picks via the footer dropdown).
+- If the saved preference is **not explicit** AND `detectedCountry` resolves to something different, prefer the geo-detected value and update the saved preference to match.
+- If the saved preference **is explicit**, keep honoring it (user picked it on purpose).
 
-2. **Admin "Remove Premium" flow** (`src/pages/Admin.tsx` `handleRemovePremium`)
-   - Before flipping `is_premium`, look up the user's `subscription_id`. If present and `subscription_status` is `active` (or anything other than `cancelled/expired/halted`), invoke the new `cancel-razorpay-subscription` function with `cancelAtCycleEnd: true` so they are not charged again but keep access until the paid period ends.
-   - Surface success/failure in the existing toast. If the cancel call fails, abort the local update and show an error so the admin can retry — this prevents the current bug where the local profile says "not premium" but Razorpay keeps billing.
-   - Keep the existing email-type dropdown.
+When the footer picker is used (`handleCountryChange`), set both:
+- `user_country_preference` = code
+- `user_country_preference_explicit` = `"1"`
 
-3. **One-off cleanup for Surabhi**
-   - As part of the implementation, run the new function (or an equivalent SQL + Razorpay call) for `user_id = df576f0b-3343-48e3-a43d-f98450a41657` / subscription `sub_S6ZSWlskYzvWFw` to stop further charges immediately. Refunding the last cycle is out of scope (must be done manually in the Razorpay dashboard).
+### 2. Add an "Auto-detect" option to the footer dropdown
 
-4. **(Optional, recommended) User-facing cancel**
-   - Add a "Cancel subscription" button in `src/pages/Settings.tsx` for premium users with a `subscription_id`, calling the same edge function with `cancelAtCycleEnd: true`. This honors what `Terms.tsx` already promises. Skip if you want this kept admin-only.
+Append an extra menu item ("Auto-detect my region") that:
+- Removes `user_country_preference` and `user_country_preference_explicit` from localStorage.
+- Removes `geo_detection_done` from sessionStorage.
+- Reloads the page so geo runs fresh.
 
-### Files to touch
-- `src/components/Footer.tsx` — geo-aware country resolution
-- `supabase/functions/cancel-razorpay-subscription/index.ts` — new
-- `src/pages/Admin.tsx` — call cancel before removing premium
-- `src/pages/Settings.tsx` — optional user-facing cancel button
+This gives the user a recovery path and is the cleanest way to clear a wrong saved value.
 
-### Out of scope
-- Refunding the April 2026 charge to Surabhi (manual Razorpay dashboard action)
-- Changing how lifetime/one-time `tier_X_49/99` users are handled (they have no recurring subscription)
+### 3. One-time migration to fix existing stale preferences
+
+On Footer mount, run a tiny migration (guarded by a `user_country_pref_migrated_v1` flag in localStorage):
+- If `user_country_preference` exists but `user_country_preference_explicit` is missing, treat the existing value as **non-explicit** (auto-saved by older logic). The new resolver in step 1 will then re-evaluate against geo detection on the next render and self-correct.
+
+This silently fixes every existing user (including the reporter) without forcing them to click anything.
+
+### 4. Don't auto-save preferences from `GeoRedirectWrapper` / `useGeoRedirect`
+
+Audit `src/hooks/useGeoRedirect.ts` and `src/components/GeoRedirectWrapper.tsx` to make sure they only write to `geo_detection_done` (sessionStorage), never to `user_country_preference` (localStorage). They currently look correct, but I'll double-check during implementation to ensure no other code path silently writes the explicit preference.
+
+## Files to edit
+
+- `src/components/Footer.tsx` — new resolver logic, "Auto-detect" menu item, migration flag, mark explicit picks.
+- (Verify only) `src/hooks/useGeoRedirect.ts`, `src/components/GeoRedirectWrapper.tsx` — confirm they don't write `user_country_preference`.
+
+## Out of scope
+
+- Backend / edge function changes (geo detection itself works fine).
+- UI redesign of the footer.
+- Currency/pricing logic on landing pages (separate concern).
+
+## Expected result
+
+- Reporter's footer immediately shows India (🇮🇳) on next load thanks to the migration + new resolver.
+- Future users who manually pick a country still get their choice respected.
+- Anyone stuck on a wrong region can click "Auto-detect my region" to reset.
