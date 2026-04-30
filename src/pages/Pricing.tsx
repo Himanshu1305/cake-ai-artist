@@ -8,6 +8,8 @@ import { Check, ArrowLeft, Crown, Star, AlertCircle, Loader2, Sparkles } from "l
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { ProductSchema, BreadcrumbSchema } from "@/components/SEOSchema";

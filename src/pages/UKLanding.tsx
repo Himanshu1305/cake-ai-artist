@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download, Loader2 } from "lucide-react";
 import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
