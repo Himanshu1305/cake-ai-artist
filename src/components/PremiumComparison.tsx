@@ -72,7 +72,7 @@ export const PremiumComparison = ({ show }: PremiumComparisonProps) => {
               <div className="text-center">
                 {typeof feature.free === "boolean" ? (
                   feature.free ? (
-                    <Check className="h-4 w-4 text-green-500 mx-auto" />
+                    <Check className="h-4 w-4 text-success mx-auto" />
                   ) : (
                     <X className="h-4 w-4 text-muted-foreground mx-auto" />
                   )

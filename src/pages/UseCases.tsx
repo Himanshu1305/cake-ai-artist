@@ -29,7 +29,7 @@ const UseCases = () => {
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4 max-w-6xl">
         <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-          <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+          <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
           <span>Cake AI Artist</span>
         </Link>
       </header>

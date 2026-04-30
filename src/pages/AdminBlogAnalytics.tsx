@@ -474,7 +474,7 @@ export default function AdminBlogAnalytics() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Blog Analytics</h1>
+              <h2 className="text-3xl font-bold">Blog Analytics</h2>
               <p className="text-muted-foreground">Track blog performance and manage AI-generated content</p>
             </div>
           </div>

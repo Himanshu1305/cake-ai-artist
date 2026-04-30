@@ -19,7 +19,10 @@ const NotFound = () => {
       </Helmet>
 
       <div className="text-center max-w-xl">
-        <h1 className="mb-4 text-6xl font-bold text-foreground">404</h1>
+        <h1 className="mb-4 text-4xl md:text-5xl font-bold text-foreground">
+          Page Not Found — Design a Personalized Cake Instead
+        </h1>
+        <p className="mb-2 text-2xl text-party-pink font-semibold" aria-hidden="true">404</p>
         <p className="mb-6 text-xl text-muted-foreground">
           Looks like this cake recipe got lost in the kitchen. The page you're looking for doesn't exist.
         </p>

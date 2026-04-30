@@ -2163,7 +2163,7 @@ const BlogPost = () => {
             </Button>
           </Link>
           <Link to="/" className="inline-flex items-center gap-2 text-lg font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Cake AI Artist" className="w-8 h-8 rounded-lg" />
+            <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-8 h-8 rounded-lg" />
             <span className="hidden sm:inline">Cake AI Artist</span>
           </Link>
           <Link to="/">
@@ -2183,7 +2183,7 @@ const BlogPost = () => {
               {/* Hero Image */}
               {heroImage && (
                 <div className="relative h-64 md:h-80 lg:h-96">
-                  <img 
+                  <img loading="lazy" decoding="async" 
                     src={heroImage} 
                     alt={post.title}
                     className="w-full h-full object-cover"

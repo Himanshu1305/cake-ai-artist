@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download, Loader2 } from "lucide-react";
 import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
@@ -184,7 +186,7 @@ const UKLanding = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
-              <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+              <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
               <span>Cake AI Artist</span>
             </Link>
             
@@ -213,7 +215,7 @@ const UKLanding = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
                 <div className="flex items-center gap-2 mb-6">
-                  <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+                  <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
                   <span className="text-lg font-bold text-party-pink">Cake AI Artist</span>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -557,7 +559,7 @@ const UKLanding = () => {
         <DialogContent className="max-w-4xl">
           {selectedCarouselImage && (
             <div className="space-y-4">
-              <img 
+              <img loading="lazy" decoding="async" 
                 src={resolveImageUrl(selectedCarouselImage.image_url)} 
                 alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist UK"}
                 className="w-full h-auto rounded-lg"
@@ -709,9 +711,9 @@ const UKLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Free</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">£0</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 5 cakes per day</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Basic characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Standard quality</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> 5 cakes per day</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Basic characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Standard quality</li>
                   </ul>
                   <Link to="/auth">
                     <Button variant="outline" className="w-full">Get Started</Button>
@@ -726,9 +728,9 @@ const UKLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Lifetime Deal</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">£39</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Unlimited cakes forever</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Party Pack Generator</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Unlimited cakes forever</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> All characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Party Pack Generator</li>
                   </ul>
                   <Button 
                     className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow"
@@ -746,9 +748,9 @@ const UKLanding = () => {
                   <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
                   <p className="text-3xl font-bold text-party-pink mb-4">£7.99/mo</p>
                   <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 150 cakes per year</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Cancel anytime</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> 150 cakes per year</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> All characters</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Cancel anytime</li>
                   </ul>
                   <Button 
                     variant="outline" 
@@ -789,6 +791,8 @@ const UKLanding = () => {
         </div>
       </section>
 
+      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <StickyMobileCTA />
       <Footer />
     </div>
   );

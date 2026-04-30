@@ -84,7 +84,7 @@ export const LiveActivityFeed = () => {
             <motion.div
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="w-3 h-3 bg-green-500 rounded-full shadow-lg shadow-green-500/50"
+              className="w-3 h-3 bg-success rounded-full shadow-lg shadow-success/50"
             />
           </div>
 

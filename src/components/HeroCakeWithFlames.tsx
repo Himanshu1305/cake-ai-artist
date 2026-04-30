@@ -20,8 +20,13 @@ export const HeroCakeWithFlames = ({
     <img
       src={heroCakeAnimated}
       alt={alt}
+      width={1200}
+      height={1200}
       className={`relative block w-full h-auto rounded-3xl shadow-elegant ring-1 ring-gold/30 ${className}`}
       loading="eager"
+      decoding="async"
+      // @ts-expect-error fetchpriority is valid HTML, types lag
+      fetchpriority="high"
     />
   );
 };

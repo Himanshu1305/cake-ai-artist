@@ -82,7 +82,7 @@ export default function BlogUnsubscribe() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           {status === 'success' ? (
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <CheckCircle2 className="h-16 w-16 text-success mx-auto mb-4" />
           ) : status === 'error' ? (
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           ) : (

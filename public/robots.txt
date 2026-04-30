@@ -1,5 +1,17 @@
 User-agent: *
 Allow: /
+Allow: /community
+Allow: /free-ai-cake-designer
+Allow: /pricing
+Allow: /how-it-works
+Allow: /use-cases
+Allow: /blog
+Allow: /faq
+Allow: /uk
+Allow: /canada
+Allow: /australia
+Allow: /india
+
 Disallow: /admin
 Disallow: /admin/
 Disallow: /settings

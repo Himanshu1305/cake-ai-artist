@@ -101,7 +101,7 @@ export const ShareInstructions = ({ open, onOpenChange }: ShareInstructionsProps
                 <div className="grid grid-cols-2 gap-2">
                   <Card className="p-3 bg-card border-border">
                     <div className="flex items-center gap-2 mb-1">
-                      <Facebook className="w-4 h-4 text-blue-500" />
+                      <Facebook className="w-4 h-4 text-brand-facebook" />
                       <span className="text-xs font-semibold text-foreground">Facebook</span>
                     </div>
                     <p className="text-xs text-foreground/70">Tap "What's on your mind?" → Photo/Video</p>
@@ -115,7 +115,7 @@ export const ShareInstructions = ({ open, onOpenChange }: ShareInstructionsProps
                   </Card>
                   <Card className="p-3 bg-card border-border">
                     <div className="flex items-center gap-2 mb-1">
-                      <MessageCircle className="w-4 h-4 text-green-500" />
+                      <MessageCircle className="w-4 h-4 text-success" />
                       <span className="text-xs font-semibold text-foreground">WhatsApp</span>
                     </div>
                     <p className="text-xs text-foreground/70">Paperclip icon → Gallery → Downloaded Image</p>
@@ -184,7 +184,7 @@ export const ShareInstructions = ({ open, onOpenChange }: ShareInstructionsProps
                 <div className="space-y-2">
                   <Card className="p-3 bg-card border-border">
                     <div className="flex items-start gap-2">
-                      <Facebook className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                      <Facebook className="w-5 h-5 text-brand-facebook shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-xs font-semibold text-foreground mb-1">Facebook:</p>
                         <p className="text-xs text-foreground/70">
@@ -206,7 +206,7 @@ export const ShareInstructions = ({ open, onOpenChange }: ShareInstructionsProps
                   </Card>
                   <Card className="p-3 bg-card border-border">
                     <div className="flex items-start gap-2">
-                      <MessageCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                      <MessageCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-xs font-semibold text-foreground mb-1">WhatsApp Web:</p>
                         <p className="text-xs text-foreground/70">
