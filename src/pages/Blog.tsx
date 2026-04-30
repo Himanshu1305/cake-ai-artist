@@ -453,7 +453,7 @@ const Blog = () => {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
 
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Ideas & Tips</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Design Ideas, AI Cake Tips & Inspiration</h1>
           <p className="text-muted-foreground text-xl max-w-2xl">
             Stuff we've learned, trends we've noticed, and ideas worth stealing. 
             No fluff, just useful things.
