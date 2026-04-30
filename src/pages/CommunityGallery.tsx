@@ -255,7 +255,7 @@ const CommunityGallery = () => {
             <div className="space-y-4">
               <img
                 src={selectedImage.image_url}
-                alt={selectedImage.occasion_type || "Cake design"}
+                alt={selectedImage.occasion_type ? `Personalized ${selectedImage.occasion_type} cake designed by AI — Cake AI Artist` : "AI-designed personalized celebration cake — Cake AI Artist"}
                 className="w-full h-auto rounded-lg"
               />
               
