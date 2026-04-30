@@ -68,6 +68,3 @@ verify_jwt = false
 
 [functions.cancel-razorpay-subscription]
 verify_jwt = true
-
-[functions.admin-cancel-subscription-oneoff]
-verify_jwt = false
