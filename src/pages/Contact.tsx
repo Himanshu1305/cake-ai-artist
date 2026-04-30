@@ -38,19 +38,20 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Contact Us - Questions, Feedback, Whatever | Cake AI Artist</title>
-        <meta name="description" content="Got a question? Found a bug? Want to say hi? We read everything and reply within a day or two. Really." />
-        <meta name="keywords" content="contact support, cake artist help, virtual cake customer service" />
+        <title>Contact Cake AI Artist — Best AI Cake Designer Support</title>
+        <meta name="description" content="Contact the team behind Cake AI Artist, the best AI cake designer for personalized birthday & celebration cakes. We reply within a day." />
+        <meta name="keywords" content="contact Cake AI Artist, AI cake designer support, personalized cake help, custom cake design contact" />
         <link rel="canonical" href="https://cakeaiartist.com/contact" />
-        <meta property="og:title" content="Contact Us - Questions, Feedback, Whatever | Cake AI Artist" />
-        <meta property="og:description" content="Got a question? Found a bug? Want to say hi? We reply within a day or two." />
+        <meta property="og:title" content="Contact Cake AI Artist — Best AI Cake Designer Support" />
+        <meta property="og:description" content="Get in touch with the team behind the best AI cake designer for personalized celebration cakes." />
         <meta property="og:url" content="https://cakeaiartist.com/contact" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Contact Cake AI Artist support team" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Contact Us - Questions, Feedback, Whatever" />
-        <meta name="twitter:description" content="Got a question? Found a bug? Want to say hi? We reply within a day or two." />
+        <meta name="twitter:title" content="Contact Cake AI Artist — Best AI Cake Designer Support" />
+        <meta name="twitter:description" content="Get in touch with the team behind the best AI cake designer." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       

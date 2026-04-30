@@ -31,19 +31,20 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>FAQ - Got Questions? We've Got Answers | Cake AI Artist</title>
-        <meta name="description" content="Wondering how it all works? Here's the stuff people ask us most—from pricing to features to 'wait, is this actually free?' Yes. Yes it is." />
-        <meta name="keywords" content="cake AI FAQ, virtual cake questions, cake designer help, design support" />
+        <title>AI Cake Designer FAQ — Personalized Cake Design Questions Answered</title>
+        <meta name="description" content="Answers about the best AI cake designer — pricing, customization, downloads, commercial use & more. Everything you need before designing your personalized cake." />
+        <meta name="keywords" content="AI cake designer FAQ, personalized cake questions, custom cake design help, AI cake generator support, virtual cake maker FAQ" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
-        <meta property="og:title" content="FAQ - Got Questions? We've Got Answers | Cake AI Artist" />
-        <meta property="og:description" content="Wondering how it all works? Here's the stuff people ask us most." />
+        <meta property="og:title" content="AI Cake Designer FAQ — Personalized Cake Design Questions Answered" />
+        <meta property="og:description" content="Common questions about the best AI cake designer for personalized birthday & celebration cakes." />
         <meta property="og:url" content="https://cakeaiartist.com/faq" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="AI cake designer FAQ — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="FAQ - Got Questions? We've Got Answers" />
-        <meta name="twitter:description" content="Wondering how it all works? Here's the stuff people ask us most." />
+        <meta name="twitter:title" content="AI Cake Designer FAQ — Personalized Cake Design Questions Answered" />
+        <meta name="twitter:description" content="Common questions about the best AI cake designer for personalized celebration cakes." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
@@ -106,7 +107,7 @@ const FAQ = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
-          <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
+          <h1 className="text-4xl font-bold mb-4 text-foreground">AI Cake Designer FAQ — Personalized Cake Questions Answered</h1>
           <p className="text-muted-foreground text-lg mb-8">
             Got questions? Cool. Here are the ones everyone asks. Still stuck? <Link to="/contact" className="text-party-purple hover:underline">Hit us up</Link>.
           </p>

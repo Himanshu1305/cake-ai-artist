@@ -9,19 +9,20 @@ const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Use Cases - Real Ways People Use Virtual Cake Designs | Cake AI Artist</title>
-        <meta name="description" content="From last-minute birthday saves to corporate celebrations—here's how people are actually using AI-generated cakes. Some of these surprised even us." />
-        <meta name="keywords" content="virtual cake examples, AI cake designs, birthday cake ideas, anniversary cake, celebration cake designs" />
+        <title>AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More</title>
+        <meta name="description" content="Personalized AI cake design ideas for birthdays, anniversaries, weddings, baby showers, graduations & corporate events from the best AI cake designer." />
+        <meta name="keywords" content="AI cake design ideas, custom cake designs for every occasion, personalized birthday cake ideas, anniversary cake design, wedding cake AI, baby shower cake ideas, graduation cake" />
         <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
-        <meta property="og:title" content="Use Cases - Real Ways People Use Virtual Cake Designs | Cake AI Artist" />
-        <meta property="og:description" content="From last-minute birthday saves to corporate celebrations—here's how people are actually using AI-generated cakes." />
+        <meta property="og:title" content="AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More" />
+        <meta property="og:description" content="Personalized AI cake design ideas for every celebration. From birthdays to weddings to corporate events." />
         <meta property="og:url" content="https://cakeaiartist.com/use-cases" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="AI cake design ideas for every occasion" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Use Cases - Real Ways People Use Virtual Cake Designs" />
-        <meta name="twitter:description" content="From last-minute birthday saves to corporate celebrations—here's how people are actually using AI-generated cakes." />
+        <meta name="twitter:title" content="AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More" />
+        <meta name="twitter:description" content="Personalized AI cake design ideas for every celebration." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       

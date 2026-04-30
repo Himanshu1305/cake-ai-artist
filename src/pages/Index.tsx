@@ -677,7 +677,7 @@ const Index = () => {
                     >
                       <img
                         src={resolveImageUrl(cake.image_url)}
-                        alt="Featured user cake design"
+                        alt={cake.prompt ? `Personalized AI-designed cake — ${cake.prompt}` : "Personalized AI-designed celebration cake by Cake AI Artist user"}
                         className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
@@ -774,7 +774,7 @@ const Index = () => {
             <div className="space-y-4">
               <img 
                 src={resolveImageUrl(selectedCarouselImage.image_url)} 
-                alt="Community creation" 
+                alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake from Cake AI Artist community"}
                 className="w-full h-auto rounded-lg"
               />
               <div className="space-y-3">

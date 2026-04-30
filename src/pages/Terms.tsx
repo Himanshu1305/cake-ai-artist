@@ -17,10 +17,12 @@ const Terms = () => {
         <meta property="og:description" content="Read the terms of service for Cake AI Artist, the best AI cake generator. Understand your rights and responsibilities." />
         <meta property="og:url" content="https://cakeaiartist.com/terms" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Terms of Service - User Agreement | Cake AI Artist" />
-        <meta name="twitter:description" content="Read the terms of service for Cake AI Artist, the best AI cake generator." />
+        <meta name="twitter:description" content="Read the terms of service for Cake AI Artist, the best AI cake designer." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       {/* Header with Logo */}

@@ -16,10 +16,12 @@ const Advertising = () => {
         <meta property="og:description" content="Learn about advertising on Cake AI Artist and your choices for ad preferences." />
         <meta property="og:url" content="https://cakeaiartist.com/advertising" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Advertising Disclosure - How We Use Ads | Cake AI Artist" />
         <meta name="twitter:description" content="Learn about advertising on Cake AI Artist and your choices for ad preferences." />
+        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
       
       {/* Header with Logo */}

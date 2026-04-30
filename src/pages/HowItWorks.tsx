@@ -59,7 +59,7 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4 py-8 max-w-5xl">
 
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">How to Create Your Perfect Cake in 30 Seconds</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">How the AI Cake Designer Creates Your Personalized Cake in 30 Seconds</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
             Creating personalized cakes has never been easier. Here&apos;s how you go from idea to image in half a minute.
           </p>

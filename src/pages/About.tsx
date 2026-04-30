@@ -10,19 +10,20 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>About Us - The Story Behind Cake AI Artist</title>
-        <meta name="description" content="We built Cake AI Artist because designing cakes shouldn't require a degree. Here's how we're making personalized celebrations accessible to everyone—no Photoshop needed." />
-        <meta name="keywords" content="about cake AI artist, virtual cake platform, AI cake technology, cake design story" />
+        <title>About Cake AI Artist — The Best AI Cake Designer Online</title>
+        <meta name="description" content="Cake AI Artist is the best AI cake designer for personalized birthday, anniversary, wedding & celebration cakes. Here's the story behind the platform." />
+        <meta name="keywords" content="about Cake AI Artist, best AI cake designer, AI cake design platform, personalized cake maker story, custom cake design online" />
         <link rel="canonical" href="https://cakeaiartist.com/about" />
-        <meta property="og:title" content="About Us - The Story Behind Cake AI Artist" />
-        <meta property="og:description" content="We built Cake AI Artist because designing cakes shouldn't require a degree. Here's our story." />
+        <meta property="og:title" content="About Cake AI Artist — The Best AI Cake Designer Online" />
+        <meta property="og:description" content="The story behind Cake AI Artist — the best AI cake designer for personalized celebration cakes." />
         <meta property="og:url" content="https://cakeaiartist.com/about" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Personalized AI-designed cake — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="About Us - The Story Behind Cake AI Artist" />
-        <meta name="twitter:description" content="We built Cake AI Artist because designing cakes shouldn't require a degree." />
+        <meta name="twitter:title" content="About Cake AI Artist — The Best AI Cake Designer Online" />
+        <meta name="twitter:description" content="The story behind the best AI cake designer for personalized celebration cakes." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
 
@@ -46,7 +47,7 @@ const About = () => {
         <div className="text-center space-y-6 mb-16">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground">
             <span className="bg-gradient-party bg-clip-text text-transparent">
-              About Cake AI Artist
+              About Cake AI Artist — The Best AI Cake Designer
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto">

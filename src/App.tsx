@@ -36,6 +36,7 @@ import CompleteProfile from "./pages/CompleteProfile";
 import BlogUnsubscribe from "./pages/BlogUnsubscribe";
 import { EmbedGalleryPage } from "./components/EmbeddableGalleryWidget";
 import NotFound from "./pages/NotFound";
+import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,13 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <GeoProvider>
+              <OrganizationSchema
+                name="Cake AI Artist"
+                url="https://cakeaiartist.com"
+                logo="https://cakeaiartist.com/logo.png"
+                description="Best AI cake designer for personalized birthday, anniversary, wedding and celebration cakes. Design custom cakes online in 30 seconds — free to try."
+              />
+              <WebSiteSchema name="Cake AI Artist" url="https://cakeaiartist.com" />
               <ScrollToTop />
               <CookieConsent />
               <GeoRedirectWrapper />

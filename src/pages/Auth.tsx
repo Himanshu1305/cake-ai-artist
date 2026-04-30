@@ -247,9 +247,9 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration flex flex-col">
       <Helmet>
-        <title>{isForgotPassword ? "Reset Password" : isLogin ? "Sign In" : "Sign Up"} - Best AI Cake Designer | Cake AI Artist</title>
-        <meta name="description" content={`${isForgotPassword ? "Reset your password for" : isLogin ? "Sign in to" : "Create an account for"} the best AI cake designer and best virtual cake creator. Access your custom cake gallery and premium features.`} />
-        <meta name="keywords" content="best ai cake designer login, sign up best virtual cake, AI cake account, best cake generator access" />
+        <title>{isForgotPassword ? "Reset Password" : isLogin ? "Sign In" : "Sign Up"} — Cake AI Artist</title>
+        <meta name="description" content={`${isForgotPassword ? "Reset your password for" : isLogin ? "Sign in to" : "Create an account for"} Cake AI Artist, the best AI cake designer for personalized celebration cakes.`} />
+        <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://cakeaiartist.com/auth" />
       </Helmet>
       

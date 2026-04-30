@@ -382,7 +382,7 @@ const CanadaLanding = () => {
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-2">
                     <div className="relative group overflow-hidden rounded-xl border-2 border-gold/30 hover:border-gold transition-all cursor-pointer" onClick={() => setSelectedCarouselImage(cake)}>
-                      <img src={resolveImageUrl(cake.image_url)} alt="Featured user cake design" className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
+                      <img src={resolveImageUrl(cake.image_url)} alt={cake.prompt ? `Personalized AI cake design Canada — ${cake.prompt}` : "Personalized AI-designed cake by Cake AI Artist Canada user"} className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                         <p className="text-white text-sm font-semibold">Click to view</p>
                       </div>
@@ -412,7 +412,7 @@ const CanadaLanding = () => {
         <DialogContent className="max-w-4xl">
           {selectedCarouselImage && (
             <div className="space-y-4">
-              <img src={resolveImageUrl(selectedCarouselImage.image_url)} alt="Community creation" className="w-full h-auto rounded-lg" />
+              <img src={resolveImageUrl(selectedCarouselImage.image_url)} alt={selectedCarouselImage.prompt ? `Personalized AI cake — ${selectedCarouselImage.prompt}` : "Personalized AI-designed celebration cake — Cake AI Artist Canada"} className="w-full h-auto rounded-lg" />
               <Button onClick={() => handleDownloadCarouselImage(selectedCarouselImage.image_url, selectedCarouselImage.prompt)} className="w-full">
                 <Download className="mr-2 h-4 w-4" />Download Image
               </Button>
