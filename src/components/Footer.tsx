@@ -29,8 +29,10 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-party-purple via-party-pink to-party-orange py-12">
-      <div className="container mx-auto px-4">
+    <footer className="relative bg-gradient-to-br from-party-purple via-party-pink to-party-orange py-12">
+      {/* Dark overlay improves WCAG AA contrast for white text on warm gradients */}
+      <div className="absolute inset-0 bg-foreground/15 pointer-events-none" aria-hidden="true" />
+      <div className="container mx-auto px-4 relative">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
         <div>
             <div className="flex items-center gap-3 mb-4">
@@ -44,11 +46,14 @@ export const Footer = () => {
             <div className="mt-4 relative">
               <button
                 onClick={() => setShowCountryPicker(!showCountryPicker)}
-                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+                aria-label={`Change region — currently ${currentCountry.name}`}
+                aria-expanded={showCountryPicker}
+                aria-haspopup="menu"
+                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-4 h-4" aria-hidden="true" />
                 <span>{currentCountry.flag} {currentCountry.name}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showCountryPicker ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${showCountryPicker ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
               {showCountryPicker && (
                 <div className="absolute bottom-full mb-2 left-0 bg-white rounded-lg shadow-lg overflow-hidden z-50 min-w-[180px]">
