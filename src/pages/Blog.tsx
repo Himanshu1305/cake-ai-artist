@@ -418,19 +418,20 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist</title>
-        <meta name="description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us. Plus some AI cake nerding if you're into that." />
-        <meta name="keywords" content="cake design blog, birthday cake tips, virtual cake trends, celebration inspiration, cake message ideas, anniversary cakes" />
+        <title>Cake Design Blog — AI Cake Ideas, Tips & Personalized Cake Inspiration</title>
+        <meta name="description" content="Cake design ideas, AI cake tips, personalized cake inspiration & celebration trends from the team behind the best AI cake designer." />
+        <meta name="keywords" content="cake design blog, AI cake ideas, personalized cake inspiration, custom cake design tips, birthday cake ideas, anniversary cake design, cake message ideas" />
         <link rel="canonical" href="https://cakeaiartist.com/blog" />
-        <meta property="og:title" content="Blog - Cake Ideas, Tips & Actually Useful Stuff | Cake AI Artist" />
-        <meta property="og:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
+        <meta property="og:title" content="Cake Design Blog — AI Cake Ideas, Tips & Personalized Cake Inspiration" />
+        <meta property="og:description" content="Cake design ideas, AI cake tips & personalized cake inspiration from Cake AI Artist." />
         <meta property="og:url" content="https://cakeaiartist.com/blog" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
+        <meta property="og:image:alt" content="Cake design blog — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Blog - Cake Ideas, Tips & Actually Useful Stuff" />
-        <meta name="twitter:description" content="Birthday fails, design trends, party hacks—the stuff we wish someone told us." />
+        <meta name="twitter:title" content="Cake Design Blog — AI Cake Ideas, Tips & Personalized Cake Inspiration" />
+        <meta name="twitter:description" content="Cake design ideas, AI cake tips & personalized cake inspiration." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
 
