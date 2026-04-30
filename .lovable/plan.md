@@ -1,162 +1,110 @@
-## SEO Audit Findings & Action Plan
 
-### Audit Summary
+# Site-Wide Audit: UX, SEO, Theme & Engagement
 
-Audited all 27 pages. Most have basic Helmet tags, but there are gaps that hurt rankings for the target keywords ("AI cake designer", "personalized cake", "best cake designs", "custom cake AI", "AI birthday cake", etc.).
-
-**Strengths already in place:** Helmet on every public page, hreflang tags, sitemap.xml, JSON-LD on landing pages, single H1 per page.
-
-**Issues found:**
-
-| Page | Issue |
-|---|---|
-| Auth, NotFound, Gallery | Missing meta description + OG/Twitter tags |
-| Privacy, Terms, Advertising | Missing OG/Twitter image + description |
-| Contact, CommunityGallery | Missing OG image / twitter:card |
-| About, FAQ, Blog, BlogPost | No `<meta name="keywords">` for target terms |
-| 14 image instances | Generic alt: "Cake design", "Selected cake", "Community creation", "Featured user cake design" — wastes ranking opportunity |
-| Sitemap | Missing `/free-ai-cake-designer`, `/auth`, `/advertising` (intentionally excluded), and `lastmod` is stale (2025-12-26) |
-| robots.txt | Disallows `/gallery` — that's user-private, correct. But `/community` is allowed (good) |
-| Pricing H1 | "Pricing" — generic, no keywords |
-| About H1 | No primary keyword |
-| Contact / Privacy / Terms / Advertising | H1 lacks "AI cake" qualifier |
-| HomepageFAQ component | FAQPage JSON-LD not emitted from FAQ.tsx page (only embedded snippets) — verify and add |
-| Schema | No global Organization/WebSite schema on root layout — only on individual pages |
-| index.html | Solid, but `geo.region=US` could be `Worldwide`/removed since hreflang handles regions |
+A page-by-page review of all 27 routes turned up consistent issues across 4 buckets. Each item below is grouped by impact tier so you can approve all or pick a subset.
 
 ---
 
-### Target Keyword Map
+## Tier 1 — High impact (do first)
 
-Each page gets a **primary keyword** + 2–3 supporting long-tails. Distributed to avoid cannibalization:
+### 1.1 Image performance & Core Web Vitals
+Findings: 45 `<img>` tags across pages/components, **0** have `loading="lazy"`, **0** have explicit `width`/`height`, and the LCP hero has no `fetchpriority="high"`. This hurts LCP, CLS, and mobile data usage — all ranking factors.
 
-```text
-/                      → best AI cake designer, personalized birthday cake, AI cake generator
-/pricing               → AI cake designer pricing, lifetime AI cake design
-/how-it-works          → how to design AI cake, create personalized cake online
-/use-cases             → AI cake ideas, custom cake designs for every occasion
-/free-ai-cake-designer → free AI cake designer, free personalized cake maker
-/community             → AI cake gallery, personalized cake design ideas, custom cake inspiration
-/blog                  → cake design ideas, AI cake tips, personalized cake guide
-/faq                   → AI cake designer FAQ, custom cake design questions
-/about                 → about Cake AI Artist, AI cake design platform
-/contact               → contact AI cake designer, cake design support
-/uk                    → best AI cake designer UK, personalized birthday cake UK
-/india                 → AI cake designer India, personalized cake online India
-/canada                → AI cake designer Canada, custom cake design Canada
-/australia             → AI cake designer Australia, personalized cake AU
-```
+Fix:
+- Add `loading="lazy"` + `decoding="async"` to all non-hero images (gallery, featured carousel, blog thumbnails, footer logo, mobile menu logo).
+- Add `loading="eager"` + `fetchpriority="high"` to the homepage `HeroCakeWithFlames` and country-landing hero images.
+- Add explicit `width` / `height` (or aspect-ratio CSS) on featured cake tiles, `CakeWall`, blog cards, `PopularCakesSection` to eliminate CLS.
+- Convert `/hero-cake.jpg` and the 5 `featured-cake-*.jpg` to WebP variants with `<picture>` fallback.
 
----
+### 1.2 Hardcoded Tailwind colors break the design system
+Findings: 60+ uses of raw palette colors (`text-green-500`, `text-yellow-500`, `bg-red-400`, `text-blue-500`, etc.) across `CakeCreator`, `PremiumComparison`, `LiveActivityFeed`, `SocialShareButtons`, `ScheduledTasksWidget`, all 4 country landing pages, `BlogUnsubscribe`, `Admin`. These bypass the `--party-*` / `--gold` HSL tokens defined in `index.css`.
 
-### Changes (file by file)
+Fix:
+- Add semantic tokens in `index.css`: `--success` (party-mint), `--warning` (party-gold), `--info` (party-purple), `--brand-facebook`, `--brand-whatsapp`, `--brand-pinterest`, `--brand-twitter`.
+- Replace every raw color with the semantic class (`text-success`, `text-warning`, etc.).
+- Result: the celebratory cream/pink/purple/gold theme stays cohesive; one variable change re-themes the whole site.
 
-**1. `index.html`**
-- Already strong. Minor: remove `geo.region=US` (misleading for global brand) or change to `WW`.
-- Add `<link rel="manifest">` reference if PWA exists (optional).
+### 1.3 H1 hierarchy & keyword targeting gaps
+Findings: Several H1s are short, generic, or duplicated across pages.
+- `NotFound.tsx`: H1 is literally "404" (no SEO value, even on a 404 page H1 should describe the brand fallback).
+- `Settings.tsx`: H1 "Settings" — fine for app, but page is `noindex` so demote to H2.
+- `Admin.tsx`, `AdminBlogAnalytics.tsx`, `AdminLogoGenerator.tsx`: real H1s on pages that should be `noindex`.
+- `Pricing.tsx` H1 uses gradient text that may not render in some screen readers — add `sr-only` H1 with the keyword phrase, keep gradient as visual H2.
 
-**2. `src/pages/Index.tsx`** — already optimized last turn. Verify keywords meta includes "AI cake generator", "custom cake designer online".
+Fix: Rewrite weak H1s, ensure each page has exactly one H1 with the target keyword, and demote H1→H2 on admin/utility pages.
 
-**3. `src/pages/Pricing.tsx`**
-- Title → `AI Cake Designer Pricing — Lifetime Access from $49 | Cake AI Artist`
-- Description → emphasize "best AI cake designer" + value
-- H1 → `AI Cake Designer Pricing — Lifetime Plans for Personalized Cakes`
-- Add `<meta name="keywords">` and full OG/Twitter image set (already present, just refine copy).
+### 1.4 Image alt-text quality on dynamic content
+Findings: `featuredCakes` carousel uses `alt={prompt}` where prompt is `"Birthday cake"` etc. — too generic for ranking. `PopularCakesSection` and `CakeWall` use static labels.
 
-**4. `src/pages/HowItWorks.tsx`** — strong already. Tighten H1 to include "AI Cake Designer".
-
-**5. `src/pages/UseCases.tsx`**
-- Title → `AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More`
-- Add HowTo or ItemList JSON-LD with each use case.
-
-**6. `src/pages/FAQ.tsx`**
-- Title → `AI Cake Designer FAQ — Answers About Personalized Cake Design`
-- Add `FAQPageSchema` component (already exists in SEOSchema.tsx, just wire it up with the actual FAQ array).
-- Add `<meta name="keywords">`.
-
-**7. `src/pages/Blog.tsx`**
-- Title → `Cake Design Blog — AI Cake Ideas, Tips & Trends | Cake AI Artist`
-- Add `<meta name="keywords">` and `Blog`/`ItemList` JSON-LD.
-
-**8. `src/pages/BlogPost.tsx`**
-- Already uses ArticleSchema. Add per-post `<meta name="keywords">` from post.tags. Ensure `og:image` uses post hero image (already does).
-
-**9. `src/pages/About.tsx`**
-- Title → `About Cake AI Artist — The Best AI Cake Designer Story`
-- H1 → include "AI Cake Designer".
-- Add `<meta name="keywords">`.
-
-**10. `src/pages/Contact.tsx`**
-- Title → `Contact Cake AI Artist — AI Cake Designer Support`
-- Add full OG/Twitter image tags + ContactPage JSON-LD.
-
-**11. `src/pages/CommunityGallery.tsx`**
-- Title → `AI Cake Gallery — Personalized Cake Design Ideas & Inspiration`
-- Description → "Browse 1000s of AI-designed personalized cakes…"
-- Add OG image + twitter:card.
-- Add `ImageGallery` / `CollectionPage` JSON-LD.
-- **Fix alt text** on community images: use `alt={image.occasion_type ? \`Personalized ${image.occasion_type} cake designed by AI\` : "AI-designed personalized celebration cake"}` instead of bare `image.occasion_type`.
-
-**12. `src/pages/Auth.tsx`**
-- Add meta description + `noindex` (auth pages should NOT rank — already disallowed in robots.txt). Add `<meta name="robots" content="noindex,nofollow">`.
-
-**13. `src/pages/Gallery.tsx`** (private user gallery)
-- Add `<meta name="robots" content="noindex,nofollow">` (already disallowed in robots, reinforce).
-- Improve fallback alt text from "Selected cake" → use prompt text.
-
-**14. `src/pages/NotFound.tsx`**
-- Add `<meta name="robots" content="noindex">` and helpful internal links to top SEO pages.
-
-**15. `src/pages/Privacy.tsx`, `Terms.tsx`, `Advertising.tsx`**
-- Add OG/Twitter image + description tags for completeness.
-
-**16. `src/pages/FreeCakeDesigner.tsx`** — already strong. Add to sitemap.
-
-**17. Country landing pages (`UKLanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding`)**
-- Already optimized. **Fix alt text** on cake carousels: `"Featured user cake design"` → `"AI-designed personalized cake by Cake AI Artist user"` and `"Community creation"` → descriptive variant by occasion.
-
-**18. Image alt text fixes — 14 instances**
-- `src/pages/Index.tsx` lines 680, 777
-- `src/pages/UKLanding.tsx` 522, 562
-- `src/pages/CanadaLanding.tsx` 385, 415
-- `src/pages/IndiaLanding.tsx` 523, 563
-- `src/pages/AustraliaLanding.tsx` 385, 415
-- `src/pages/Gallery.tsx` 716
-- `src/pages/Admin.tsx` 1345 (internal, low priority)
-- Pattern: derive alt from occasion + name, fallback to keyword-rich generic.
-
-**19. `public/sitemap.xml`**
-- Update all `lastmod` to today's date (2026-04-30).
-- Add `/free-ai-cake-designer` (priority 0.8).
-- Add image sitemap entries for top 5 landing pages (helps image search).
-
-**20. `public/robots.txt`** — already correct. No changes.
-
-**21. Global Schema (in `src/App.tsx` or wrap in main layout)**
-- Add `OrganizationSchema` and `WebSite` schema with SearchAction once at the app root so every page inherits it.
-
-**22. New helper component: `src/components/PageMeta.tsx`** (optional cleanup)
-- Centralize Helmet boilerplate so all pages use a consistent OG/Twitter pattern with one prop interface.
-- Reduces drift; not strictly required but recommended for maintainability.
+Fix: Build alt text from occasion + name + style, e.g. `"Personalized birthday cake design for [name] with [style] theme — AI generated by Cake AI Artist"`. Apply same pattern in `CommunityGallery.tsx` and `Gallery.tsx`.
 
 ---
 
-### Technical Details
+## Tier 2 — Medium impact
 
-- All copy stays humanized per project memory (no "AI-sounding" phrasing, no specific urgency numbers/dates).
-- Keep title length ≤ 60 chars where possible, descriptions 150–160 chars.
-- Maintain text default color blue (#2563EB) per memory.
-- No dependencies added; uses existing `react-helmet-async` and `SEOSchema.tsx`.
-- Will add a `<meta name="robots" content="noindex,nofollow">` on `/auth`, `/gallery`, `/settings`, `/complete-profile`, `/admin*` pages.
-- Will verify FAQ JSON-LD validates against schema.org before marking done.
+### 2.1 Typography consistency
+- No display font is loaded for headings — only the cake-script fonts (Dancing Script, Pacifico, etc.). Headings inherit system sans-serif, which feels off-brand for a "celebratory" product.
+- Recommend loading **Fraunces** (display, weights 600/700) for H1/H2 and **Inter** (400/500/600) for body via `<link rel="preconnect">` + `font-display: swap`.
+- Apply `font-display` Tailwind utility class to all H1/H2; keep the script fonts scoped to actual cake-text overlays.
+
+### 2.2 Engagement & conversion polish
+- **Sticky mobile CTA**: On `Index.tsx`, `UKLanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding` add a bottom-fixed "Design Your Cake Free" button on mobile (currently users must scroll back up).
+- **Social proof above the fold**: Move the `LiveActivityFeed` component reference closer to the hero on country landing pages.
+- **Exit-intent on landing pages**: `ExitIntentModal` is only mounted on `Index`. Add it to the 4 country landing pages and `Pricing`.
+- **Reading-time + share buttons** on `BlogPost.tsx` are present but `SocialShareButtons` uses raw brand colors — fix in 1.2 + add a sticky share rail on desktop for blog.
+- **Gallery infinite-scroll** on `CommunityGallery.tsx` to lift session duration (currently paginated).
+
+### 2.3 Accessibility (also a soft SEO signal)
+- Footer gradient `from-party-purple via-party-pink to-party-orange` with white text — verify WCAG AA contrast (likely fails on the pink/orange band). Either darken the gradient stops or add a subtle dark overlay.
+- All icon-only buttons (mobile menu, country picker chevron, feedback widget) need `aria-label`.
+- Country picker dropdown in `Footer.tsx` is a `<button>` that opens a `<div>` — convert to a proper `<DropdownMenu>` from shadcn for keyboard support.
+- Add `:focus-visible` ring styles to all custom anchor styles (currently only on shadcn `Button`).
+
+### 2.4 Internal linking for SEO
+- Homepage has no contextual link to `/free-ai-cake-designer` or `/use-cases` from body copy — only nav. Add inline keyword anchors in the FAQ answers and "How It Works" section.
+- Add a "Related cakes" rail at the end of each `BlogPost` linking to `/use-cases` filtered by occasion.
+- Add breadcrumb UI (visible, not just schema) on `BlogPost`, `UseCases`, `Pricing`, country landing pages.
 
 ---
 
-### Out of Scope
+## Tier 3 — Polish
 
-- Backend changes / new routes
-- Rewriting blog post bodies (only meta layer + keyword tags)
-- Performance/Core Web Vitals work (separate concern)
-- Building backlinks (off-page SEO)
+### 3.1 Meta refinements
+- `index.html` has `maximum-scale=1.0, user-scalable=no` — Google flags this as accessibility-hostile. Remove the scale lock.
+- `theme-color` is `#ec4899` (raw hex) — switch to a token-driven HSL value matching `--party-pink`.
+- Add `<meta name="format-detection" content="telephone=no">` to prevent mobile auto-linking phone numbers in body copy.
+- `og:image` should be a 1200×630 social card (currently the hero JPG with arbitrary aspect). Generate a proper OG card image and store at `/og-cover.jpg`.
 
-After approval I will execute all changes in one pass and report a per-page diff summary.
+### 3.2 Sitemap & robots
+- Sitemap uses identical `lastmod` for every URL — set per-route dates so Google trusts the freshness signals.
+- `robots.txt` disallows `/gallery` (good for private), but currently `/community` and `/free-ai-cake-designer` are not explicitly Allow-ed. Add explicit `Allow:` lines.
+
+### 3.3 Runtime errors visible in preview
+Two errors show in current preview:
+- `adsbygoogle.push() error: No slot size for availableWidth=0` — `AdSlot` is rendering before its container has width (likely inside a hidden/collapsed parent). Defer push until `IntersectionObserver` reports visibility + non-zero width.
+- `can't access property "features", e is undefined` — likely from `PremiumComparison` accessing a tier object before it loads. Add null guard.
+
+Fix both as part of this pass.
+
+---
+
+## Files that will be touched
+
+**Tokens / global**: `src/index.css`, `tailwind.config.ts`, `index.html`, `public/sitemap.xml`, `public/robots.txt`
+
+**Components (color + a11y + perf)**: `CakeCreator.tsx`, `PremiumComparison.tsx`, `LiveActivityFeed.tsx`, `SocialShareButtons.tsx`, `ScheduledTasksWidget.tsx`, `BlogUnsubscribe`, `ShareInstructions.tsx`, `SalePreviewModal.tsx`, `Footer.tsx`, `AdSlot.tsx`, `HeroCakeWithFlames.tsx`, `CakeWall.tsx`, `PopularCakesSection.tsx`, `EmbeddableGalleryWidget.tsx`, `ExitIntentModal.tsx` (mount points)
+
+**Pages (H1, alt, internal links, meta)**: `Index.tsx`, `Pricing.tsx`, `UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx`, `FreeCakeDesigner.tsx`, `CommunityGallery.tsx`, `Gallery.tsx`, `Blog.tsx`, `BlogPost.tsx`, `FAQ.tsx`, `HowItWorks.tsx`, `UseCases.tsx`, `About.tsx`, `Contact.tsx`, `NotFound.tsx`, `Settings.tsx`, `Admin*.tsx` (demote H1)
+
+---
+
+## Outcome
+
+- Faster LCP (hero priority + lazy/decoding hints) and zero CLS on grids → Core Web Vitals "Good".
+- Single source of truth for color (semantic tokens) → consistent celebratory feel everywhere, easy seasonal re-skinning.
+- Cleaner heading hierarchy + richer alt text → better keyword coverage for "personalized cake", "AI cake design", country-specific variants.
+- Sticky CTA, exit-intent on landing pages, infinite-scroll gallery → higher signup conversion and longer session duration (engagement signals Google reads).
+- Accessibility passes (contrast, aria-labels, focus rings) → no Lighthouse a11y deductions.
+- Two visible runtime errors fixed.
+
+Approve to switch to build mode and roll all of this out in a single pass.
