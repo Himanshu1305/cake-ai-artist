@@ -107,7 +107,7 @@ const FAQ = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 shadow-lg">
-          <h1 className="text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
+          <h1 className="text-4xl font-bold mb-4 text-foreground">AI Cake Designer FAQ — Personalized Cake Questions Answered</h1>
           <p className="text-muted-foreground text-lg mb-8">
             Got questions? Cool. Here are the ones everyone asks. Still stuck? <Link to="/contact" className="text-party-purple hover:underline">Hit us up</Link>.
           </p>
