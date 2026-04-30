@@ -642,7 +642,40 @@ export default function Admin() {
     const userId = removePremiumDialog.userId;
     if (!userId) return;
 
-    // Send subscription ended email if not 'none'
+    // Step 1: If the user has an active recurring subscription, cancel it on Razorpay first.
+    // This stops future auto-charges. We cancel at cycle end so they keep access until paid period closes.
+    try {
+      const { data: profileForSub } = await supabase
+        .from('profiles')
+        .select('subscription_id, subscription_status')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const status = (profileForSub?.subscription_status || '').toLowerCase();
+      const hasActiveSub = profileForSub?.subscription_id &&
+        !['cancelled', 'expired', 'halted'].includes(status);
+
+      if (hasActiveSub) {
+        const { data: cancelData, error: cancelError } = await supabase.functions.invoke(
+          'cancel-razorpay-subscription',
+          { body: { userId, cancelAtCycleEnd: true } },
+        );
+
+        if (cancelError || (cancelData && cancelData.error)) {
+          const msg = cancelError?.message || cancelData?.error || 'Razorpay cancel failed';
+          console.error('Failed to cancel Razorpay subscription:', msg);
+          toast.error(`Could not stop billing: ${msg}. Premium NOT removed — please retry.`);
+          return; // Abort: do not flip is_premium if we can't stop charges
+        }
+        toast.success('Razorpay subscription cancelled — no further charges');
+      }
+    } catch (e: any) {
+      console.error('Subscription cancel error:', e);
+      toast.error(`Could not stop billing: ${e?.message || 'unknown error'}. Premium NOT removed.`);
+      return;
+    }
+
+    // Step 2: Send subscription ended email if not 'none'
     if (selectedEmailType !== 'none') {
       try {
         await supabase.functions.invoke('send-premium-emails', {
@@ -661,7 +694,7 @@ export default function Admin() {
       }
     }
 
-    // Update profile to remove premium
+    // Step 3: Update profile to remove premium
     const { error } = await supabase
       .from('profiles')
       .update({ 

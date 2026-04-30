@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { Globe, ChevronDown } from 'lucide-react';
+import { useGeoContext } from '@/contexts/GeoContext';
 
 const countries = [
   { code: 'US', name: 'United States', flag: '🇺🇸', path: '/' },
@@ -12,10 +13,45 @@ const countries = [
   { code: 'IN', name: 'India', flag: '🇮🇳', path: '/india' },
 ];
 
+// Map ISO country codes (and broader regions) to one of our 5 supported entries
+const ASIA = ['JP','KR','CN','SG','MY','TH','VN','PH','ID','BD','PK','LK','NP','HK','TW','NZ'];
+const EUROPE_MENA = ['DE','FR','IT','ES','NL','BE','PT','SE','NO','DK','FI','PL','AT','CH','IE','GR','CZ','HU','RO','UA','RU','AE','SA','EG','ZA','NG','KE','IL','TR','DZ'];
+
+const resolveCountryCode = (iso: string | null, pathname: string): string => {
+  // 1. URL hint wins for landing pages
+  if (pathname.startsWith('/india')) return 'IN';
+  if (pathname.startsWith('/uk')) return 'UK';
+  if (pathname.startsWith('/canada')) return 'CA';
+  if (pathname.startsWith('/australia')) return 'AU';
+
+  if (!iso) return 'US';
+  const code = iso.toUpperCase();
+  if (code === 'IN') return 'IN';
+  if (code === 'GB' || code === 'UK') return 'UK';
+  if (code === 'CA') return 'CA';
+  if (code === 'AU') return 'AU';
+  if (code === 'US') return 'US';
+  if (ASIA.includes(code)) return 'AU';
+  if (EUROPE_MENA.includes(code)) return 'UK';
+  return 'US';
+};
+
 export const Footer = () => {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
-  const savedCountry = safeGetItem('user_country_preference') || 'US';
-  const currentCountry = countries.find(c => c.code === savedCountry) || countries[0];
+  const { detectedCountry } = useGeoContext();
+  const location = useLocation();
+
+  const currentCountry = useMemo(() => {
+    // 1. Explicit user choice (footer picker)
+    const saved = safeGetItem('user_country_preference');
+    if (saved) {
+      const match = countries.find(c => c.code === saved);
+      if (match) return match;
+    }
+    // 2. Geo-detected + URL hint fallback
+    const code = resolveCountryCode(detectedCountry, location.pathname);
+    return countries.find(c => c.code === code) || countries[0];
+  }, [detectedCountry, location.pathname]);
 
   const handleCookieSettings = (e: React.MouseEvent) => {
     e.preventDefault();
