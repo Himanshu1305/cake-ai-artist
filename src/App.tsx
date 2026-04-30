@@ -36,6 +36,7 @@ import CompleteProfile from "./pages/CompleteProfile";
 import BlogUnsubscribe from "./pages/BlogUnsubscribe";
 import { EmbedGalleryPage } from "./components/EmbeddableGalleryWidget";
 import NotFound from "./pages/NotFound";
+import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
 
 const queryClient = new QueryClient();
 
