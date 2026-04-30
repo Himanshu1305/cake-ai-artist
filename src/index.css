@@ -50,6 +50,20 @@ All colors MUST be HSL.
     --party-orange: 30 90% 60%;
     --surface: 35 40% 97%;
     --surface-elevated: 0 0% 100%;
+
+    /* Semantic status tokens (theme-aligned) */
+    --success: 150 60% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 90% 48%;
+    --warning-foreground: 35 15% 15%;
+    --info: 270 75% 58%;
+    --info-foreground: 0 0% 100%;
+
+    /* Brand colors for social sharing (kept brand-recognizable) */
+    --brand-whatsapp: 142 70% 42%;
+    --brand-pinterest: 351 78% 49%;
+    --brand-facebook: 221 44% 41%;
+    --brand-twitter: 0 0% 9%;
     
     /* Premium gradients with softer tones */
     --gradient-gold: linear-gradient(135deg, hsl(45 90% 58%), hsl(30 90% 63%));
