@@ -4,16 +4,17 @@ import { ArrowLeft, Cake, Heart, GraduationCap, Baby, Briefcase, Users } from "l
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
+import { BreadcrumbSchema, FAQSchema } from "@/components/SEOSchema";
 
 const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More</title>
-        <meta name="description" content="Personalized AI cake design ideas for birthdays, anniversaries, weddings, baby showers, graduations & corporate events from the best AI cake designer." />
-        <meta name="keywords" content="AI cake design ideas, custom cake designs for every occasion, personalized birthday cake ideas, anniversary cake design, wedding cake AI, baby shower cake ideas, graduation cake" />
+        <title>AI Cake Ideas for Birthdays, Weddings & More</title>
+        <meta name="description" content="Personalized AI cake design ideas for birthdays, anniversaries, weddings, baby showers, graduations & corporate events. Free AI cake generator." />
+        <meta name="keywords" content="AI cake design ideas, personalized birthday cake ideas, anniversary cake design, wedding cake AI, baby shower cake ideas, graduation cake" />
         <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
-        <meta property="og:title" content="AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More" />
+        <meta property="og:title" content="AI Cake Ideas for Birthdays, Weddings & More" />
         <meta property="og:description" content="Personalized AI cake design ideas for every celebration. From birthdays to weddings to corporate events." />
         <meta property="og:url" content="https://cakeaiartist.com/use-cases" />
         <meta property="og:type" content="website" />
@@ -21,10 +22,25 @@ const UseCases = () => {
         <meta property="og:image:alt" content="AI cake design ideas for every occasion" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Design Ideas for Every Occasion — Birthdays, Weddings & More" />
+        <meta name="twitter:title" content="AI Cake Ideas for Birthdays, Weddings & More" />
         <meta name="twitter:description" content="Personalized AI cake design ideas for every celebration." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Use Cases", url: "https://cakeaiartist.com/use-cases" },
+        ]}
+      />
+
+      <FAQSchema
+        faqs={[
+          { question: "What occasions can I design AI cakes for?", answer: "Birthdays, anniversaries, weddings, baby showers, graduations, retirements, corporate events and more — any celebration where you want a personalized cake design." },
+          { question: "Can I use AI cake designs for my business?", answer: "Yes — the premium plan includes a commercial-use licence, so event planners, marketers and bakeries can use generated images professionally." },
+          { question: "Are wedding cake designs realistic?", answer: "Yes — the AI produces tiered, elegant cake designs with multiple style options including classic, modern, rustic and floral themes." },
+        ]}
+      />
       
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4 max-w-6xl">

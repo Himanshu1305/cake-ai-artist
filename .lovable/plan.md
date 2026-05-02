@@ -1,38 +1,78 @@
-# Lock Down Sensitive Data Exposure
+# SEO Tightening: Titles, Descriptions, JSON-LD & Sitemap Submission
 
-Three security findings to fix via RLS policy updates. No frontend changes needed — code already uses the safe `public_featured_images` view for the homepage.
+## Audit results
 
-## What's wrong today
+I audited all 14 main pages. Helmet is wired up everywhere, but:
 
-1. **`generated_images` — "Anyone can view featured images"** policy returns ALL columns (including `message`, `recipient_name`, `prompt`, `occasion_date`) to anonymous users when `featured = true`. The safe view `public_featured_images` exists and is already used by the homepage, but the underlying base-table policy still leaks personal data to anyone querying directly.
+**Titles too long (>60 chars):** Index (82), Pricing (81), HowItWorks (72), UseCases (68), FAQ (66), Blog (70), CommunityGallery (62), FreeCakeDesigner (77), India (91), UK (85), Canada (89), Australia (92).
 
-2. **`scheduled_task_runs` — "Service role can manage task runs"** policy is bound to the `{public}` role with `USING (true)`, so any anonymous visitor can read all internal task names, schedules, errors, and run history.
+**Descriptions too long (>160 chars):** Index (185), HowItWorks (172), FreeCakeDesigner (173), India (191), UK (172), Canada (173), Australia (175).
 
-3. **`upgrade_nudge_logs` — "Service role can manage nudge logs"** policy has the same flaw — `{public}` + `USING (true)` exposes every user's marketing email schedule.
+**Schema gaps:** UseCases, India/UK/Canada/Australia landings have NO `BreadcrumbSchema`, `FAQSchema`, or `ProductSchema`. Pricing has `ProductSchema` but no `FAQSchema`. Country pages should also have `ProductSchema` with localized currency.
 
-## Fix (database migration only)
+**Index.html** also has the long 82-char default title.
 
-### a) `generated_images`
-- Drop the public-facing `"Anyone can view featured images"` SELECT policy on the base table. The homepage will continue to work because it queries `public.public_featured_images` (a view that already exposes only `id, image_url, created_at, occasion_type`).
-- Owner, admin, and "users can view their own images" policies remain — so creators still see all their own data; only public anonymous access to personal fields is removed.
+## What I'll change
 
-### b) `scheduled_task_runs`
-- Drop `"Service role can manage task runs"` (which is bound to `{public}`).
-- Recreate it scoped strictly to the `service_role`:
-  - `FOR ALL TO service_role USING (true) WITH CHECK (true)`
-- Existing `"Admins can read scheduled task runs"` policy stays, so the admin dashboard widget keeps working.
+### 1. Rewrite titles to ≤60 chars and descriptions to ≤160 chars
+Keep target keywords (*AI cake designer*, *personalized birthday cake*, *AI birthday cake generator*, country names where applicable). Examples:
 
-### c) `upgrade_nudge_logs`
-- Drop `"Service role can manage nudge logs"` (bound to `{public}`).
-- Recreate scoped to `service_role` only.
-- Existing admin SELECT and user-own SELECT policies remain.
+| Page | New title (chars) |
+|---|---|
+| Index | `AI Cake Designer — Personalized Birthday Cakes` (47) |
+| Pricing | `AI Cake Designer Pricing — Lifetime Plans` (42) |
+| HowItWorks | `How to Design an AI Cake in 30 Seconds` (40) |
+| FAQ | `AI Cake Designer FAQ — Your Questions Answered` (47) |
+| Blog | `AI Cake Design Blog — Tips & Inspiration` (41) |
+| CommunityGallery | `AI Cake Gallery — Personalized Cake Ideas` (42) |
+| FreeCakeDesigner | `Free AI Cake Designer — Make a Cake in 30s` (43) |
+| UseCases | `AI Cake Ideas for Birthdays, Weddings & More` (45) |
+| India | `Best AI Cake Designer in India — Free Online` (45) |
+| UK | `Best AI Cake Designer UK — Personalised Cakes` (46) |
+| Canada | `AI Cake Designer Canada — Personalized Cakes` (44) |
+| Australia | `AI Cake Designer Australia — Personalised Cakes` (47) |
 
-## Verification after migration
-- Homepage featured carousel still loads (uses the view).
-- Logged-in creator still sees their own messages/recipient names in Gallery.
-- Anonymous direct query of `generated_images` returns 0 rows.
-- Admin dashboard `ScheduledTasksWidget` still loads task runs (admin policy intact).
-- Edge functions writing to `scheduled_task_runs` and `upgrade_nudge_logs` continue to work (they use the service role key).
+All descriptions rewritten to 140–158 chars retaining target keywords.
 
-## Files touched
-- One SQL migration. No application code changes required.
+### 2. Add missing JSON-LD schemas
+
+- **UseCases**: `BreadcrumbSchema` + `FAQSchema` (occasion-specific FAQs already on the page).
+- **Pricing**: add `FAQSchema` for pricing FAQs.
+- **India/UK/Canada/Australia landings**: add `BreadcrumbSchema` + `ProductSchema` with local currency (INR, GBP, CAD, AUD) + `FAQSchema`.
+- **Index**: confirm existing `ProductReviewSchema` + `FAQSchema` + `BreadcrumbSchema` stay (already good).
+
+### 3. Tighten `index.html` defaults
+Shorten the default `<title>`, `<meta description>`, OG/Twitter title+description to fit limits — these are what Google indexes for any page that doesn't override them.
+
+### 4. Sitemap.xml — already good
+The sitemap is comprehensive (all main + country + free-tool pages, with hreflang & images) and `robots.txt` references it. Bump `<lastmod>` to today's date.
+
+### 5. Search engine submission (manual — you must do)
+I cannot submit the sitemap for you, but I'll add a clear post-deploy checklist:
+
+- **Google Search Console** → https://search.google.com/search-console → add `cakeaiartist.com` → verify (DNS or HTML tag — I can add a meta verification tag if you give me the code) → Sitemaps → submit `https://cakeaiartist.com/sitemap.xml`.
+- **Bing Webmaster Tools** → https://www.bing.com/webmasters → add site → import from Google Search Console (1-click) OR submit sitemap manually.
+- **IndexNow** (optional, instant indexing on Bing): I can add a small token file to `/public` if you want.
+
+## Files I'll change
+
+- `index.html` (default meta)
+- `src/pages/Index.tsx`
+- `src/pages/Pricing.tsx`
+- `src/pages/HowItWorks.tsx`
+- `src/pages/UseCases.tsx`
+- `src/pages/FAQ.tsx`
+- `src/pages/Blog.tsx`
+- `src/pages/CommunityGallery.tsx`
+- `src/pages/FreeCakeDesigner.tsx`
+- `src/pages/IndiaLanding.tsx`
+- `src/pages/UKLanding.tsx`
+- `src/pages/CanadaLanding.tsx`
+- `src/pages/AustraliaLanding.tsx`
+- `public/sitemap.xml` (date refresh)
+
+About, Contact already pass — won't touch.
+
+## What I need from you (one-time, after deploy)
+1. Approve this plan so I can apply the changes.
+2. After deploy, paste your Google Search Console verification meta tag (if you want me to add it), then submit the sitemap from GSC dashboard.

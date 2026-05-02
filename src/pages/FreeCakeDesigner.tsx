@@ -25,18 +25,18 @@ const FreeCakeDesigner = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>Free AI Cake Designer - Create Personalized Cakes in Seconds | Cake AI Artist</title>
-        <meta name="description" content="Design beautiful personalized cakes for free with our AI cake generator. Create stunning birthday, anniversary, and celebration cakes in 30 seconds. No design skills needed!" />
+        <title>Free AI Cake Designer — Make a Cake in 30s</title>
+        <meta name="description" content="Free AI birthday cake generator. Design personalized birthday, anniversary & celebration cakes in 30 seconds. No design skills needed." />
         <meta name="keywords" content="free AI cake designer, free cake generator, AI cake maker, personalized cake design, virtual cake creator, birthday cake designer, free cake design tool" />
         <link rel="canonical" href="https://cakeaiartist.com/free-ai-cake-designer" />
-        <meta property="og:title" content="Free AI Cake Designer - Create Personalized Cakes in Seconds" />
-        <meta property="og:description" content="Design beautiful personalized cakes for free with our AI cake generator. Create stunning celebration cakes in 30 seconds." />
+        <meta property="og:title" content="Free AI Cake Designer — Make a Cake in 30s" />
+        <meta property="og:description" content="Free AI birthday cake generator. Design personalized celebration cakes in 30 seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/free-ai-cake-designer" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Free AI Cake Designer - Create Personalized Cakes in Seconds" />
+        <meta name="twitter:title" content="Free AI Cake Designer — Make a Cake in 30s" />
         <meta name="twitter:description" content="Design beautiful personalized cakes for free with our AI cake generator." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>

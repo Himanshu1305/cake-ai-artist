@@ -183,14 +183,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer — Personalized Birthday & Celebration Cakes | Cake AI Artist</title>
-        <meta name="description" content="Cake AI Artist is the best AI cake designer for personalized birthday cakes & every occasion — anniversaries, weddings, baby showers, Diwali & more. Designed in 30 seconds, free to try." />
+        <title>AI Cake Designer — Personalized Birthday Cakes Free</title>
+        <meta name="description" content="Free AI birthday cake generator. Design personalized cakes for birthdays, anniversaries, weddings & every occasion in 30 seconds. No skills needed." />
         <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, personalized birthday cake, AI cake design, custom cake design, anniversary cake design, wedding cake AI, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta name="theme-color" content="#ec4899" />
         <meta name="application-name" content="Cake AI Artist" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="Best AI Cake Designer — Personalized Birthday & Celebration Cakes | Cake AI Artist" />
+        <meta property="og:title" content="AI Cake Designer — Personalized Birthday Cakes Free" />
         <meta property="og:description" content="The best AI cake designer for personalized birthday cakes & every celebration — anniversaries, weddings, baby showers & more. Designed in 30 seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
@@ -200,7 +200,7 @@ const Index = () => {
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer — Personalized Birthday & Celebration Cakes" />
+        <meta name="twitter:title" content="AI Cake Designer — Personalized Birthday Cakes" />
         <meta name="twitter:description" content="Design beautiful personalized cakes for birthdays & every occasion in 30 seconds. Free to try." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta name="twitter:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />

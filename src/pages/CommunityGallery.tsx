@@ -122,11 +122,11 @@ const CommunityGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>AI Cake Gallery — Personalized Cake Design Ideas & Inspiration</title>
-        <meta name="description" content="Browse thousands of personalized AI-designed cakes for birthdays, anniversaries, weddings & more. Get inspired and design your own custom cake in 30 seconds." />
+        <title>AI Cake Gallery — Personalized Cake Ideas</title>
+        <meta name="description" content="Browse thousands of personalized AI-designed cakes for birthdays, anniversaries, weddings & more. Get inspired & design your own in 30 seconds." />
         <meta name="keywords" content="AI cake gallery, personalized cake design ideas, custom cake inspiration, AI birthday cake examples, best cake designs, virtual cake gallery" />
         <link rel="canonical" href="https://cakeaiartist.com/community" />
-        <meta property="og:title" content="AI Cake Gallery — Personalized Cake Design Ideas & Inspiration" />
+        <meta property="og:title" content="AI Cake Gallery — Personalized Cake Ideas" />
         <meta property="og:description" content="Browse thousands of personalized AI-designed cakes. Get inspired by real community creations." />
         <meta property="og:url" content="https://cakeaiartist.com/community" />
         <meta property="og:type" content="website" />
@@ -134,7 +134,7 @@ const CommunityGallery = () => {
         <meta property="og:image:alt" content="Personalized AI cake design gallery — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Gallery — Personalized Cake Design Ideas & Inspiration" />
+        <meta name="twitter:title" content="AI Cake Gallery — Personalized Cake Ideas" />
         <meta name="twitter:description" content="Browse thousands of personalized AI-designed cakes from our community." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
