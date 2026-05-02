@@ -116,7 +116,12 @@ const Index = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      const cic: any = (window as any).cancelIdleCallback;
+      if (idleHandle && typeof cic === "function") cic(idleHandle);
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+    };
   }, []);
 
   const loadFeaturedCakes = async () => {
@@ -283,16 +288,19 @@ const Index = () => {
         ]}
       />
       
-      <FloatingEmojis />
-      <ConfettiRain count={36} />
-      {/* CursorSparkles temporarily disabled to fix blank page issue */}
-      {/* <CursorSparkles /> */}
-      
+      {/* All decorative + non-LCP-critical widgets are mounted after first paint */}
+      <DeferredMount>
+        <Suspense fallback={null}>
+          <FloatingEmojis />
+          <ConfettiRain count={36} />
+          <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
+          <LiveActivityFeed />
+          <LivePurchaseNotifications />
+          <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />
+        </Suspense>
+      </DeferredMount>
+
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="US" />
-      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
-      <LiveActivityFeed />
-      <LivePurchaseNotifications />
-      <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />
       
       {/* Navigation Header */}
       <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}>
