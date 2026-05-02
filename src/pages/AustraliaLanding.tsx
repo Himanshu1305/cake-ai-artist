@@ -13,9 +13,7 @@ import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
-import { CountdownTimer } from "@/components/CountdownTimer";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
-import { DynamicSaleLabel } from "@/components/DynamicSaleLabel";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -234,13 +232,7 @@ const AustraliaLanding = () => {
         <img loading="lazy" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-full inline-block animate-pulse">
-              <p className="text-white font-bold text-lg"><DynamicSaleLabel countryCode="AU" suffix="ENDS IN:" /></p>
-            </motion.div>
-            
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <CountdownTimer countryCode="AU" />
-            </motion.div>
+            {/* Urgency banner + countdown removed per request */}
 
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
               🇦🇺 Get LIFETIME ACCESS for just A$75
