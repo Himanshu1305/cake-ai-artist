@@ -25,7 +25,7 @@ interface ConfettiRainProps {
   count?: number;
 }
 
-export const ConfettiRain = ({ count = 32 }: ConfettiRainProps) => {
+export const ConfettiRain = ({ count = 14 }: ConfettiRainProps) => {
   const pieces: Piece[] = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
