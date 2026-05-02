@@ -165,11 +165,11 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>AI Cake Designer Pricing — Lifetime Plans for Personalized Cakes | Cake AI Artist</title>
-        <meta name="description" content="Pricing for the best AI cake designer. Lifetime access to unlimited personalized cake designs from $49 — or stay on the free plan forever. Your call." />
+        <title>AI Cake Designer Pricing — Lifetime Plans from $49</title>
+        <meta name="description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49 — or stay free forever." />
         <meta name="keywords" content="AI cake designer pricing, lifetime AI cake design, personalized cake plans, custom cake design subscription, best AI cake generator price" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
-        <meta property="og:title" content="AI Cake Designer Pricing — Lifetime Plans for Personalized Cakes" />
+        <meta property="og:title" content="AI Cake Designer Pricing — Lifetime Plans from $49" />
         <meta property="og:description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49." />
         <meta property="og:url" content="https://cakeaiartist.com/pricing" />
         <meta property="og:type" content="website" />
@@ -177,7 +177,7 @@ const Pricing = () => {
         <meta property="og:image:alt" content="Personalized AI cake designer pricing — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer Pricing — Lifetime Plans for Personalized Cakes" />
+        <meta name="twitter:title" content="AI Cake Designer Pricing — Lifetime Plans from $49" />
         <meta name="twitter:description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>

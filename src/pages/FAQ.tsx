@@ -31,11 +31,11 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>AI Cake Designer FAQ — Personalized Cake Design Questions Answered</title>
-        <meta name="description" content="Answers about the best AI cake designer — pricing, customization, downloads, commercial use & more. Everything you need before designing your personalized cake." />
+        <title>AI Cake Designer FAQ — Your Questions Answered</title>
+        <meta name="description" content="Answers about the best AI cake designer — pricing, customization, downloads, commercial use & more for your personalized cake." />
         <meta name="keywords" content="AI cake designer FAQ, personalized cake questions, custom cake design help, AI cake generator support, virtual cake maker FAQ" />
         <link rel="canonical" href="https://cakeaiartist.com/faq" />
-        <meta property="og:title" content="AI Cake Designer FAQ — Personalized Cake Design Questions Answered" />
+        <meta property="og:title" content="AI Cake Designer FAQ — Your Questions Answered" />
         <meta property="og:description" content="Common questions about the best AI cake designer for personalized birthday & celebration cakes." />
         <meta property="og:url" content="https://cakeaiartist.com/faq" />
         <meta property="og:type" content="website" />
@@ -43,7 +43,7 @@ const FAQ = () => {
         <meta property="og:image:alt" content="AI cake designer FAQ — Cake AI Artist" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer FAQ — Personalized Cake Design Questions Answered" />
+        <meta name="twitter:title" content="AI Cake Designer FAQ — Your Questions Answered" />
         <meta name="twitter:description" content="Common questions about the best AI cake designer for personalized celebration cakes." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>

@@ -4,25 +4,25 @@ import { ArrowLeft, Type, Sparkles, Download, Share2, Star, Heart, Palette, Laye
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
-import { BreadcrumbSchema, HowToSchema } from "@/components/SEOSchema";
+import { BreadcrumbSchema, HowToSchema, FAQSchema } from "@/components/SEOSchema";
 
 const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>How to Create a Personalized Cake in 30 Seconds | Best AI Cake Generator</title>
-        <meta name="description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator. Enter a name, choose an occasion, and get 3 beautiful views. Step-by-step guide." />
-        <meta name="keywords" content="how to create virtual cake, best AI cake generator tutorial, cake design guide, virtual cake designer steps" />
+        <title>How to Design an AI Cake in 30 Seconds — Step Guide</title>
+        <meta name="description" content="Step-by-step guide to the best AI birthday cake generator. Type a name, pick an occasion, get 3 personalized cake designs in 30 seconds." />
+        <meta name="keywords" content="how to create virtual cake, AI birthday cake generator tutorial, personalized cake design guide" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
-        <meta property="og:title" content="How to Create a Personalized Cake in 30 Seconds | Best AI Cake Generator" />
-        <meta property="og:description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator. Enter a name, choose an occasion, and get 3 beautiful views." />
+        <meta property="og:title" content="How to Design an AI Cake in 30 Seconds — Step Guide" />
+        <meta property="og:description" content="Step-by-step guide to the best AI birthday cake generator. Type a name, pick an occasion, get personalized cakes in 30 seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/how-it-works" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="How to Create a Personalized Cake in 30 Seconds" />
-        <meta name="twitter:description" content="Learn how easy it is to create stunning personalized cakes with the best AI cake generator." />
+        <meta name="twitter:title" content="How to Design an AI Cake in 30 Seconds" />
+        <meta name="twitter:description" content="Step-by-step guide to creating personalized cakes with AI in under a minute." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
 
