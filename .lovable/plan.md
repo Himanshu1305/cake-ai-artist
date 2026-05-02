@@ -1,27 +1,38 @@
-# Fix Mismatched Stats on Homepage
+# Lock Down Sensitive Data Exposure
 
-## Problem
-The homepage shows the same dynamic number (e.g. `532+`) twice with two different labels:
-- **Top urgency banner**: `532+ creators designing AI cakes`
-- **Hero subline** (under the CTA): `532+ cakes designed`
+Three security findings to fix via RLS policy updates. No frontend changes needed — code already uses the safe `public_featured_images` view for the homepage.
 
-Same number, two meanings → reads as a copy bug. Logically, cakes designed should exceed creator count.
+## What's wrong today
 
-## Fix
-Differentiate the two stats. Per follow-up direction, use "hundreds of" (not "thousands of") for the banner — keeps it grounded and avoids overclaiming, while leaving the concrete count on the hero.
+1. **`generated_images` — "Anyone can view featured images"** policy returns ALL columns (including `message`, `recipient_name`, `prompt`, `occasion_date`) to anonymous users when `featured = true`. The safe view `public_featured_images` exists and is already used by the homepage, but the underlying base-table policy still leaks personal data to anyone querying directly.
 
-1. **Banner** (`UrgencyBanner.tsx`) — drop the dynamic number. New copy:
-   - Desktop: `Join hundreds of creators designing AI cakes · Start free, no signup needed`
-   - Mobile: `Hundreds of creators · Start free`
-   - Remove the unused `useDynamicCakeCount` import and `displayCount` variable.
+2. **`scheduled_task_runs` — "Service role can manage task runs"** policy is bound to the `{public}` role with `USING (true)`, so any anonymous visitor can read all internal task names, schedules, errors, and run history.
 
-2. **Hero subline** (`Index.tsx`) — leave as-is: `{N}+ cakes designed`. It stays the single source of the live number, paired with the 4.9 stars.
+3. **`upgrade_nudge_logs` — "Service role can manage nudge logs"** policy has the same flaw — `{public}` + `USING (true)` exposes every user's marketing email schedule.
 
-Result: banner = qualitative social proof, hero = concrete momentum. No clash.
+## Fix (database migration only)
 
-## Files to edit
-- `src/components/UrgencyBanner.tsx`
+### a) `generated_images`
+- Drop the public-facing `"Anyone can view featured images"` SELECT policy on the base table. The homepage will continue to work because it queries `public.public_featured_images` (a view that already exposes only `id, image_url, created_at, occasion_type`).
+- Owner, admin, and "users can view their own images" policies remain — so creators still see all their own data; only public anonymous access to personal fields is removed.
 
-## Out of scope
-- The `useDynamicCakeCount` hook (still consumed by the hero and `CakeWall`).
-- Hero subline copy.
+### b) `scheduled_task_runs`
+- Drop `"Service role can manage task runs"` (which is bound to `{public}`).
+- Recreate it scoped strictly to the `service_role`:
+  - `FOR ALL TO service_role USING (true) WITH CHECK (true)`
+- Existing `"Admins can read scheduled task runs"` policy stays, so the admin dashboard widget keeps working.
+
+### c) `upgrade_nudge_logs`
+- Drop `"Service role can manage nudge logs"` (bound to `{public}`).
+- Recreate scoped to `service_role` only.
+- Existing admin SELECT and user-own SELECT policies remain.
+
+## Verification after migration
+- Homepage featured carousel still loads (uses the view).
+- Logged-in creator still sees their own messages/recipient names in Gallery.
+- Anonymous direct query of `generated_images` returns 0 rows.
+- Admin dashboard `ScheduledTasksWidget` still loads task runs (admin policy intact).
+- Edge functions writing to `scheduled_task_runs` and `upgrade_nudge_logs` continue to work (they use the service role key).
+
+## Files touched
+- One SQL migration. No application code changes required.
