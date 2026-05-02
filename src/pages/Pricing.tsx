@@ -12,7 +12,7 @@ import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ProductSchema, BreadcrumbSchema } from "@/components/SEOSchema";
+import { ProductSchema, BreadcrumbSchema, FAQSchema } from "@/components/SEOSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useHolidaySale } from "@/hooks/useHolidaySale";
@@ -197,6 +197,8 @@ const Pricing = () => {
         availability="LimitedAvailability"
         url="https://cakeaiartist.com/pricing"
       />
+
+      <FAQSchema faqs={faqItems.map(f => ({ question: f.question, answer: f.answer }))} />
       
       {/* Navigation */}
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">

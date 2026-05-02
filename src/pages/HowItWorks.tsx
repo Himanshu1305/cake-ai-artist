@@ -47,6 +47,14 @@ const HowItWorks = () => {
           { name: "Generate & Download", text: "Click generate, wait 30 seconds, then download your high-resolution cake images" },
         ]}
       />
+
+      <FAQSchema
+        faqs={[
+          { question: "How long does it take to design a cake with AI?", answer: "About 30 seconds. You enter a name, pick an occasion, optionally add a character and theme, then generate three personalized cake views." },
+          { question: "Do I need design skills?", answer: "No. The AI handles all the design work — you just describe who the cake is for and the occasion." },
+          { question: "Can I customize the cake style?", answer: "Yes — you can pick the cake type, number of layers, theme, colors, and add a character from 50+ popular options." },
+        ]}
+      />
       
       {/* Header with Logo */}
       <header className="container mx-auto px-4 py-4 max-w-5xl">
