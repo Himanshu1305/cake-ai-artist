@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -138,21 +138,45 @@ const IndiaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer in India — Personalized Birthday & Celebration Cakes | Cake AI Artist</title>
-        <meta name="description" content="India's best AI cake designer for personalized birthday cakes & every occasion — anniversaries, weddings, baby showers, Diwali & Holi. Designed in 30 seconds. Loved by 5,000+ Indian families." />
-        <meta name="keywords" content="best ai cake designer india, best cake designer india, best personalized cakes india, personalized birthday cake india, anniversary cake india, wedding cake design india, baby shower cake, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
+        <title>Best AI Cake Designer in India — Free Online</title>
+        <meta name="description" content="India's best AI cake designer for personalized birthday cakes, anniversaries, weddings, Diwali & Holi. Designed in 30 seconds. Free to try." />
+        <meta name="keywords" content="best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
         <link rel="canonical" href="https://cakeaiartist.com/india" />
         <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
-        <meta property="og:title" content="Best AI Cake Designer in India — Personalized Birthday & Celebration Cakes" />
+        <meta property="og:title" content="Best AI Cake Designer in India — Free Online" />
         <meta property="og:description" content="India's best AI cake designer for personalized birthday cakes & every Indian celebration — Diwali, anniversaries, weddings & more." />
         <meta property="og:url" content="https://cakeaiartist.com/india" />
         <meta property="og:locale" content="en_IN" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer in India — Personalized Birthday & Celebration Cakes" />
+        <meta name="twitter:title" content="Best AI Cake Designer in India — Free Online" />
         <meta name="twitter:description" content="India's best AI cake designer for birthdays, Diwali, anniversaries & every celebration." />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "India", url: "https://cakeaiartist.com/india" },
+        ]}
+      />
+
+      <ProductSchema
+        name="Cake AI Artist Lifetime Deal — India"
+        description="Lifetime access to AI-powered personalized cake designs for Indian celebrations."
+        price="4100"
+        priceCurrency="INR"
+        availability="LimitedAvailability"
+        url="https://cakeaiartist.com/india"
+      />
+
+      <FAQSchema
+        faqs={[
+          { question: "Can I design Indian-themed cakes like Diwali or Holi?", answer: "Yes — the AI cake designer supports Diwali, Holi, Raksha Bandhan, weddings and birthday themes popular in India." },
+          { question: "Does it support Indian cartoon characters?", answer: "Yes — Chhota Bheem, Motu Patlu and 50+ characters loved by Indian kids are available." },
+          { question: "What's the price in INR?", answer: "Lifetime access starts at ₹4,100 (Tier 1) or ₹8,200 (Tier 2). Free plan also available forever." },
+        ]}
+      />
 
       <OrganizationSchema 
         name="Cake AI Artist"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -138,21 +138,45 @@ const AustraliaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes | Cake AI Artist</title>
-        <meta name="description" content="Australia's best AI cake designer for personalised birthday cakes & every occasion — anniversaries, weddings, baby showers, Australia Day & beach parties. Designed in seconds." />
-        <meta name="keywords" content="best ai cake designer australia, best cake designer australia, best personalised cakes australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, baby shower cake, australia day cake, ai cake maker au, virtual cake creator australia" />
+        <title>AI Cake Designer Australia — Personalised Cakes</title>
+        <meta name="description" content="Australia's best AI cake designer for personalised birthday cakes, anniversaries, weddings, Australia Day & beach parties. Designed in seconds." />
+        <meta name="keywords" content="best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au" />
         <link rel="canonical" href="https://cakeaiartist.com/australia" />
         <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
-        <meta property="og:title" content="Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes" />
-        <meta property="og:description" content="Australia's best AI cake designer for personalised birthday cakes & every Aussie celebration — weddings, anniversaries, Australia Day & more." />
+        <meta property="og:title" content="AI Cake Designer Australia — Personalised Cakes" />
+        <meta property="og:description" content="Australia's best AI cake designer for personalised birthday cakes & every Aussie celebration — weddings, Australia Day & more." />
         <meta property="og:url" content="https://cakeaiartist.com/australia" />
         <meta property="og:locale" content="en_AU" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer Australia — Personalised Birthday & Celebration Cakes" />
+        <meta name="twitter:title" content="AI Cake Designer Australia — Personalised Cakes" />
         <meta name="twitter:description" content="Australia's best AI cake designer for birthdays, Australia Day & every celebration." />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "Australia", url: "https://cakeaiartist.com/australia" },
+        ]}
+      />
+
+      <ProductSchema
+        name="Cake AI Artist Lifetime Deal — Australia"
+        description="Lifetime access to AI-powered personalised cake designs for Australian celebrations."
+        price="75"
+        priceCurrency="AUD"
+        availability="LimitedAvailability"
+        url="https://cakeaiartist.com/australia"
+      />
+
+      <FAQSchema
+        faqs={[
+          { question: "Can I design cakes for Aussie celebrations?", answer: "Yes — Australia Day, Melbourne Cup, beach-themed parties, weddings, and traditional birthdays are all supported." },
+          { question: "What's the price in AUD?", answer: "Lifetime access starts at A$75 (Tier 1) or A$150 (Tier 2). A free plan is available forever." },
+          { question: "Can event planners use the designs commercially?", answer: "Yes — premium plans include a commercial-use licence for businesses across Australia." },
+        ]}
+      />
 
       <OrganizationSchema 
         name="Cake AI Artist"

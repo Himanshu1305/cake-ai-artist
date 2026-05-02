@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -138,21 +138,45 @@ const UKLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer UK — Personalised Birthday & Celebration Cakes | Cake AI Artist</title>
-        <meta name="description" content="The UK's best AI cake designer for personalised birthday cakes & every occasion — anniversaries, weddings, baby showers, christenings & garden parties. Designed in seconds." />
-        <meta name="keywords" content="best ai cake designer uk, best cake designer uk, best personalised cakes uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, baby shower cake, christening cake, ai cake maker england, virtual cake creator uk" />
+        <title>Best AI Cake Designer UK — Personalised Cakes</title>
+        <meta name="description" content="The UK's best AI cake designer for personalised birthday cakes, anniversaries, weddings, christenings & garden parties. Designed in seconds." />
+        <meta name="keywords" content="best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk" />
         <link rel="canonical" href="https://cakeaiartist.com/uk" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
-        <meta property="og:title" content="Best AI Cake Designer UK — Personalised Birthday & Celebration Cakes" />
-        <meta property="og:description" content="The UK's best AI cake designer for personalised birthday cakes & every British celebration — weddings, anniversaries, christenings & more." />
+        <meta property="og:title" content="Best AI Cake Designer UK — Personalised Cakes" />
+        <meta property="og:description" content="The UK's best AI cake designer for personalised birthday cakes & every British celebration — weddings, christenings & more." />
         <meta property="og:url" content="https://cakeaiartist.com/uk" />
         <meta property="og:locale" content="en_GB" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best AI Cake Designer UK — Personalised Birthday & Celebration Cakes" />
+        <meta name="twitter:title" content="Best AI Cake Designer UK — Personalised Cakes" />
         <meta name="twitter:description" content="The UK's best AI cake designer for birthdays, weddings & every celebration." />
       </Helmet>
+
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://cakeaiartist.com" },
+          { name: "UK", url: "https://cakeaiartist.com/uk" },
+        ]}
+      />
+
+      <ProductSchema
+        name="Cake AI Artist Lifetime Deal — UK"
+        description="Lifetime access to AI-powered personalised cake designs for British celebrations."
+        price="39"
+        priceCurrency="GBP"
+        availability="LimitedAvailability"
+        url="https://cakeaiartist.com/uk"
+      />
+
+      <FAQSchema
+        faqs={[
+          { question: "Can I design British-themed cakes?", answer: "Yes — the AI supports christenings, royal-themed parties, garden parties, weddings and traditional British birthday designs." },
+          { question: "What's the price in GBP?", answer: "Lifetime access starts at £39 (Tier 1) or £78 (Tier 2). A free plan is available forever." },
+          { question: "Are the designs print-ready?", answer: "Yes — high-resolution PNGs suitable for printing on cake toppers, invitations and party stationery." },
+        ]}
+      />
 
       <OrganizationSchema 
         name="Cake AI Artist"
