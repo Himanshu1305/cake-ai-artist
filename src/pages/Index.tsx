@@ -23,7 +23,7 @@ import { Footer } from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import celebrationCake from "@/assets/celebration-cake.jpg";
-import heroCake from "@/assets/hero-cake.jpg";
+// heroCake.jpg removed — hero now served from /public/hero-cake.webp for fast LCP
 import { HeroCakeWithFlames } from "@/components/HeroCakeWithFlames";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
 import featuredCake2 from "@/assets/featured-cake-2.jpg";
@@ -292,7 +292,7 @@ const Index = () => {
       <DeferredMount>
         <Suspense fallback={null}>
           <FloatingEmojis />
-          <ConfettiRain count={36} />
+          <ConfettiRain count={14} />
           <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
           <LiveActivityFeed />
           <LivePurchaseNotifications />
@@ -307,7 +307,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
-              <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
+              <img src="/logo.png" alt="Cake AI Artist" width={40} height={40} className="w-10 h-10 rounded-lg" loading="eager" decoding="async" />
               <span>Cake AI Artist</span>
             </Link>
             
