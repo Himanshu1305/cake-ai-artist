@@ -138,9 +138,9 @@ const CanadaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer Canada — Personalized Cakes</title>
-        <meta name="description" content="Canada's best AI cake designer for personalized birthday cakes, anniversaries, weddings, Canada Day & hockey parties. Designed in 30 seconds." />
-        <meta name="keywords" content="best ai cake designer canada, personalized birthday cake canada, anniversary cake canada, wedding cake design canada, canada day cake, ai cake maker canada" />
+        <title>AI Cake Generator Canada — Birthday Cake AI Designer</title>
+        <meta name="description" content="Canada's #1 AI cake generator. Design personalized AI birthday cakes, anniversary, wedding, Canada Day & hockey cakes in 30 seconds. Free." />
+        <meta name="keywords" content="ai cake generator canada, ai cake canada, ai cakes canada, cake ai canada, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer canada, personalized birthday cake canada, anniversary cake canada, wedding cake design canada, canada day cake, ai cake maker canada" />
         <link rel="canonical" href="https://cakeaiartist.com/canada" />
         <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
         <meta property="og:title" content="AI Cake Designer Canada — Personalized Cakes" />

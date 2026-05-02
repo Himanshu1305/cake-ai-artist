@@ -10,9 +10,9 @@ const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>How to Design an AI Cake in 30 Seconds — Step Guide</title>
-        <meta name="description" content="Step-by-step guide to the best AI birthday cake generator. Type a name, pick an occasion, get 3 personalized cake designs in 30 seconds." />
-        <meta name="keywords" content="how to create virtual cake, AI birthday cake generator tutorial, personalized cake design guide" />
+        <title>How the AI Cake Generator Works — 30-Second Guide</title>
+        <meta name="description" content="Step-by-step guide to the best AI cake generator. Type a name, pick an occasion, and get 3 personalized AI birthday cakes in 30 seconds." />
+        <meta name="keywords" content="how to create virtual cake, ai cake generator tutorial, ai cake designer guide, ai birthday cake generator tutorial, personalized cake design guide, cake ai how to" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
         <meta property="og:title" content="How to Design an AI Cake in 30 Seconds — Step Guide" />
         <meta property="og:description" content="Step-by-step guide to the best AI birthday cake generator. Type a name, pick an occasion, get personalized cakes in 30 seconds." />
@@ -67,7 +67,7 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4 py-8 max-w-5xl">
 
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">How the AI Cake Designer Creates Your Personalized Cake in 30 Seconds</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">How the AI Cake Generator Designs Your Personalized Cake in 30 Seconds</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
             Creating personalized cakes has never been easier. Here&apos;s how you go from idea to image in half a minute.
           </p>

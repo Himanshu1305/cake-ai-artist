@@ -138,9 +138,9 @@ const UKLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer UK — Personalised Cakes</title>
-        <meta name="description" content="The UK's best AI cake designer for personalised birthday cakes, anniversaries, weddings, christenings & garden parties. Designed in seconds." />
-        <meta name="keywords" content="best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk" />
+        <title>AI Cake Generator UK — AI Birthday Cakes Designer</title>
+        <meta name="description" content="The UK's #1 AI cake generator. Design personalised AI birthday cakes, anniversary, wedding & christening cakes in 30 seconds. Free to try." />
+        <meta name="keywords" content="ai cake generator uk, ai cake uk, ai cakes uk, cake ai uk, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk" />
         <link rel="canonical" href="https://cakeaiartist.com/uk" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
         <meta property="og:title" content="Best AI Cake Designer UK — Personalised Cakes" />
