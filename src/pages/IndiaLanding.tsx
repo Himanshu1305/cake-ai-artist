@@ -138,9 +138,9 @@ const IndiaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Best AI Cake Designer in India — Free Online</title>
-        <meta name="description" content="India's best AI cake designer for personalized birthday cakes, anniversaries, weddings, Diwali & Holi. Designed in 30 seconds. Free to try." />
-        <meta name="keywords" content="best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
+        <title>AI Cake Generator India — Birthday Cake AI Designer</title>
+        <meta name="description" content="India's #1 AI cake generator. Design personalized AI birthday cakes, anniversary, wedding, Diwali & Holi cakes in 30 seconds. Free to try." />
+        <meta name="keywords" content="ai cake generator india, ai cake india, ai cakes india, cake ai india, birthday cake ai india, ai birthday cakes, free ai cake generator, best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
         <link rel="canonical" href="https://cakeaiartist.com/india" />
         <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
         <meta property="og:title" content="Best AI Cake Designer in India — Free Online" />

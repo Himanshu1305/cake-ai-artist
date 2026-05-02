@@ -10,9 +10,9 @@ const UseCases = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>AI Cake Ideas for Birthdays, Weddings & More</title>
-        <meta name="description" content="Personalized AI cake design ideas for birthdays, anniversaries, weddings, baby showers, graduations & corporate events. Free AI cake generator." />
-        <meta name="keywords" content="AI cake design ideas, personalized birthday cake ideas, anniversary cake design, wedding cake AI, baby shower cake ideas, graduation cake" />
+        <title>AI Cake Ideas — AI Cakes for Birthdays & Weddings</title>
+        <meta name="description" content="Free AI cake generator ideas. Design AI cakes for birthdays, anniversaries, weddings, baby showers & graduations with the best AI cake designer." />
+        <meta name="keywords" content="ai cakes, ai cake ideas, ai cake generator, ai cake design ideas, ai birthday cakes, birthday cake ai, personalized birthday cake ideas, anniversary cake design, wedding cake ai, baby shower cake ideas, graduation cake" />
         <link rel="canonical" href="https://cakeaiartist.com/use-cases" />
         <meta property="og:title" content="AI Cake Ideas for Birthdays, Weddings & More" />
         <meta property="og:description" content="Personalized AI cake design ideas for every celebration. From birthdays to weddings to corporate events." />
@@ -53,7 +53,7 @@ const UseCases = () => {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
 
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-foreground">Cake Designs for Every Celebration</h1>
+          <h1 className="text-5xl font-bold mb-4 text-foreground">AI Cakes for Every Celebration — Birthday Cake AI Ideas</h1>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
             Whether it's a big milestone or just a random Tuesday, here's how people are using this thing.
           </p>

@@ -2,6 +2,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 export const HOMEPAGE_FAQS = [
   {
+    question: "Is this AI cake generator really free?",
+    answer:
+      "Yes — Cake AI Artist is a free AI cake generator. You can design AI cakes for birthdays, anniversaries and any celebration without paying a rupee or dollar upfront. Free users get 5 lifetime AI cake designs and 5 gallery slots; upgrade only if you want unlimited designs, party packs and high-resolution downloads.",
+  },
+  {
     question: "What is the best AI cake designer?",
     answer:
       "Cake AI Artist is rated 4.9 by thousands of users for designing personalized cakes in 30 seconds. It combines AI image generation trained on real cake design with name placement, occasion-aware styling and color theming — which is why it consistently ranks as the best AI cake designer for birthdays, anniversaries and celebrations.",

@@ -165,9 +165,9 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>AI Cake Designer Pricing — Lifetime Plans from $49</title>
-        <meta name="description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49 — or stay free forever." />
-        <meta name="keywords" content="AI cake designer pricing, lifetime AI cake design, personalized cake plans, custom cake design subscription, best AI cake generator price" />
+        <title>AI Cake Generator Pricing — Lifetime Plans from $49</title>
+        <meta name="description" content="Lifetime access to the #1 AI cake generator & AI cake designer for personalized birthday & celebration cakes. From $49 — or stay free forever." />
+        <meta name="keywords" content="ai cake generator pricing, ai cake generator free, cake generator price, ai cake designer pricing, lifetime ai cake design, personalized cake plans, custom cake design subscription, best ai cake generator price" />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
         <meta property="og:title" content="AI Cake Designer Pricing — Lifetime Plans from $49" />
         <meta property="og:description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49." />

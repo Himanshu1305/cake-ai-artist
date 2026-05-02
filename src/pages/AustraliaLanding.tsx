@@ -138,9 +138,9 @@ const AustraliaLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer Australia — Personalised Cakes</title>
-        <meta name="description" content="Australia's best AI cake designer for personalised birthday cakes, anniversaries, weddings, Australia Day & beach parties. Designed in seconds." />
-        <meta name="keywords" content="best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au" />
+        <title>AI Cake Generator Australia — AI Birthday Cakes</title>
+        <meta name="description" content="Australia's #1 AI cake generator. Design personalised AI birthday cakes, anniversary, wedding & Australia Day cakes in 30 seconds. Free to try." />
+        <meta name="keywords" content="ai cake generator australia, ai cake australia, ai cakes australia, cake ai australia, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au" />
         <link rel="canonical" href="https://cakeaiartist.com/australia" />
         <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
         <meta property="og:title" content="AI Cake Designer Australia — Personalised Cakes" />

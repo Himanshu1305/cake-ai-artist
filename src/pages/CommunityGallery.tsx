@@ -122,9 +122,9 @@ const CommunityGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
-        <title>AI Cake Gallery — Personalized Cake Ideas</title>
-        <meta name="description" content="Browse thousands of personalized AI-designed cakes for birthdays, anniversaries, weddings & more. Get inspired & design your own in 30 seconds." />
-        <meta name="keywords" content="AI cake gallery, personalized cake design ideas, custom cake inspiration, AI birthday cake examples, best cake designs, virtual cake gallery" />
+        <title>AI Cake Gallery — Real AI Cakes & Birthday Cake AI</title>
+        <meta name="description" content="Browse thousands of AI cakes designed by our community. AI birthday cakes, anniversary & wedding inspiration. Try the free AI cake generator." />
+        <meta name="keywords" content="ai cake gallery, ai cakes gallery, ai cake generator examples, ai birthday cakes gallery, birthday cake ai examples, cake ai inspiration, personalized cake design ideas, custom cake inspiration, virtual cake gallery" />
         <link rel="canonical" href="https://cakeaiartist.com/community" />
         <meta property="og:title" content="AI Cake Gallery — Personalized Cake Ideas" />
         <meta property="og:description" content="Browse thousands of personalized AI-designed cakes. Get inspired by real community creations." />
@@ -169,10 +169,10 @@ const CommunityGallery = () => {
 
         <div className="text-center mb-12 mt-8">
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Community Creations
+            AI Cake Gallery — Real AI Cakes from Our Community
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Browse beautiful cake designs created by our community. Get inspired and create your own!
+            Browse beautiful AI cakes created with our free AI cake generator. Get inspired and design your own in 30 seconds!
           </p>
         </div>
 

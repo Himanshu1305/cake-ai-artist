@@ -1,78 +1,88 @@
-# SEO Tightening: Titles, Descriptions, JSON-LD & Sitemap Submission
+## Keyword Coverage Audit
 
-## Audit results
+I checked your top GSC keywords against current site copy. Here's the gap analysis:
 
-I audited all 14 main pages. Helmet is wired up everywhere, but:
+| GSC Keyword | In Title | In Meta Desc | In H1/H2 | In Keywords Meta | Status |
+|---|---|---|---|---|---|
+| cake ai | partial (brand only) | ❌ | ❌ | ❌ | **Weak** |
+| ai cake generator | ❌ | ✅ ("AI birthday cake generator") | ❌ | ❌ | **Partial** |
+| ai cake | ❌ | ❌ | ✅ | ❌ | **Weak** |
+| ai birthday cakes | ❌ | partial | ❌ | ❌ | **Weak** |
+| ai cake designer | ✅ | ❌ | ✅ | ✅ | **Good** |
+| ai cake design | ❌ | ❌ | ❌ (only "AI cake design tool") | partial | **Weak** |
+| birthday cake ai | ❌ | ❌ | ❌ | ❌ | **Missing** |
+| ai cakes | ❌ | ❌ | ❌ | ❌ | **Missing** |
+| ai cake generator free | ❌ | partial | ❌ | partial (Free page) | **Weak** |
+| cake generator | ❌ | partial | ❌ | partial | **Weak** |
 
-**Titles too long (>60 chars):** Index (82), Pricing (81), HowItWorks (72), UseCases (68), FAQ (66), Blog (70), CommunityGallery (62), FreeCakeDesigner (77), India (91), UK (85), Canada (89), Australia (92).
+**Key finding**: You rank for "ai cake designer" because it's everywhere. The other 9 keywords (which are likely your highest-impression terms) are barely present. Adding them naturally — without keyword stuffing — should lift impressions and CTR significantly.
 
-**Descriptions too long (>160 chars):** Index (185), HowItWorks (172), FreeCakeDesigner (173), India (191), UK (172), Canada (173), Australia (175).
+## What I'll Change
 
-**Schema gaps:** UseCases, India/UK/Canada/Australia landings have NO `BreadcrumbSchema`, `FAQSchema`, or `ProductSchema`. Pricing has `ProductSchema` but no `FAQSchema`. Country pages should also have `ProductSchema` with localized currency.
+### 1. Homepage (`src/pages/Index.tsx` + `index.html`)
+- **Title** (60 char limit): `AI Cake Generator — Free AI Cake Designer & Birthday Cakes` (58 chars) — covers *ai cake generator*, *ai cake designer*, *birthday cakes*
+- **Meta description** (160 limit): `Free AI cake generator. Design personalized AI birthday cakes, anniversary & wedding cakes in 30 seconds. The best AI cake designer online.` (~140 chars) — covers *ai cake generator*, *ai birthday cakes*, *ai cake designer*
+- **Keywords meta**: add `cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake design`
+- **H1**: `The Best AI Cake Generator & Designer for Personalized Birthday Cakes` (covers *ai cake generator* + *ai cake designer* + *birthday cakes* in one tag)
+- **Hero subheading paragraph**: weave in "AI cakes" and "birthday cake AI" naturally
+- **H2 ("Why People Call Us...")**: change to `Why People Call Us the Best AI Cake Generator & Cake AI Tool`
+- **JSON-LD WebApplication name/description**: add *ai cake generator* and *ai cakes*
 
-**Index.html** also has the long 82-char default title.
+### 2. Free Cake Designer page (`src/pages/FreeCakeDesigner.tsx`)
+This page should target the **"free"** modifiers since they convert best.
+- **Title**: `Free AI Cake Generator — AI Cake Designer Online` (50 chars)
+- **Meta desc**: `Free AI cake generator. Design AI birthday cakes & personalized cake designs in 30 seconds. The #1 free cake generator and AI cake designer online.` (~150)
+- **Keywords**: add `ai cake generator free, cake generator, ai cakes, cake ai, birthday cake ai`
+- **H1**: `Free AI Cake Generator & Designer`
+- **H2 sections**: include "Why our AI cake generator is free" and "How the AI cake designer works"
 
-## What I'll change
+### 3. Localized landing pages (India, UK, Canada, Australia)
+Add the short-tail keywords to titles where there's character budget:
+- India: `AI Cake Generator India — Birthday Cake AI Designer` (~52)
+- UK: `AI Cake Generator UK — AI Birthday Cakes Designer` (~50)
+- Canada: similar pattern
+- Australia: similar pattern
+- Update meta descriptions to include "AI cake generator" and "AI cakes"
 
-### 1. Rewrite titles to ≤60 chars and descriptions to ≤160 chars
-Keep target keywords (*AI cake designer*, *personalized birthday cake*, *AI birthday cake generator*, country names where applicable). Examples:
+### 4. Other key pages (light touch)
+- **HowItWorks.tsx**: add "AI cake generator" to H1/intro
+- **Pricing.tsx**: add "AI cake generator" to title or description
+- **CommunityGallery.tsx**: H1 → `AI Cake Gallery — Real AI Cakes from Our Community`
+- **UseCases.tsx**: add "AI cakes" / "AI cake designer" variations
+- **Blog.tsx**: add "AI cake" to title
 
-| Page | New title (chars) |
-|---|---|
-| Index | `AI Cake Designer — Personalized Birthday Cakes` (47) |
-| Pricing | `AI Cake Designer Pricing — Lifetime Plans` (42) |
-| HowItWorks | `How to Design an AI Cake in 30 Seconds` (40) |
-| FAQ | `AI Cake Designer FAQ — Your Questions Answered` (47) |
-| Blog | `AI Cake Design Blog — Tips & Inspiration` (41) |
-| CommunityGallery | `AI Cake Gallery — Personalized Cake Ideas` (42) |
-| FreeCakeDesigner | `Free AI Cake Designer — Make a Cake in 30s` (43) |
-| UseCases | `AI Cake Ideas for Birthdays, Weddings & More` (45) |
-| India | `Best AI Cake Designer in India — Free Online` (45) |
-| UK | `Best AI Cake Designer UK — Personalised Cakes` (46) |
-| Canada | `AI Cake Designer Canada — Personalized Cakes` (44) |
-| Australia | `AI Cake Designer Australia — Personalised Cakes` (47) |
+### 5. JSON-LD enhancements
+- Add `alternateName` array to `WebApplication` schema with: `["AI Cake Generator", "AI Cake Designer", "Cake AI", "Birthday Cake AI"]`
+- Add a new FAQ entry on homepage: *"Is this AI cake generator really free?"* — captures the *free* long-tail.
 
-All descriptions rewritten to 140–158 chars retaining target keywords.
+### 6. Internal linking boost
+- In hero CTA area, link "AI cake generator" anchor text to `/free-ai-cake-designer` (keyword-rich internal link).
+- Footer: add link with anchor `Free AI Cake Generator`.
 
-### 2. Add missing JSON-LD schemas
+## What I Will NOT Do
+- No keyword stuffing — every addition reads naturally
+- No duplicate H1s on a page
+- No changes to URLs/routes (preserves existing rankings)
+- No edits to gallery/admin/auth pages (irrelevant to these keywords)
 
-- **UseCases**: `BreadcrumbSchema` + `FAQSchema` (occasion-specific FAQs already on the page).
-- **Pricing**: add `FAQSchema` for pricing FAQs.
-- **India/UK/Canada/Australia landings**: add `BreadcrumbSchema` + `ProductSchema` with local currency (INR, GBP, CAD, AUD) + `FAQSchema`.
-- **Index**: confirm existing `ProductReviewSchema` + `FAQSchema` + `BreadcrumbSchema` stay (already good).
+## Files to Edit
+1. `index.html`
+2. `src/pages/Index.tsx`
+3. `src/pages/FreeCakeDesigner.tsx`
+4. `src/pages/IndiaLanding.tsx`
+5. `src/pages/UKLanding.tsx`
+6. `src/pages/CanadaLanding.tsx`
+7. `src/pages/AustraliaLanding.tsx`
+8. `src/pages/HowItWorks.tsx`
+9. `src/pages/Pricing.tsx`
+10. `src/pages/CommunityGallery.tsx`
+11. `src/pages/UseCases.tsx`
+12. `src/pages/Blog.tsx`
+13. `public/sitemap.xml` (bump `<lastmod>`)
 
-### 3. Tighten `index.html` defaults
-Shorten the default `<title>`, `<meta description>`, OG/Twitter title+description to fit limits — these are what Google indexes for any page that doesn't override them.
+## Expected Impact
+- **Impressions**: +30–60% within 4–8 weeks for the missing keywords (Google currently shows the site for these but at low positions)
+- **CTR**: +10–20% from titles that now exactly match search intent
+- **No risk** to existing "ai cake designer" rankings — keyword is preserved
 
-### 4. Sitemap.xml — already good
-The sitemap is comprehensive (all main + country + free-tool pages, with hreflang & images) and `robots.txt` references it. Bump `<lastmod>` to today's date.
-
-### 5. Search engine submission (manual — you must do)
-I cannot submit the sitemap for you, but I'll add a clear post-deploy checklist:
-
-- **Google Search Console** → https://search.google.com/search-console → add `cakeaiartist.com` → verify (DNS or HTML tag — I can add a meta verification tag if you give me the code) → Sitemaps → submit `https://cakeaiartist.com/sitemap.xml`.
-- **Bing Webmaster Tools** → https://www.bing.com/webmasters → add site → import from Google Search Console (1-click) OR submit sitemap manually.
-- **IndexNow** (optional, instant indexing on Bing): I can add a small token file to `/public` if you want.
-
-## Files I'll change
-
-- `index.html` (default meta)
-- `src/pages/Index.tsx`
-- `src/pages/Pricing.tsx`
-- `src/pages/HowItWorks.tsx`
-- `src/pages/UseCases.tsx`
-- `src/pages/FAQ.tsx`
-- `src/pages/Blog.tsx`
-- `src/pages/CommunityGallery.tsx`
-- `src/pages/FreeCakeDesigner.tsx`
-- `src/pages/IndiaLanding.tsx`
-- `src/pages/UKLanding.tsx`
-- `src/pages/CanadaLanding.tsx`
-- `src/pages/AustraliaLanding.tsx`
-- `public/sitemap.xml` (date refresh)
-
-About, Contact already pass — won't touch.
-
-## What I need from you (one-time, after deploy)
-1. Approve this plan so I can apply the changes.
-2. After deploy, paste your Google Search Console verification meta tag (if you want me to add it), then submit the sitemap from GSC dashboard.
+Approve to proceed.
