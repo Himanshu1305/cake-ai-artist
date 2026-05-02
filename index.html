@@ -57,10 +57,11 @@
     <meta name="twitter:site" content="@cakeaiartist" />
     <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
     
-    <!-- Critical fonts (render-blocking, kept minimal): Fraunces display + Inter body -->
+    <!-- Critical fonts loaded non-blocking with font-display:swap fallback (system fonts paint instantly) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap"></noscript>
 
     <!-- Cake script fonts: only used inside the cake creator. Loaded non-blocking. -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Sacramento&family=Satisfy&family=Cookie&family=Tangerine:wght@700&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Rochester&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -126,7 +127,19 @@
 </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Pre-React LCP fallback: paints instantly so Lighthouse measures real content,
+           not the JS-mounted H1. React replaces this on hydration; users see no change. -->
+      <main style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px;font-family:'Inter',system-ui,-apple-system,sans-serif;background:hsl(35,50%,98%);color:hsl(35,15%,15%)">
+        <img src="/hero-cake.webp" width="560" height="560" alt="AI-designed celebration cake with flickering candle flames" fetchpriority="high" decoding="async" style="width:100%;max-width:560px;height:auto;border-radius:24px;box-shadow:0 20px 40px -12px rgba(236,72,153,0.25)" />
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-size:clamp(28px,5vw,56px);font-weight:800;text-align:center;margin:24px 0 12px;letter-spacing:-0.02em;line-height:1.1;max-width:900px">
+          The Best AI Cake Generator &amp; Designer for Personalized Birthday Cakes
+        </h1>
+        <p style="font-size:clamp(15px,2vw,18px);text-align:center;max-width:680px;color:hsl(35,12%,45%);margin:0">
+          Free AI cake generator. Design personalized AI birthday, anniversary &amp; wedding cakes in 30 seconds.
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
