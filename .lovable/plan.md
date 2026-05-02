@@ -1,88 +1,86 @@
-## Keyword Coverage Audit
+## Performance Audit Findings
 
-I checked your top GSC keywords against current site copy. Here's the gap analysis:
+Current Lighthouse: **Desktop 71 / Mobile 86**. Bottlenecks identified from code & assets:
 
-| GSC Keyword | In Title | In Meta Desc | In H1/H2 | In Keywords Meta | Status |
-|---|---|---|---|---|---|
-| cake ai | partial (brand only) | ❌ | ❌ | ❌ | **Weak** |
-| ai cake generator | ❌ | ✅ ("AI birthday cake generator") | ❌ | ❌ | **Partial** |
-| ai cake | ❌ | ❌ | ✅ | ❌ | **Weak** |
-| ai birthday cakes | ❌ | partial | ❌ | ❌ | **Weak** |
-| ai cake designer | ✅ | ❌ | ✅ | ✅ | **Good** |
-| ai cake design | ❌ | ❌ | ❌ (only "AI cake design tool") | partial | **Weak** |
-| birthday cake ai | ❌ | ❌ | ❌ | ❌ | **Missing** |
-| ai cakes | ❌ | ❌ | ❌ | ❌ | **Missing** |
-| ai cake generator free | ❌ | partial | ❌ | partial (Free page) | **Weak** |
-| cake generator | ❌ | partial | ❌ | partial | **Weak** |
+| Issue | Impact | Evidence |
+|---|---|---|
+| `index.html` preloads `/hero-cake.jpg` which **does not exist in `/public`** | Wasted request, delayed LCP | `public/` has no `hero-cake.jpg`; actual hero is `src/assets/hero-cake-animated.webp` (303 KB) |
+| **`/public/logo.png` is 1.6 MB** | Used in nav, mobile menu, favicon, apple-touch-icon — blocks LCP | `ls -lh public/logo.png` = 1.6 MB |
+| Single Google Fonts request loads **13 font families** (Fraunces, Inter, + 11 script fonts) as render-blocking CSS | ~400-600 ms render block | `index.html` line 67 |
+| Heavy above-the-fold widgets render synchronously: `ExitIntentModal`, `LiveActivityFeed`, `LivePurchaseNotifications`, `FeedbackWidget`, `ConfettiRain` (36 DOM nodes), `FloatingEmojis` | Inflates TBT/SI; not needed for first paint | `src/pages/Index.tsx` lines 275-284 |
+| `framer-motion` imported eagerly on Index | ~50 KB gzipped in main bundle | Index.tsx line 34 |
+| Featured cakes query fires on mount (homepage) without index priority | Network waterfall | Index.tsx line 96 |
+| No mobile-specific cache headers; `Cache-Control: no-cache` set globally in `index.html` | Repeat-visit performance hurt | Lines 17-19 |
 
-**Key finding**: You rank for "ai cake designer" because it's everywhere. The other 9 keywords (which are likely your highest-impression terms) are barely present. Adding them naturally — without keyword stuffing — should lift impressions and CTR significantly.
+LCP target on home page = the hero cake image (`hero-cake-animated.webp`). It is correctly `fetchpriority="high"` and `loading="eager"`, but it competes with the 1.6 MB logo and an invalid preload.
 
-## What I'll Change
+---
 
-### 1. Homepage (`src/pages/Index.tsx` + `index.html`)
-- **Title** (60 char limit): `AI Cake Generator — Free AI Cake Designer & Birthday Cakes` (58 chars) — covers *ai cake generator*, *ai cake designer*, *birthday cakes*
-- **Meta description** (160 limit): `Free AI cake generator. Design personalized AI birthday cakes, anniversary & wedding cakes in 30 seconds. The best AI cake designer online.` (~140 chars) — covers *ai cake generator*, *ai birthday cakes*, *ai cake designer*
-- **Keywords meta**: add `cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake design`
-- **H1**: `The Best AI Cake Generator & Designer for Personalized Birthday Cakes` (covers *ai cake generator* + *ai cake designer* + *birthday cakes* in one tag)
-- **Hero subheading paragraph**: weave in "AI cakes" and "birthday cake AI" naturally
-- **H2 ("Why People Call Us...")**: change to `Why People Call Us the Best AI Cake Generator & Cake AI Tool`
-- **JSON-LD WebApplication name/description**: add *ai cake generator* and *ai cakes*
+## Plan
 
-### 2. Free Cake Designer page (`src/pages/FreeCakeDesigner.tsx`)
-This page should target the **"free"** modifiers since they convert best.
-- **Title**: `Free AI Cake Generator — AI Cake Designer Online` (50 chars)
-- **Meta desc**: `Free AI cake generator. Design AI birthday cakes & personalized cake designs in 30 seconds. The #1 free cake generator and AI cake designer online.` (~150)
-- **Keywords**: add `ai cake generator free, cake generator, ai cakes, cake ai, birthday cake ai`
-- **H1**: `Free AI Cake Generator & Designer`
-- **H2 sections**: include "Why our AI cake generator is free" and "How the AI cake designer works"
+### 1. Fix wasted/incorrect preloads (Quick win — biggest impact)
+- **Remove** the broken `<link rel="preload" as="image" href="/hero-cake.jpg">` from `index.html`.
+- **Add** correct preload for the actual LCP image — the animated webp — using its built (hashed) URL via a small inline `<link rel="modulepreload">` strategy. Since Vite hashes `src/assets`, instead expose the hero as a separate `<link>` injected in `HeroCakeWithFlames` via `react-helmet-async`, OR copy a **compressed static** version into `/public/hero-cake.webp` and preload that.
+- Recommended: copy `hero-cake-animated.webp` → `public/hero-cake.webp`, preload it, and switch `HeroCakeWithFlames` to reference the `/public` path. Keeps hash-stable URL for preload.
 
-### 3. Localized landing pages (India, UK, Canada, Australia)
-Add the short-tail keywords to titles where there's character budget:
-- India: `AI Cake Generator India — Birthday Cake AI Designer` (~52)
-- UK: `AI Cake Generator UK — AI Birthday Cakes Designer` (~50)
-- Canada: similar pattern
-- Australia: similar pattern
-- Update meta descriptions to include "AI cake generator" and "AI cakes"
+### 2. Compress logo.png (Quick win)
+- Regenerate `public/logo.png` at proper size (max 256×256, ~20-40 KB) using `imagemagick`/`cwebp`.
+- Optionally produce `public/logo.webp` (smaller) and use it everywhere except favicon (favicon stays PNG).
+- This single change saves ~1.55 MB on every page load.
 
-### 4. Other key pages (light touch)
-- **HowItWorks.tsx**: add "AI cake generator" to H1/intro
-- **Pricing.tsx**: add "AI cake generator" to title or description
-- **CommunityGallery.tsx**: H1 → `AI Cake Gallery — Real AI Cakes from Our Community`
-- **UseCases.tsx**: add "AI cakes" / "AI cake designer" variations
-- **Blog.tsx**: add "AI cake" to title
+### 3. Optimize Google Fonts loading
+- Split into **two requests**: 
+  - **Critical (render-blocking)**: only `Inter` (body) + `Fraunces` (display) with `display=swap`.
+  - **Non-critical (deferred)**: 11 script fonts (Dancing Script, Pacifico, etc.) — load via `<link rel="preload" as="style" onload="this.rel='stylesheet'">` pattern so they don't block first paint. These fonts are only used inside the cake creator (text overlay), not on initial page render.
+- Add `<link rel="preconnect">` (already present) — keep.
 
-### 5. JSON-LD enhancements
-- Add `alternateName` array to `WebApplication` schema with: `["AI Cake Generator", "AI Cake Designer", "Cake AI", "Birthday Cake AI"]`
-- Add a new FAQ entry on homepage: *"Is this AI cake generator really free?"* — captures the *free* long-tail.
+### 4. Defer non-critical UI on Index page
+Convert these to lazy/dynamic imports in `src/pages/Index.tsx`, mounted **after first paint** using `requestIdleCallback` or a 1.5 s `setTimeout`:
+- `ExitIntentModal`
+- `LiveActivityFeed`
+- `LivePurchaseNotifications`
+- `FeedbackWidget`
+- `ConfettiRain`
+- `FloatingEmojis`
 
-### 6. Internal linking boost
-- In hero CTA area, link "AI cake generator" anchor text to `/free-ai-cake-designer` (keyword-rich internal link).
-- Footer: add link with anchor `Free AI Cake Generator`.
+Pattern: wrap in a `<DeferredMount>` component that only renders children after idle. Keeps all functionality identical, just delays mount by ~1-2 s.
 
-## What I Will NOT Do
-- No keyword stuffing — every addition reads naturally
-- No duplicate H1s on a page
-- No changes to URLs/routes (preserves existing rankings)
-- No edits to gallery/admin/auth pages (irrelevant to these keywords)
+### 5. Strip unused scripts from initial HTML
+- Move the **AdSense bootstrapper** `<script>` (lines 71-96 of `index.html`) into a deferred module loaded after `DOMContentLoaded` + idle. Currently runs synchronously parse-time.
+- Remove `Cache-Control: no-cache` meta tags (lines 17-19) — these prevent browser caching of HTML and waste bandwidth on repeat visits. Static asset caching is handled by Vite hashing already.
 
-## Files to Edit
-1. `index.html`
-2. `src/pages/Index.tsx`
-3. `src/pages/FreeCakeDesigner.tsx`
-4. `src/pages/IndiaLanding.tsx`
-5. `src/pages/UKLanding.tsx`
-6. `src/pages/CanadaLanding.tsx`
-7. `src/pages/AustraliaLanding.tsx`
-8. `src/pages/HowItWorks.tsx`
-9. `src/pages/Pricing.tsx`
-10. `src/pages/CommunityGallery.tsx`
-11. `src/pages/UseCases.tsx`
-12. `src/pages/Blog.tsx`
-13. `public/sitemap.xml` (bump `<lastmod>`)
+### 6. Reduce homepage data fetch waterfall
+- Move `loadFeaturedCakes()` behind `requestIdleCallback` (or 800ms timeout) so it doesn't compete with LCP image network.
+- Add `.limit(10)` instead of `.limit(20)` if only ~10 are shown above-the-fold carousel.
 
-## Expected Impact
-- **Impressions**: +30–60% within 4–8 weeks for the missing keywords (Google currently shows the site for these but at low positions)
-- **CTR**: +10–20% from titles that now exactly match search intent
-- **No risk** to existing "ai cake designer" rankings — keyword is preserved
+### 7. Lazy-load `framer-motion` consumers
+- The Index page only uses `motion.div` for entrance animations. Replace those with simple CSS `@keyframes` (already have `animate-confetti`, etc. in tailwind config) OR keep framer-motion but ensure tree-shaking by only importing `motion` not `AnimatePresence` where unused. Verify imports across pages.
 
-Approve to proceed.
+### 8. Verification
+After changes, re-run Lighthouse and confirm:
+- LCP < 2.0 s desktop, < 2.5 s mobile
+- Speed Index < 3.0 s
+- No functional regression: hero animates, fonts render, ads still load on consent, exit-intent still triggers, gallery still loads.
+
+---
+
+## Files to be Edited
+
+1. `index.html` — remove broken preload, fix logo refs, optimize fonts, defer AdSense, drop no-cache meta
+2. `public/logo.png` — replace with compressed version (write compressed file)
+3. `public/hero-cake.webp` — **new file** copied from `src/assets/hero-cake-animated.webp`
+4. `src/components/HeroCakeWithFlames.tsx` — switch to `/hero-cake.webp` path
+5. `src/pages/Index.tsx` — lazy/deferred mounts for non-critical widgets, defer `loadFeaturedCakes`
+6. `src/components/DeferredMount.tsx` — **new** small helper component (idle-callback gate)
+
+## Expected Result
+
+| Metric | Before | After (target) |
+|---|---|---|
+| Desktop Lighthouse | 71 | 92-96 |
+| Mobile Lighthouse | 86 | 94-98 |
+| LCP | 3.3 s | 1.4-1.8 s |
+| Speed Index | 6.7 s | 2.5-3.0 s |
+| Initial transfer | ~2.2 MB | ~600-800 KB |
+
+**Zero functional changes** — every feature continues to work identically; only mount timing and asset sizes change.
