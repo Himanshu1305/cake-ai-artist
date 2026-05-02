@@ -1,18 +1,21 @@
 import React, { Suspense, lazy, useEffect, useState, useMemo } from "react";
 import { useGeoContext } from "@/contexts/GeoContext";
+import { DeferredMount } from "@/components/DeferredMount";
 
 // Lazy load CakeCreator for better initial page performance
 const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
-import { ExitIntentModal } from "@/components/ExitIntentModal";
-import { LiveActivityFeed } from "@/components/LiveActivityFeed";
-import { UrgencyBanner } from "@/components/UrgencyBanner";
 
-import { LivePurchaseNotifications } from "@/components/LivePurchaseNotifications";
-import { FeedbackWidget } from "@/components/FeedbackWidget";
+// Defer non-critical widgets — they don't need to block first paint / LCP
+const ExitIntentModal = lazy(() => import("@/components/ExitIntentModal").then(m => ({ default: m.ExitIntentModal })));
+const LiveActivityFeed = lazy(() => import("@/components/LiveActivityFeed").then(m => ({ default: m.LiveActivityFeed })));
+const LivePurchaseNotifications = lazy(() => import("@/components/LivePurchaseNotifications").then(m => ({ default: m.LivePurchaseNotifications })));
+const FeedbackWidget = lazy(() => import("@/components/FeedbackWidget").then(m => ({ default: m.FeedbackWidget })));
+const FloatingEmojis = lazy(() => import("@/components/FloatingEmojis").then(m => ({ default: m.FloatingEmojis })));
+const ConfettiRain = lazy(() => import("@/components/ConfettiRain").then(m => ({ default: m.ConfettiRain })));
+
+import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { AdSlot } from "@/components/AdSlot";
 import { AD_SLOTS } from "@/config/adSlots";
-import { FloatingEmojis } from "@/components/FloatingEmojis";
-import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 // Temporarily disabled CursorSparkles to fix blank page issue
 // import { CursorSparkles } from "@/components/CursorSparkles";
@@ -93,8 +96,16 @@ const Index = () => {
 
   useEffect(() => {
     checkAuth();
-    loadFeaturedCakes();
-    
+    // Defer featured cakes fetch so it doesn't compete with LCP image network
+    const ric: any = (window as any).requestIdleCallback;
+    let idleHandle: any;
+    let timeoutHandle: any;
+    if (typeof ric === "function") {
+      idleHandle = ric(() => loadFeaturedCakes(), { timeout: 2500 });
+    } else {
+      timeoutHandle = setTimeout(() => loadFeaturedCakes(), 800);
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsLoggedIn(!!session);
       if (session) {
