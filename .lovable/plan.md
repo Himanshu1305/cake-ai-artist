@@ -1,37 +1,27 @@
-# Remove "EXCLUSIVE DEAL ENDS IN:" Banner From All Landing Pages
+# Fix Mismatched Stats on Homepage
 
 ## Problem
-The "✨ EXCLUSIVE DEAL ENDS IN:" red pulsing banner + countdown timer was previously removed from the Pricing page, but it still appears in the **hero section** of all four country landing pages. The user is on `/` which (for India geo) auto-redirects to `IndiaLanding`, so they see it there. UK, Canada, and Australia landing pages have the identical block.
+The homepage shows the same dynamic number (e.g. `532+`) twice with two different labels:
+- **Top urgency banner**: `532+ creators designing AI cakes`
+- **Hero subline** (under the CTA): `532+ cakes designed`
 
-## Audit — Where the banner currently renders
-Confirmed via codebase search. The banner is composed of two pieces inside the hero of each landing page:
+Same number, two meanings → reads as a copy bug. Logically, cakes designed should exceed creator count.
 
-1. A pulsing red pill containing `<DynamicSaleLabel countryCode="XX" suffix="ENDS IN:" />` — this renders the "✨ EXCLUSIVE DEAL ENDS IN:" text.
-2. A `<CountdownTimer countryCode="XX" />` directly below it.
+## Fix
+Differentiate the two stats. Per follow-up direction, use "hundreds of" (not "thousands of") for the banner — keeps it grounded and avoids overclaiming, while leaving the concrete count on the hero.
 
-Locations:
-- `src/pages/IndiaLanding.tsx` — lines ~254–271
-- `src/pages/UKLanding.tsx` — lines ~254–271
-- `src/pages/CanadaLanding.tsx` — lines ~234–244
-- `src/pages/AustraliaLanding.tsx` — lines ~234–244
+1. **Banner** (`UrgencyBanner.tsx`) — drop the dynamic number. New copy:
+   - Desktop: `Join hundreds of creators designing AI cakes · Start free, no signup needed`
+   - Mobile: `Hundreds of creators · Start free`
+   - Remove the unused `useDynamicCakeCount` import and `displayCount` variable.
 
-The Pricing page (`src/pages/Pricing.tsx`) is already clean (line 211 has the comment confirming removal). The main `Index.tsx` uses a different `UrgencyBanner` component which is not the banner in question and stays.
+2. **Hero subline** (`Index.tsx`) — leave as-is: `{N}+ cakes designed`. It stays the single source of the live number, paired with the 4.9 stars.
 
-## Changes
-
-For each of the four landing pages, remove the two motion blocks:
-- The `motion.div` wrapping the destructive/red pill with `DynamicSaleLabel`.
-- The `motion.div` wrapping `CountdownTimer`.
-
-Leave the rest of the hero (headline, price, spots remaining, CTA) intact. Also remove the now-unused `CountdownTimer` and `DynamicSaleLabel` imports from each file to keep things tidy.
+Result: banner = qualitative social proof, hero = concrete momentum. No clash.
 
 ## Files to edit
-- `src/pages/IndiaLanding.tsx`
-- `src/pages/UKLanding.tsx`
-- `src/pages/CanadaLanding.tsx`
-- `src/pages/AustraliaLanding.tsx`
+- `src/components/UrgencyBanner.tsx`
 
 ## Out of scope
-- The `UrgencyBanner` on the generic `Index.tsx` (different component, not the red "EXCLUSIVE DEAL ENDS IN" pill).
-- The `DynamicSaleLabel` / `CountdownTimer` components themselves — kept in the codebase in case they are used elsewhere (e.g. preview/admin tools like `SalePreviewModal`, `PreviewLandingHero`).
-- "Exclusive Lifetime Deal" section headings further down each landing page — those are static section titles, not the urgency countdown banner.
+- The `useDynamicCakeCount` hook (still consumed by the hero and `CakeWall`).
+- Hero subline copy.
