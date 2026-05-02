@@ -1,11 +1,8 @@
-import heroCakeAnimated from "@/assets/hero-cake-animated.webp";
-
 /**
  * Hero cake image with naturally flickering candle flames.
  *
- * The flicker is baked into an animated WebP — a soft warm glow pulses
- * around each real flame in the source photograph, so alignment is
- * pixel-perfect by construction at any size.
+ * Served from /public/hero-cake.webp so it can be preloaded
+ * via a stable URL in index.html (improves LCP).
  */
 interface Props {
   className?: string;
@@ -18,7 +15,7 @@ export const HeroCakeWithFlames = ({
 }: Props) => {
   return (
     <img
-      src={heroCakeAnimated}
+      src="/hero-cake.webp"
       alt={alt}
       width={1200}
       height={1200}
