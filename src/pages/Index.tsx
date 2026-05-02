@@ -183,27 +183,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Designer — Personalized Birthday Cakes Free</title>
-        <meta name="description" content="Free AI birthday cake generator. Design personalized cakes for birthdays, anniversaries, weddings & every occasion in 30 seconds. No skills needed." />
-        <meta name="keywords" content="best AI cake designer, best cake designer, best personalized cakes, personalized birthday cake, AI cake design, custom cake design, anniversary cake design, wedding cake AI, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
+        <title>AI Cake Generator — Free AI Cake Designer & Birthday Cakes</title>
+        <meta name="description" content="Free AI cake generator. Design personalized AI birthday cakes, anniversary & wedding cakes in 30 seconds. The best AI cake designer online." />
+        <meta name="keywords" content="cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake designer, ai cake design, best ai cake designer, personalized birthday cake, custom cake design, anniversary cake design, wedding cake ai, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta name="theme-color" content="#ec4899" />
         <meta name="application-name" content="Cake AI Artist" />
         <link rel="canonical" href="https://cakeaiartist.com/" />
-        <meta property="og:title" content="AI Cake Designer — Personalized Birthday Cakes Free" />
-        <meta property="og:description" content="The best AI cake designer for personalized birthday cakes & every celebration — anniversaries, weddings, baby showers & more. Designed in 30 seconds." />
+        <meta property="og:title" content="AI Cake Generator — Free AI Cake Designer & Birthday Cakes" />
+        <meta property="og:description" content="Free AI cake generator. Design personalized AI birthday cakes for birthdays, anniversaries & weddings in 30 seconds. The best AI cake designer online." />
         <meta property="og:url" content="https://cakeaiartist.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
-        <meta property="og:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
+        <meta property="og:image:alt" content="AI cake generator result — personalized birthday cake by Cake AI Artist" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer — Personalized Birthday Cakes" />
-        <meta name="twitter:description" content="Design beautiful personalized cakes for birthdays & every occasion in 30 seconds. Free to try." />
+        <meta name="twitter:title" content="AI Cake Generator — Free AI Cake Designer" />
+        <meta name="twitter:description" content="Free AI cake generator. Design AI birthday cakes & personalized celebration cakes in 30 seconds." />
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
-        <meta name="twitter:image:alt" content="Personalized birthday cake designed by AI — Cake AI Artist" />
+        <meta name="twitter:image:alt" content="AI cake generator result — personalized birthday cake by Cake AI Artist" />
       </Helmet>
       
       <OrganizationSchema 
@@ -419,13 +419,13 @@ const Index = () => {
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
                 The Best{" "}
                 <span className="bg-gradient-gold bg-clip-text text-transparent">
-                  AI Cake Designer
+                  AI Cake Generator & Designer
                 </span>{" "}
-                for Personalized Birthday Cakes & Every Celebration
+                for Personalized Birthday Cakes
               </h1>
 
               <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
-                Birthdays, anniversaries, weddings, baby showers, Diwali, retirements — design any personalized cake in 30 seconds. Just type a name, pick the occasion, and get a stunning cake you can share, save, or take to your local baker.
+                Birthdays, anniversaries, weddings, baby showers, Diwali, retirements — our AI cake generator designs personalized AI cakes in 30 seconds. Just type a name, pick the occasion, and get a stunning birthday cake AI design you can share, save, or take to your local baker.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
@@ -531,7 +531,7 @@ const Index = () => {
 
       {/* Why Choose Section */}
       <div className="container mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Call Us the Best AI Cake Design Tool</h2>
+        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Call Us the Best AI Cake Generator & Cake AI Tool</h2>
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {[
             {
@@ -808,7 +808,7 @@ const Index = () => {
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
-          Why People Call Us the Best AI Cake Designer
+          Why People Call Us the Best AI Cake Generator & AI Cake Designer
         </h2>
         <Carousel 
           className="w-full max-w-5xl mx-auto mb-12"
