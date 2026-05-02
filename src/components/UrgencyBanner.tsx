@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles } from 'lucide-react';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
-import { useDynamicCakeCount } from '@/hooks/useDynamicCakeCount';
 
 interface UrgencyBannerProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -14,7 +13,6 @@ interface UrgencyBannerProps {
 export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBannerProps) => {
   const navigate = useNavigate();
   const bannerRef = useRef<HTMLDivElement>(null);
-  const cakeCount = useDynamicCakeCount();
 
   const [isDismissed, setIsDismissed] = useState(() => {
     const dismissed = safeGetItem('urgency_banner_dismissed');
@@ -54,8 +52,6 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
 
   const handleClick = () => navigate('/pricing');
 
-  const displayCount = Math.max(cakeCount, 100).toLocaleString();
-
   return (
     <AnimatePresence>
       <motion.div
@@ -72,7 +68,7 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
             <Sparkles className="w-4 h-4 flex-shrink-0 text-gold" />
             <p className="text-xs md:text-sm font-medium tracking-wide">
               <span className="hidden sm:inline">Join </span>
-              <span className="font-bold text-gold">{displayCount}+</span>
+              <span className="font-bold text-gold">hundreds of</span>
               <span className="hidden sm:inline"> creators designing AI cakes</span>
               <span className="sm:hidden"> creators</span>
               <span className="mx-2 text-muted-foreground">·</span>
