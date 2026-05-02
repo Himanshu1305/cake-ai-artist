@@ -14,17 +14,15 @@
       });
     </script>
     <meta charset="UTF-8" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <link rel="icon" href="/logo.png?v=2" type="image/png" />
-    <link rel="shortcut icon" href="/logo.png?v=2" type="image/png" />
+    <link rel="icon" href="/logo.png?v=3" type="image/png" />
+    <link rel="shortcut icon" href="/logo.png?v=3" type="image/png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="hsl(315, 88%, 62%)" />
     <meta name="application-name" content="Cake AI Artist" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="preload" as="image" href="/hero-cake.jpg" />
+    <!-- Preload the actual LCP hero image (animated webp) -->
+    <link rel="preload" as="image" href="/hero-cake.webp" type="image/webp" fetchpriority="high" />
     <title>AI Cake Generator — Free AI Cake Designer & Birthday Cakes</title>
     <meta name="description" content="Free AI cake generator. Design personalized AI birthday cakes, anniversary & wedding cakes in 30 seconds. The best AI cake designer online.">
     <meta name="author" content="Cake AI Artist" />
@@ -57,42 +55,51 @@
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@cakeaiartist" />
-    
-    
     <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
     
-    <!-- Google Fonts: display (Fraunces) + body (Inter) + cake script fonts -->
+    <!-- Critical fonts (render-blocking, kept minimal): Fraunces display + Inter body -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Sacramento&family=Satisfy&family=Cookie&family=Tangerine:wght@700&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Rochester&display=swap">
-    
-    <!-- Google AdSense - Loaded conditionally based on consent -->
-    <!-- AdSense script will be loaded dynamically after user consent -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap">
+
+    <!-- Cake script fonts: only used inside the cake creator. Loaded non-blocking. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Sacramento&family=Satisfy&family=Cookie&family=Tangerine:wght@700&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Rochester&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Sacramento&family=Satisfy&family=Cookie&family=Tangerine:wght@700&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Rochester&display=swap"></noscript>
+
+    <!-- AdSense bootstrapper: deferred to idle so it never blocks first paint -->
     <script>
-      // Only load AdSense after marketing cookie consent is granted
-      function loadAdSense() {
-        if (window.adSenseLoaded) return;
-        try {
-          var consent = localStorage.getItem('cookieConsent');
-          if (consent) {
+      (function () {
+        function loadAdSense() {
+          if (window.adSenseLoaded) return;
+          try {
+            var consent = localStorage.getItem('cookieConsent');
+            if (!consent) return;
             var parsed = JSON.parse(consent);
-            if (parsed.marketing === true) {
-              var script = document.createElement('script');
-              script.async = true;
-              script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8968285405550435';
-              script.crossOrigin = 'anonymous';
-              document.head.appendChild(script);
-              window.adSenseLoaded = true;
-            }
+            if (parsed.marketing !== true) return;
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8968285405550435';
+            script.crossOrigin = 'anonymous';
+            document.head.appendChild(script);
+            window.adSenseLoaded = true;
+          } catch (e) {
+            console.error('Error checking consent for AdSense:', e);
           }
-        } catch (e) {
-          console.error('Error checking consent for AdSense:', e);
         }
-      }
-      // Check on page load
-      document.addEventListener('DOMContentLoaded', loadAdSense);
-      // Also check when consent is updated (custom event)
-      window.addEventListener('cookieConsentUpdated', loadAdSense);
+        function schedule() {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAdSense, { timeout: 4000 });
+          } else {
+            setTimeout(loadAdSense, 2500);
+          }
+        }
+        if (document.readyState === 'complete') {
+          schedule();
+        } else {
+          window.addEventListener('load', schedule, { once: true });
+        }
+        window.addEventListener('cookieConsentUpdated', loadAdSense);
+      })();
     </script>
     
     <!-- Critical CSS: Prevent scroll compensation layout shift on mobile portrait -->
