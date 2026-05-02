@@ -27,20 +27,49 @@ export const AdSlot = ({ size, className, slotId }: AdSlotProps) => {
   const hasMarketingConsent = preferences.marketing;
 
   useEffect(() => {
-    // Only initialize ads if:
-    // 1. Ads are enabled in database
-    // 2. We have a valid slot ID
-    // 3. User has consented to marketing cookies
-    // 4. Ad hasn't been initialized yet
-    if (adsEnabled && slotId && hasMarketingConsent && adRef.current && !adInitialized.current) {
+    if (!(adsEnabled && slotId && hasMarketingConsent && adRef.current) || adInitialized.current) {
+      return;
+    }
+
+    const el = adRef.current;
+    let observer: ResizeObserver | null = null;
+    let rafId: number | null = null;
+
+    const tryPush = () => {
+      if (adInitialized.current || !el) return false;
+      // Only push when the container actually has a measurable width
+      if (el.offsetWidth < 1) return false;
       try {
-        // Push ad to AdSense
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
         adInitialized.current = true;
+        return true;
       } catch (error) {
         console.error("AdSense error:", error);
+        return false;
       }
+    };
+
+    // Try immediately on next frame so layout has settled
+    rafId = requestAnimationFrame(() => {
+      if (tryPush()) {
+        observer?.disconnect();
+      }
+    });
+
+    // If width is still 0 (hidden/deferred container), wait for it to appear
+    if (typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(() => {
+        if (tryPush()) {
+          observer?.disconnect();
+        }
+      });
+      observer.observe(el);
     }
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      observer?.disconnect();
+    };
   }, [adsEnabled, slotId, hasMarketingConsent]);
 
   // Reset initialization flag if slotId changes
