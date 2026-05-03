@@ -112,23 +112,15 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
               </div>
             </motion.div>
 
-            {/* Urgency Indicators */}
+            {/* Value Highlight */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
               className="space-y-3"
             >
-              <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-lg border border-border">
-                <span className="font-semibold">⏰ Sale ends:</span>
-                <CountdownTimer compact />
-              </div>
-              <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-lg border border-border">
-                <span className="font-semibold">🎯 Spots left at $49:</span>
-                <SpotsRemainingCounter tier="tier_1_49" />
-              </div>
               <div className="p-4 bg-gold/10 rounded-lg border border-gold/30 text-center">
-                <p className="font-bold text-gold text-lg">💰 Your savings: $1,149.80 FOREVER</p>
+                <p className="font-bold text-gold text-lg">💰 Save big with the lifetime deal</p>
               </div>
             </motion.div>
 
