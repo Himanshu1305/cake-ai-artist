@@ -123,11 +123,11 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate LTA member number (e.g., 2025-LTA-1000)
     const currentYear = new Date().getFullYear();
     
-    // Count existing LTA members (one-time payments have tier like %_49 or %_99)
+    // Count existing LTA members (legacy + new lifetime_*)
     const { count } = await supabaseServiceRole
       .from("founding_members")
       .select("*", { count: "exact", head: true })
-      .or("tier.like.%_49,tier.like.%_99");
+      .or("tier.like.%_49,tier.like.%_99,tier.like.lifetime%");
 
     const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
     
