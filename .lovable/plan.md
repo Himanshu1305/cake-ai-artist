@@ -1,96 +1,73 @@
-# Simplified 3-Tier Pricing Migration
+# Purge Legacy Pricing Across All Pages
 
-## Confirmed Pricing (15 Razorpay Plans)
+## The problem
 
-| Country | Monthly | Yearly | Lifetime |
-|---|---|---|---|
-| India (INR) | ₹299 | ₹1,999 | ₹2,999 |
-| UK (GBP) | £4.99 | £29 | £49 |
-| Canada (CAD) | C$6.99 | C$39 | C$69 |
-| Australia (AUD) | A$7.99 | A$49 | A$79 |
-| USA (USD) | $4.99 | $29 | $49 |
+Although `<PricingPlans />` was added below the hero on each landing page, the **hero blocks themselves still display old founding-member pricing** (₹4,100, £39, C$67, A$75, "Founding Member Special", "Once spots fill", "Claim Your Lifetime Deal"). They also still call `handlePayment('tier_1_49')`, which routes to the legacy lifetime tier instead of the new country-specific lifetime plan. Several other surfaces also leak old prices.
 
-Note: Lifetime plans in Razorpay are configured as "Once in 5 Years" — we treat these as one-time lifetime purchases (charged once via subscription with `total_count: 1`, or via Orders API). We'll use the **Orders API** for Lifetime (one-time payment, cleaner UX) and **Subscriptions API** for Monthly/Yearly recurring.
+## Files to fix
 
-## Database Migration
+### 1. Landing page heroes (`IndiaLanding`, `UKLanding`, `CanadaLanding`, `AustraliaLanding`)
+Replace the entire hero "Get LIFETIME ACCESS for just …" block (≈ lines 277–363 in India, equivalents in others) with a clean, currency-correct hero that:
+- Drops the line-through "regular price" / "save over 10 years" boxes
+- Drops `SpotsRemainingCounter`, "Founding Member Special", "Once spots fill, price becomes …", "This offer will NEVER be repeated"
+- Removes the "Claim Your Lifetime Deal Now" button + `handlePayment('tier_1_49')` + the Razorpay `currentOrderId` check button
+- Replaces it with a short headline + sub-headline + a single CTA that scrolls to the `<PricingPlans />` section below (anchor `#plans`)
+- Removes `<UrgencyBanner …>` mount at top of page (banner already neutralised but the component import + mount adds noise; replace with nothing)
+- Removes now-unused imports: `SpotsRemainingCounter`, `UrgencyBanner`, `Loader2`, `currentOrderId`, `checkPaymentStatus`, `isCheckingStatus`, `isLoading`, `handlePayment` (keep only what's still used)
+- Updates the FAQ schema entry `"What's the price in …"` to reflect 3-tier pricing (Monthly / Yearly / Lifetime in local currency)
+- Updates `ProductSchema` price prop to the new lifetime price for that country (₹2999 / £49 / C$69 / A$79)
 
-Add new tier values without breaking grandfathered members:
-- Allowed `founding_members.tier`: legacy `tier_1_49`, `tier_2_99` + new `lifetime_<cc>` (e.g. `lifetime_in`, `lifetime_us`)
-- Allowed `subscriptions.tier`: `monthly_<cc>`, `yearly_<cc>` for all 5 countries
-- Update `get_available_spots()` → deprecate (no more spot caps); keep function but always return high availability OR remove callers
-- Keep `YYYY-LTA-####` numbering scheme starting at 1000; preserve existing member numbers on renewal
+### 2. `src/pages/Index.tsx` (US homepage)
+- Update `countryPricing` map to the new lifetime prices: `IN ₹2,999`, `GB £49`, `CA C$69`, `AU A$79`, `US $49`. Remove the misleading `monthly` / `yearly` / `savings` fields (replace with simple `lifetime` + a sub-line "Monthly and Yearly options also available").
+- Remove `<UrgencyBanner …>` import + mount
+- If the homepage has its own pricing CTA section, replace with `<PricingPlans country={detectedCountry || 'US'} />`
 
-## Edge Function Changes
+### 3. `src/pages/FAQ.tsx`
+- Replace `PRICING_BY_COUNTRY` (`tier1`/`tier2`) with the new 3-tier map per country
+- Rewrite the answer that says "First 200 people pay once …" → describe the actual model: Monthly / Yearly / Lifetime, no spots, no expiry
+- Delete the "After those 200 spots fill up, this offer's gone" paragraph
 
-**`create-razorpay-order`** (Lifetime one-time payments)
-- Replace tier enum with `lifetime` + country
-- New PRICING map with the 15 confirmed amounts (lifetime row only)
-- Remove `get_available_spots` validation (no more sold-out logic)
-- Notes: tier = `lifetime_<cc>`
+### 4. `src/components/PremiumComparison.tsx`
+- Update the per-country fallback prices (line 9) to the real Monthly subscription prices: `IN ₹299/mo`, `GB £4.99/mo`, `CA C$6.99/mo`, `AU A$7.99/mo`, `US $4.99/mo`
 
-**`create-razorpay-subscription`** (Monthly + Yearly)
-- Replace PLAN_IDS map with all 10 recurring plan IDs (monthly + yearly × 5 countries)
-- Tier enum: `monthly_in|gb|ca|au|us`, `yearly_in|gb|ca|au|us`
-- `total_count`: 12 for monthly, 5 for yearly (or unbounded)
-- Remove placeholder check
+### 5. `src/components/PreviewPricingHero.tsx`
+- Remove the "Countdown or Spots" block and any old founding/spot copy; have it render localized 3-tier teaser pulling from the same `PRICING` map shape used by `PricingPlans`
 
-**`verify-razorpay-payment`** (Lifetime activation)
-- Accept tier `lifetime_<cc>` (and keep legacy `tier_1_49/2_99` for backward compat)
-- Member numbering preserved
-- `special_badge`: drop tier-based gold/silver, use single `lifetime` badge
+### 6. `src/components/SalePreviewModal.tsx` & `src/components/LivePurchaseNotifications.tsx`
+- Remove `tier_1_49` / `tier_2_99` branching; show a single generic "Lifetime member" label instead
 
-**`razorpay-webhook`** — review for hardcoded tier strings, update accordingly.
+## New hero block shape (used on all 4 landing pages)
 
-## Frontend Changes
+```tsx
+<div className="text-center space-y-6 px-4 max-w-4xl">
+  <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
+    {flag} Pick the plan that fits your celebrations
+  </h1>
+  <p className="text-white text-lg md:text-xl drop-shadow-md">
+    Monthly, Yearly or Lifetime — pay in {currency}. Cancel anytime.
+  </p>
+  <Button
+    size="lg"
+    className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold"
+    onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}
+  >
+    See Plans →
+  </Button>
+</div>
+```
 
-**New: `src/components/PricingPlans.tsx`**
-- Single source of truth for the 3 plans
-- Reads country from `GeoContext`
-- Internal PRICING map mirrors edge function values (display only)
-- Renders 3 cards: Monthly / Yearly (badge: "Best Value") / Lifetime (badge: "Most Popular")
-- Shows local currency only, never USD fallback
-- CTA buttons route to `useRazorpayPayment` with appropriate tier
+And the existing `<PricingPlans country="…" />` section gets `id="plans"` on its wrapping `<section>`.
 
-**`useRazorpayPayment` hook**
-- Add `mode: 'subscription' | 'order'` based on tier
-- Lifetime → `create-razorpay-order` + `verify-razorpay-payment`
-- Monthly/Yearly → `create-razorpay-subscription` + Razorpay subscription checkout
+## What stays
 
-**Replace pricing sections in:**
-- `src/pages/Pricing.tsx`
-- `src/pages/IndiaLanding.tsx`
-- `src/pages/UKLanding.tsx`
-- `src/pages/CanadaLanding.tsx`
-- `src/pages/AustraliaLanding.tsx`
-- `src/pages/Index.tsx` (homepage pricing block)
-- `src/components/PreviewPricingHero.tsx` (if it has hardcoded tiers)
+- `<PricingPlans />` (already correct — single source of truth)
+- `useRazorpayPayment` (already routes correctly on new tiers)
+- Edge functions (already updated)
+- Legacy `tier_1_49` / `tier_2_99` enum values in the hook/types — kept silently for grandfathered members; no UI surfaces them anymore
 
-**Delete / neutralize:**
-- `src/components/SpotsRemainingCounter.tsx`
-- `src/components/UrgencyBanner.tsx`
-- `src/components/PreviewUrgencyBanner.tsx`
-- `src/hooks/useFoundingSpots.ts`
-- Remove all imports/usages across pages
+## Out of scope
 
-**Keep:**
-- `HolidaySalesManager` / `useHolidaySale` — admin can apply timed discounts
-- `DynamicSaleLabel` — for occasional promotions
+- DB / edge function changes (already done in previous step)
+- Subscription self-management UI
 
-## Email Templates
-- `send-premium-emails`: update tier display logic to handle new tier strings (lifetime vs monthly vs yearly)
-- Member number format unchanged
-
-## Out of Scope
-- No changes to existing grandfathered members — they keep `tier_1_49`/`tier_2_99` and lifetime access
-- No subscription self-management UI (per memory)
-- No "AI Message Variations" / "Priority Support VIP" features
-
-## Execution Order
-1. DB migration (tier value expansion)
-2. Edge functions update + deploy
-3. Build `PricingPlans` component + `useRazorpayPayment` refactor
-4. Swap pricing sections on all 6 pages
-5. Delete scarcity components + clean imports
-6. Smoke test each country path
-
-Approve to proceed end-to-end in one build.
+Approve to apply the cleanup across all 9 files in one pass.

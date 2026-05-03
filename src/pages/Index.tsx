@@ -56,13 +56,13 @@ const Index = () => {
   
   // Dynamic pricing based on detected country
   const countryPricing = useMemo(() => {
-    const pricing: Record<string, { price: string; monthly: string; yearly: string; savings: string; code: string }> = {
-      IN: { price: '₹4,100', monthly: '₹899/month', yearly: '₹10,788/year', savings: '₹1,06,000+', code: 'IN' },
-      GB: { price: '£39', monthly: '£7.99/month', yearly: '£96/year', savings: '£921+', code: 'GB' },
-      CA: { price: 'C$67', monthly: 'C$13.99/month', yearly: 'C$168/year', savings: 'C$1,600+', code: 'CA' },
-      AU: { price: 'A$75', monthly: 'A$14.99/month', yearly: 'A$180/year', savings: 'A$1,700+', code: 'AU' },
+    const pricing: Record<string, { lifetime: string; tagline: string; code: string }> = {
+      IN: { lifetime: '₹2,999', tagline: 'Monthly and Yearly options also available', code: 'IN' },
+      GB: { lifetime: '£49', tagline: 'Monthly and Yearly options also available', code: 'GB' },
+      CA: { lifetime: 'C$69', tagline: 'Monthly and Yearly options also available', code: 'CA' },
+      AU: { lifetime: 'A$79', tagline: 'Monthly and Yearly options also available', code: 'AU' },
     };
-    return pricing[detectedCountry || ''] || { price: '$49', monthly: '$9.99/month', yearly: '$120/year', savings: '$1,149+', code: 'US' };
+    return pricing[detectedCountry || ''] || { lifetime: '$49', tagline: 'Monthly and Yearly options also available', code: 'US' };
   }, [detectedCountry]);
   
   // Call hooks at top level (React Rules of Hooks)

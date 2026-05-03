@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Snowflake, CheckCircle2, Sparkles, Menu, Download, Leaf, Loader2 } from "lucide-react";
-import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
-import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { PricingPlans } from "@/components/PricingPlans";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -37,7 +35,6 @@ const CanadaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("CA");
 
   // Track page visits
   usePageTracking('/canada', 'CA');
@@ -174,7 +171,7 @@ const CanadaLanding = () => {
       <FAQSchema
         faqs={[
           { question: "Can I design cakes for Canadian holidays?", answer: "Yes — Canada Day, Thanksgiving, Victoria Day, hockey-themed parties and traditional birthdays are all supported." },
-          { question: "What's the price in CAD?", answer: "Lifetime access starts at C$67 (Tier 1) or C$134 (Tier 2). A free plan is available forever." },
+          { question: "What's the price in CAD?", answer: "Three plans in CAD: Monthly C$6.99/month, Yearly C$39/year, or Lifetime C$69 once. A free plan is available forever." },
           { question: "Can I use the cake designs commercially?", answer: "Yes — premium plans include a commercial-use licence for bakeries and event planners across Canada." },
         ]}
       />
@@ -257,52 +254,16 @@ const CanadaLanding = () => {
         <img loading="lazy" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
-            {/* Urgency banner + countdown removed per request */}
-
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              🇨🇦 Get LIFETIME ACCESS for just C$67
+              🇨🇦 Pick the plan that fits your celebrations
             </motion.h1>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="space-y-2">
-              <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
-                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
-              </span>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
-                <div><p className="text-sm text-muted-foreground">Regular price:</p><p className="text-lg font-bold line-through text-muted-foreground">CAD$162/year forever</p></div>
-                <div><p className="text-sm text-muted-foreground">Your price:</p><p className="text-3xl font-bold text-gold">~CAD$67 ONCE</p></div>
-                <div><p className="text-sm text-muted-foreground">You save:</p><p className="text-lg font-bold text-party-pink">CAD$1,553+ over 10 years</p></div>
-              </div>
-              <Button size="lg" className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
-                {isLoading === 'tier_1_49' ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Processing...</> : 'Claim Your Lifetime Deal Now →'}
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-white text-lg md:text-xl drop-shadow-md">
+              Monthly, Yearly or Lifetime — pay in CAD (C$). Cancel anytime.
+            </motion.p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+              <Button size="lg" className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
+                See Plans →
               </Button>
-              {currentOrderId && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full mt-3 border-party-purple text-party-purple hover:bg-party-purple/10"
-                  onClick={() => checkPaymentStatus()}
-                  disabled={isCheckingStatus}
-                >
-                  {isCheckingStatus ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Checking Status...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Check Payment Status
-                    </>
-                  )}
-                </Button>
-              )}
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"Once spots fill, price becomes C$13.99/month"</p>
-                <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
-              </div>
             </motion.div>
           </div>
         </div>
@@ -500,7 +461,7 @@ const CanadaLanding = () => {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
+      <section id="plans" className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">Choose Your Plan</h2>
           <p className="text-center text-muted-foreground mb-12">Monthly, yearly or lifetime — pay in CAD.</p>

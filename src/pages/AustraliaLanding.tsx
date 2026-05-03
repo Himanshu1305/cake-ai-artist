@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves, Loader2 } from "lucide-react";
-import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
-import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { PricingPlans } from "@/components/PricingPlans";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -37,7 +35,6 @@ const AustraliaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("AU");
 
   // Track page visits
   usePageTracking('/australia', 'AU');
@@ -174,7 +171,7 @@ const AustraliaLanding = () => {
       <FAQSchema
         faqs={[
           { question: "Can I design cakes for Aussie celebrations?", answer: "Yes — Australia Day, Melbourne Cup, beach-themed parties, weddings, and traditional birthdays are all supported." },
-          { question: "What's the price in AUD?", answer: "Lifetime access starts at A$75 (Tier 1) or A$150 (Tier 2). A free plan is available forever." },
+          { question: "What's the price in AUD?", answer: "Three plans in AUD: Monthly A$7.99/month, Yearly A$49/year, or Lifetime A$79 once. A free plan is available forever." },
           { question: "Can event planners use the designs commercially?", answer: "Yes — premium plans include a commercial-use licence for businesses across Australia." },
         ]}
       />
@@ -257,52 +254,16 @@ const AustraliaLanding = () => {
         <img loading="lazy" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
-            {/* Urgency banner + countdown removed per request */}
-
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              🇦🇺 Get LIFETIME ACCESS for just A$75
+              🇦🇺 Pick the plan that fits your celebrations
             </motion.h1>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="space-y-2">
-              <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
-                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
-              </span>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
-                <div><p className="text-sm text-muted-foreground">Regular price:</p><p className="text-lg font-bold line-through text-muted-foreground">AUD$183/year forever</p></div>
-                <div><p className="text-sm text-muted-foreground">Your price:</p><p className="text-3xl font-bold text-gold">~AUD$75 ONCE</p></div>
-                <div><p className="text-sm text-muted-foreground">You save:</p><p className="text-lg font-bold text-party-pink">AUD$1,755+ over 10 years</p></div>
-              </div>
-              <Button size="lg" className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => handlePayment('tier_1_49')} disabled={isLoading !== null}>
-                {isLoading === 'tier_1_49' ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Processing...</> : 'Claim Your Lifetime Deal Now →'}
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-white text-lg md:text-xl drop-shadow-md">
+              Monthly, Yearly or Lifetime — pay in AUD (A$). Cancel anytime.
+            </motion.p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+              <Button size="lg" className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
+                See Plans →
               </Button>
-              {currentOrderId && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full mt-3 border-party-purple text-party-purple hover:bg-party-purple/10"
-                  onClick={() => checkPaymentStatus()}
-                  disabled={isCheckingStatus}
-                >
-                  {isCheckingStatus ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Checking Status...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Check Payment Status
-                    </>
-                  )}
-                </Button>
-              )}
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"Once spots fill, price becomes A$14.99/month"</p>
-                <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
-              </div>
             </motion.div>
           </div>
         </div>
@@ -500,7 +461,7 @@ const AustraliaLanding = () => {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
+      <section id="plans" className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">Choose Your Plan</h2>
           <p className="text-center text-muted-foreground mb-12">Monthly, yearly or lifetime — pay in AUD.</p>

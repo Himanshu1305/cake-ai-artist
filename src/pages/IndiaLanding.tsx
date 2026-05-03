@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download, Loader2 } from "lucide-react";
-import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
 import { Footer } from "@/components/Footer";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
-import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
 import { PricingPlans } from "@/components/PricingPlans";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -37,7 +35,6 @@ const IndiaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
-  const { isLoading, handlePayment, currentOrderId, checkPaymentStatus, isCheckingStatus } = useRazorpayPayment("IN");
 
   // Track page visits
   usePageTracking('/india', 'IN');
@@ -163,11 +160,11 @@ const IndiaLanding = () => {
       />
 
       <ProductSchema
-        name="Cake AI Artist Lifetime Deal — India"
+        name="Cake AI Artist Lifetime Plan — India"
         description="Lifetime access to AI-powered personalized cake designs for Indian celebrations."
-        price="4100"
+        price="2999"
         priceCurrency="INR"
-        availability="LimitedAvailability"
+        availability="InStock"
         url="https://cakeaiartist.com/india"
       />
 
@@ -175,7 +172,7 @@ const IndiaLanding = () => {
         faqs={[
           { question: "Can I design Indian-themed cakes like Diwali or Holi?", answer: "Yes — the AI cake designer supports Diwali, Holi, Raksha Bandhan, weddings and birthday themes popular in India." },
           { question: "Does it support Indian cartoon characters?", answer: "Yes — Chhota Bheem, Motu Patlu and 50+ characters loved by Indian kids are available." },
-          { question: "What's the price in INR?", answer: "Lifetime access starts at ₹4,100 (Tier 1) or ₹8,200 (Tier 2). Free plan also available forever." },
+          { question: "What's the price in INR?", answer: "Three plans in INR: Monthly ₹299/month, Yearly ₹1,999/year, or Lifetime ₹2,999 once. A free plan is available forever." },
         ]}
       />
 
@@ -274,92 +271,34 @@ const IndiaLanding = () => {
         />
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
-            {/* Urgency banner + countdown removed per request */}
-
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
-              🇮🇳 Get LIFETIME ACCESS for just ₹4,100
+              🇮🇳 Pick the plan that fits your celebrations
             </motion.h1>
-
-            <motion.div
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="space-y-2"
+              className="text-white text-lg md:text-xl drop-shadow-md"
             >
-              <span className="text-white text-xl md:text-2xl font-semibold drop-shadow-md block">
-                Founding Member Special • <SpotsRemainingCounter tier="tier_1_49" className="inline-block" />
-              </span>
-            </motion.div>
-
+              Monthly, Yearly or Lifetime — pay in INR (₹). Cancel anytime.
+            </motion.p>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="bg-surface-elevated/95 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto"
             >
-              <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Regular price:</p>
-                  <p className="text-lg font-bold line-through text-muted-foreground">₹9,900/year forever</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Your price:</p>
-                  <p className="text-3xl font-bold text-gold">~₹4,100 ONCE</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">You save:</p>
-                  <p className="text-lg font-bold text-party-pink">₹95,000+ over 10 years</p>
-                </div>
-              </div>
-              
               <Button
                 size="lg"
-                className="w-full bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow animate-rainbow-shimmer relative overflow-hidden group"
-                onClick={() => handlePayment('tier_1_49')}
-                disabled={isLoading !== null}
+                className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow"
+                onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                {isLoading === 'tier_1_49' ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <span className="relative z-10">Claim Your Lifetime Deal Now →</span>
-                )}
-                <span className="absolute inset-0 -z-10 bg-gradient-party opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                See Plans →
               </Button>
-              
-              {currentOrderId && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full mt-3 border-party-purple text-party-purple hover:bg-party-purple/10"
-                  onClick={() => checkPaymentStatus()}
-                  disabled={isCheckingStatus}
-                >
-                  {isCheckingStatus ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Checking Status...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Check Payment Status (QR/UPI)
-                    </>
-                  )}
-                </Button>
-              )}
-              
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>"Once spots fill, price becomes ₹899/month"</p>
-                <p className="font-semibold text-destructive">"This offer will NEVER be repeated"</p>
-              </div>
             </motion.div>
           </div>
         </div>
@@ -706,7 +645,7 @@ const IndiaLanding = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
+      <section id="plans" className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">
             Choose Your Plan
