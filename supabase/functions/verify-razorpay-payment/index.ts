@@ -13,7 +13,7 @@ const requestSchema = z.object({
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
-  tier: z.enum(["tier_1_49", "tier_2_99"]),
+  tier: z.string().min(1), // accepts lifetime_<cc> and legacy tier_1_49 / tier_2_99
   amount: z.number(),
   currency: z.string(),
 });
@@ -131,8 +131,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
     
-    const pricePaid = amount / 100; // Convert from smallest unit to display value
-    const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
+    const pricePaid = amount / 100;
+    const specialBadge = tier === "tier_1_49" ? "gold"
+      : tier === "tier_2_99" ? "silver"
+      : "lifetime";
 
     // Insert founding member record
     const { error: insertError } = await supabaseServiceRole
