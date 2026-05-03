@@ -547,10 +547,10 @@ const AustraliaLanding = () => {
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => handlePayment('monthly_aud')}
+                    onClick={() => handlePayment('monthly_au')}
                     disabled={isLoading !== null}
                   >
-                    {isLoading === 'monthly_aud' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
+                    {isLoading === 'monthly_au' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
                   </Button>
                 </CardContent>
               </Card>

@@ -164,7 +164,7 @@ export const SalePreviewModal = ({ sale, isOpen, onClose, onActivate }: SalePrev
                 <span className="text-xs text-muted-foreground ml-2">cakeaiartist.com</span>
               </div>
               <div className={deviceView === 'mobile' ? 'max-w-sm mx-auto' : ''}>
-                <PreviewUrgencyBanner sale={previewSaleData} />
+                <PreviewUrgencyBanner />
               </div>
             </div>
             <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">

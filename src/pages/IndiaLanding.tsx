@@ -761,10 +761,10 @@ const IndiaLanding = () => {
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => handlePayment('monthly_inr')}
+                    onClick={() => handlePayment('monthly_in')}
                     disabled={isLoading !== null}
                   >
-                    {isLoading === 'monthly_inr' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
+                    {isLoading === 'monthly_in' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
                   </Button>
                 </CardContent>
               </Card>
