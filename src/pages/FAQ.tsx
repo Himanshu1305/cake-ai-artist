@@ -13,12 +13,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const PRICING_LOOKUP: Record<string, { tier1: string; tier2: string }> = {
-  IN: { tier1: '₹4,100', tier2: '₹8,200' },
-  GB: { tier1: '£39', tier2: '£78' },
-  CA: { tier1: 'C$67', tier2: 'C$134' },
-  AU: { tier1: 'A$75', tier2: 'A$150' },
-  US: { tier1: '$49', tier2: '$99' },
+const PRICING_LOOKUP: Record<string, { monthly: string; yearly: string; lifetime: string }> = {
+  IN: { monthly: '₹299/month', yearly: '₹1,999/year', lifetime: '₹2,999 once' },
+  GB: { monthly: '£4.99/month', yearly: '£29/year', lifetime: '£49 once' },
+  CA: { monthly: 'C$6.99/month', yearly: 'C$39/year', lifetime: 'C$69 once' },
+  AU: { monthly: 'A$7.99/month', yearly: 'A$49/year', lifetime: 'A$79 once' },
+  US: { monthly: '$4.99/month', yearly: '$29/year', lifetime: '$49 once' },
 };
 
 const FAQ = () => {
@@ -64,19 +64,19 @@ const FAQ = () => {
           },
           {
             question: "Can I change the message after generating?",
-            answer: "Not exactly—but you can regenerate individual views without redoing all three. Just hit the Regenerate button on whichever one you don't love. First 200 members get unlimited tries, regular premium gets 150/year."
+            answer: "Not exactly—but you can regenerate individual views without redoing all three. Just hit the Regenerate button on whichever one you don't love. Premium plans include high monthly limits; Lifetime members get unlimited generations."
           },
           {
             question: "What's included in the Premium subscription?",
-            answer: "More generations (150/year or unlimited for lifetime members), faster processing, advanced customization, commercial use license, and early access to new stuff. Plus you're supporting us, which is nice."
+            answer: "More generations, faster processing, advanced customization, commercial use license, and early access to new stuff. Plus you're supporting us, which is nice."
           },
           {
             question: "How many cakes can I generate with Premium?",
-            answer: "Lifetime members (first 200) = unlimited forever. Regular premium = 150/year. Free = 3/day with a 12/month cap. Most people find free is plenty, honestly."
+            answer: "Lifetime members get unlimited generations. Monthly and Yearly plans include generous monthly limits. Free = 3/day."
           },
           {
-            question: "What's special about the Lifetime Deal?",
-            answer: `First 200 people pay once (${pricing.tier1} or ${pricing.tier2}) and never pay again. Ever. Unlimited generations, all future features, priority support. After those spots fill, this deal disappears.`
+            question: "What plans are available?",
+            answer: `Three plans: Monthly (${pricing.monthly}), Yearly (${pricing.yearly}), or Lifetime (${pricing.lifetime}). Lifetime is a single payment with no recurring fees—monthly and yearly auto-renew until you cancel.`
           },
           {
             question: "Can I use this for my business?",
@@ -245,12 +245,13 @@ const FAQ = () => {
 
             <AccordionItem value="item-13" className="bg-background/50 px-6 rounded-lg border border-border/50">
               <AccordionTrigger className="text-left font-semibold">
-                What's special about the Lifetime Deal?
+                What plans are available?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                First 200 people to claim it pay <strong>once</strong>—{pricing.tier1} or {pricing.tier2}—and never pay again. Not yearly, not monthly. Once. Done. 
-                Unlimited generations forever, all future features included, priority support, exclusive badges. 
-                After those 200 spots fill up, this offer's gone. Like, actually gone. We're not bringing it back.
+                Three plans, all in your local currency: <strong>Monthly</strong> ({pricing.monthly}),
+                <strong> Yearly</strong> ({pricing.yearly}), or <strong>Lifetime</strong> ({pricing.lifetime}).
+                Lifetime is a single payment with unlimited generations and no recurring fees. Monthly and Yearly
+                auto-renew until you cancel. Pick whatever fits how often you celebrate.
               </AccordionContent>
             </AccordionItem>
 

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useGeoContext } from "@/contexts/GeoContext";
 
 const MONTHLY_PRICE: Record<string, string> = {
-  IN: '₹899/mo', GB: '£7.99/mo', CA: 'C$13.99/mo', AU: 'A$14.99/mo'
+  IN: '₹299/mo', GB: '£4.99/mo', CA: 'C$6.99/mo', AU: 'A$7.99/mo'
 };
 
 interface PremiumComparisonProps {
