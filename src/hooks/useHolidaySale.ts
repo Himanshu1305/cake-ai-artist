@@ -23,7 +23,7 @@ const FALLBACK_SALE: HolidaySale = {
   holidayName: 'Exclusive Lifetime Deal',
   emoji: '✨',
   saleLabel: 'EXCLUSIVE DEAL!',
-  bannerText: '✨ EXCLUSIVE OFFER - LIFETIME ACCESS AT $49 - LIMITED SPOTS REMAINING',
+  bannerText: '✨ Pick your plan — Monthly, Yearly or Lifetime in your local currency',
   endDate: null, // No end date for default mode - no countdown
   startDate: new Date('2026-01-01T00:00:00'),
   countryCode: null,
