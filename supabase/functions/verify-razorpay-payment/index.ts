@@ -13,7 +13,7 @@ const requestSchema = z.object({
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
-  tier: z.enum(["tier_1_49", "tier_2_99"]),
+  tier: z.string().min(1), // accepts lifetime_<cc> and legacy tier_1_49 / tier_2_99
   amount: z.number(),
   currency: z.string(),
 });
@@ -123,16 +123,18 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate LTA member number (e.g., 2025-LTA-1000)
     const currentYear = new Date().getFullYear();
     
-    // Count existing LTA members (one-time payments have tier like %_49 or %_99)
+    // Count existing LTA members (legacy + new lifetime_*)
     const { count } = await supabaseServiceRole
       .from("founding_members")
       .select("*", { count: "exact", head: true })
-      .or("tier.like.%_49,tier.like.%_99");
+      .or("tier.like.%_49,tier.like.%_99,tier.like.lifetime%");
 
     const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
     
-    const pricePaid = amount / 100; // Convert from smallest unit to display value
-    const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
+    const pricePaid = amount / 100;
+    const specialBadge = tier === "tier_1_49" ? "gold"
+      : tier === "tier_2_99" ? "silver"
+      : "lifetime";
 
     // Insert founding member record
     const { error: insertError } = await supabaseServiceRole

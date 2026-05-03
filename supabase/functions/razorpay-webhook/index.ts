@@ -33,12 +33,12 @@ async function verifyWebhookSignature(
 async function generateLTAMemberNumber(supabase: any): Promise<string> {
   const currentYear = new Date().getFullYear();
   
-  // Count existing LTA members (one-time payments have tier like %_49 or %_99)
+  // Count existing LTA members (legacy tiers + new lifetime_* tiers)
   const { count } = await supabase
     .from("founding_members")
     .select("*", { count: "exact", head: true })
-    .or("tier.like.%_49,tier.like.%_99");
-  
+    .or("tier.like.%_49,tier.like.%_99,tier.like.lifetime%");
+
   return `${currentYear}-LTA-${1000 + (count || 0)}`;
 }
 
@@ -46,11 +46,11 @@ async function generateLTAMemberNumber(supabase: any): Promise<string> {
 async function generateSubscriptionMemberNumber(supabase: any): Promise<string> {
   const currentYear = new Date().getFullYear();
   
-  // Count existing subscription members
+  // Count existing subscription members (monthly_* and yearly_*)
   const { count } = await supabase
     .from("founding_members")
     .select("*", { count: "exact", head: true })
-    .like("tier", "monthly%");
+    .or("tier.like.monthly%,tier.like.yearly%");
   
   return `${currentYear}-${1000 + (count || 0)}`;
 }
@@ -181,14 +181,17 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
       .from("founding_members")
       .update({
         tier: tier,
-        special_badge: tier === "tier_1_49" ? "gold" : "silver",
+        special_badge: tier === "tier_1_49" ? "gold"
+          : tier === "tier_2_99" ? "silver"
+          : "lifetime",
       })
       .eq("user_id", userId);
   } else {
-    // Generate new LTA member number for first-time purchase
     memberNumber = await generateLTAMemberNumber(supabase);
-  const pricePaid = amount / 100; // Convert from paise/cents
-  const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
+    const pricePaid = amount / 100;
+    const specialBadge = tier === "tier_1_49" ? "gold"
+      : tier === "tier_2_99" ? "silver"
+      : "lifetime";
 
     // Insert founding member record
     const { error: insertError } = await supabase

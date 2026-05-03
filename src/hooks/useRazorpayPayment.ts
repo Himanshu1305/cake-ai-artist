@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export type PaymentTier = 
-  | "tier_1_49" 
-  | "tier_2_99" 
-  | "monthly_inr" 
-  | "monthly_gbp" 
-  | "monthly_cad" 
-  | "monthly_aud" 
-  | "monthly_usd";
+export type PaymentTier =
+  // Legacy (kept for backwards-compat with existing members)
+  | "tier_1_49" | "tier_2_99"
+  // New 3-tier model
+  | "lifetime_in" | "lifetime_gb" | "lifetime_ca" | "lifetime_au" | "lifetime_us"
+  | "monthly_in" | "monthly_gb" | "monthly_ca" | "monthly_au" | "monthly_us"
+  | "yearly_in"  | "yearly_gb"  | "yearly_ca"  | "yearly_au"  | "yearly_us";
 
 declare global {
   interface Window {
@@ -250,9 +249,7 @@ export const useRazorpayPayment = (country: string = "US") => {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Cake AI Artist",
-        description: tier === "tier_1_49" 
-          ? "New Year Special - Lifetime Access (Tier 1)" 
-          : "Launch Supporter - Lifetime Access (Tier 2)",
+        description: tier.startsWith("lifetime") ? "Lifetime Access" : "Premium Access",
         order_id: orderData.order_id,
         prefill: {
           email: orderData.user_email,
@@ -372,8 +369,8 @@ export const useRazorpayPayment = (country: string = "US") => {
       return;
     }
 
-    // Route to appropriate payment flow
-    if (tier.startsWith("monthly_")) {
+    // Route: subscriptions for monthly/yearly, one-time order for lifetime/legacy
+    if (tier.startsWith("monthly_") || tier.startsWith("yearly_")) {
       await handleSubscription(tier);
     } else {
       await handleOneTimePayment(tier);

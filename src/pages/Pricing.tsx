@@ -1,23 +1,15 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useRequireCountry } from "@/hooks/useRequireCountry";
-import { Button } from "@/components/ui/button";
-import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ArrowLeft, Crown, Star, AlertCircle, Loader2, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { CountdownTimer } from "@/components/CountdownTimer";
-import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
-import { StickyMobileCTA } from "@/components/StickyMobileCTA";
-import { ExitIntentModal } from "@/components/ExitIntentModal";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ProductSchema, BreadcrumbSchema, FAQSchema } from "@/components/SEOSchema";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useHolidaySale } from "@/hooks/useHolidaySale";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { PricingPlans } from "@/components/PricingPlans";
+import { BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
 import { useGeoContext } from "@/contexts/GeoContext";
-import { useRazorpayPayment, PaymentTier } from "@/hooks/useRazorpayPayment";
+import { useRequireCountry } from "@/hooks/useRequireCountry";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Accordion,
   AccordionContent,
@@ -25,182 +17,93 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
-const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
-
-// Country-specific pricing display
-const PRICING_DISPLAY: Record<string, { tier1: string; tier2: string; monthly: string; symbol: string; currency: string }> = {
-  IN: { tier1: "₹4,100", tier2: "₹8,200", monthly: "₹899", symbol: "₹", currency: "INR" },
-  GB: { tier1: "£39", tier2: "£78", monthly: "£7.99", symbol: "£", currency: "GBP" },
-  CA: { tier1: "CAD$67", tier2: "CAD$134", monthly: "CAD$13.99", symbol: "CAD$", currency: "CAD" },
-  AU: { tier1: "AUD$75", tier2: "AUD$150", monthly: "AUD$14.99", symbol: "AUD$", currency: "AUD" },
-  US: { tier1: "US$49", tier2: "US$99", monthly: "US$9.99", symbol: "US$", currency: "USD" },
-};
-
-// Map country codes to monthly subscription tiers
-const MONTHLY_TIER_MAP: Record<string, PaymentTier> = {
-  IN: "monthly_inr",
-  GB: "monthly_gbp",
-  CA: "monthly_cad",
-  AU: "monthly_aud",
-  US: "monthly_usd",
-};
+const SUPPORTED = ["IN", "GB", "CA", "AU", "US"];
 
 const Pricing = () => {
-  const navigate = useNavigate();
-  const { isChecking: isCheckingCountry } = useRequireCountry();
-  const [userCountry, setUserCountry] = useState<string>("US");
+  useRequireCountry();
   const { detectedCountry } = useGeoContext();
-  const { sale } = useHolidaySale({ countryCode: userCountry });
-  
-  // Use the Razorpay payment hook for all payment processing
-  const { 
-    handlePayment: processPayment, 
-    isLoading, 
-    user, 
-    razorpayLoaded 
-  } = useRazorpayPayment(userCountry);
+  const [userCountry, setUserCountry] = useState<string>("US");
 
-  // Determine user country with fallback chain: Profile > localStorage > GeoContext > US
   useEffect(() => {
-    const determineCountry = async () => {
-      // Check localStorage preference first (set by footer country picker)
-      const savedPref = localStorage.getItem('user_country_preference');
-      
-      // If user is logged in, try to get their profile country
+    const determine = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (session?.user) {
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('country')
-          .eq('id', session.user.id)
+          .from("profiles")
+          .select("country")
+          .eq("id", session.user.id)
           .single();
-        
-        if (profile?.country) {
-          const countryCode = profile.country === 'UK' ? 'GB' : profile.country;
-          if (PRICING_DISPLAY[countryCode]) {
-            setUserCountry(countryCode);
-            return;
-          }
+        const cc = profile?.country === "UK" ? "GB" : profile?.country;
+        if (cc && SUPPORTED.includes(cc)) {
+          setUserCountry(cc);
+          return;
         }
       }
-      
-      // Fallback to localStorage preference
-      if (savedPref && PRICING_DISPLAY[savedPref]) {
-        setUserCountry(savedPref);
+      const saved = localStorage.getItem("user_country_preference");
+      if (saved && SUPPORTED.includes(saved)) {
+        setUserCountry(saved);
         return;
       }
-      
-      // Fallback to detected country from IP (GeoContext)
-      if (detectedCountry && PRICING_DISPLAY[detectedCountry]) {
+      if (detectedCountry && SUPPORTED.includes(detectedCountry)) {
         setUserCountry(detectedCountry);
         return;
       }
-      
-      // Final fallback to US
       setUserCountry("US");
     };
-
-    determineCountry();
+    determine();
   }, [detectedCountry]);
-
-  // Handler for lifetime deals (tier 1 and tier 2)
-  const handleLifetimePayment = (tier: "tier_1_49" | "tier_2_99") => {
-    processPayment(tier);
-  };
-
-  // Handler for monthly subscriptions - uses country-specific tier
-  const handleMonthlyPayment = () => {
-    const monthlyTier = MONTHLY_TIER_MAP[userCountry] || "monthly_usd";
-    processPayment(monthlyTier);
-  };
-
-  const foundingFeatures = [
-    "Everything in Premium",
-    "2025 Member Badge (displayed on your profile)",
-    "Lifetime updates & all future features",
-    "Priority support forever",
-    "Early access to all new characters",
-    "Exclusive lifetime member perks",
-    "Never pay again - locked in for life",
-  ];
 
   const faqItems = [
     {
-      question: "What happens when all spots fill up?",
-      answer: `Once all 200 lifetime member spots are claimed, this deal closes forever. New users will only be able to subscribe at ${PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}/month. If you claim this lifetime deal now, you'll have lifetime access regardless of future price changes.`
+      question: "Can I cancel my subscription anytime?",
+      answer: "Yes — monthly and yearly plans can be cancelled anytime. You'll keep access until the end of your current billing period.",
     },
     {
-      question: "Can I upgrade from free to lifetime later?",
-      answer: "This is a limited-time offer with only 200 spots available. Once all spots are filled, this offer will never be available again."
+      question: "What does Lifetime include?",
+      answer: "Lifetime is a one-time payment that gives you permanent access to all current and future Premium features — no recurring charges, ever.",
     },
     {
-      question: "Is this really lifetime access?",
-      answer: "Yes! As long as Cake AI Artist exists, your lifetime membership will remain active. You'll never be charged again and will receive all future updates and features at no additional cost."
+      question: "Which plan is the best value?",
+      answer: "If you plan to use Cake AI Artist beyond a year, Lifetime gives the lowest cost per use. Yearly is ideal for committed users who want the lowest recurring price; Monthly is great if you want full flexibility.",
     },
     {
-      question: "What if the service shuts down?",
-      answer: "We're committed to Cake AI Artist for the long term. However, if we ever need to shut down, we'll provide 90 days notice and offer full refunds to all lifetime members."
+      question: "Can I upgrade later?",
+      answer: "Absolutely. You can move from Monthly to Yearly or to Lifetime at any time.",
     },
     {
-      question: "Can I get a refund?",
-      answer: "Yes! We offer a 7-day money-back guarantee. If you're not satisfied with your lifetime membership within 7 days, we'll provide a full refund, no questions asked."
-    },
-    {
-      question: "What's the difference between Tier 1 and Tier 2?",
-      answer: `Both tiers offer identical features and lifetime access. Tier 1 is limited to the first 50 members and costs ${PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}, while Tier 2 is for members 51-200 and costs ${PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'}. Both receive the same benefits, but Tier 1 members get a special gold badge, while Tier 2 members get a silver badge.`
-    },
-    {
-      question: "Why should I buy now vs waiting?",
-      answer: `This is the cheapest Cake AI Artist will ever be. At regular pricing of ${PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}/month, founding members pay just ${PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}-${PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'} once and save big. This offer will never be repeated.`
+      question: "Do you offer a refund?",
+      answer: "Yes — we offer a 7-day money-back guarantee on all paid plans. Just email support@cakeaiartist.com.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>AI Cake Generator Pricing — Lifetime Plans from $49</title>
-        <meta name="description" content="Lifetime access to the #1 AI cake generator & AI cake designer for personalized birthday & celebration cakes. From $49 — or stay free forever." />
-        <meta name="keywords" content="ai cake generator pricing, ai cake generator free, cake generator price, ai cake designer pricing, lifetime ai cake design, personalized cake plans, custom cake design subscription, best ai cake generator price" />
+        <title>Pricing — Cake AI Artist Monthly, Yearly & Lifetime Plans</title>
+        <meta name="description" content="Three simple plans: Monthly, Yearly or Lifetime. Pick the AI cake designer plan that suits your celebrations — clear local pricing, cancel anytime." />
         <link rel="canonical" href="https://cakeaiartist.com/pricing" />
-        <meta property="og:title" content="AI Cake Designer Pricing — Lifetime Plans from $49" />
-        <meta property="og:description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49." />
+        <meta property="og:title" content="Pricing — Cake AI Artist" />
+        <meta property="og:description" content="Three simple plans: Monthly, Yearly or Lifetime. Local pricing, cancel anytime." />
         <meta property="og:url" content="https://cakeaiartist.com/pricing" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
-        <meta property="og:image:alt" content="Personalized AI cake designer pricing — Cake AI Artist" />
-        <meta property="og:site_name" content="Cake AI Artist" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Cake Designer Pricing — Lifetime Plans from $49" />
-        <meta name="twitter:description" content="Lifetime access to the best AI cake designer for personalized birthday & celebration cakes. From $49." />
-        <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
       </Helmet>
 
-      <BreadcrumbSchema
-        items={[
-          { name: "Home", url: "https://cakeaiartist.com" },
-          { name: "Pricing", url: "https://cakeaiartist.com/pricing" },
-        ]}
-      />
-      
-      <ProductSchema 
-        name="Cake AI Artist Exclusive Lifetime Deal - Tier 1"
-        description="Lifetime access to AI-powered personalized cake designs. First 50 members only."
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://cakeaiartist.com" },
+        { name: "Pricing", url: "https://cakeaiartist.com/pricing" },
+      ]} />
+
+      <ProductSchema
+        name="Cake AI Artist Lifetime"
+        description="Lifetime access to AI-powered personalized cake design."
         price="49"
         priceCurrency="USD"
-        availability="LimitedAvailability"
+        availability="InStock"
         url="https://cakeaiartist.com/pricing"
       />
 
-      <FAQSchema faqs={faqItems.map(f => ({ question: f.question, answer: f.answer }))} />
-      
-      {/* Navigation */}
+      <FAQSchema faqs={faqItems} />
+
       <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
@@ -210,243 +113,35 @@ const Pricing = () => {
         </div>
       </nav>
 
-      {/* Launch banner removed per request — no urgency / "ends in" countdown on pricing page */}
-
-      {/* Hero Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 bg-gradient-party bg-clip-text text-transparent">
-            Get LIFETIME ACCESS
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-party bg-clip-text text-transparent">
+            Simple, Honest Pricing
           </h1>
-          <p className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Never Pay Again
-          </p>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            {sale?.isDefault 
-              ? "Limited Spots Available • Exclusive Offer"
-              : "First 200 Members Only • Limited Time Offer"
-            }
+            Three plans. One incredible AI cake designer. Pick what works for you.
           </p>
 
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
-            {/* Tier 1 - $49 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="border-4 border-gold relative hover:shadow-gold transition-all duration-300 h-full">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-gradient-gold text-white px-6 py-2 text-sm font-bold shadow-lg shimmer">
-                    BEST VALUE ✨
-                  </Badge>
-                </div>
-                <CardHeader className="pt-8">
-                  <CardTitle className="text-2xl flex items-center justify-center gap-2">
-                    <Crown className="w-6 h-6 text-gold" />
-                    Lifetime Deal
-                  </CardTitle>
-                  <CardDescription>First 50 Members Only</CardDescription>
-                  <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">{PRICING_DISPLAY[userCountry]?.symbol || 'US$'}1,198 over 10 years</div>
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-gold">{PRICING_DISPLAY[userCountry]?.tier1 || 'US$49'}</span>
-                      <span className="text-muted-foreground">once</span>
-                    </div>
-                  </div>
-                  <SpotsRemainingCounter tier="tier_1_49" className="mt-3" />
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 text-left">
-                    {foundingFeatures.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-6 p-3 bg-gold/10 rounded-lg border border-gold/30">
-                    <p className="text-sm font-bold text-gold">💰 Save {userCountry === 'IN' ? '₹1,06,000+' : userCountry === 'GB' ? '£921+' : userCountry === 'CA' ? 'C$1,600+' : userCountry === 'AU' ? 'A$1,700+' : '$1,149+'} forever</p>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex-col gap-2">
-                  <Button
-                    className="w-full btn-shimmer bg-gradient-gold hover:shadow-gold text-white font-bold py-6"
-                    onClick={() => handleLifetimePayment("tier_1_49")}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading === "tier_1_49" ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Crown className="w-4 h-4 mr-2" />
-                        Claim Lifetime Deal
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">One-time payment • Never expires</p>
-                </CardFooter>
-              </Card>
-            </motion.div>
+          <PricingPlans country={userCountry} />
 
-            {/* Tier 2 - $99 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="border-4 border-silver relative hover:shadow-elegant transition-all duration-300 h-full">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-slate-400 to-slate-500 text-white px-6 py-2 text-sm font-bold shadow-lg">
-                    LIMITED
-                  </Badge>
-                </div>
-                <CardHeader className="pt-8">
-                  <CardTitle className="text-2xl flex items-center justify-center gap-2">
-                    <Star className="w-6 h-6 text-silver" />
-                    Launch Supporter
-                  </CardTitle>
-                  <CardDescription>Members 51-200</CardDescription>
-                  <div className="mt-4">
-                    <div className="text-sm line-through text-muted-foreground">{PRICING_DISPLAY[userCountry]?.symbol || 'US$'}1,198 over 10 years</div>
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-silver">{PRICING_DISPLAY[userCountry]?.tier2 || 'US$99'}</span>
-                      <span className="text-muted-foreground">once</span>
-                    </div>
-                  </div>
-                  <SpotsRemainingCounter tier="tier_2_99" className="mt-3" />
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 text-left">
-                    {foundingFeatures.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-silver flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-6 p-3 bg-silver/10 rounded-lg border border-silver/30">
-                    <p className="text-sm font-bold text-silver">💰 Save {userCountry === 'IN' ? '₹1,04,000+' : userCountry === 'GB' ? '£883+' : userCountry === 'CA' ? 'C$1,530+' : userCountry === 'AU' ? 'A$1,650+' : '$1,099+'} forever</p>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex-col gap-2">
-                  <Button
-                    className="w-full btn-shimmer bg-gradient-to-r from-slate-400 to-slate-500 hover:shadow-elegant text-white font-bold py-6"
-                    onClick={() => handleLifetimePayment("tier_2_99")}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading === "tier_2_99" ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Star className="w-4 h-4 mr-2" />
-                        Secure Lifetime Access
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">One-time payment • Never expires</p>
-                </CardFooter>
-              </Card>
-            </motion.div>
-
-            {/* Monthly Subscription */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="border-2 border-border relative hover:shadow-elegant transition-all duration-300 h-full">
-                <CardHeader className="pt-8">
-                  <CardTitle className="text-2xl">Monthly</CardTitle>
-                  <CardDescription>Flexible subscription</CardDescription>
-                  <div className="mt-4">
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">{PRICING_DISPLAY[userCountry]?.monthly || 'US$9.99'}</span>
-                      <span className="text-muted-foreground">/month</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">or {userCountry === 'IN' ? '₹10,788' : userCountry === 'GB' ? '£96' : userCountry === 'CA' ? 'C$168' : userCountry === 'AU' ? 'A$180' : '$120'}/year</p>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 text-left">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">150 cakes per year</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">All characters & themes</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">Party Pack Generator</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-party-pink flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">Cancel anytime</span>
-                    </li>
-                  </ul>
-                  <div className="mt-6 p-3 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      = {userCountry === 'IN' ? '₹1,07,880' : userCountry === 'GB' ? '£959' : userCountry === 'CA' ? 'C$1,679' : userCountry === 'AU' ? 'A$1,799' : '$1,199'} over 10 years
-                    </p>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => handleMonthlyPayment()}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading?.startsWith('monthly_') ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Subscribe Monthly'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* Trust Signals */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mb-16"
-          >
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mt-16">
             {[
               "✓ 7-day money-back guarantee",
               "✓ Secure payment via Razorpay",
-              "✓ This offer will NEVER be repeated",
-              "✓ Cancel anytime, no hidden fees"
+              "✓ Cancel anytime, no hidden fees",
+              "✓ All future updates included",
             ].map((text, i) => (
               <div key={i} className="p-4 bg-surface-elevated rounded-lg border border-border">
                 <p className="text-sm font-semibold text-foreground">{text}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section className="py-16 px-4 bg-surface">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Frequently Asked Questions
-          </h2>
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
@@ -458,27 +153,6 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">
-            Don't Miss This Once-in-a-Lifetime Offer
-          </h2>
-          <p className="text-xl text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join the first 200 members and lock in lifetime access at the lowest price ever.
-          </p>
-          <div className="flex flex-col items-center gap-4 mb-8">
-            <SpotsRemainingCounter />
-          </div>
-          <Button
-            size="lg"
-            className="btn-shimmer bg-gradient-party hover:shadow-party text-lg px-8 py-6 font-bold"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
-            Claim Your Lifetime Deal →
-          </Button>
-        </div>
-      </section>
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
       <Footer />
