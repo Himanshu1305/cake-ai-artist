@@ -14,6 +14,7 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { PricingPlans } from "@/components/PricingPlans";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -707,68 +708,10 @@ const UKLanding = () => {
       <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">
-            Exclusive Lifetime Deal
+            Choose Your Plan
           </h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <Card className="text-center h-full">
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Free</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-4">£0</p>
-                  <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> 5 cakes per day</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Basic characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Standard quality</li>
-                  </ul>
-                  <Link to="/auth">
-                    <Button variant="outline" className="w-full">Get Started</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card className="text-center border-party-pink shadow-lg relative h-full">
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-party-pink text-white">Most Popular</Badge>
-                <CardContent className="pt-8">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Lifetime Deal</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-4">£39</p>
-                  <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Unlimited cakes forever</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Party Pack Generator</li>
-                  </ul>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-party-pink to-party-purple text-white pulse-glow"
-                    onClick={() => handlePayment('tier_1_49')}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading === 'tier_1_49' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Get Lifetime Access'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <Card className="text-center h-full">
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Monthly</h3>
-                  <p className="text-3xl font-bold text-party-pink mb-4">£7.99/mo</p>
-                  <ul className="text-sm text-muted-foreground space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> 150 cakes per year</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> All characters</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-success" /> Cancel anytime</li>
-                  </ul>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => handlePayment('monthly_gb')}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading === 'monthly_gb' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Subscribe Monthly'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
+          <p className="text-center text-muted-foreground mb-12">Monthly, yearly or lifetime — pay in GBP.</p>
+          <PricingPlans country="GB" />
         </div>
       </section>
 
