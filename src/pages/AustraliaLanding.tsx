@@ -14,6 +14,7 @@ import { FloatingEmojis } from "@/components/FloatingEmojis";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { SpotsRemainingCounter } from "@/components/SpotsRemainingCounter";
+import { PricingPlans } from "@/components/PricingPlans";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
