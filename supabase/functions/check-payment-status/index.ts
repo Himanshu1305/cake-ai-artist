@@ -118,20 +118,21 @@ const handler = async (req: Request): Promise<Response> => {
         const capturedPayment = payments.items?.find((p: any) => p.status === "captured");
         
         if (capturedPayment) {
-          const tier = capturedPayment.notes?.tier || "tier_1_49";
+          const tier = capturedPayment.notes?.tier || "lifetime_us";
           const amount = capturedPayment.amount;
 
-          // Generate LTA member number (e.g., 2025-LTA-1000)
           const currentYear = new Date().getFullYear();
-          
+
           const { count } = await supabaseServiceRole
             .from("founding_members")
             .select("*", { count: "exact", head: true })
-            .or("tier.like.%_49,tier.like.%_99");
+            .or("tier.like.%_49,tier.like.%_99,tier.like.lifetime%");
 
           const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
           const pricePaid = amount / 100;
-          const specialBadge = tier === "tier_1_49" ? "gold" : "silver";
+          const specialBadge = tier === "tier_1_49" ? "gold"
+            : tier === "tier_2_99" ? "silver"
+            : "lifetime";
 
           const { error: insertError } = await supabaseServiceRole
             .from("founding_members")
