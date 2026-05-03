@@ -40,31 +40,22 @@ export const PreviewPricingHero = ({ sale }: PreviewPricingHeroProps) => {
         <div className="flex items-center justify-center gap-2 mb-3">
           <span className="text-2xl animate-bounce">{sale.emoji}</span>
           <span className="text-lg font-bold uppercase tracking-wide">
-            {isDefaultMode ? 'EXCLUSIVE LIFETIME DEAL' : `${sale.holidayName} - ENDS SOON`}
+            {isDefaultMode ? 'CHOOSE YOUR PLAN' : `${sale.holidayName} - ENDS SOON`}
           </span>
           <span className="text-2xl animate-bounce">{sale.emoji}</span>
         </div>
 
-        {/* Countdown or Spots */}
         <div className="flex justify-center">
           {isDefaultMode ? (
-            <div className="flex items-center gap-2">
-              <Badge className="bg-white/20 text-white text-sm py-1 px-3">
-                <Sparkles className="w-4 h-4 mr-2" />
-                LIMITED SPOTS REMAINING
-              </Badge>
-              <Badge className="bg-destructive text-destructive-foreground font-semibold">
-                <Zap className="w-3 h-3 mr-1" />
-                Act Now!
-              </Badge>
-            </div>
+            <Badge className="bg-white/20 text-white text-sm py-1 px-3">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Monthly · Yearly · Lifetime
+            </Badge>
           ) : sale.endDate ? (
-            <div className="flex items-center gap-2">
-              <Badge className="bg-white/20 text-white text-lg py-2 px-4 font-mono">
-                <Timer className="w-4 h-4 mr-2" />
-                {formatTimeRemaining(sale.endDate)}
-              </Badge>
-            </div>
+            <Badge className="bg-white/20 text-white text-lg py-2 px-4 font-mono">
+              <Timer className="w-4 h-4 mr-2" />
+              {formatTimeRemaining(sale.endDate)}
+            </Badge>
           ) : null}
         </div>
       </div>
