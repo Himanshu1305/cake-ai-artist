@@ -184,9 +184,8 @@ const FAQ = () => {
                 How many cakes can I generate with Premium?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Depends which premium you got. <strong>Lifetime members</strong> (first 200 people) = unlimited. Forever. 
-                <strong>Regular premium</strong> = 150 per year. <strong>Free</strong> = 3 per day, capped at 12 per month. 
-                Math works out that free users can't just... out-generate premium by waiting. We thought about that.
+                Depends on your plan. <strong>Lifetime members</strong> = unlimited. Forever. 
+                <strong>Monthly & Yearly premium</strong> = 150 per year. <strong>Free</strong> = 3 per day, capped at 12 per month.
               </AccordionContent>
             </AccordionItem>
 

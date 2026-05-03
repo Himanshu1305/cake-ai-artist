@@ -465,8 +465,7 @@ const HowItWorks = () => {
                     <strong>Pro tip:</strong> Don't love what you see? Just hit generate again. Each generation gives you completely new designs.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    <strong>✨ Special for First 200 Members:</strong> The first 200 members (Exclusive Lifetime Deal) get <strong>unlimited generations forever</strong>—they'll never pay another cent. 
-                    Regular premium subscribers get 150 generations per year.
+                    <strong>✨ Lifetime members</strong> get <strong>unlimited generations forever</strong>. Monthly and Yearly premium subscribers get 150 generations per year.
                   </p>
                   <p className="text-sm text-muted-foreground">
                     <strong>💡 New Feature:</strong> Don't love one specific view? Click the <strong>"Regenerate"</strong> button on any image 
