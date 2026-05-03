@@ -129,11 +129,11 @@ export const ExitIntentModal = ({ isLoggedIn, isPremium }: ExitIntentModalProps)
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="bg-destructive/10 border-2 border-destructive/30 rounded-lg p-4"
+              className="bg-primary/5 border-2 border-primary/20 rounded-lg p-4"
             >
-              <p className="text-center font-semibold mb-2">This offer disappears when spots fill up.</p>
+              <p className="text-center font-semibold mb-2">Pick the plan that fits your celebrations.</p>
               <p className="text-center text-sm text-muted-foreground">
-                ❌ No extensions. ❌ No repeats. ❌ No exceptions.
+                Monthly, Yearly or Lifetime — in your local currency.
               </p>
             </motion.div>
 
