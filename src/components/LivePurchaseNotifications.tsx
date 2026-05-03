@@ -18,10 +18,8 @@ const notificationMessages = [
 ];
 
 function showPurchaseNotification(member: any) {
-  const isTier1 = member.tier === 'tier_1_49';
-  
   toast.success(
-    `${isTier1 ? '👑' : '⭐'} Someone just claimed Lifetime Deal #${member.member_number}!`,
+    `🎉 New member #${member.member_number} just joined!`,
     {
       duration: 5000,
       className: 'bg-gradient-party text-white border-party-pink',
