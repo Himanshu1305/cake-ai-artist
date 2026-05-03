@@ -647,7 +647,7 @@ const UKLanding = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
+      <section id="plans" className="py-16 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-4">
             Choose Your Plan
