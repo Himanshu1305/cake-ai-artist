@@ -74,3 +74,6 @@ verify_jwt = true
 
 [functions.send-party-invite]
 verify_jwt = true
+
+[functions.generate-invite-copy]
+verify_jwt = true

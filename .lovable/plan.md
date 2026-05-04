@@ -1,100 +1,52 @@
-## 1. "Show more" group not visible
+## Fixes
 
-Current code (`PartyPlannerDetail.tsx` ~L537) only matches by **title substring** against a small list. For this party, only 2 of 12 tasks happen to match, and the trigger uses a faint `bg-muted/20 border-dashed` style that blends in. Many AI-generated titles like "Coordinate Day-of Helper" should also be secondary but aren't caught.
+### 1. "Regenerate suggestion" button does nothing
 
-**Fix:**
-- Detect secondary tasks by **either** `category === "day-of"` **or** the existing title list. This catches everything the concierge marks as day-of (e.g. "Coordinate Day-of Helper" already has `category: day-of`).
-- Make the trigger visually obvious: replace dashed/muted style with a solid soft-tinted band (`bg-primary/5 border-primary/30`), bold label ("📅 Day-of details"), clearer "Show N more day-of tasks ▾" CTA, and `text-foreground` instead of muted.
-- Show the trigger above the secondary list **only if at least 1 secondary task exists** (already correct).
+Cause: `applyInviteSuggestion` cycles through a hard-coded `INVITE_COPY` map. For most themes (e.g. **Jungle Safari**) there is exactly **one** default variant and no occasion-specific variant, so `index % 1` always resolves to the same line — clicking the button silently sets the same text and looks broken.
 
-## 2. Confusing vendor email subject
+Fix:
+- Wire the button to a new edge function `generate-invite-copy` that uses Lovable AI (`google/gemini-2.5-flash`) to produce a fresh, on-brand headline + 2–3-sentence message based on `theme`, `occasion`, `title`, host name, and event date. Returns JSON via tool calling so it's safe to parse.
+- Frontend flow:
+  - Button shows a spinner while generating.
+  - On success → set headline/message, increment suggestion index (so cache-busting `key` on `InvitePreview` still re-renders), set `inviteEdited = false`.
+  - On 429 / 402 / network error → fall back to the existing local `getSuggestedInvite` cycling so the button still does *something* visible.
+  - Pass an `avoid` array (the previous headline) so the AI doesn't return the exact same line.
 
-Currently in `send-vendor-email/index.ts` (L88):
-```
-Subject: ${party.title} — ${task.title} (request for quote)
-```
-Real-world example: `Marriage Anniversary — Order Retro 90s Cake (request for quote)` — fine, but the AI-prefixed variant the user got ("Quote Request - Retro 90s Marriage Anniversary Party") is also in `generate-vendor-message`'s output and gets used as the subject.
+### 2. Invite copy ignores occasion (jungle/lions used for a Marriage Anniversary)
 
-**Fix:**
-- Standardize subject to a clear, vendor-friendly format:
-  `"<Vendor task> for <event date> — quote request"`
-  e.g. `"Cake order for Wed, June 10 — quote request"`
-- Compute the short date in `send-vendor-email/index.ts` using `event_date` (no timezone string in subject — keep it short).
-- Strip any AI-suggested subject from `generate-vendor-message` so the body only contains the message; the subject is always assembled server-side from facts.
+Same root cause: when the user picks a kid-leaning theme but the occasion is anniversary/wedding/engagement/baby shower/housewarming/retirement, the local map has no occasion override and falls back to the childish default.
 
-## 3. More soothing themes for non-birthday occasions
+Fix:
+- The new `generate-invite-copy` function takes occasion as a first-class input and is prompted to:
+  - Match the **occasion tone** (warm/romantic for anniversaries, gentle for showers, etc.) even when the theme is playful — re-interpreting theme motifs tastefully (e.g. "jungle" → "wild ride of years together" instead of "lions, tigers, and cake").
+  - Avoid kid imagery for adult occasions.
+  - Stay 1 short headline + 2–3 sentence message, plain text, no emojis spam, no markdown.
+- Auto-call this function (instead of the local lookup) on first load of the Invite tab when:
+  - There's no saved `invite_headline`/`invite_message`, or
+  - The previously saved copy was generated for a different theme/occasion (we already track this — extend the existing "stale leak" check to also trigger a regeneration when occasion is romantic/elegant but copy contains kid keywords like `lions, tigers, scrunchies, dinos, paw patrol, unicorn, rainbow, glitter, pups, vroom, dig` etc.).
+- Keep the local `INVITE_COPY` map only as the offline fallback.
 
-Birthdays already have lots of pop themes. Anniversaries, weddings, baby showers, etc. need elegant/soothing options.
+### 3. Footer text on the invite is barely visible
 
-**Add to `TRENDING_THEMES`** (PartyPlannerDetail.tsx) and to `THEME_STYLES` (InvitePreview.tsx):
-- **Romantic Rose Gold** — blush + rose-gold gradient, script font, rose petals.
-- **Candlelight & Champagne** — warm cream, gold accents, serif, sparkles.
-- **Vintage Sepia Romance** — sepia/cream tones, classic serif, framed look.
-- **Moonlight & Stars** — deep navy + silver, soft glow, calm.
-- **Ocean Breeze** — soft teal/aqua, airy serif, wave accents.
-- **Lavender Fields** — pastel purple, soft sans, sprig accents.
-- **Eternal Bond** (anniversary-specific) — burgundy + gold, script.
-- **Soft Sunrise** (baby shower / engagement) — peach + cream gradient.
+In `InvitePreview.tsx` (L846–851), the footer uses `color: "#777"` and `#999` on a cream/white background and a faint `dashed` border — invisible in the screenshot.
 
-Each gets a `THEME_STYLES` entry: gradient, accent, soft `bodyTint`, calm `cornerEmojis` (🌹, 🕯️, 💍, 🌙, 🌊, 💜, etc.), script/serif font, no loud patterns.
-
-Also: in the theme `<Select>` UI, group themes into headings — **Kids & Birthdays**, **Romantic & Anniversary**, **Elegant & Soothing**, **Spiritual**, **Custom** — using `<SelectGroup>` + `<SelectLabel>` so users browsing for an anniversary aren't drowning in Paw Patrol.
-
-## 4. More creative, theme- and occasion-aware invite copy
-
-Current `INVITE_COPY` only has 4 entries (Iron Man, Space, Minecraft, Spiritual). Everything else falls back to the generic "Come celebrate, laugh, and make sweet memories!" — exactly what the user saw for Retro 90s + Marriage Anniversary.
-
-**Fix:** Expand `INVITE_COPY` to a 2-D map keyed by **theme** with **occasion-specific overrides**:
-
-```ts
-const INVITE_COPY: Record<ThemeKey, {
-  default: Variant[];
-  byOccasion?: Record<OccasionKey, Variant[]>;
-}>;
-```
-
-Add 2 variants each for every theme listed in TRENDING_THEMES (existing + new ones from item 3). For each, also write occasion-specific overrides for the common cases:
-- **Birthday** — playful, kid-energy.
-- **Marriage / Wedding Anniversary** — warm, romantic, "years of love".
-- **Engagement** — sparkly, "two hearts".
-- **Baby Shower** — gentle, "tiny soon-to-arrive".
-- **Housewarming** — cozy, "new beginnings".
-
-Example additions:
-
-- **Retro 90s + Marriage Anniversary**:
-  Headline: "Pop in your scrunchies — we're celebrating ${years} years of cool!"
-  Message: "Cassettes are rewound, the playlist is ready, and the love story is still our favorite single. Join us for a totally rad night of neon, nostalgia, cake, and the two people who proved good things never go out of style."
-
-- **Romantic Rose Gold + Anniversary**:
-  Headline: "Still each other's favorite story"
-  Message: "Soft candlelight, a few familiar songs, and a table set for the people who've cheered us on. Please join us as we celebrate another beautiful chapter together."
-
-- **Floral Garden + Baby Shower**:
-  Headline: "A tiny petal is on the way 🌸"
-  Message: "Sip something sweet, share a wish, and help us welcome the newest little blossom to our garden."
-
-`getSuggestedInvite` is updated to:
-1. Resolve a `ThemeKey` via the existing `matchTrendingTheme` helper (single source of truth).
-2. Resolve an `OccasionKey` from `party.occasion` (lowercase contains check: "anniversary", "wedding", "engagement", "baby", "house").
-3. Pick `byOccasion[occasion]` if present, else `default`.
-4. Cycle by `index` so the existing "🔄 New suggestion" button keeps working.
-5. Final fallback stays neutral (no spiritual leak).
-
-Also: when the user changes theme **or** occasion and `inviteEdited === false`, auto-refresh the suggestion (occasion change is currently not a trigger).
+Fix:
+- Replace with darker, theme-aware colors: `color: t.accent` for the brand line and `#444` for the URL line.
+- Make font slightly bolder (`fontWeight: 600` for the "Crafted with" line) and font sizes 13/12.
+- Replace dashed border with a solid `1px solid ${t.accent}33` so it reads as a real divider.
+- Same change applied to the email-rendered version inside `send-party-invite/index.ts` if it duplicates these styles (verify and update so the email matches).
 
 ## Files to change
 
 | File | Change |
 |---|---|
-| `src/pages/PartyPlannerDetail.tsx` | Secondary detection by category+title; expand `INVITE_COPY` to theme+occasion map; add new theme entries to `TRENDING_THEMES`; group themes in Select; bolder Show-more trigger; refresh invite when occasion changes. |
-| `src/components/InvitePreview.tsx` | Add `THEME_STYLES` entries for the 8 new soothing themes. |
-| `supabase/functions/send-vendor-email/index.ts` | New subject format with short event date; ignore AI-suggested subject. |
-| `supabase/functions/generate-vendor-message/index.ts` | Return only message body, no subject line. |
+| `supabase/functions/generate-invite-copy/index.ts` (new) | AI-powered invite copy generator with theme + occasion + avoid-list, structured tool-call output. |
+| `supabase/config.toml` | Register new function (default `verify_jwt = true`). |
+| `src/pages/PartyPlannerDetail.tsx` | Make "Regenerate suggestion" call the edge function with loading state + fallback; auto-call on first invite load when copy is missing or mismatched (extended leak detection); add `inviteGenerating` state. |
+| `src/components/InvitePreview.tsx` | Darker, more visible footer colors + solid divider + bolder weight. |
+| `supabase/functions/send-party-invite/index.ts` | Mirror the footer color/weight change in the email HTML so sent invites match. |
 
 ## Out of scope
-- No DB schema change.
-- No new edge functions.
-- Email invite render already uses `THEME_STYLES`, so new themes work in invitations automatically.
-
-Approve to implement.
+- No DB schema changes.
+- No new themes (already added in previous round).
+- Local `INVITE_COPY` map stays as offline fallback; not removing existing entries.

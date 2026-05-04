@@ -540,6 +540,7 @@ export default function PartyPlannerDetail() {
   const [savingInvite, setSavingInvite] = useState(false);
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
   const [inviteEdited, setInviteEdited] = useState(false);
+  const [inviteGenerating, setInviteGenerating] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
 
   const loadAll = async () => {
@@ -553,13 +554,18 @@ export default function PartyPlannerDetail() {
     const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
     // Detect stale ISKCON/spiritual copy that doesn't match the current theme and replace silently.
     const themeStr = (p.theme || "").toLowerCase();
+    const occStr = (p.occasion || "").toLowerCase();
     const themeIsSpiritual = /iskcon|spiritual|krishna|hare|religious|puja/.test(themeStr);
     const SPIRITUAL_RX = /(iskcon|spiritual|krishna|hare krishna|aarti|blessing|blessed|puja|prasad|soulful)/i;
+    const KIDDIE_RX = /(lions?, ?tigers?|scrunchies|dinos?|paw patrol|pups|vroom|wackadoo|spidey|hogwarts|pokeballs?|cocomelon|peppa|unicorns?|glitter|sparkly|elsa|princess|barbie)/i;
+    const ADULT_OCC_RX = /(anniversary|wedding|engagement|baby shower|housewarming|retirement)/i;
+    const isAdultOccasion = ADULT_OCC_RX.test(occStr);
     const savedHeadline = (p as any).invite_headline as string | null;
     const savedMessage = (p as any).invite_message as string | null;
     const headlineLeaks = !!savedHeadline && !themeIsSpiritual && SPIRITUAL_RX.test(savedHeadline);
     const messageLeaks = !!savedMessage && !themeIsSpiritual && SPIRITUAL_RX.test(savedMessage);
-    if (headlineLeaks || messageLeaks) {
+    const kidLeak = isAdultOccasion && ((savedHeadline && KIDDIE_RX.test(savedHeadline)) || (savedMessage && KIDDIE_RX.test(savedMessage)));
+    if (headlineLeaks || messageLeaks || kidLeak) {
       setInviteHeadline(suggestedInvite.headline);
       setInviteMessage(suggestedInvite.message);
       setInviteEdited(false);
@@ -873,12 +879,44 @@ export default function PartyPlannerDetail() {
     themePick === "Custom"
       ? (customTheme.trim() || party.theme)
       : (themePick || party.theme);
-  const applyInviteSuggestion = (forceIndex?: number) => {
+  const localFallback = (forceIndex?: number) => {
     const nextIndex = forceIndex ?? inviteSuggestionIndex + 1;
     const suggestion = getSuggestedInvite(currentInviteTheme, party.occasion, partyTitle || party.title, nextIndex);
     setInviteSuggestionIndex(nextIndex);
     setInviteHeadline(suggestion.headline);
     setInviteMessage(suggestion.message);
+    setInviteEdited(false);
+  };
+  const applyInviteSuggestion = async () => {
+    if (inviteGenerating) return;
+    setInviteGenerating(true);
+    try {
+      const eventDateStr = party.event_date
+        ? new Date(party.event_date).toLocaleString(undefined, { dateStyle: "long", timeStyle: "short", timeZone: tz })
+        : "";
+      const { data, error } = await supabase.functions.invoke("generate-invite-copy", {
+        body: {
+          theme: currentInviteTheme,
+          occasion: party.occasion,
+          title: partyTitle || party.title,
+          hostName: (party.contact_email || "").split("@")[0] || "the host",
+          eventDate: eventDateStr,
+          avoid: [inviteHeadline].filter(Boolean),
+        },
+      });
+      if (error) throw error;
+      if (!data?.headline || !data?.message) throw new Error("No copy");
+      setInviteHeadline(data.headline);
+      setInviteMessage(data.message);
+      setInviteSuggestionIndex(inviteSuggestionIndex + 1);
+      setInviteEdited(false);
+    } catch (e: any) {
+      console.error("invite copy gen failed", e);
+      toast.message("Using offline suggestion");
+      localFallback();
+    } finally {
+      setInviteGenerating(false);
+    }
   };
 
   return (
@@ -1373,8 +1411,8 @@ export default function PartyPlannerDetail() {
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()}>
-                      <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
+                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()} disabled={inviteGenerating}>
+                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate suggestion"}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
