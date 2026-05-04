@@ -547,6 +547,14 @@ export const getThemeStyle = (theme?: string | null): ThemeStyle => {
   if (normalized.includes("princess")) return THEME_STYLES["Princess / Royal"];
   if (normalized.includes("dino") || normalized.includes("jurassic")) return THEME_STYLES["Dinosaur / Jurassic"];
   if (normalized.includes("mermaid") || normalized.includes("sea")) return THEME_STYLES["Mermaid / Under the Sea"];
+  if (normalized.includes("rose gold") || normalized.includes("romantic rose")) return THEME_STYLES["Romantic Rose Gold"];
+  if (normalized.includes("candlelight") || normalized.includes("champagne")) return THEME_STYLES["Candlelight & Champagne"];
+  if (normalized.includes("vintage") || normalized.includes("sepia")) return THEME_STYLES["Vintage Sepia Romance"];
+  if (normalized.includes("moonlight") || normalized.includes("starry")) return THEME_STYLES["Moonlight & Stars"];
+  if (normalized.includes("ocean") || normalized.includes("breeze")) return THEME_STYLES["Ocean Breeze"];
+  if (normalized.includes("lavender")) return THEME_STYLES["Lavender Fields"];
+  if (normalized.includes("eternal") || normalized.includes("burgundy")) return THEME_STYLES["Eternal Bond"];
+  if (normalized.includes("sunrise") || normalized.includes("peach")) return THEME_STYLES["Soft Sunrise"];
   return DEFAULT_THEME;
 };
 
