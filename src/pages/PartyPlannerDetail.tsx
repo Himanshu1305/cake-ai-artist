@@ -1311,19 +1311,19 @@ export default function PartyPlannerDetail() {
                       <div className="space-y-2">
                         {primaryTasks.map(renderTask)}
                         {secondaryTasks.length > 0 && (
-                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border border-dashed bg-muted/20">
+                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border-2 border-primary/30 bg-primary/5 mt-3">
                             <CollapsibleTrigger asChild>
                               <button
                                 type="button"
-                                className="w-full flex items-center justify-between gap-2 p-3 text-sm font-medium hover:bg-muted/40 transition-colors"
+                                className="w-full flex items-center justify-between gap-2 p-3.5 text-sm font-semibold hover:bg-primary/10 transition-colors rounded-lg"
                               >
-                                <span className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">📅 Day-of details</span>
+                                <span className="flex items-center gap-2 text-foreground">
+                                  <span>📅 Day-of details</span>
                                   <Badge variant="secondary" className="text-xs">{secondaryDone}/{secondaryTasks.length}</Badge>
                                 </span>
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more`}
-                                  {showSecondary ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more day-of task${secondaryTasks.length === 1 ? "" : "s"}`}
+                                  {showSecondary ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </span>
                               </button>
                             </CollapsibleTrigger>
