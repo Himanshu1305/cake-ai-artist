@@ -123,8 +123,12 @@ export default function PartyPlannerDetail() {
     }
     toast.loading("Sending invites...", { id: "inv" });
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
       const { data, error } = await supabase.functions.invoke("send-party-invite", {
         body: { partyId: id, guestIds: pending.map((g) => g.id) },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (error) throw error;
       toast.success(`Sent ${data.sent} invitation${data.sent === 1 ? "" : "s"}`, { id: "inv" });
