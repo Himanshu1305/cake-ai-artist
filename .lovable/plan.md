@@ -1,66 +1,60 @@
-## Why these are missing
+## Goal
+Transform the invitation from a plain emoji + gradient card into a vibrant, theme-rich, welcoming invite — with smart auto-generated copy users can edit, theme-matched imagery, decorative typography, and stronger Cake AI Artist branding/traffic hooks.
 
-Both features were planned in the previous turn but never wired into `PartyPlannerDetail.tsx`:
-- The expanded theme list and `THEME_STYLES` were added to `src/components/InvitePreview.tsx`, but `TRENDING_THEMES` in the page still has only the original 17 themes.
-- There's no `partyTitle` state, no "Party Name" input, no 5th tab, and `InvitePreview` is never imported or rendered.
+## What's wrong today
+- Invite header is a flat gradient with one tiny emoji (e.g., a single ⚡ for Iron Man).
+- Headline + personal note placeholders are blank — users see boring defaults like "You're invited to X!".
+- Branding is a single line at the bottom — no real CTA back to cakeaiartist.com.
+- Same generic look across every theme.
 
 ## Changes
 
-### 1. `src/pages/PartyPlannerDetail.tsx`
+### 1. Theme visual overhaul (`src/components/InvitePreview.tsx` + email)
+For each theme add:
+- **`hero`**: a decorative banner row of 3-5 large theme emojis (e.g., Iron Man → `⚡🦾🛡️🔥💥`, Space → `🚀🌙⭐🪐👨‍🚀`, Frozen → `❄️⛄✨🏰❄️`, Unicorn → `🦄🌈✨💖⭐`). Renders big (40-52px), spaced, with subtle drop-shadow.
+- **`pattern`**: a CSS background pattern (radial-gradient dots / repeating diagonal stripes / sparkle SVG) layered over the gradient for texture instead of a flat fill.
+- **`badgeLabel`**: short flair text under the headline (e.g., "Suit up, hero is turning 5!", "Blast off to the party!", "A magical celebration awaits").
+- **`fontImport`**: Google Fonts link for thematic display fonts (Bangers for superhero, Orbitron for space, Pacifico for unicorn/princess, Bungee for carnival, Press Start 2P for Minecraft, Cinzel for Harry Potter, etc.). Loaded once via `<link>` in the email head and via a `<style>` tag injected into the preview.
+- Keep existing `gradient`, `accent`, `emoji`, `font`, `textColor`.
 
-**Imports**
-- Add `Textarea` from `@/components/ui/textarea`.
-- Add `import { InvitePreview } from "@/components/InvitePreview";`.
-- Add `Eye` icon (or reuse `Mail`) for the Invite tab.
+Header layout becomes: pattern + gradient → big emoji row → display-font headline → italic flair badge → occasion chip.
 
-**Theme list** — replace `TRENDING_THEMES` with the expanded list that matches keys in `THEME_STYLES` (Space / Astronaut, Iron Man / Avengers, Star Wars, Frozen / Elsa, Peppa Pig, Paw Patrol, Dinosaur / Jurassic, Mermaid / Under the Sea, Construction / Trucks, Jungle Safari, Pokemon, Minecraft, Princess / Royal, Garden Tea Party, Carnival / Circus, Wonder Woman, Hot Wheels, plus the existing ones), keeping `Custom` last.
+### 2. Smart suggested copy (`PartyPlannerDetail.tsx`)
+Add a `getSuggestedInvite(theme, occasion, hostName, partyTitle)` helper that returns themed `{headline, message}` defaults. Examples:
+- Iron Man / Avengers + Birthday → headline `"Suit up — Aarav's turning 5!"`, message `"Calling all Avengers! Join us for an action-packed celebration with cake, capes and chaos. Wear your hero best — assemble at the address below."`
+- Space → `"3… 2… 1… Blast off to Aarav's birthday!"`
+- Frozen → `"The ice castle gates are open — come celebrate Aarav!"`
+- Princess → `"By royal decree, your presence is requested at Aarav's celebration"`
+- Generic fallback per occasion (birthday/anniversary/baby shower).
 
-**State**
-```ts
-const [partyTitle, setPartyTitle] = useState("");
-const [inviteHeadline, setInviteHeadline] = useState("");
-const [inviteMessage, setInviteMessage] = useState("");
-const [savingInvite, setSavingInvite] = useState(false);
-```
-Hydrate in `loadAll`: `setPartyTitle(p.title || "")`, `setInviteHeadline((p as any).invite_headline || "")`, `setInviteMessage((p as any).invite_message || "")`.
+Behavior:
+- On invite tab load, if `inviteHeadline`/`inviteMessage` are empty, pre-fill the inputs with suggestions (state only, not yet saved) so the preview is instantly rich.
+- Add a **"✨ Regenerate suggestion"** button next to each field that re-runs the helper (handy after changing theme).
+- Re-run suggestions automatically when `themePick` changes *and* the user hasn't typed anything custom.
 
-**Party Name input** — add as the first field inside the Event Details card (above the Date row):
-```tsx
-<div className="space-y-2">
-  <Label>Party Name</Label>
-  <Input value={partyTitle} onChange={(e) => setPartyTitle(e.target.value)} placeholder="e.g. Aarav's 5th Birthday" />
-</div>
-```
-Update `saveDetails` payload with `title: partyTitle.trim() || party.title` and guard against empty.
+### 3. Stronger Cake AI Artist branding (preview + email)
+Replace the tiny footer with a proper branded block:
+- Logo image (use existing `https://cakeaiartist.com/logo.png`) at the top of the card with the host's first name (`"Aarav's family invited you via Cake AI Artist"`).
+- After the RSVP button, a **"Powered by Cake AI Artist"** strip with:
+  - One-line value prop: *"This invite, the cake design, and the whole party plan were created with Cake AI Artist — AI that designs personalised cakes, party packs and full celebrations in minutes."*
+  - Two CTAs: **"🎂 Design your own cake"** → `https://cakeaiartist.com/?ref=invite` and **"🎉 Plan your party free"** → `https://cakeaiartist.com/party-planner?ref=invite`.
+  - Tiny social proof line: *"Loved by 10,000+ celebrators worldwide"*.
+- Use a `?ref=invite&theme={theme}` UTM-style query so we can later track invite-driven traffic.
 
-**Tabs** — change `grid-cols-4` to `grid-cols-5` and add:
-```tsx
-<TabsTrigger value="invite">🎟️ Invite</TabsTrigger>
-```
+### 4. Email parity (`supabase/functions/send-party-invite/index.ts`)
+Mirror the new `THEME_STYLES` (gradient, hero emoji row, pattern CSS, font Google Fonts URL, badgeLabel) into the edge function's local map. Update `inviteEmail()` HTML to render:
+- `<link href="https://fonts.googleapis.com/css2?...&display=swap" rel="stylesheet">` per theme.
+- Hero emoji row + display-font headline + flair badge.
+- The new branded footer block with two CTA buttons.
+Keep email-safe inline CSS (no external CSS files; backgrounds + patterns inline; safe fallbacks on textColor).
 
-**New TabsContent `value="invite"`** — two-column on desktop:
-- Left: editable fields
-  - `Custom invite headline` Input (placeholder = `You're invited to {party.title}`)
-  - `Personal note` Textarea
-  - `Save invite` button (calls `saveInvite` → updates `parties` with `invite_headline`, `invite_message`, then `loadAll`)
-- Right: live preview
-```tsx
-<InvitePreview
-  party={{ ...party, title: partyTitle || party.title, theme: themePick === "Custom" ? customTheme : themePick }}
-  hostName="You"
-  guestName="Guest"
-  headline={inviteHeadline}
-  message={inviteMessage}
-/>
-```
-
-### 2. `supabase/functions/send-party-invite/index.ts`
-Update the email template to use `party.invite_headline` and `party.invite_message` when present, and to apply the theme gradient/emoji from a small inline `THEME_STYLES` map (same keys as the component) so the email matches the in-app preview. Fall back to current pink/purple defaults when theme is unknown.
-
-### Out of scope
-- Editing the title from the header `<h1>` directly — it will reflect after save via `loadAll`.
-- Image/cake attachment toggle in the preview (deferred — keep the optional `cakeImageUrl` prop unused for v1).
+### 5. Quick polish
+- Fix the harmless "can't access property 'features', e is undefined" runtime error if it traces to the invite tab (likely `party` being null on first render of preview — guard the new render with `if (!party) return null` inside `InvitePreview`).
+- Keep `TRENDING_THEMES` in sync with theme keys.
 
 ## Files touched
-- `src/pages/PartyPlannerDetail.tsx` (edit)
-- `supabase/functions/send-party-invite/index.ts` (edit, themed email)
+- `src/components/InvitePreview.tsx` (major rewrite of theme map + render)
+- `src/pages/PartyPlannerDetail.tsx` (suggestion helper, prefill, regenerate buttons)
+- `supabase/functions/send-party-invite/index.ts` (mirror theme styles + new HTML)
+
+No DB migration needed — `invite_headline` / `invite_message` columns already exist.
