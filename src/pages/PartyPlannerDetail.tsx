@@ -763,38 +763,148 @@ export default function PartyPlannerDetail() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {tasks.map((t) => (
-                      <div
-                        key={t.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${
-                          t.is_completed ? "opacity-60 line-through" : ""
-                        }`}
-                      >
-                        <Checkbox
-                          checked={t.is_completed}
-                          onCheckedChange={() => toggleTask(t.id, t.is_completed)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium">{t.title}</div>
-                          {t.description && (
-                            <div className="text-sm text-muted-foreground">{t.description}</div>
-                          )}
-                          <div className="flex gap-2 mt-1">
-                            {t.category && (
-                              <Badge variant="outline" className="text-xs">
-                                {t.category}
-                              </Badge>
-                            )}
-                            {t.due_date && (
-                              <Badge variant="outline" className="text-xs">
-                                📅 {new Date(t.due_date).toLocaleDateString()}
-                              </Badge>
-                            )}
+                    {tasks.map((t) => {
+                      const statusColor =
+                        t.vendor_status === "confirmed" ? "default" :
+                        t.vendor_status === "declined" ? "destructive" :
+                        t.vendor_status === "contacted" ? "secondary" : "outline";
+                      const statusLabel =
+                        t.vendor_status === "confirmed" ? "✅ Confirmed" :
+                        t.vendor_status === "declined" ? "❌ Declined" :
+                        t.vendor_status === "contacted" ? "📨 Contacted" : "Not contacted";
+                      return (
+                        <Collapsible key={t.id} className="rounded-lg border">
+                          <div className={`flex items-start gap-3 p-3 ${t.is_completed ? "opacity-60" : ""}`}>
+                            <Checkbox
+                              checked={t.is_completed}
+                              onCheckedChange={() => toggleTask(t.id, t.is_completed)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className={`font-medium ${t.is_completed ? "line-through" : ""}`}>{t.title}</div>
+                              {t.description && (
+                                <div className="text-sm text-muted-foreground">{t.description}</div>
+                              )}
+                              <div className="flex flex-wrap gap-2 mt-1.5">
+                                {t.category && (
+                                  <Badge variant="outline" className="text-xs">{t.category}</Badge>
+                                )}
+                                {t.due_date && (
+                                  <Badge variant="outline" className="text-xs">
+                                    📅 {new Date(t.due_date).toLocaleDateString()}
+                                  </Badge>
+                                )}
+                                {t.vendor_name && (
+                                  <Badge variant={statusColor as any} className="text-xs">
+                                    🧑‍💼 {t.vendor_name} — {statusLabel}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <CollapsibleTrigger asChild>
+                              <Button size="sm" variant="ghost" className="shrink-0">
+                                Vendor <ChevronDown className="w-3 h-3 ml-1" />
+                              </Button>
+                            </CollapsibleTrigger>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                          <CollapsibleContent>
+                            <div className="border-t p-3 space-y-3 bg-muted/30">
+                              <div className="grid sm:grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-xs">Vendor name</Label>
+                                  <Input
+                                    placeholder="e.g. Sweet Bakers"
+                                    defaultValue={t.vendor_name || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_name: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Status</Label>
+                                  <Select
+                                    value={t.vendor_status || "not_contacted"}
+                                    onValueChange={(v) => updateTaskVendor(t.id, { vendor_status: v })}
+                                  >
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="not_contacted">Not contacted</SelectItem>
+                                      <SelectItem value="contacted">Contacted</SelectItem>
+                                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                                      <SelectItem value="declined">Declined</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Email</Label>
+                                  <Input
+                                    type="email"
+                                    placeholder="vendor@email.com"
+                                    defaultValue={t.vendor_email || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_email: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Phone / WhatsApp</Label>
+                                  <Input
+                                    type="tel"
+                                    placeholder="+91 98xxxxxxx"
+                                    defaultValue={t.vendor_phone || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_phone: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-xs">Notes (what to ask, quote received, etc.)</Label>
+                                <Textarea
+                                  rows={2}
+                                  placeholder="e.g. asked for 2kg chocolate cake with photo print"
+                                  defaultValue={t.vendor_notes || ""}
+                                  onBlur={(e) => updateTaskVendor(t.id, { vendor_notes: e.target.value.trim() || null })}
+                                />
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => sendVendorEmail(t.id)}
+                                  disabled={!t.vendor_email}
+                                >
+                                  <Mail className="w-3 h-3 mr-1" /> Email vendor
+                                </Button>
+                                {t.vendor_phone && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    asChild
+                                  >
+                                    <a
+                                      href={`https://wa.me/${t.vendor_phone.replace(/[^\d]/g, "")}?text=${encodeURIComponent(buildVendorMessage(t))}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      💬 WhatsApp
+                                    </a>
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(buildVendorMessage(t));
+                                    toast.success("Message copied");
+                                  }}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" /> Copy message
+                                </Button>
+                                {t.vendor_contacted_at && (
+                                  <span className="text-xs text-muted-foreground self-center">
+                                    Last contacted: {new Date(t.vendor_contacted_at).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
