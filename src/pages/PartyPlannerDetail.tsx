@@ -142,6 +142,7 @@ export default function PartyPlannerDetail() {
   const [inviteHeadline, setInviteHeadline] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [savingInvite, setSavingInvite] = useState(false);
+  const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -151,8 +152,9 @@ export default function PartyPlannerDetail() {
     }
     setParty(p);
     setPartyTitle(p.title || "");
-    setInviteHeadline((p as any).invite_headline || "");
-    setInviteMessage((p as any).invite_message || "");
+    const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
+    setInviteHeadline((p as any).invite_headline || suggestedInvite.headline);
+    setInviteMessage((p as any).invite_message || suggestedInvite.message);
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
