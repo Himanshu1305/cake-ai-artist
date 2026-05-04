@@ -8,32 +8,129 @@ const corsHeaders = {
 
 const ADULT_OCC = /(anniversary|wedding|engage|baby shower|housewarm|retire|farewell|reunion|graduation)/i;
 
-function buildPrompt(theme: string, occasion: string, title: string, childAge?: number | null) {
+type ThemeProfile = { motifs: string[]; palette: string };
+
+// Theme keyword → (motif variants, palette). The first motif that matches a keyword wins.
+const THEME_MAP: Array<{ rx: RegExp; profile: ThemeProfile }> = [
+  { rx: /champagne|toast|gala|black ?tie/i, profile: {
+    motifs: [
+      "two slender champagne flutes with rising bubbles, satin ribbon, soft candlelight",
+      "an open vintage champagne bottle laid on silk, scattered gold sequins",
+      "overhead flat-lay of crystal coupes and a sprig of jasmine on dark marble",
+    ],
+    palette: "deep ink, brushed gold and ivory" } },
+  { rx: /retro|90s|80s|disco|vintage|nostalg/i, profile: {
+    motifs: [
+      "muted neon geometric shapes, soft grain, cassette-tape silhouette in shadow",
+      "a vinyl record at an angle with abstract memphis-style confetti shapes",
+      "a soft-focus arcade-light bokeh wash with a single retro polaroid frame",
+    ],
+    palette: "dusty teal, magenta and warm cream — tasteful, not garish" } },
+  { rx: /garden|floral|rose|bloom|botanic|peony/i, profile: {
+    motifs: [
+      "lush peonies and eucalyptus draped on a linen runner, morning daylight",
+      "an overhead bouquet of garden roses and ferns on weathered stone",
+      "wild dahlias in a clay vase beside an open journal, soft window light",
+    ],
+    palette: "sage, blush and ivory" } },
+  { rx: /tea|high tea|afternoon|rose ?garden/i, profile: {
+    motifs: [
+      "vintage porcelain teacup, lace doily, a single dusty rose, soft daylight",
+      "a tiered cake stand with macarons in soft focus, linen backdrop",
+      "an antique silver teapot beside dried rosebuds on parchment",
+    ],
+    palette: "dusty rose, ivory and antique brass" } },
+  { rx: /star|night|evening|midnight|celest|moon/i, profile: {
+    motifs: [
+      "a deep midnight sky with faint gold constellations and a single drifting candle",
+      "a velvet cloth scattered with brass stars and a quartz crystal",
+      "soft navy textured backdrop with a crescent of warm candle glow",
+    ],
+    palette: "midnight navy, antique gold and cool ivory" } },
+  { rx: /tropical|beach|sunset|island|paradise/i, profile: {
+    motifs: [
+      "monstera and palm leaves casting soft shadows over a warm sunset wash",
+      "a halved coconut and hibiscus on woven rattan, golden-hour light",
+      "overhead flat-lay of citrus, banana leaves and terracotta pottery",
+    ],
+    palette: "terracotta, coral and warm cream" } },
+  { rx: /rustic|barn|vineyard|country|farm|wood/i, profile: {
+    motifs: [
+      "weathered oak grain with a sprig of dried wheat and twine",
+      "an enamel mug, dried lavender bunch and a slice of fig on aged wood",
+      "amber bottle, cork and sprigs of rosemary on a linen sack",
+    ],
+    palette: "warm amber, oat and forest" } },
+  { rx: /minimal|modern|scandi|architect/i, profile: {
+    motifs: [
+      "a single sculptural ceramic vessel casting a long soft shadow",
+      "two smooth river stones balanced on raw plaster",
+      "a folded linen napkin and one olive branch on stone",
+    ],
+    palette: "warm stone, bone and soft taupe" } },
+  { rx: /candle|cosy|cozy|fireside|hygge/i, profile: {
+    motifs: [
+      "a cluster of unlit pillar candles on a slate tray with a knit throw",
+      "a single tall taper candle beside dried orange slices",
+      "a wooden bowl of pinecones and a softly glowing lantern",
+    ],
+    palette: "warm umber, cream and ember orange" } },
+  { rx: /royal|regal|baroque|opulent|luxe/i, profile: {
+    motifs: [
+      "rich velvet drape with an antique gilded frame corner and a single rose",
+      "ornate brass key on a damask cloth with a wax seal",
+      "a brocade cushion holding a single pearl strand under soft side light",
+    ],
+    palette: "burgundy, deep emerald and antique gold" } },
+];
+
+function pickTheme(theme: string): ThemeProfile {
+  const t = theme || "";
+  for (const entry of THEME_MAP) if (entry.rx.test(t)) return entry.profile;
+  // Generic fallback — varied so we don't always default to florals
+  return {
+    motifs: [
+      "an abstract painterly wash with a single sprig of greenery",
+      "soft draped fabric folds catching warm directional light",
+      "an overhead arrangement of seasonal foliage on textured paper",
+    ],
+    palette: "warm neutrals with one quiet accent colour",
+  };
+}
+
+const COMPOSITIONS = [
+  "overhead flat-lay composition",
+  "angled close-up with shallow depth of field",
+  "wide soft-focus composition with airy negative space",
+  "side-lit still life with long gentle shadows",
+];
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function buildPrompt(theme: string, occasion: string, _title: string, childAge?: number | null) {
   const occ = (occasion || "").toLowerCase();
   const isAdult = ADULT_OCC.test(occ);
   const isBirthday = /birthday/i.test(occ);
 
   const negative = "No people, no faces, no children, no text, no letters, no words, no logos, no watermarks, no UI elements, no clipart, no emoji, no chibi, no cartoon mascots, no copyrighted characters.";
 
+  const profile = pickTheme(theme);
+  const motif = pick(profile.motifs);
+  const composition = pick(COMPOSITIONS);
+  const variationSeed = `${motif} :: ${composition}`;
+
   if (isAdult) {
-    let scene = "";
-    if (/anniversary|wedding|engage/i.test(occ)) {
-      scene = "soft warm bokeh, two delicate champagne flutes, fresh roses, gold ribbon, candlelight, romantic editorial still life, cinematic lighting";
-    } else if (/baby shower/i.test(occ)) {
-      scene = "muted pastel nursery still life, soft knit blanket, dried florals, tiny wooden details, gentle natural daylight";
-    } else if (/housewarm/i.test(occ)) {
-      scene = "warm cozy interior corner, fresh greenery in a ceramic vase, candle, linen, soft golden afternoon light";
-    } else if (/retire|farewell/i.test(occ)) {
-      scene = "elegant still life — leather notebook, fountain pen, a glass of amber whisky, soft warm desk lamp glow";
-    } else if (/graduation/i.test(occ)) {
-      scene = "tasteful still life, gold tassel, parchment, sprig of laurel, soft golden light";
-    } else {
-      scene = "elegant editorial still life, soft florals, candles, gold accents, warm cinematic lighting";
-    }
-    const themeHint = theme ? `, subtly inspired by the theme "${theme}" (re-interpret tastefully for adults — no childish motifs)` : "";
+    const occHint =
+      /baby shower/i.test(occ) ? " Evoke a gentle baby-shower mood without nursery clichés." :
+      /housewarm/i.test(occ) ? " Evoke a warm, welcoming new-home mood." :
+      /retire|farewell/i.test(occ) ? " Evoke a reflective, celebratory farewell mood." :
+      /graduation/i.test(occ) ? " Evoke an aspirational, accomplished mood." :
+      /wedding|engage/i.test(occ) ? " Evoke a romantic, ceremonial mood." :
+      /anniversary/i.test(occ) ? " Evoke an enduring, romantic mood." : "";
     return {
-      prompt: `Sophisticated, grown-up invitation hero background. ${scene}${themeHint}. Painterly photographic feel, shallow depth of field, soft cream/blush/gold palette, lots of negative space at top and center for overlaid title text. Tasteful, magazine quality, NOT cartoonish. ${negative}`,
+      prompt: `Sophisticated, grown-up invitation hero background. ${composition}: ${motif}.${occHint} Painterly photographic feel, palette: ${profile.palette}. Generous negative space at top and centre for overlaid title text. Tasteful, magazine-quality editorial styling. NOT cartoonish, NO champagne flutes unless explicitly described above. ${negative}`,
       style: "adult-elegant",
+      variationSeed,
     };
   }
 
@@ -41,28 +138,27 @@ function buildPrompt(theme: string, occasion: string, title: string, childAge?: 
     const age = Number(childAge) || 0;
     let ageBand = "";
     if (age >= 13) {
-      ageBand = "teen aesthetic — moody pastel gradient with subtle confetti dust and a single piece of layered cake, modern minimalist, NO baby props, NO cute mascots";
+      ageBand = "teen aesthetic, modern minimalist styling, NO baby props, NO cute mascots";
     } else if (age >= 9) {
-      ageBand = "tween-friendly bold graphic scene — clean illustrated balloons and streamers in punchy modern colors, slightly grown-up, NO babyish characters";
+      ageBand = "tween-friendly bold graphic styling, slightly grown-up, NO babyish characters";
     } else if (age >= 4) {
-      ageBand = "bright cheerful illustrated party scene with balloons, streamers and confetti in the theme palette, friendly storybook style";
+      ageBand = "bright cheerful illustrated styling, friendly storybook feel";
     } else if (age >= 1) {
-      ageBand = "soft pastel toddler party scene, gentle plush motifs, balloons in soft mint, peach and butter yellow, watercolor feel";
+      ageBand = "soft pastel toddler styling, gentle watercolor feel";
     } else {
-      ageBand = "cheerful illustrated party scene with balloons, streamers and confetti in the theme palette";
+      ageBand = "cheerful illustrated party styling";
     }
-    const themeHint = theme ? `Theme: "${theme}".` : "";
     return {
-      prompt: `Birthday invitation hero background. ${themeHint} ${ageBand}. Generous empty space at top and center for overlaid title text. ${negative}`,
+      prompt: `Birthday invitation hero background. ${composition}: ${motif}, reinterpreted as ${ageBand}. Palette: ${profile.palette}. Generous empty space at top and centre for overlaid title text. ${negative}`,
       style: "birthday",
+      variationSeed,
     };
   }
 
-  // Generic / festive
-  const themeHint = theme ? `, in the spirit of the theme "${theme}"` : "";
   return {
-    prompt: `Tasteful celebration invitation hero background${themeHint}. Soft warm color palette, painterly editorial feel, generous negative space at the top for overlaid title text. ${negative}`,
+    prompt: `Tasteful celebration invitation hero background. ${composition}: ${motif}. Palette: ${profile.palette}. Painterly editorial feel, generous negative space at the top for overlaid title text. ${negative}`,
     style: "generic",
+    variationSeed,
   };
 }
 
