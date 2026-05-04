@@ -752,35 +752,23 @@ export const InvitePreview = ({
           overflow: "hidden",
         }}
       >
-        {/* Floating corner emojis */}
-        <span
-          style={{
-            position: "absolute",
-            top: 10,
-            left: 14,
-            fontSize: 38,
-            opacity: 0.18,
-            transform: "rotate(-12deg)",
-            pointerEvents: "none",
-          }}
-          aria-hidden
-        >
-          {corner1}
-        </span>
-        <span
-          style={{
-            position: "absolute",
-            top: 14,
-            right: 18,
-            fontSize: 32,
-            opacity: 0.16,
-            transform: "rotate(14deg)",
-            pointerEvents: "none",
-          }}
-          aria-hidden
-        >
-          {corner2}
-        </span>
+        {/* Floating corner emojis — hidden for adult occasions to keep it elegant */}
+        {!isAdultOccasion && (
+          <>
+            <span
+              style={{ position: "absolute", top: 10, left: 14, fontSize: 38, opacity: 0.18, transform: "rotate(-12deg)", pointerEvents: "none" }}
+              aria-hidden
+            >
+              {corner1}
+            </span>
+            <span
+              style={{ position: "absolute", top: 14, right: 18, fontSize: 32, opacity: 0.16, transform: "rotate(14deg)", pointerEvents: "none" }}
+              aria-hidden
+            >
+              {corner2}
+            </span>
+          </>
+        )}
 
         <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px", fontWeight: 700, position: "relative" }}>
           Hi {guestName},
