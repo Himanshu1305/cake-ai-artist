@@ -93,6 +93,10 @@ export default function PartyPlannerDetail() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
+  const [partyTitle, setPartyTitle] = useState("");
+  const [inviteHeadline, setInviteHeadline] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [savingInvite, setSavingInvite] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
