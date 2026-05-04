@@ -199,7 +199,7 @@ serve(async (req) => {
     const effTitle = title || party.title || "";
     const effAge = childAge ?? party.child_age ?? null;
 
-    const { prompt, style } = buildPrompt(effTheme, effOcc, effTitle, effAge);
+    const { prompt, style, variationSeed } = buildPrompt(effTheme, effOcc, effTitle, effAge);
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
