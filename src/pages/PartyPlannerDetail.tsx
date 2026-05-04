@@ -633,7 +633,18 @@ export default function PartyPlannerDetail() {
                   </div>
                   <div className="space-y-2">
                     <Label>Theme</Label>
-                    <Select value={themePick} onValueChange={setThemePick}>
+                    <Select
+                      value={themePick}
+                      onValueChange={(v) => {
+                        setThemePick(v);
+                        if (!inviteEdited && v && v !== "Custom") {
+                          const s = getSuggestedInvite(v, party?.occasion, partyTitle || party?.title || "your party", 0);
+                          setInviteSuggestionIndex(0);
+                          setInviteHeadline(s.headline);
+                          setInviteMessage(s.message);
+                        }
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pick a trending theme" />
                       </SelectTrigger>
