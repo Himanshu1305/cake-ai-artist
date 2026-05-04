@@ -154,12 +154,12 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
 
       <!-- Body -->
       <div style="background:linear-gradient(180deg,${bodyTint} 0%,#ffffff 280px);padding:30px 26px;position:relative;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        ${isAdult ? "" : `<table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td style="font-size:34px;opacity:.18;color:${t.accent};">${corner1}</td>
             <td align="right" style="font-size:30px;opacity:.16;color:${t.accent};">${corner2}</td>
           </tr>
-        </table>
+        </table>`}
 
         <p style="font-size:16px;color:#333;margin:6px 0 8px;font-weight:700;">Hi ${safeGuestName},</p>
         <p style="font-size:15px;color:#555;line-height:1.65;margin:0 0 22px;white-space:pre-wrap;">${note}</p>
