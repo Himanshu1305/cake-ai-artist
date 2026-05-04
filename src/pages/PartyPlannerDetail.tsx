@@ -217,6 +217,7 @@ export default function PartyPlannerDetail() {
   const [savingInvite, setSavingInvite] = useState(false);
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
   const [inviteEdited, setInviteEdited] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -227,8 +228,27 @@ export default function PartyPlannerDetail() {
     setParty(p);
     setPartyTitle(p.title || "");
     const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
-    setInviteHeadline((p as any).invite_headline || suggestedInvite.headline);
-    setInviteMessage((p as any).invite_message || suggestedInvite.message);
+    // Detect stale ISKCON/spiritual copy that doesn't match the current theme and replace silently.
+    const themeStr = (p.theme || "").toLowerCase();
+    const themeIsSpiritual = /iskcon|spiritual|krishna|hare|religious|puja/.test(themeStr);
+    const SPIRITUAL_RX = /(iskcon|spiritual|krishna|hare krishna|aarti|blessing|blessed|puja|prasad|soulful)/i;
+    const savedHeadline = (p as any).invite_headline as string | null;
+    const savedMessage = (p as any).invite_message as string | null;
+    const headlineLeaks = !!savedHeadline && !themeIsSpiritual && SPIRITUAL_RX.test(savedHeadline);
+    const messageLeaks = !!savedMessage && !themeIsSpiritual && SPIRITUAL_RX.test(savedMessage);
+    if (headlineLeaks || messageLeaks) {
+      setInviteHeadline(suggestedInvite.headline);
+      setInviteMessage(suggestedInvite.message);
+      setInviteEdited(false);
+      // Clear stale fields in DB silently so it doesn't re-leak on reload.
+      supabase.from("parties").update({
+        invite_headline: suggestedInvite.headline,
+        invite_message: suggestedInvite.message,
+      } as any).eq("id", id!).then(() => {});
+    } else {
+      setInviteHeadline(savedHeadline || suggestedInvite.headline);
+      setInviteMessage(savedMessage || suggestedInvite.message);
+    }
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
@@ -513,6 +533,16 @@ export default function PartyPlannerDetail() {
 
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
+  // Group day-of / secondary tasks under a collapsible "Show more" section.
+  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough"];
+  const isSecondary = (t: any) => {
+    const lt = (t.title || "").toLowerCase();
+    return SECONDARY_TITLES.some((s) => lt.includes(s));
+  };
+  const primaryTasks = tasks.filter((t) => !isSecondary(t));
+  const secondaryTasks = tasks.filter(isSecondary);
+  const secondaryDone = secondaryTasks.filter((t) => t.is_completed).length;
+  // showSecondary is declared above with the other hooks.
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const currentInviteTheme =
     themePick === "Custom"
@@ -782,8 +812,8 @@ export default function PartyPlannerDetail() {
                     <Button onClick={() => setActiveTab("details")}>Go to details</Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {tasks.map((t) => {
+                  (() => {
+                    const renderTask = (t: any) => {
                       const statusColor =
                         t.vendor_status === "confirmed" ? "default" :
                         t.vendor_status === "declined" ? "destructive" :
@@ -946,8 +976,37 @@ export default function PartyPlannerDetail() {
                           </CollapsibleContent>
                         </Collapsible>
                       );
-                    })}
-                  </div>
+                    };
+                    return (
+                      <div className="space-y-2">
+                        {primaryTasks.map(renderTask)}
+                        {secondaryTasks.length > 0 && (
+                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border border-dashed bg-muted/20">
+                            <CollapsibleTrigger asChild>
+                              <button
+                                type="button"
+                                className="w-full flex items-center justify-between gap-2 p-3 text-sm font-medium hover:bg-muted/40 transition-colors"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">📅 Day-of details</span>
+                                  <Badge variant="secondary" className="text-xs">{secondaryDone}/{secondaryTasks.length}</Badge>
+                                </span>
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more`}
+                                  {showSecondary ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                </span>
+                              </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="px-3 pb-3 space-y-2">
+                                {secondaryTasks.map(renderTask)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
               </CardContent>
             </Card>

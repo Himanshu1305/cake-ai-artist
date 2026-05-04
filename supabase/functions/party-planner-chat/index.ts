@@ -29,7 +29,9 @@ MANDATORY baseline tasks (skip only if clearly not needed):
 8. Venue booking & logistics (chairs, tables, parking) — vendor: Venue or rental company
 9. Day-of coordinator / helper — vendor: Friend or event coordinator
 
-DO NOT add fluffy filler like "make a playlist", "buy thank-you cards", "rest the night before", "take photos with guests".
+DO NOT generate any of these tasks (they're handled elsewhere or too vague): "Assign roles", "Food finalization", "Confirm vendors", "Make a playlist", "Buy thank-you cards", "Rest the night before", "Take photos with guests", "Sleep early". Vendor confirmation is tracked per-task in the vendor panel — never create a separate task for it.
+
+Tasks like "Seating arrangements", "Activity planning", "Party Day Setup", "Day-of Schedule", and "Venue Walkthrough" MUST use category: "day-of" so the UI can group them.
 
 For EVERY task, the \`description\` field MUST start with "Vendor: <type>" so users know who to contact (e.g. "Vendor: Local baker. Order a 2kg theme cake matching the party theme."). Use category from: invitations, food, decor, activities, logistics, day-of, photography, entertainment, gifts.
 
@@ -173,22 +175,28 @@ serve(async (req) => {
       // Replace tasks
       await supabase.from("party_tasks").delete().eq("party_id", partyId);
       const eventDate = args.event_date ? new Date(args.event_date) : (party.event_date ? new Date(party.event_date) : new Date(Date.now() + 14 * 86400000));
-      const tasksToInsert = (args.tasks || []).map((t: any, i: number) => {
-        const due = new Date(eventDate);
-        due.setDate(due.getDate() - (t.days_before || 0));
-        const desc = t.description || null;
-        // Extract "Vendor: <type>" hint from description into vendor_notes
-        const vendorMatch = desc?.match(/vendor\s*:\s*([^.\n]+)/i);
-        return {
-          party_id: partyId,
-          title: t.title,
-          description: desc,
-          category: t.category,
-          due_date: due.toISOString().slice(0, 10),
-          sort_order: i,
-          vendor_notes: vendorMatch ? `Suggested: ${vendorMatch[1].trim()}` : null,
-        };
-      });
+      const TASK_BLOCKLIST = ["assign roles", "food finalization", "confirm vendors", "make a playlist", "buy thank-you cards", "rest the night before", "take photos with guests", "sleep early"];
+      const tasksToInsert = (args.tasks || [])
+        .filter((t: any) => {
+          const lt = (t.title || "").toLowerCase().trim();
+          return !TASK_BLOCKLIST.some((b) => lt === b || lt.startsWith(b));
+        })
+        .map((t: any, i: number) => {
+          const due = new Date(eventDate);
+          due.setDate(due.getDate() - (t.days_before || 0));
+          const desc = t.description || null;
+          // Extract "Vendor: <type>" hint from description into vendor_notes
+          const vendorMatch = desc?.match(/vendor\s*:\s*([^.\n]+)/i);
+          return {
+            party_id: partyId,
+            title: t.title,
+            description: desc,
+            category: t.category,
+            due_date: due.toISOString().slice(0, 10),
+            sort_order: i,
+            vendor_notes: vendorMatch ? `Suggested: ${vendorMatch[1].trim()}` : null,
+          };
+        });
       if (tasksToInsert.length) await supabase.from("party_tasks").insert(tasksToInsert);
 
       if (!assistantText) {

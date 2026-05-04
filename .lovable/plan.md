@@ -1,56 +1,52 @@
-## 1. AI-generated vendor messages (editable per vendor)
+## 1. Remove unnecessary checklist tasks
 
-**Today**: `send-vendor-email` builds one canned template at send-time. There's no per-vendor AI draft visible in the UI; users can only "Copy message" of a templated string.
+**Drop entirely** from the concierge plan: `Assign roles`, `Food finalization`, `Confirm vendors`. These are either redundant with the per-task vendor panel (which already tracks "confirmed/contacted") or too vague to act on.
 
-**Fix**:
-- Add a **"✨ Generate AI message"** button inside each task's vendor panel. It calls a new edge function `generate-vendor-message` which uses Lovable AI (`google/gemini-2.5-flash`) with a prompt built from: party (theme, occasion, date, venue, city, guests, host name/contact), task (title, description, category), and vendor (name, role inferred from category).
-- Returned text is loaded into a new editable `vendor_message` field (multi-line `<Textarea>`) shown above the Email/WhatsApp/Copy buttons. User can edit freely; we save on blur.
-- "Email vendor" and "WhatsApp" actions now use `vendor_message` if present (fallback: existing template). Pass `customMessage` to `send-vendor-email` from this field.
-- "Regenerate" button to get a new variation.
+- Update `supabase/functions/party-planner-chat/index.ts`:
+  - In `SYSTEM_PROMPT`, add an explicit "DO NOT generate" list: `Assign roles`, `Food finalization`, `Confirm vendors`, `Make a playlist`, `Buy thank-you cards`, `Rest the night before`.
+  - Also tighten the existing "DO NOT add fluffy filler" line to mention these by name.
+- Add a small server-side filter when inserting tasks: drop any task whose lowercased title matches the blocklist, so even if the model slips them in they never reach the DB.
+- One-off DB cleanup: delete existing rows in `party_tasks` for the current/all parties whose title matches the blocklist (case-insensitive). Done via the data-insert tool with a `DELETE`.
 
-**Schema**: add `vendor_message text` to `party_tasks` (nullable). No breaking change.
+## 2. "Show more" group for secondary checklist items
 
-**Edge function** `generate-vendor-message`: validates JWT + party ownership, calls AI gateway, returns `{ message }`. ~60 lines.
+Tasks that should remain available but be tucked under a collapsible: **Seating arrangements, Activity planning, Party Day Setup, Day-of Schedule, Venue Walkthrough**.
 
-## 2. Smarter default checklist tasks
+- Concierge prompt: keep generating these (they're useful), but mark them as "secondary". Easiest signal: assign them `category: "day-of"` or `category: "logistics"` consistently and add a hint in the prompt that these specific titles must use those categories.
+- UI in `src/pages/PartyPlannerDetail.tsx` checklist tab:
+  - Split tasks into `primaryTasks` and `secondaryTasks` using a title-match list (Seating arrangements, Activity planning, Party Day Setup, Day-of Schedule, Venue Walkthrough — case-insensitive substring match, so AI variations like "Day-of schedule & timeline" still group correctly).
+  - Render primary tasks as today.
+  - Wrap secondary tasks in a single `<Collapsible>` with trigger label "Show {n} more day-of tasks ▾" and a count badge for completed/total.
+  - Keep the same vendor panel inside each collapsed item.
 
-**Fix the concierge prompt** in `party-planner-chat/index.ts`:
-- Expand task category enum to include `photography`, `entertainment`, `transport`, `gifts`.
-- Update `SYSTEM_PROMPT` to mandate a baseline set whenever building a plan: **Cake, Decor, Catering/Food, Photographer/Videographer, Entertainment (host/DJ/games), Invitations, Return gifts/favors, Venue logistics, Day-of coordinator**. Drop generic filler like "make a playlist", "buy thank-you cards", "sleep early" that have been showing up.
-- Each task description must include the *kind of vendor to contact* (e.g. "Local baker", "Event photographer", "Magician / face-painter", "Decorator") so the vendor panel pre-fills `vendor_notes`.
-- Pre-fill `vendor_notes` on insert from the `description` so users see the vendor type immediately.
+## 3. Stop ISKCON copy from leaking into other themes
 
-No DB change needed beyond #1.
+Two leak sources today:
 
-## 3. Visually rich, on-theme invitation
+a. **Saved invite text persists across theme changes.** If a user picked Spiritual / ISKCON earlier and saved the invite, then switched theme to e.g. Unicorn, the saved `invite_headline` / `invite_message` still mention "blessings", "spiritual", etc.
+  - In `loadAll()` (PartyPlannerDetail.tsx), detect mismatch: if the saved invite text contains keywords from a theme that doesn't match the current theme (`blessing`, `spiritual`, `iskcon`, `aarti`, `krishna`, `puja`), discard it and use the freshly-suggested copy for the current theme. Mark `inviteEdited=false` so future theme changes also refresh.
+  - When the theme changes via the Select, also blank out `inviteEdited` if the current text equals a previous suggestion (already handled), and additionally **clear** the saved DB fields silently to prevent re-leak on reload — only when the new copy is auto-generated, not when user typed.
 
-The current invite has a colorful hero but a plain white body and a tiny logo at the bottom. For themes without `artwork` (Unicorn, Barbie, etc.) the hero is just emojis + a flat gradient — too sparse.
+b. **Generic fallback / placeholders use spiritual phrasing for unknown themes.** Audit:
+  - `INVITE_COPY` "Spiritual / ISKCON" stays (only used when theme actually matches).
+  - `getSuggestedInvite` fallback already neutral — keep.
+  - **Placeholders** in input fields (`placeholder="..."`) are currently fine ("e.g. Aarav's 5th Birthday Bash", "Mumbai", etc.) — leave alone.
+  - `vendor_notes` placeholder "asked for 2kg chocolate cake with photo print" — leave (generic).
+  - The vendor panel `vendor_message` placeholder is generic — leave.
 
-**InvitePreview.tsx + send-party-invite/index.ts changes** (kept in lockstep so app preview = email):
+c. **Defensive default for "Custom" theme.** When the user's saved theme is "Spiritual / ISKCON" via the dropdown, all good. But for free-text custom themes that don't match any keyword, the fallback in `getSuggestedInvite` is the neutral "You're invited to {title}!" line. Keep this as-is — confirm by scanning once more.
 
-1. **Bigger, brand-forward header**: prominent Cake AI Artist logo at the **top** of the card on a soft cream strip (height ~56px), with "Party invitation" eyebrow. Footer keeps a smaller wordmark + UTM CTAs.
-2. **Richer hero**:
-   - Add `heroEmojis` + `badge` + `font` + `pattern` to the themes that are missing them (Unicorn, Barbie, Frozen, Princess, Mermaid, Dinosaur, Pokemon, Harry Potter, Black & Gold, Carnival, Tropical, Bluey, Peppa, Paw Patrol, Cocomelon, Floral, Boho, Hot Wheels, Sports, Disco, Retro 90s, Star Wars, Spider-Man, Wonder Woman, Construction, Jungle, Garden Tea Party, Pastel Minimal, Taylor Swift).
-   - Hero gets larger emoji row (size 44–56), themed font for the headline, and a CSS-pattern overlay (sparkles/dots/stripes per theme) on top of the gradient so it never looks flat.
-   - For top 4 themes (Unicorn, Barbie, Princess, Frozen, Spider-Man) add lightweight generated artwork (call AI image gen offline → store in `public/`) and reference via `artwork`.
-3. **Themed body, not white**:
-   - Body background switches from pure `#fff` to a tinted surface using `t.accent` at low opacity (e.g. `linear-gradient(180deg, rgba(accent,.08), #fff 200px)`).
-   - Detail card (`📅 When / 📍 Where / ✨ Theme`) gets a subtle themed left border (`borderLeft: 4px solid accent`) and themed icons.
-   - Section divider stripes use `t.accent`.
-   - RSVP button keeps gradient but adds a soft glow shadow in `accent`.
-4. **Themed corner accents**: floating emojis (CSS `position:absolute`, low opacity) in 2 corners of the body so the whole card feels themed, not just the top.
-5. **Email parity**: mirror all the above in `send-party-invite/index.ts` using inline-styled HTML (no external CSS). For artwork themes, point `artwork` to `https://cakeaiartist.com/<file>.jpg` so email clients can load it.
+## Technical change list
 
-## Files to change
-- New migration: `ALTER TABLE party_tasks ADD COLUMN vendor_message text;`
-- New: `supabase/functions/generate-vendor-message/index.ts`
-- Edit: `supabase/functions/party-planner-chat/index.ts` (prompt + categories)
-- Edit: `supabase/functions/send-vendor-email/index.ts` (use `vendor_message` when provided — already supports `customMessage`, just wire it in caller)
-- Edit: `src/pages/PartyPlannerDetail.tsx` (vendor panel: add message textarea, generate button, wire to actions; insert with `vendor_notes` pre-filled)
-- Edit: `src/components/InvitePreview.tsx` (top logo, body tint, accent border, corner emojis, expand `THEME_STYLES` with `heroEmojis`/`badge`/`font`/`pattern` for all themes)
-- Edit: `supabase/functions/send-party-invite/index.ts` (mirror new visuals; add new theme entries)
-- Generate ~5 themed hero artworks → `public/invite-<theme>.jpg`
+| File | Change |
+|------|--------|
+| `supabase/functions/party-planner-chat/index.ts` | Add explicit DO-NOT-GENERATE blocklist in `SYSTEM_PROMPT`; add blocklist filter before `INSERT` into `party_tasks`; mark Seating/Activity/Day-of titles as `category: "day-of"`. |
+| `src/pages/PartyPlannerDetail.tsx` | Split tasks into primary + secondary; wrap secondary in `Collapsible` "Show more"; in `loadAll`, detect spiritual-keyword leak in saved invite text and replace with fresh suggestion when theme no longer matches. |
+| Migration / data op | One-off: `DELETE FROM party_tasks WHERE lower(title) IN ('assign roles','food finalization','confirm vendors')`. Done as a data update (insert tool), not a schema migration. |
 
-Out of scope: per-vendor reply tracking, vendor directory.
+## Out of scope
+- No DB schema changes.
+- Vendor message generator and invite preview visuals untouched.
+- The browser-extension `UNHANDLED_PROMISE_REJECTION` ("can't access property 'features'") is from a Firefox extension (`moz-extension://...`), not our app — ignored.
 
 Approve to implement.
