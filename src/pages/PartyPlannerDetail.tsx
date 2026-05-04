@@ -857,8 +857,10 @@ export default function PartyPlannerDetail() {
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
   // Group day-of / secondary tasks under a collapsible "Show more" section.
-  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough"];
+  // Detection is by category ("day-of") OR known secondary title substrings, so AI variations still group correctly.
+  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough", "day-of helper", "day of helper"];
   const isSecondary = (t: any) => {
+    if ((t.category || "").toLowerCase() === "day-of") return true;
     const lt = (t.title || "").toLowerCase();
     return SECONDARY_TITLES.some((s) => lt.includes(s));
   };
