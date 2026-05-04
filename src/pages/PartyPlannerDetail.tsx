@@ -126,20 +126,15 @@ export default function PartyPlannerDetail() {
         { event: "UPDATE", schema: "public", table: "party_guests", filter: `party_id=eq.${id}` },
         (payload) => {
           const updated = payload.new as any;
-          setGuests((gs) => gs.map((g) => (g.id === updated.id ? { ...g, ...updated } : g)));
-          if (updated.rsvp_status && updated.rsvp_status !== "pending") {
-            const emoji = updated.rsvp_status === "yes" ? "🎉" : updated.rsvp_status === "maybe" : "🤔";
-          }
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "party_guests", filter: `party_id=eq.${id}` },
-        (payload) => {
-          const updated = payload.new as any;
           const old = payload.old as any;
-          if (old?.rsvp_status === "pending" && updated?.rsvp_status && updated.rsvp_status !== "pending") {
-            const emoji = updated.rsvp_status === "yes" ? "🎉" : updated.rsvp_status === "no" ? "😢" : "🤔";
+          setGuests((gs) => gs.map((g) => (g.id === updated.id ? { ...g, ...updated } : g)));
+          if (
+            old?.rsvp_status === "pending" &&
+            updated?.rsvp_status &&
+            updated.rsvp_status !== "pending"
+          ) {
+            const emoji =
+              updated.rsvp_status === "yes" ? "🎉" : updated.rsvp_status === "no" ? "😢" : "🤔";
             toast.success(`${updated.name} just RSVP'd ${updated.rsvp_status} ${emoji}`);
           }
         },
