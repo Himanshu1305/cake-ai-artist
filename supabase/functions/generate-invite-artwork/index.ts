@@ -150,14 +150,14 @@ function buildPrompt(theme: string, occasion: string, _title: string, childAge?:
       ageBand = "cheerful illustrated party styling";
     }
     return {
-      prompt: `Birthday invitation hero background. ${composition}: ${motif}, reinterpreted as ${ageBand}. Palette: ${profile.palette}. Generous empty space at top and centre for overlaid title text. ${negative}`,
+      prompt: `Birthday celebration invitation hero background. ${composition}: ${motif}, reinterpreted as ${ageBand}. Warm, inviting, celebratory feel with soft glowing light and a sense of joyful occasion. Palette: ${profile.palette}. The image MUST feel warm and festive — never dull, grey or washed-out. Generous empty space at top and centre for overlaid title text. ${negative}`,
       style: "birthday",
       variationSeed,
     };
   }
 
   return {
-    prompt: `Tasteful celebration invitation hero background. ${composition}: ${motif}. Palette: ${profile.palette}. Painterly editorial feel, generous negative space at the top for overlaid title text. ${negative}`,
+    prompt: `Warm, inviting celebration invitation hero background. ${composition}: ${motif}. Palette: ${profile.palette}. Celebratory editorial photography with golden-hour light and a joyful occasion mood — never cold, dull or washed-out. Generous negative space at the top for overlaid title text. ${negative}`,
     style: "generic",
     variationSeed,
   };
