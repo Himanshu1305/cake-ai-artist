@@ -331,6 +331,12 @@ export const InvitePreview = ({
     message?.trim() ||
     `${hostName} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`;
   const dateLine = formatDate(party?.event_date, party?.event_timezone);
+  const heroBackground = [
+    t.pattern,
+    t.artwork ? `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.42)), url(${t.artwork})` : t.gradient,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div
@@ -346,7 +352,7 @@ export const InvitePreview = ({
     >
       <div
         style={{
-          background: `${t.pattern || ""}, ${t.artwork ? `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.42)), url(${t.artwork})` : t.gradient}`,
+          background: heroBackground,
           backgroundSize: t.artwork ? "cover" : "auto",
           backgroundPosition: "center",
           color: t.textColor,
