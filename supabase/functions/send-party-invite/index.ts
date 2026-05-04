@@ -87,7 +87,7 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
       </div>
 
       <div style="text-align:center;margin:28px 0;">
-        <a href="${rsvpUrl}" style="display:inline-block;background:linear-gradient(135deg,#ff6b9d,#c44569);color:#fff;text-decoration:none;padding:16px 44px;border-radius:30px;font-weight:bold;font-size:16px;box-shadow:0 8px 20px rgba(196,69,105,.3);">RSVP Now →</a>
+        <a href="${rsvpUrl}" style="display:inline-block;background:${t.gradient};color:#fff;text-decoration:none;padding:16px 44px;border-radius:30px;font-weight:bold;font-size:16px;box-shadow:0 8px 20px rgba(0,0,0,.18);">RSVP Now →</a>
         <p style="margin:12px 0 0;font-size:12px;color:#999;">Tap to let ${host} know if you can make it.</p>
       </div>
 
