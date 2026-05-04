@@ -314,6 +314,12 @@ const Index = () => {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex gap-2 items-center">
               <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
+              <Link to="/party-planner">
+                <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-purple/10 gap-1.5">
+                  Party Planner
+                  <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">PREMIUM</span>
+                </Button>
+              </Link>
               <Link to="/pricing">
                 <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
