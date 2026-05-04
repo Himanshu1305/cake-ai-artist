@@ -1,0 +1,1 @@
+ALTER TABLE public.party_tasks ADD COLUMN IF NOT EXISTS vendor_message text;

@@ -732,6 +732,7 @@ export type Database = {
           title: string
           vendor_contacted_at: string | null
           vendor_email: string | null
+          vendor_message: string | null
           vendor_name: string | null
           vendor_notes: string | null
           vendor_phone: string | null
@@ -749,6 +750,7 @@ export type Database = {
           title: string
           vendor_contacted_at?: string | null
           vendor_email?: string | null
+          vendor_message?: string | null
           vendor_name?: string | null
           vendor_notes?: string | null
           vendor_phone?: string | null
@@ -766,6 +768,7 @@ export type Database = {
           title?: string
           vendor_contacted_at?: string | null
           vendor_email?: string | null
+          vendor_message?: string | null
           vendor_name?: string | null
           vendor_notes?: string | null
           vendor_phone?: string | null

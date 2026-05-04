@@ -1,73 +1,56 @@
-## Issue 1 — Theme defaults to "Custom (Spiritual/ISKCON)" instead of the saved theme
+## 1. AI-generated vendor messages (editable per vendor)
 
-### Root cause
-In `PartyPlannerDetail.tsx` the theme-matching logic does:
-```ts
-const match = TRENDING_THEMES.find((t) => t.toLowerCase() === p.theme.toLowerCase());
-if (match) setThemePick(match);
-else { setThemePick("Custom"); setCustomTheme(p.theme); }
-```
-This is exact-match only. So a saved theme like `"ISKCON"`, `"Spiritual"`, `"Iron Man"`, or any earlier free-text gets pushed into the **Custom** bucket instead of mapping to the proper trending entry. The invite preview then uses that custom string and the live preview/email don't update when the user changes the dropdown because `currentInviteTheme` is computed from stale form state and the `<InvitePreview>` doesn't remount on theme change.
+**Today**: `send-vendor-email` builds one canned template at send-time. There's no per-vendor AI draft visible in the UI; users can only "Copy message" of a templated string.
 
-A second smaller bug: `currentInviteTheme` resolves to `customTheme` whenever `themePick === "Custom"`, even if `customTheme` is an empty string — masking the actual saved `party.theme`.
+**Fix**:
+- Add a **"✨ Generate AI message"** button inside each task's vendor panel. It calls a new edge function `generate-vendor-message` which uses Lovable AI (`google/gemini-2.5-flash`) with a prompt built from: party (theme, occasion, date, venue, city, guests, host name/contact), task (title, description, category), and vendor (name, role inferred from category).
+- Returned text is loaded into a new editable `vendor_message` field (multi-line `<Textarea>`) shown above the Email/WhatsApp/Copy buttons. User can edit freely; we save on blur.
+- "Email vendor" and "WhatsApp" actions now use `vendor_message` if present (fallback: existing template). Pass `customMessage` to `send-vendor-email` from this field.
+- "Regenerate" button to get a new variation.
 
-### Fix
-1. Add a fuzzy normalizer `matchTrendingTheme(raw)` that maps common aliases (iron/avenger/superhero → "Iron Man / Avengers", iskcon/spiritual/krishna → "Spiritual / ISKCON", space/astronaut/galaxy → "Space / Astronaut", barbie, frozen, etc.) to a canonical entry from `TRENDING_THEMES`. Reuse the same map already in `InvitePreview.getThemeStyle`.
-2. In `loadAll()`, set `themePick` from this normalizer; only fall back to "Custom" when truly nothing matches.
-3. Fix `currentInviteTheme` to:
-   ```ts
-   const currentInviteTheme =
-     themePick === "Custom" ? (customTheme.trim() || party.theme)
-     : (themePick || party.theme);
-   ```
-4. Force the live `<InvitePreview>` to re-render when theme/headline/message change by adding `key={currentInviteTheme + inviteHeadline}`.
-5. When the user picks a different theme from the dropdown, auto-refresh the suggested headline & message (only if the user hasn't manually edited them — track an `inviteEditedByUser` flag).
+**Schema**: add `vendor_message text` to `party_tasks` (nullable). No breaking change.
 
-## Issue 2 — Vendor tracking & email-to-vendor on each checklist task
+**Edge function** `generate-vendor-message`: validates JWT + party ownership, calls AI gateway, returns `{ message }`. ~60 lines.
 
-You're right, this is a great upgrade. Vendor info per task gives users certainty about who is handling each activity, and lets them email vendors directly from the app. Plan:
+## 2. Smarter default checklist tasks
 
-### Schema (migration)
-Add columns to `party_tasks`:
-- `vendor_name text`
-- `vendor_email text`
-- `vendor_phone text`
-- `vendor_notes text`
-- `vendor_contacted_at timestamptz`
-- `vendor_status text` default `'not_contacted'` — values: `not_contacted | contacted | confirmed | declined`
+**Fix the concierge prompt** in `party-planner-chat/index.ts`:
+- Expand task category enum to include `photography`, `entertainment`, `transport`, `gifts`.
+- Update `SYSTEM_PROMPT` to mandate a baseline set whenever building a plan: **Cake, Decor, Catering/Food, Photographer/Videographer, Entertainment (host/DJ/games), Invitations, Return gifts/favors, Venue logistics, Day-of coordinator**. Drop generic filler like "make a playlist", "buy thank-you cards", "sleep early" that have been showing up.
+- Each task description must include the *kind of vendor to contact* (e.g. "Local baker", "Event photographer", "Magician / face-painter", "Decorator") so the vendor panel pre-fills `vendor_notes`.
+- Pre-fill `vendor_notes` on insert from the `description` so users see the vendor type immediately.
 
-(All nullable, no breaking changes.)
+No DB change needed beyond #1.
 
-### UI changes (`PartyPlannerDetail.tsx` → Checklist tab)
-Each task row gets a collapsible **"Vendor & details"** panel:
-- Inputs: Vendor name, Email, Phone (tel link), Notes
-- Status dropdown (Not contacted / Contacted / Confirmed / Declined) with colored badge
-- **"📧 Email vendor"** button — opens a pre-filled message and sends via the new edge function
-- **"💬 WhatsApp"** button — `https://wa.me/<phone>?text=...` with same pre-filled body
-- **"📋 Copy message"** button
-- Auto-saves on blur
+## 3. Visually rich, on-theme invitation
 
-Visual: vendor info collapses by default; show a small chip on the task row when a vendor is filled in (e.g. `🧑‍🍳 Sweet Bakers — confirmed`).
+The current invite has a colorful hero but a plain white body and a tiny logo at the bottom. For themes without `artwork` (Unicorn, Barbie, etc.) the hero is just emojis + a flat gradient — too sparse.
 
-### Edge function `send-vendor-email`
-- Auth: validate JWT, verify task belongs to a party owned by the user.
-- Input: `{ taskId }`.
-- Loads task + party, builds a friendly email containing: greeting, event date/time, venue, guest count, theme, what's needed (task title + description), host's contact email + phone.
-- Sends via Resend (`RESEND_API_KEY` already configured) from `noreply@cakeaiartist.com`, reply-to set to host's contact email.
-- Updates `vendor_contacted_at = now()` and `vendor_status = 'contacted'`.
-- Returns `{ ok: true }`.
+**InvitePreview.tsx + send-party-invite/index.ts changes** (kept in lockstep so app preview = email):
 
-### Concierge improvement
-Update `party-planner-chat` system prompt so when it builds the plan it also suggests sensible vendor categories per task (e.g. cake → "Local baker", decor → "Decorator", food → "Caterer"). Pre-fill `vendor_notes` with what to ask for. (No schema impact beyond the new columns.)
+1. **Bigger, brand-forward header**: prominent Cake AI Artist logo at the **top** of the card on a soft cream strip (height ~56px), with "Party invitation" eyebrow. Footer keeps a smaller wordmark + UTM CTAs.
+2. **Richer hero**:
+   - Add `heroEmojis` + `badge` + `font` + `pattern` to the themes that are missing them (Unicorn, Barbie, Frozen, Princess, Mermaid, Dinosaur, Pokemon, Harry Potter, Black & Gold, Carnival, Tropical, Bluey, Peppa, Paw Patrol, Cocomelon, Floral, Boho, Hot Wheels, Sports, Disco, Retro 90s, Star Wars, Spider-Man, Wonder Woman, Construction, Jungle, Garden Tea Party, Pastel Minimal, Taylor Swift).
+   - Hero gets larger emoji row (size 44–56), themed font for the headline, and a CSS-pattern overlay (sparkles/dots/stripes per theme) on top of the gradient so it never looks flat.
+   - For top 4 themes (Unicorn, Barbie, Princess, Frozen, Spider-Man) add lightweight generated artwork (call AI image gen offline → store in `public/`) and reference via `artwork`.
+3. **Themed body, not white**:
+   - Body background switches from pure `#fff` to a tinted surface using `t.accent` at low opacity (e.g. `linear-gradient(180deg, rgba(accent,.08), #fff 200px)`).
+   - Detail card (`📅 When / 📍 Where / ✨ Theme`) gets a subtle themed left border (`borderLeft: 4px solid accent`) and themed icons.
+   - Section divider stripes use `t.accent`.
+   - RSVP button keeps gradient but adds a soft glow shadow in `accent`.
+4. **Themed corner accents**: floating emojis (CSS `position:absolute`, low opacity) in 2 corners of the body so the whole card feels themed, not just the top.
+5. **Email parity**: mirror all the above in `send-party-invite/index.ts` using inline-styled HTML (no external CSS). For artwork themes, point `artwork` to `https://cakeaiartist.com/<file>.jpg` so email clients can load it.
 
 ## Files to change
-- `supabase/migrations/<new>.sql` — add vendor columns to `party_tasks`.
-- `src/components/InvitePreview.tsx` — export the normalizer (or duplicate map in detail page).
-- `src/pages/PartyPlannerDetail.tsx` — fuzzy theme match, fix `currentInviteTheme`, key the preview, auto-refresh suggestion on theme change, expand checklist row with vendor panel + send/whatsapp/copy actions, save handlers.
-- `supabase/functions/send-vendor-email/index.ts` — new edge function.
-- `supabase/functions/party-planner-chat/index.ts` — small prompt tweak to recommend vendor categories.
+- New migration: `ALTER TABLE party_tasks ADD COLUMN vendor_message text;`
+- New: `supabase/functions/generate-vendor-message/index.ts`
+- Edit: `supabase/functions/party-planner-chat/index.ts` (prompt + categories)
+- Edit: `supabase/functions/send-vendor-email/index.ts` (use `vendor_message` when provided — already supports `customMessage`, just wire it in caller)
+- Edit: `src/pages/PartyPlannerDetail.tsx` (vendor panel: add message textarea, generate button, wire to actions; insert with `vendor_notes` pre-filled)
+- Edit: `src/components/InvitePreview.tsx` (top logo, body tint, accent border, corner emojis, expand `THEME_STYLES` with `heroEmojis`/`badge`/`font`/`pattern` for all themes)
+- Edit: `supabase/functions/send-party-invite/index.ts` (mirror new visuals; add new theme entries)
+- Generate ~5 themed hero artworks → `public/invite-<theme>.jpg`
 
-## Out of scope (for later)
-- A curated vendor directory by city/category — deferred until you have a vendor list. The schema we add today is forward-compatible: a future `vendors` table can be referenced by an optional `vendor_id` column.
+Out of scope: per-vendor reply tracking, vendor directory.
 
-Ready to implement on approval.
+Approve to implement.
