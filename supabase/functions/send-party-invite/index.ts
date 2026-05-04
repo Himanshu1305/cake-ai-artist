@@ -56,6 +56,17 @@ const THEME_STYLES: Record<string, { gradient: string; emoji: string; heroEmojis
 };
 const DEFAULT_STYLE = { gradient: "linear-gradient(135deg,#ff6b9d 0%,#c44569 50%,#8e44ad 100%)", emoji: "🎉", heroEmojis: "🎂 🎈 ✨ 🎁 🥳", badge: "A celebration made sweeter", font: "Georgia, serif" };
 
+const getThemeStyle = (theme?: string | null) => {
+  if (!theme) return DEFAULT_STYLE;
+  const direct = THEME_STYLES[theme];
+  if (direct) return direct;
+  const normalized = theme.toLowerCase();
+  if (normalized.includes("iron") || normalized.includes("avenger") || normalized.includes("superhero")) return THEME_STYLES["Iron Man / Avengers"];
+  if (normalized.includes("space") || normalized.includes("astronaut") || normalized.includes("galaxy")) return THEME_STYLES["Space / Astronaut"];
+  if (normalized.includes("iskcon") || normalized.includes("spiritual") || normalized.includes("krishna")) return THEME_STYLES["Spiritual / ISKCON"];
+  return DEFAULT_STYLE;
+};
+
 const escapeHtml = (value: unknown) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -67,7 +78,7 @@ const escapeHtml = (value: unknown) =>
 const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: string) => {
   const logoUrl = "https://cakeaiartist.com/logo.png";
   const dateLine = party.event_date ? formatEventDate(party.event_date, party.event_timezone) : "";
-  const t = (party.theme && THEME_STYLES[party.theme]) || DEFAULT_STYLE;
+  const t = getThemeStyle(party.theme);
   const headline = escapeHtml((party.invite_headline || "").trim() || `You're invited to ${party.title}!`);
   const note = escapeHtml((party.invite_message || "").trim() ||
     `${host} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`).replace(/\n/g, "<br>");
