@@ -514,6 +514,142 @@ export type Database = {
         }
         Relationships: []
       }
+      parties: {
+        Row: {
+          budget: number | null
+          cake_image_id: string | null
+          created_at: string
+          event_date: string | null
+          guest_count: number | null
+          id: string
+          notes: string | null
+          occasion: string | null
+          public_slug: string
+          status: string
+          theme: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          venue: string | null
+        }
+        Insert: {
+          budget?: number | null
+          cake_image_id?: string | null
+          created_at?: string
+          event_date?: string | null
+          guest_count?: number | null
+          id?: string
+          notes?: string | null
+          occasion?: string | null
+          public_slug?: string
+          status?: string
+          theme?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          venue?: string | null
+        }
+        Update: {
+          budget?: number | null
+          cake_image_id?: string | null
+          created_at?: string
+          event_date?: string | null
+          guest_count?: number | null
+          id?: string
+          notes?: string | null
+          occasion?: string | null
+          public_slug?: string
+          status?: string
+          theme?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      party_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          party_id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          party_id: string
+          role: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          party_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_chat_messages_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      party_guests: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          invited_at: string | null
+          name: string
+          notes: string | null
+          party_id: string
+          plus_ones: number | null
+          responded_at: string | null
+          rsvp_status: string
+          rsvp_token: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          invited_at?: string | null
+          name: string
+          notes?: string | null
+          party_id: string
+          plus_ones?: number | null
+          responded_at?: string | null
+          rsvp_status?: string
+          rsvp_token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          invited_at?: string | null
+          name?: string
+          notes?: string | null
+          party_id?: string
+          plus_ones?: number | null
+          responded_at?: string | null
+          rsvp_status?: string
+          rsvp_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_guests_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       party_packs: {
         Row: {
           banner_url: string
@@ -561,6 +697,50 @@ export type Database = {
             columns: ["cake_image_id"]
             isOneToOne: false
             referencedRelation: "public_featured_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      party_tasks: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          is_completed: boolean
+          party_id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          party_id: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          party_id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_tasks_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
             referencedColumns: ["id"]
           },
         ]
