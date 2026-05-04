@@ -129,7 +129,7 @@ function buildPrompt(theme: string, occasion: string, _title: string, childAge?:
       /wedding|engage/i.test(occ) ? " Evoke a romantic, ceremonial mood." :
       /anniversary/i.test(occ) ? " Evoke an enduring, romantic mood." : "";
     return {
-      prompt: `Sophisticated, grown-up invitation hero background. ${composition}: ${motif}.${occHint} Painterly photographic feel, palette: ${profile.palette}. Generous negative space at top and centre for overlaid title text. Tasteful, magazine-quality editorial styling. NOT cartoonish, NO champagne flutes unless explicitly described above. ${negative}`,
+      prompt: `Sophisticated, grown-up celebration invitation hero background. ${composition}: ${motif}.${occHint} Warm, inviting, celebratory editorial photography with golden-hour light, soft glowing bokeh and a clear sense of joyful occasion. Palette: ${profile.palette}. The image MUST feel warm, festive and welcoming — never cold, dull, washed-out, grey, desaturated or overly neutral. Generous negative space at top and centre for overlaid title text. Tasteful and elegant — NOT cartoonish, NO champagne flutes unless explicitly described above. ${negative}`,
       style: "adult-elegant",
       variationSeed,
     };
