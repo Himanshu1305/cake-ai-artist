@@ -554,13 +554,18 @@ export default function PartyPlannerDetail() {
     const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
     // Detect stale ISKCON/spiritual copy that doesn't match the current theme and replace silently.
     const themeStr = (p.theme || "").toLowerCase();
+    const occStr = (p.occasion || "").toLowerCase();
     const themeIsSpiritual = /iskcon|spiritual|krishna|hare|religious|puja/.test(themeStr);
     const SPIRITUAL_RX = /(iskcon|spiritual|krishna|hare krishna|aarti|blessing|blessed|puja|prasad|soulful)/i;
+    const KIDDIE_RX = /(lions?, ?tigers?|scrunchies|dinos?|paw patrol|pups|vroom|wackadoo|spidey|hogwarts|pokeballs?|cocomelon|peppa|unicorns?|glitter|sparkly|elsa|princess|barbie)/i;
+    const ADULT_OCC_RX = /(anniversary|wedding|engagement|baby shower|housewarming|retirement)/i;
+    const isAdultOccasion = ADULT_OCC_RX.test(occStr);
     const savedHeadline = (p as any).invite_headline as string | null;
     const savedMessage = (p as any).invite_message as string | null;
     const headlineLeaks = !!savedHeadline && !themeIsSpiritual && SPIRITUAL_RX.test(savedHeadline);
     const messageLeaks = !!savedMessage && !themeIsSpiritual && SPIRITUAL_RX.test(savedMessage);
-    if (headlineLeaks || messageLeaks) {
+    const kidLeak = isAdultOccasion && ((savedHeadline && KIDDIE_RX.test(savedHeadline)) || (savedMessage && KIDDIE_RX.test(savedMessage)));
+    if (headlineLeaks || messageLeaks || kidLeak) {
       setInviteHeadline(suggestedInvite.headline);
       setInviteMessage(suggestedInvite.message);
       setInviteEdited(false);
