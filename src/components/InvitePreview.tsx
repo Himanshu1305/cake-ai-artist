@@ -577,7 +577,10 @@ interface InvitePreviewProps {
   headline?: string;
   message?: string;
   cakeImageUrl?: string | null;
+  artworkUrl?: string | null;
 }
+
+export const ADULT_OCC_RX_PREVIEW = /(anniversary|wedding|engage|baby shower|housewarm|retire|farewell|reunion|graduation)/i;
 
 const formatDate = (iso?: string | null, tz?: string | null) => {
   if (!iso) return "";
