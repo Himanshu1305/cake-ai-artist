@@ -53,6 +53,7 @@ const THEME_STYLES: Record<string, { gradient: string; emoji: string; heroEmojis
   "Tropical Luau": { gradient: "linear-gradient(135deg,#06b6d4 0%,#10b981 60%,#facc15 100%)", emoji: "🌺" },
   "Black & Gold Elegance": { gradient: "linear-gradient(135deg,#000 0%,#1a1a1a 60%,#d4af37 100%)", emoji: "✨" },
   "Carnival / Circus": { gradient: "linear-gradient(135deg,#ef4444 0%,#fbbf24 50%,#3b82f6 100%)", emoji: "🎪" },
+  "Spiritual / ISKCON": { gradient: "linear-gradient(135deg,#ff9933 0%,#ffcc66 100%)", emoji: "🕉️", heroEmojis: "🪷 🕉️ 🪈 🌼 ✨", badge: "A soulful celebration with sweetness and blessings", font: "Georgia, serif" },
 };
 const DEFAULT_STYLE = { gradient: "linear-gradient(135deg,#ff6b9d 0%,#c44569 50%,#8e44ad 100%)", emoji: "🎉", heroEmojis: "🎂 🎈 ✨ 🎁 🥳", badge: "A celebration made sweeter", font: "Georgia, serif" };
 
