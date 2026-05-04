@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.cancel-razorpay-subscription]
 verify_jwt = true
+
+[functions.party-planner-chat]
+verify_jwt = true
+
+[functions.send-party-invite]
+verify_jwt = true
