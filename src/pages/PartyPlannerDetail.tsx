@@ -11,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { InvitePreview } from "@/components/InvitePreview";
 import {
   Send,
   Sparkles,
@@ -23,6 +25,7 @@ import {
   MessageSquare,
   Save,
   Wand2,
+  Ticket,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -30,6 +33,22 @@ import { cn } from "@/lib/utils";
 
 const TRENDING_THEMES = [
   "Barbie Pink",
+  "Space / Astronaut",
+  "Iron Man / Avengers",
+  "Spider-Man",
+  "Star Wars",
+  "Frozen / Elsa",
+  "Peppa Pig",
+  "Paw Patrol",
+  "Dinosaur / Jurassic",
+  "Mermaid / Under the Sea",
+  "Construction / Trucks",
+  "Jungle Safari",
+  "Pokemon",
+  "Minecraft",
+  "Princess / Royal",
+  "Wonder Woman",
+  "Hot Wheels",
   "Bluey",
   "Taylor Swift Eras",
   "Cocomelon",
@@ -37,7 +56,6 @@ const TRENDING_THEMES = [
   "Floral Garden",
   "Boho Chic",
   "Disco / Y2K",
-  "Spider-Man",
   "Unicorn & Rainbow",
   "Pastel Minimal",
   "Tropical Luau",
@@ -45,6 +63,8 @@ const TRENDING_THEMES = [
   "Retro 90s",
   "Sports / Football",
   "Spiritual / ISKCON",
+  "Garden Tea Party",
+  "Carnival / Circus",
   "Custom",
 ];
 
@@ -73,6 +93,10 @@ export default function PartyPlannerDetail() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
+  const [partyTitle, setPartyTitle] = useState("");
+  const [inviteHeadline, setInviteHeadline] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [savingInvite, setSavingInvite] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -81,6 +105,9 @@ export default function PartyPlannerDetail() {
       return;
     }
     setParty(p);
+    setPartyTitle(p.title || "");
+    setInviteHeadline((p as any).invite_headline || "");
+    setInviteMessage((p as any).invite_message || "");
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
@@ -177,6 +204,7 @@ export default function PartyPlannerDetail() {
     const { error } = await supabase
       .from("parties")
       .update({
+        title: partyTitle.trim() || party?.title || "Untitled Party",
         event_date: isoDate,
         event_timezone: tz,
         venue: venue.trim() || null,
@@ -193,6 +221,25 @@ export default function PartyPlannerDetail() {
       return;
     }
     toast.success("Event details saved");
+    await loadAll();
+  };
+
+  const saveInvite = async () => {
+    if (!id) return;
+    setSavingInvite(true);
+    const { error } = await supabase
+      .from("parties")
+      .update({
+        invite_headline: inviteHeadline.trim() || null,
+        invite_message: inviteMessage.trim() || null,
+      } as any)
+      .eq("id", id);
+    setSavingInvite(false);
+    if (error) {
+      toast.error("Couldn't save invite");
+      return;
+    }
+    toast.success("Invite saved");
     await loadAll();
   };
 
@@ -323,14 +370,17 @@ export default function PartyPlannerDetail() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="details">📋 Details</TabsTrigger>
             <TabsTrigger value="chat">
               <MessageSquare className="w-4 h-4 mr-1" /> Concierge
             </TabsTrigger>
             <TabsTrigger value="checklist">✅ Checklist {tasks.length > 0 && `(${tasks.length})`}</TabsTrigger>
+            <TabsTrigger value="invite">
+              <Ticket className="w-4 h-4 mr-1" /> Invite
+            </TabsTrigger>
             <TabsTrigger value="invites">
-              <Mail className="w-4 h-4 mr-1" /> Invites {guests.length > 0 && `(${guests.length})`}
+              <Mail className="w-4 h-4 mr-1" /> Guests {guests.length > 0 && `(${guests.length})`}
             </TabsTrigger>
           </TabsList>
 
@@ -343,6 +393,14 @@ export default function PartyPlannerDetail() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Party Name</Label>
+                  <Input
+                    value={partyTitle}
+                    onChange={(e) => setPartyTitle(e.target.value)}
+                    placeholder="e.g. Aarav's 5th Birthday Bash"
+                  />
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Date</Label>
@@ -564,6 +622,60 @@ export default function PartyPlannerDetail() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="invite">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customize your invitation</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Edits update the preview live. Save when ready — the email matches what you see.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Invite headline</Label>
+                    <Input
+                      value={inviteHeadline}
+                      onChange={(e) => setInviteHeadline(e.target.value)}
+                      placeholder={`You're invited to ${partyTitle || party.title}!`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Personal note</Label>
+                    <Textarea
+                      rows={5}
+                      value={inviteMessage}
+                      onChange={(e) => setInviteMessage(e.target.value)}
+                      placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
+                    />
+                  </div>
+                  <Button onClick={saveInvite} disabled={savingInvite}>
+                    <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Tip: pick a theme in <strong>Details</strong> to restyle the invitation card.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
+                <InvitePreview
+                  party={{
+                    ...party,
+                    title: partyTitle || party.title,
+                    theme:
+                      themePick === "Custom" ? customTheme || party.theme : themePick || party.theme,
+                  }}
+                  hostName="You"
+                  guestName="Your guest"
+                  headline={inviteHeadline}
+                  message={inviteMessage}
+                />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="invites">
