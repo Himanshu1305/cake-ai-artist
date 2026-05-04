@@ -176,13 +176,17 @@ serve(async (req) => {
       const tasksToInsert = (args.tasks || []).map((t: any, i: number) => {
         const due = new Date(eventDate);
         due.setDate(due.getDate() - (t.days_before || 0));
+        const desc = t.description || null;
+        // Extract "Vendor: <type>" hint from description into vendor_notes
+        const vendorMatch = desc?.match(/vendor\s*:\s*([^.\n]+)/i);
         return {
           party_id: partyId,
           title: t.title,
-          description: t.description || null,
+          description: desc,
           category: t.category,
           due_date: due.toISOString().slice(0, 10),
           sort_order: i,
+          vendor_notes: vendorMatch ? `Suggested: ${vendorMatch[1].trim()}` : null,
         };
       });
       if (tasksToInsert.length) await supabase.from("party_tasks").insert(tasksToInsert);
