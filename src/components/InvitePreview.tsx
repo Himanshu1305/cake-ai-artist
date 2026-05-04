@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import cakeLogo from "@/assets/logo.png";
 import superheroArmorArt from "@/assets/invite-superhero-armor.jpg";
+import superheroArmorActionArt from "@/assets/invite-superhero-armor-action.jpg";
 
 // Theme styles shared between the in-app preview and the email render.
 // Keep keys in sync with TRENDING_THEMES in PartyPlannerDetail.tsx.
@@ -46,7 +47,7 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
     badge: "Suit up — the birthday squad is assembling",
     font: "'Bangers', Impact, Georgia, serif",
     textColor: "#fff",
-    artwork: superheroArmorArt,
+    artwork: superheroArmorActionArt,
     pattern: "repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 10px, transparent 10px 22px)",
   },
   "Spider-Man": {
