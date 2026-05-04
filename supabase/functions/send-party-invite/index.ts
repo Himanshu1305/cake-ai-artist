@@ -9,26 +9,72 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: string) => `
-<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Segoe UI,sans-serif;background:#fef7f7;">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <div style="background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:20px 20px 0 0;padding:40px;text-align:center;color:#fff;">
-      <h1 style="margin:0;font-size:30px;">🎉 You're Invited!</h1>
-      <p style="margin:8px 0 0;font-size:16px;opacity:.95;">${party.occasion || "A celebration"}</p>
+const formatEventDate = (iso: string, tz?: string | null) => {
+  try {
+    return new Date(iso).toLocaleString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: tz || undefined,
+      timeZoneName: "short",
+    });
+  } catch {
+    return new Date(iso).toLocaleString();
+  }
+};
+
+const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: string) => {
+  const logoUrl = "https://cakeaiartist.com/logo.png";
+  const dateLine = party.event_date ? formatEventDate(party.event_date, party.event_timezone) : "";
+  return `
+<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fdf6f0;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+    <div style="text-align:center;padding-bottom:20px;">
+      <img src="${logoUrl}" alt="Cake AI Artist" style="height:44px;display:inline-block;" />
     </div>
-    <div style="background:#fff;padding:40px;border-radius:0 0 20px 20px;box-shadow:0 10px 40px rgba(0,0,0,.1);">
-      <p style="font-size:18px;color:#333;">Hi ${guestName},</p>
-      <p style="font-size:16px;color:#555;line-height:1.6;">${host} is hosting <strong>${party.title}</strong> and would love for you to be there.</p>
-      ${party.event_date ? `<p style="font-size:16px;color:#555;"><strong>📅 When:</strong> ${new Date(party.event_date).toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" })}</p>` : ""}
-      ${party.venue ? `<p style="font-size:16px;color:#555;"><strong>📍 Where:</strong> ${party.venue}</p>` : ""}
-      ${party.theme ? `<p style="font-size:16px;color:#555;"><strong>✨ Theme:</strong> ${party.theme}</p>` : ""}
-      <div style="text-align:center;margin:32px 0;">
-        <a href="${rsvpUrl}" style="display:inline-block;background:linear-gradient(135deg,#ff6b9d,#c44569);color:#fff;text-decoration:none;padding:16px 40px;border-radius:30px;font-weight:bold;">RSVP Now</a>
+
+    <div style="background:linear-gradient(135deg,#ff6b9d 0%,#c44569 50%,#8e44ad 100%);border-radius:24px 24px 0 0;padding:48px 32px;text-align:center;color:#fff;">
+      <div style="font-size:48px;line-height:1;">🎉</div>
+      <h1 style="margin:16px 0 8px;font-size:32px;font-family:Georgia,serif;font-weight:700;">You're Invited!</h1>
+      <p style="margin:0;font-size:18px;opacity:.95;">${party.title}</p>
+      ${party.occasion ? `<p style="margin:6px 0 0;font-size:14px;opacity:.85;text-transform:capitalize;">${party.occasion}</p>` : ""}
+    </div>
+
+    <div style="background:#fff;padding:36px 32px;border-radius:0 0 24px 24px;box-shadow:0 12px 40px rgba(196,69,105,.12);">
+      <p style="font-size:17px;color:#333;margin:0 0 8px;">Hi ${guestName},</p>
+      <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px;">
+        <strong>${host}</strong> would love for you to join the celebration. Here are the details:
+      </p>
+
+      <div style="background:#fdf6f0;border-radius:14px;padding:20px;margin:0 0 24px;">
+        ${dateLine ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📅 When:</strong> ${dateLine}</p>` : ""}
+        ${party.venue ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📍 Where:</strong> ${party.venue}${party.city ? ", " + party.city : ""}</p>` : ""}
+        ${party.theme ? `<p style="margin:0;font-size:15px;color:#333;"><strong>✨ Theme:</strong> ${party.theme}</p>` : ""}
       </div>
-      <p style="font-size:13px;color:#999;text-align:center;">Powered by Cake AI Artist</p>
+
+      <div style="text-align:center;margin:28px 0;">
+        <a href="${rsvpUrl}" style="display:inline-block;background:linear-gradient(135deg,#ff6b9d,#c44569);color:#fff;text-decoration:none;padding:16px 44px;border-radius:30px;font-weight:bold;font-size:16px;box-shadow:0 8px 20px rgba(196,69,105,.3);">RSVP Now →</a>
+        <p style="margin:12px 0 0;font-size:12px;color:#999;">Tap to let ${host} know if you can make it.</p>
+      </div>
+
+      <div style="border-top:1px solid #f0e4d7;padding-top:24px;margin-top:24px;">
+        <p style="font-size:13px;color:#888;line-height:1.6;margin:0 0 8px;">
+          ✨ This celebration was thoughtfully planned with <strong>Cake AI Artist</strong> — the AI that designs personalised cakes, party packs, and now plans full celebrations from invite to thank-you note.
+        </p>
+        <p style="font-size:12px;color:#aaa;margin:8px 0 0;">
+          <a href="https://cakeaiartist.com" style="color:#c44569;text-decoration:none;">Discover Cake AI Artist →</a>
+        </p>
+      </div>
     </div>
+
+    <p style="text-align:center;font-size:11px;color:#bbb;margin:20px 0 0;">Powered by Cake AI Artist · cakeaiartist.com</p>
   </div>
 </body></html>`;
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
