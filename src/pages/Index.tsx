@@ -358,6 +358,12 @@ const Index = () => {
                   <Link to="/how-it-works">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button>
                   </Link>
+                  <Link to="/party-planner">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-purple/10">
+                      Party Planner
+                      <span className="ml-2 bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">PREMIUM</span>
+                    </Button>
+                  </Link>
                   <Link to="/pricing">
                     <Button variant="ghost" className="w-full justify-start relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                       Pricing
