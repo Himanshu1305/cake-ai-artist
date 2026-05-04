@@ -608,6 +608,7 @@ export const InvitePreview = ({
   headline,
   message,
   cakeImageUrl,
+  artworkUrl,
 }: InvitePreviewProps) => {
   useEffect(() => {
     ensureInviteFonts();
@@ -619,12 +620,11 @@ export const InvitePreview = ({
     message?.trim() ||
     `${hostName} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`;
   const dateLine = formatDate(party?.event_date, party?.event_timezone);
-  const heroBackground = [
-    t.pattern,
-    t.artwork ? `linear-gradient(rgba(0,0,0,.22), rgba(0,0,0,.5)), url(${t.artwork})` : t.gradient,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const isAdultOccasion = ADULT_OCC_RX_PREVIEW.test((party?.occasion || "").toString());
+  const effectiveArtwork = artworkUrl || t.artwork || null;
+  const heroBackground = effectiveArtwork
+    ? `linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.45) 100%), url(${effectiveArtwork})`
+    : [t.pattern, t.gradient].filter(Boolean).join(", ");
   const bodyTint = t.bodyTint || "#fff5f8";
   const corner1 = t.cornerEmojis?.[0] || t.heroEmojis?.[0] || t.emoji;
   const corner2 = t.cornerEmojis?.[1] || t.heroEmojis?.[1] || t.emoji;
