@@ -540,6 +540,7 @@ export default function PartyPlannerDetail() {
   const [savingInvite, setSavingInvite] = useState(false);
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
   const [inviteEdited, setInviteEdited] = useState(false);
+  const [inviteGenerating, setInviteGenerating] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
 
   const loadAll = async () => {
