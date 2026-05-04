@@ -518,6 +518,7 @@ export type Database = {
         Row: {
           budget: number | null
           cake_image_id: string | null
+          child_age: number | null
           city: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -526,6 +527,8 @@ export type Database = {
           event_timezone: string | null
           guest_count: number | null
           id: string
+          invite_artwork_meta: Json | null
+          invite_artwork_url: string | null
           invite_headline: string | null
           invite_message: string | null
           notes: string | null
@@ -541,6 +544,7 @@ export type Database = {
         Insert: {
           budget?: number | null
           cake_image_id?: string | null
+          child_age?: number | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -549,6 +553,8 @@ export type Database = {
           event_timezone?: string | null
           guest_count?: number | null
           id?: string
+          invite_artwork_meta?: Json | null
+          invite_artwork_url?: string | null
           invite_headline?: string | null
           invite_message?: string | null
           notes?: string | null
@@ -564,6 +570,7 @@ export type Database = {
         Update: {
           budget?: number | null
           cake_image_id?: string | null
+          child_age?: number | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -572,6 +579,8 @@ export type Database = {
           event_timezone?: string | null
           guest_count?: number | null
           id?: string
+          invite_artwork_meta?: Json | null
+          invite_artwork_url?: string | null
           invite_headline?: string | null
           invite_message?: string | null
           notes?: string | null
