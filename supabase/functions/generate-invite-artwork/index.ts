@@ -247,7 +247,7 @@ serve(async (req) => {
     const { data: pub } = supabase.storage.from("party-invites").getPublicUrl(path);
     const url = pub.publicUrl;
 
-    const metaJson = { theme: effTheme, occasion: effOcc, childAge: effAge, style, variationSeed, generatedAt: new Date().toISOString() };
+    const metaJson = { theme: effTheme, occasion: effOcc, childAge: effAge, style, variationSeed, promptVersion: "v2-warm", generatedAt: new Date().toISOString() };
     await supabase
       .from("parties")
       .update({ invite_artwork_url: url, invite_artwork_meta: metaJson })
