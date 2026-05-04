@@ -417,14 +417,14 @@ export default function PartyPlannerDetail() {
     await supabase.from("party_tasks").update(patch as any).eq("id", taskId);
   };
 
-  const sendVendorEmail = async (taskId: string) => {
+  const sendVendorEmail = async (taskId: string, customMessage?: string) => {
     toast.loading("Emailing vendor...", { id: `vendor-${taskId}` });
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Please sign in again");
       const { data, error } = await supabase.functions.invoke("send-vendor-email", {
-        body: { taskId },
+        body: { taskId, customMessage },
         headers: { Authorization: `Bearer ${token}` },
       });
       if (error) throw error;
@@ -436,7 +436,27 @@ export default function PartyPlannerDetail() {
     }
   };
 
+  const generateVendorMessage = async (taskId: string, variation = 0) => {
+    toast.loading("Drafting message...", { id: `gen-${taskId}` });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
+      const { data, error } = await supabase.functions.invoke("generate-vendor-message", {
+        body: { taskId, variation },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, vendor_message: data.message } : t)));
+      toast.success("AI message ready — edit if you'd like", { id: `gen-${taskId}` });
+    } catch (e: any) {
+      toast.error(e.message || "Could not generate", { id: `gen-${taskId}` });
+    }
+  };
+
   const buildVendorMessage = (t: any) => {
+    if (t.vendor_message?.trim()) return t.vendor_message;
     const dateStr = party?.event_date
       ? new Date(party.event_date).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short", timeZone: party.event_timezone || undefined })
       : "TBD";
