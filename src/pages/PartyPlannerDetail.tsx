@@ -393,6 +393,14 @@ export default function PartyPlannerDetail() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Party Name</Label>
+                  <Input
+                    value={partyTitle}
+                    onChange={(e) => setPartyTitle(e.target.value)}
+                    placeholder="e.g. Aarav's 5th Birthday Bash"
+                  />
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Date</Label>
