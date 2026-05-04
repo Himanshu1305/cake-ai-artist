@@ -67,8 +67,12 @@ export default function PartyPlannerDetail() {
     setSending(true);
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
       const { data, error } = await supabase.functions.invoke("party-planner-chat", {
         body: { partyId: id, userMessage: userMsg.content },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
