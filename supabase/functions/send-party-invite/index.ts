@@ -68,9 +68,14 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
   const logoUrl = "https://cakeaiartist.com/logo.png";
   const dateLine = party.event_date ? formatEventDate(party.event_date, party.event_timezone) : "";
   const t = (party.theme && THEME_STYLES[party.theme]) || DEFAULT_STYLE;
-  const headline = (party.invite_headline || "").trim() || `You're invited to ${party.title}!`;
-  const note = (party.invite_message || "").trim() ||
-    `<strong>${host}</strong> would love for you to join the celebration. Here are the details:`;
+  const headline = escapeHtml((party.invite_headline || "").trim() || `You're invited to ${party.title}!`);
+  const note = escapeHtml((party.invite_message || "").trim() ||
+    `${host} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`).replace(/\n/g, "<br>");
+  const safeHost = escapeHtml(host);
+  const safeGuestName = escapeHtml(guestName);
+  const heroBackground = t.artwork
+    ? `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.48)), url('${t.artwork}') center/cover no-repeat`
+    : t.gradient;
   return `
 <!DOCTYPE html><html><body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fdf6f0;">
   <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
@@ -78,33 +83,36 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
       <img src="${logoUrl}" alt="Cake AI Artist" style="height:44px;display:inline-block;" />
     </div>
 
-    <div style="background:${t.gradient};border-radius:24px 24px 0 0;padding:48px 32px;text-align:center;color:#fff;">
-      <div style="font-size:48px;line-height:1;">${t.emoji}</div>
-      <h1 style="margin:16px 0 8px;font-size:30px;font-family:Georgia,serif;font-weight:700;">${headline}</h1>
-      ${party.occasion ? `<p style="margin:6px 0 0;font-size:14px;opacity:.9;text-transform:capitalize;">${party.occasion}</p>` : ""}
+    <div style="background:${heroBackground};border-radius:24px 24px 0 0;padding:150px 32px 34px;text-align:center;color:#fff;">
+      <div style="font-size:30px;line-height:1;letter-spacing:5px;">${t.heroEmojis || t.emoji}</div>
+      ${t.badge ? `<div style="display:inline-block;margin:16px auto 0;padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.35);font-size:11px;font-weight:800;text-transform:uppercase;">${escapeHtml(t.badge)}</div>` : ""}
+      <h1 style="margin:16px 0 8px;font-size:34px;line-height:1.03;font-family:${t.font || "Georgia,serif"};font-weight:800;text-shadow:0 3px 16px rgba(0,0,0,.45);">${headline}</h1>
+      ${party.occasion ? `<p style="margin:6px 0 0;font-size:14px;opacity:.92;text-transform:capitalize;">${escapeHtml(party.occasion)}</p>` : ""}
     </div>
 
     <div style="background:#fff;padding:36px 32px;border-radius:0 0 24px 24px;box-shadow:0 12px 40px rgba(0,0,0,.08);">
-      <p style="font-size:17px;color:#333;margin:0 0 8px;">Hi ${guestName},</p>
+      <p style="font-size:17px;color:#333;margin:0 0 8px;font-weight:700;">Hi ${safeGuestName},</p>
       <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px;white-space:pre-wrap;">${note}</p>
 
       <div style="background:#fdf6f0;border-radius:14px;padding:20px;margin:0 0 24px;">
-        ${dateLine ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📅 When:</strong> ${dateLine}</p>` : ""}
-        ${party.venue ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📍 Where:</strong> ${party.venue}${party.city ? ", " + party.city : ""}</p>` : ""}
-        ${party.theme ? `<p style="margin:0;font-size:15px;color:#333;"><strong>✨ Theme:</strong> ${party.theme}</p>` : ""}
+        ${dateLine ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📅 When:</strong> ${escapeHtml(dateLine)}</p>` : ""}
+        ${party.venue ? `<p style="margin:0 0 10px;font-size:15px;color:#333;"><strong>📍 Where:</strong> ${escapeHtml(party.venue)}${party.city ? ", " + escapeHtml(party.city) : ""}</p>` : ""}
+        ${party.theme ? `<p style="margin:0;font-size:15px;color:#333;"><strong>✨ Theme:</strong> ${escapeHtml(party.theme)}</p>` : ""}
       </div>
 
       <div style="text-align:center;margin:28px 0;">
         <a href="${rsvpUrl}" style="display:inline-block;background:${t.gradient};color:#fff;text-decoration:none;padding:16px 44px;border-radius:30px;font-weight:bold;font-size:16px;box-shadow:0 8px 20px rgba(0,0,0,.18);">RSVP Now →</a>
-        <p style="margin:12px 0 0;font-size:12px;color:#999;">Tap to let ${host} know if you can make it.</p>
+        <p style="margin:12px 0 0;font-size:12px;color:#999;">Tap to let ${safeHost} know if you can make it.</p>
       </div>
 
       <div style="border-top:1px solid #f0e4d7;padding-top:24px;margin-top:24px;">
-        <p style="font-size:13px;color:#888;line-height:1.6;margin:0 0 8px;">
-          ✨ This celebration was thoughtfully planned with <strong>Cake AI Artist</strong> — the AI that designs personalised cakes, party packs, and now plans full celebrations from invite to thank-you note.
+        <p style="text-align:center;margin:0 0 12px;"><img src="${logoUrl}" alt="Cake AI Artist" style="height:34px;display:inline-block;" /></p>
+        <p style="font-size:13px;color:#777;line-height:1.6;margin:0 0 14px;text-align:center;">
+          ✨ This celebration was styled with <strong>Cake AI Artist</strong> — design your own AI cake, invite, and party look in minutes.
         </p>
-        <p style="font-size:12px;color:#aaa;margin:8px 0 0;">
-          <a href="https://cakeaiartist.com" style="color:#c44569;text-decoration:none;">Discover Cake AI Artist →</a>
+        <p style="font-size:12px;color:#aaa;margin:8px 0 0;text-align:center;">
+          <a href="https://cakeaiartist.com/?utm_source=party_invite&utm_medium=email&utm_campaign=invite_footer" style="display:inline-block;color:#c44569;text-decoration:none;font-weight:700;margin:0 10px;">Design your own cake →</a>
+          <a href="https://cakeaiartist.com/party-planner?utm_source=party_invite&utm_medium=email&utm_campaign=invite_footer" style="display:inline-block;color:#c44569;text-decoration:none;font-weight:700;margin:0 10px;">Plan a party free →</a>
         </p>
       </div>
     </div>
