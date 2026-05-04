@@ -22,7 +22,7 @@ export default function PartyRSVP() {
         return;
       }
       setGuest(g);
-      const { data: p } = await supabase.from("parties").select("title, occasion, event_date, venue, theme").eq("id", g.party_id).maybeSingle();
+      const { data: p } = await supabase.from("parties").select("title, occasion, event_date, event_timezone, venue, city, theme").eq("id", g.party_id).maybeSingle();
       setParty(p);
       setDone(g.rsvp_status !== "pending");
       setLoading(false);
@@ -69,10 +69,10 @@ export default function PartyRSVP() {
 
           <div className="space-y-2 text-sm">
             {party.event_date && (
-              <div className="flex items-start gap-2"><Calendar className="w-4 h-4 mt-0.5 text-primary" /><span>{new Date(party.event_date).toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" })}</span></div>
+              <div className="flex items-start gap-2"><Calendar className="w-4 h-4 mt-0.5 text-primary" /><span>{new Date(party.event_date).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: party.event_timezone || undefined, timeZoneName: "short" })}</span></div>
             )}
-            {party.venue && (
-              <div className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-0.5 text-primary" /><span>{party.venue}</span></div>
+            {(party.venue || party.city) && (
+              <div className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-0.5 text-primary" /><span>{[party.venue, party.city].filter(Boolean).join(", ")}</span></div>
             )}
             {party.theme && (
               <div className="flex items-start gap-2"><Sparkles className="w-4 h-4 mt-0.5 text-primary" /><span>{party.theme}</span></div>
