@@ -346,19 +346,34 @@ export const InvitePreview = ({
     >
       <div
         style={{
-          background: t.gradient,
+          background: `${t.pattern || ""}, ${t.artwork ? `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.42)), url(${t.artwork})` : t.gradient}`,
+          backgroundSize: t.artwork ? "cover" : "auto",
+          backgroundPosition: "center",
           color: t.textColor,
-          padding: "40px 28px",
+          padding: "34px 24px 30px",
+          minHeight: t.artwork ? 310 : 250,
           textAlign: "center",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
         }}
       >
-        <div style={{ fontSize: 44, lineHeight: 1 }}>{t.emoji}</div>
+        <div style={{ fontSize: 30, lineHeight: 1.1, letterSpacing: 6 }}>{(t.heroEmojis || [t.emoji]).join(" ")}</div>
+        {t.badge && (
+          <div style={{ display: "inline-block", alignSelf: "center", marginTop: 16, padding: "7px 14px", borderRadius: 999, background: "rgba(0,0,0,.38)", border: "1px solid rgba(255,255,255,.35)", fontSize: 11, fontWeight: 800, letterSpacing: 0, textTransform: "uppercase" }}>
+            {t.badge}
+          </div>
+        )}
         <h2
           style={{
-            margin: "12px 0 6px",
-            fontSize: 26,
+            margin: "14px 0 8px",
+            fontSize: 34,
             fontFamily: t.font,
-            fontWeight: 700,
+            fontWeight: 800,
+            letterSpacing: 0,
+            lineHeight: 1.02,
+            textShadow: "0 3px 16px rgba(0,0,0,.4)",
           }}
         >
           {finalHeadline}
