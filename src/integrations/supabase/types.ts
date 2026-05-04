@@ -526,6 +526,8 @@ export type Database = {
           event_timezone: string | null
           guest_count: number | null
           id: string
+          invite_headline: string | null
+          invite_message: string | null
           notes: string | null
           occasion: string | null
           public_slug: string
@@ -547,6 +549,8 @@ export type Database = {
           event_timezone?: string | null
           guest_count?: number | null
           id?: string
+          invite_headline?: string | null
+          invite_message?: string | null
           notes?: string | null
           occasion?: string | null
           public_slug?: string
@@ -568,6 +572,8 @@ export type Database = {
           event_timezone?: string | null
           guest_count?: number | null
           id?: string
+          invite_headline?: string | null
+          invite_message?: string | null
           notes?: string | null
           occasion?: string | null
           public_slug?: string
