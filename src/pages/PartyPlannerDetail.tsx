@@ -204,6 +204,7 @@ export default function PartyPlannerDetail() {
     const { error } = await supabase
       .from("parties")
       .update({
+        title: partyTitle.trim() || party?.title || "Untitled Party",
         event_date: isoDate,
         event_timezone: tz,
         venue: venue.trim() || null,
