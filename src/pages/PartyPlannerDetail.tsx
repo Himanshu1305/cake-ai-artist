@@ -68,6 +68,51 @@ const TRENDING_THEMES = [
   "Custom",
 ];
 
+const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> = {
+  "Iron Man / Avengers": [
+    {
+      headline: "Suit up — the birthday squad is assembling!",
+      message:
+        "Calling all heroes! Join us for an action-packed celebration with cake, games, big laughs, and a mission your little Avenger will never forget. Come ready for heroic photos and super-powered fun.",
+    },
+    {
+      headline: "Heroes wanted for one epic party!",
+      message:
+        "The celebration signal is on! We would love you to join a red-and-gold day of surprises, cake, and mighty memories. Bring your best hero energy — this party needs the full team.",
+    },
+  ],
+  "Space / Astronaut": [
+    {
+      headline: "3... 2... 1... blast off to the party!",
+      message:
+        "You are invited on a mission to celebrate among stars, planets, cake, and cosmic fun. Pack your biggest smile — this launch window opens for one unforgettable celebration.",
+    },
+  ],
+  Minecraft: [
+    {
+      headline: "Build, play, celebrate — party mode is on!",
+      message:
+        "Join us for a block-by-block celebration filled with cake, games, and creative fun. Bring your explorer spirit and get ready to craft some brilliant memories together.",
+    },
+  ],
+};
+
+const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0) => {
+  const themeSuggestions = (theme && INVITE_COPY[theme]) || [];
+  const fallback = [
+    {
+      headline: `You're invited to ${title || "our celebration"}!`,
+      message: `Join us for a warm, happy ${occasion || "celebration"} filled with cake, smiles, photos, and little surprises. We would love to celebrate this special day with you.`,
+    },
+    {
+      headline: "Come celebrate, laugh, and make sweet memories!",
+      message: `We are planning a joyful ${occasion || "party"} with a beautiful theme, delicious cake, and the people who make the day feel extra special. Hope you can be there!`,
+    },
+  ];
+  const options = themeSuggestions.length ? themeSuggestions : fallback;
+  return options[index % options.length];
+};
+
 export default function PartyPlannerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
