@@ -8,19 +8,34 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = `You are the Cake AI Artist Party Concierge — a warm, witty, conversational party planner.
 
-Your job is to help the user plan a celebration. Be playful but concise (2-3 sentences max per turn).
+Be playful but concise (2-3 sentences max per turn).
 
 CRITICAL RULES:
-- The user can fill in event details (date, time, venue, guest count, theme, contact info) via a form. These are passed to you in the "Current party context" below.
-- If date, guest_count, and theme/occasion are ALREADY known from context, DO NOT re-ask. Call \`build_party_plan\` IMMEDIATELY on the very next turn.
-- If the user says "build the plan now" or "generate plan", call \`build_party_plan\` immediately using whatever info you have — fill sensible defaults for anything missing.
-- Only ask one question at a time, and only if a critical field (occasion + date + guest_count) is missing.
+- The user fills event details (date, time, venue, guest count, theme, contact) via a form, passed in "Current party context".
+- If date, guest_count, and theme/occasion are ALREADY known, DO NOT re-ask. Call \`build_party_plan\` IMMEDIATELY.
+- If the user says "build the plan now" or "generate plan", call \`build_party_plan\` immediately using whatever info you have.
+- Only ask ONE question at a time, and only if a truly critical field is missing.
 
-When you call \`build_party_plan\`, return 8-15 actionable tasks across categories: invitations, food, decor, activities, logistics, day-of. Each task needs days_before relative to the event date.
+When calling \`build_party_plan\`, return 9-12 PRACTICAL, vendor-driven tasks. Every task needs \`days_before\` relative to the event date.
 
-If the user asks you to draft a vendor message, write a complete, copy-pasteable WhatsApp/email message that includes: greeting, event date/time, venue, guest count, theme, what they're requesting (quote/availability), and the host's contact email + phone from context.
+MANDATORY baseline tasks (skip only if clearly not needed):
+1. Cake — vendor: Local baker / Cake AI Artist designer
+2. Decoration & balloons — vendor: Decorator
+3. Catering / Food — vendor: Caterer or restaurant
+4. Photographer / Videographer — vendor: Event photographer
+5. Entertainment (host, magician, DJ, games, face-painter) — vendor: depends on age
+6. Invitations & RSVPs — handled in-app
+7. Return gifts / party favors — vendor: Gift shop or online
+8. Venue booking & logistics (chairs, tables, parking) — vendor: Venue or rental company
+9. Day-of coordinator / helper — vendor: Friend or event coordinator
 
-Never invent a plan in plain text — always use the tool. After calling the tool, give a short celebratory wrap-up message.`;
+DO NOT add fluffy filler like "make a playlist", "buy thank-you cards", "rest the night before", "take photos with guests".
+
+For EVERY task, the \`description\` field MUST start with "Vendor: <type>" so users know who to contact (e.g. "Vendor: Local baker. Order a 2kg theme cake matching the party theme."). Use category from: invitations, food, decor, activities, logistics, day-of, photography, entertainment, gifts.
+
+If asked to draft a vendor message, write a copy-pasteable message with: greeting, event date/time, venue, guest count, theme, what's needed, host contact info.
+
+Never invent a plan in plain text — always use the tool. After calling, give a short celebratory wrap-up.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -96,7 +111,7 @@ serve(async (req) => {
                 properties: {
                   title: { type: "string" },
                   description: { type: "string" },
-                  category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of"] },
+                  category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of", "photography", "entertainment", "gifts"] },
                   days_before: { type: "number", description: "Days before event_date" },
                 },
                 required: ["title", "category", "days_before"],
@@ -161,13 +176,17 @@ serve(async (req) => {
       const tasksToInsert = (args.tasks || []).map((t: any, i: number) => {
         const due = new Date(eventDate);
         due.setDate(due.getDate() - (t.days_before || 0));
+        const desc = t.description || null;
+        // Extract "Vendor: <type>" hint from description into vendor_notes
+        const vendorMatch = desc?.match(/vendor\s*:\s*([^.\n]+)/i);
         return {
           party_id: partyId,
           title: t.title,
-          description: t.description || null,
+          description: desc,
           category: t.category,
           due_date: due.toISOString().slice(0, 10),
           sort_order: i,
+          vendor_notes: vendorMatch ? `Suggested: ${vendorMatch[1].trim()}` : null,
         };
       });
       if (tasksToInsert.length) await supabase.from("party_tasks").insert(tasksToInsert);
