@@ -117,12 +117,21 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
     `${host} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`).replace(/\n/g, "<br>");
   const safeHost = escapeHtml(host);
   const safeGuestName = escapeHtml(guestName);
-  const heroBackground = t.artwork
-    ? `linear-gradient(rgba(0,0,0,.22), rgba(0,0,0,.5)), url('${t.artwork}') center/cover no-repeat`
+  const ADULT_OCC = /(anniversary|wedding|engage|baby shower|housewarm|retire|farewell|reunion|graduation)/i;
+  const isAdult = ADULT_OCC.test(party.occasion || "");
+  const artworkUrl = (party.invite_artwork_url || "").trim() || t.artwork || "";
+  const heroBackground = artworkUrl
+    ? `linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.45) 100%), url('${artworkUrl}') center/cover no-repeat`
     : t.gradient;
   const bodyTint = t.bodyTint || "#fff5f8";
   const corner1 = t.cornerEmojis?.[0] || t.emoji;
   const corner2 = t.cornerEmojis?.[1] || t.emoji;
+  const heroEmojiHtml = artworkUrl
+    ? ""
+    : isAdult
+      ? `<div style="font-size:28px;line-height:1;letter-spacing:10px;margin-bottom:12px;opacity:.85;">${(t.heroEmojis || t.emoji).split(" ").slice(0,2).join(" ")}</div>`
+      : `<div style="font-size:38px;line-height:1.1;letter-spacing:6px;margin-bottom:12px;">${t.heroEmojis || t.emoji}</div>`;
+  const heroTextColor = artworkUrl ? "#fff" : (t.textColor || "#fff");
 
   return `
 <!DOCTYPE html><html><body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fdf6f0;">
@@ -136,8 +145,8 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
       </div>
 
       <!-- Hero -->
-      <div style="background:${heroBackground};padding:36px 24px 30px;text-align:center;color:${t.textColor || "#fff"};min-height:${t.artwork ? 280 : 220}px;">
-        <div style="font-size:38px;line-height:1.1;letter-spacing:6px;margin-bottom:12px;">${t.heroEmojis || t.emoji}</div>
+      <div style="background:${heroBackground};padding:36px 24px 30px;text-align:center;color:${heroTextColor};min-height:${artworkUrl ? 320 : 220}px;">
+        ${heroEmojiHtml}
         ${t.badge ? `<div style="display:inline-block;margin:6px auto 12px;padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.4);font-size:11px;font-weight:800;text-transform:uppercase;color:#fff;">${escapeHtml(t.badge)}</div>` : ""}
         <h1 style="margin:14px 0 6px;font-size:34px;line-height:1.05;font-family:${t.font || "Georgia,serif"};font-weight:800;text-shadow:0 3px 16px rgba(0,0,0,.45);">${headline}</h1>
         ${party.occasion ? `<p style="margin:6px 0 0;font-size:13px;opacity:.92;text-transform:capitalize;">${escapeHtml(party.occasion)}</p>` : ""}
