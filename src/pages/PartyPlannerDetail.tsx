@@ -95,6 +95,18 @@ const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> 
         "Join us for a block-by-block celebration filled with cake, games, and creative fun. Bring your explorer spirit and get ready to craft some brilliant memories together.",
     },
   ],
+  "Spiritual / ISKCON": [
+    {
+      headline: "A joyful celebration with blessings, cake, and love",
+      message:
+        "Please join us for a warm, soulful celebration filled with blessings, music, sweet moments, cake, and the company of people who make the day meaningful.",
+    },
+    {
+      headline: "Come share a blessed and beautiful celebration",
+      message:
+        "We would love your presence for a peaceful, happy gathering with heartfelt wishes, delicious cake, and memories made together in a festive spiritual theme.",
+    },
+  ],
 };
 
 const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0) => {
