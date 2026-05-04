@@ -26,7 +26,11 @@ import {
   Save,
   Wand2,
   Ticket,
+  ChevronDown,
+  ChevronUp,
+  Phone,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -67,6 +71,53 @@ const TRENDING_THEMES = [
   "Carnival / Circus",
   "Custom",
 ];
+
+// Fuzzy match a saved theme string back to one of the trending entries.
+const matchTrendingTheme = (raw?: string | null): string | null => {
+  if (!raw) return null;
+  const s = raw.toLowerCase().trim();
+  const direct = TRENDING_THEMES.find((t) => t.toLowerCase() === s);
+  if (direct) return direct;
+  const aliases: Array<[string[], string]> = [
+    [["iron", "avenger", "superhero", "marvel"], "Iron Man / Avengers"],
+    [["spider"], "Spider-Man"],
+    [["star wars", "jedi", "sith"], "Star Wars"],
+    [["frozen", "elsa", "anna"], "Frozen / Elsa"],
+    [["barbie", "pink doll"], "Barbie Pink"],
+    [["bluey"], "Bluey"],
+    [["taylor", "swift", "eras"], "Taylor Swift Eras"],
+    [["cocomelon"], "Cocomelon"],
+    [["harry potter", "hogwarts", "wizard"], "Harry Potter"],
+    [["floral", "flower", "garden flower"], "Floral Garden"],
+    [["boho"], "Boho Chic"],
+    [["disco", "y2k"], "Disco / Y2K"],
+    [["unicorn", "rainbow"], "Unicorn & Rainbow"],
+    [["pastel", "minimal"], "Pastel Minimal"],
+    [["luau", "tropical", "hawaii"], "Tropical Luau"],
+    [["black & gold", "black and gold", "elegan"], "Black & Gold Elegance"],
+    [["retro", "90s", "90's"], "Retro 90s"],
+    [["football", "soccer", "sports"], "Sports / Football"],
+    [["iskcon", "spiritual", "krishna", "hare", "religious"], "Spiritual / ISKCON"],
+    [["tea party"], "Garden Tea Party"],
+    [["carnival", "circus"], "Carnival / Circus"],
+    [["space", "astronaut", "galaxy", "rocket", "cosmic"], "Space / Astronaut"],
+    [["peppa"], "Peppa Pig"],
+    [["paw patrol"], "Paw Patrol"],
+    [["dinosaur", "dino", "jurassic"], "Dinosaur / Jurassic"],
+    [["mermaid", "under the sea", "ocean"], "Mermaid / Under the Sea"],
+    [["construction", "trucks", "digger"], "Construction / Trucks"],
+    [["jungle", "safari", "lion"], "Jungle Safari"],
+    [["pokemon", "pikachu"], "Pokemon"],
+    [["minecraft"], "Minecraft"],
+    [["princess", "royal"], "Princess / Royal"],
+    [["wonder woman"], "Wonder Woman"],
+    [["hot wheels"], "Hot Wheels"],
+  ];
+  for (const [keys, theme] of aliases) {
+    if (keys.some((k) => s.includes(k))) return theme;
+  }
+  return null;
+};
 
 const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> = {
   "Iron Man / Avengers": [
@@ -165,6 +216,7 @@ export default function PartyPlannerDetail() {
   const [inviteMessage, setInviteMessage] = useState("");
   const [savingInvite, setSavingInvite] = useState(false);
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
+  const [inviteEdited, setInviteEdited] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -189,9 +241,10 @@ export default function PartyPlannerDetail() {
     setContactEmail((p as any).contact_email || "");
     setContactPhone((p as any).contact_phone || "");
     if (p.theme) {
-      const match = TRENDING_THEMES.find((t) => t.toLowerCase() === p.theme.toLowerCase());
+      const match = matchTrendingTheme(p.theme);
       if (match) {
         setThemePick(match);
+        setCustomTheme("");
       } else {
         setThemePick("Custom");
         setCustomTheme(p.theme);
@@ -359,6 +412,39 @@ export default function PartyPlannerDetail() {
     await supabase.from("party_tasks").update({ is_completed: !current }).eq("id", taskId);
   };
 
+  const updateTaskVendor = async (taskId: string, patch: Record<string, any>) => {
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, ...patch } : t)));
+    await supabase.from("party_tasks").update(patch as any).eq("id", taskId);
+  };
+
+  const sendVendorEmail = async (taskId: string) => {
+    toast.loading("Emailing vendor...", { id: `vendor-${taskId}` });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
+      const { data, error } = await supabase.functions.invoke("send-vendor-email", {
+        body: { taskId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Vendor emailed", { id: `vendor-${taskId}` });
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e.message || "Could not send", { id: `vendor-${taskId}` });
+    }
+  };
+
+  const buildVendorMessage = (t: any) => {
+    const dateStr = party?.event_date
+      ? new Date(party.event_date).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short", timeZone: party.event_timezone || undefined })
+      : "TBD";
+    const venue = [party?.venue, party?.city].filter(Boolean).join(", ") || "TBD";
+    const greeting = t.vendor_name ? `Hi ${t.vendor_name},` : "Hello,";
+    return `${greeting}\n\nI'm planning a ${party?.occasion || "celebration"} (${party?.title}) and would love your help with: ${t.title}.\n\n• When: ${dateStr}\n• Where: ${venue}\n• Guests: ${party?.guest_count || "TBD"}\n• Theme: ${party?.theme || "TBD"}\n${t.description ? `\nWhat I'm looking for:\n${t.description}\n` : ""}\nCould you share availability and a quote?\n\nThanks!\n${party?.contact_phone ? `📱 ${party.contact_phone}\n` : ""}${party?.contact_email ? `✉️ ${party.contact_email}` : ""}`;
+  };
+
   const addGuest = async () => {
     if (!guestName.trim()) return;
     const { data, error } = await supabase
@@ -408,9 +494,12 @@ export default function PartyPlannerDetail() {
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const currentInviteTheme = themePick === "Custom" ? customTheme || party.theme : themePick || party.theme;
-  const applyInviteSuggestion = () => {
-    const nextIndex = inviteSuggestionIndex + 1;
+  const currentInviteTheme =
+    themePick === "Custom"
+      ? (customTheme.trim() || party.theme)
+      : (themePick || party.theme);
+  const applyInviteSuggestion = (forceIndex?: number) => {
+    const nextIndex = forceIndex ?? inviteSuggestionIndex + 1;
     const suggestion = getSuggestedInvite(currentInviteTheme, party.occasion, partyTitle || party.title, nextIndex);
     setInviteSuggestionIndex(nextIndex);
     setInviteHeadline(suggestion.headline);
@@ -544,7 +633,18 @@ export default function PartyPlannerDetail() {
                   </div>
                   <div className="space-y-2">
                     <Label>Theme</Label>
-                    <Select value={themePick} onValueChange={setThemePick}>
+                    <Select
+                      value={themePick}
+                      onValueChange={(v) => {
+                        setThemePick(v);
+                        if (!inviteEdited && v && v !== "Custom") {
+                          const s = getSuggestedInvite(v, party?.occasion, partyTitle || party?.title || "your party", 0);
+                          setInviteSuggestionIndex(0);
+                          setInviteHeadline(s.headline);
+                          setInviteMessage(s.message);
+                        }
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pick a trending theme" />
                       </SelectTrigger>
@@ -663,38 +763,148 @@ export default function PartyPlannerDetail() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {tasks.map((t) => (
-                      <div
-                        key={t.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${
-                          t.is_completed ? "opacity-60 line-through" : ""
-                        }`}
-                      >
-                        <Checkbox
-                          checked={t.is_completed}
-                          onCheckedChange={() => toggleTask(t.id, t.is_completed)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium">{t.title}</div>
-                          {t.description && (
-                            <div className="text-sm text-muted-foreground">{t.description}</div>
-                          )}
-                          <div className="flex gap-2 mt-1">
-                            {t.category && (
-                              <Badge variant="outline" className="text-xs">
-                                {t.category}
-                              </Badge>
-                            )}
-                            {t.due_date && (
-                              <Badge variant="outline" className="text-xs">
-                                📅 {new Date(t.due_date).toLocaleDateString()}
-                              </Badge>
-                            )}
+                    {tasks.map((t) => {
+                      const statusColor =
+                        t.vendor_status === "confirmed" ? "default" :
+                        t.vendor_status === "declined" ? "destructive" :
+                        t.vendor_status === "contacted" ? "secondary" : "outline";
+                      const statusLabel =
+                        t.vendor_status === "confirmed" ? "✅ Confirmed" :
+                        t.vendor_status === "declined" ? "❌ Declined" :
+                        t.vendor_status === "contacted" ? "📨 Contacted" : "Not contacted";
+                      return (
+                        <Collapsible key={t.id} className="rounded-lg border">
+                          <div className={`flex items-start gap-3 p-3 ${t.is_completed ? "opacity-60" : ""}`}>
+                            <Checkbox
+                              checked={t.is_completed}
+                              onCheckedChange={() => toggleTask(t.id, t.is_completed)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className={`font-medium ${t.is_completed ? "line-through" : ""}`}>{t.title}</div>
+                              {t.description && (
+                                <div className="text-sm text-muted-foreground">{t.description}</div>
+                              )}
+                              <div className="flex flex-wrap gap-2 mt-1.5">
+                                {t.category && (
+                                  <Badge variant="outline" className="text-xs">{t.category}</Badge>
+                                )}
+                                {t.due_date && (
+                                  <Badge variant="outline" className="text-xs">
+                                    📅 {new Date(t.due_date).toLocaleDateString()}
+                                  </Badge>
+                                )}
+                                {t.vendor_name && (
+                                  <Badge variant={statusColor as any} className="text-xs">
+                                    🧑‍💼 {t.vendor_name} — {statusLabel}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <CollapsibleTrigger asChild>
+                              <Button size="sm" variant="ghost" className="shrink-0">
+                                Vendor <ChevronDown className="w-3 h-3 ml-1" />
+                              </Button>
+                            </CollapsibleTrigger>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                          <CollapsibleContent>
+                            <div className="border-t p-3 space-y-3 bg-muted/30">
+                              <div className="grid sm:grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-xs">Vendor name</Label>
+                                  <Input
+                                    placeholder="e.g. Sweet Bakers"
+                                    defaultValue={t.vendor_name || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_name: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Status</Label>
+                                  <Select
+                                    value={t.vendor_status || "not_contacted"}
+                                    onValueChange={(v) => updateTaskVendor(t.id, { vendor_status: v })}
+                                  >
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="not_contacted">Not contacted</SelectItem>
+                                      <SelectItem value="contacted">Contacted</SelectItem>
+                                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                                      <SelectItem value="declined">Declined</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Email</Label>
+                                  <Input
+                                    type="email"
+                                    placeholder="vendor@email.com"
+                                    defaultValue={t.vendor_email || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_email: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Phone / WhatsApp</Label>
+                                  <Input
+                                    type="tel"
+                                    placeholder="+91 98xxxxxxx"
+                                    defaultValue={t.vendor_phone || ""}
+                                    onBlur={(e) => updateTaskVendor(t.id, { vendor_phone: e.target.value.trim() || null })}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-xs">Notes (what to ask, quote received, etc.)</Label>
+                                <Textarea
+                                  rows={2}
+                                  placeholder="e.g. asked for 2kg chocolate cake with photo print"
+                                  defaultValue={t.vendor_notes || ""}
+                                  onBlur={(e) => updateTaskVendor(t.id, { vendor_notes: e.target.value.trim() || null })}
+                                />
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => sendVendorEmail(t.id)}
+                                  disabled={!t.vendor_email}
+                                >
+                                  <Mail className="w-3 h-3 mr-1" /> Email vendor
+                                </Button>
+                                {t.vendor_phone && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    asChild
+                                  >
+                                    <a
+                                      href={`https://wa.me/${t.vendor_phone.replace(/[^\d]/g, "")}?text=${encodeURIComponent(buildVendorMessage(t))}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      💬 WhatsApp
+                                    </a>
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(buildVendorMessage(t));
+                                    toast.success("Message copied");
+                                  }}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" /> Copy message
+                                </Button>
+                                {t.vendor_contacted_at && (
+                                  <span className="text-xs text-muted-foreground self-center">
+                                    Last contacted: {new Date(t.vendor_contacted_at).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -715,7 +925,7 @@ export default function PartyPlannerDetail() {
                     <Label>Invite headline</Label>
                     <Input
                       value={inviteHeadline}
-                      onChange={(e) => setInviteHeadline(e.target.value)}
+                      onChange={(e) => { setInviteHeadline(e.target.value); setInviteEdited(true); }}
                       placeholder={`You're invited to ${partyTitle || party.title}!`}
                     />
                   </div>
@@ -724,7 +934,7 @@ export default function PartyPlannerDetail() {
                     <Textarea
                       rows={5}
                       value={inviteMessage}
-                      onChange={(e) => setInviteMessage(e.target.value)}
+                      onChange={(e) => { setInviteMessage(e.target.value); setInviteEdited(true); }}
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
@@ -732,7 +942,7 @@ export default function PartyPlannerDetail() {
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={applyInviteSuggestion}>
+                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()}>
                       <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
                     </Button>
                   </div>
@@ -745,6 +955,7 @@ export default function PartyPlannerDetail() {
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
                 <InvitePreview
+                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}`}
                   party={{
                     ...party,
                     title: partyTitle || party.title,
