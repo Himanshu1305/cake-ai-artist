@@ -413,7 +413,7 @@ export default function PartyPlannerDetail() {
 
   const updateTaskVendor = async (taskId: string, patch: Record<string, any>) => {
     setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, ...patch } : t)));
-    await supabase.from("party_tasks").update(patch).eq("id", taskId);
+    await supabase.from("party_tasks").update(patch as any).eq("id", taskId);
   };
 
   const sendVendorEmail = async (taskId: string) => {
