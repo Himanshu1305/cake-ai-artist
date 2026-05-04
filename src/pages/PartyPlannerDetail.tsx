@@ -1024,10 +1024,15 @@ export default function PartyPlannerDetail() {
                         <SelectValue placeholder="Pick a trending theme" />
                       </SelectTrigger>
                       <SelectContent>
-                        {TRENDING_THEMES.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t}
-                          </SelectItem>
+                        {THEME_GROUPS.map((group) => (
+                          <SelectGroup key={group.label}>
+                            <SelectLabel>{group.label}</SelectLabel>
+                            {group.themes.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>
