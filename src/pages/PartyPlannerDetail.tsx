@@ -949,6 +949,39 @@ export default function PartyPlannerDetail() {
     }
   };
 
+  const regenerateArtwork = async () => {
+    if (artworkGenerating) return;
+    setArtworkGenerating(true);
+    try {
+      const ageVal = childAge ? parseInt(childAge, 10) : null;
+      const { data, error } = await supabase.functions.invoke("generate-invite-artwork", {
+        body: {
+          partyId: party.id,
+          theme: currentInviteTheme,
+          occasion: party.occasion,
+          title: partyTitle || party.title,
+          childAge: ageVal,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        setParty((prev: any) => ({ ...prev, invite_artwork_url: data.url, invite_artwork_meta: data.meta }));
+        toast.success("New invitation artwork ready");
+      }
+    } catch (e: any) {
+      console.error("artwork gen failed", e);
+      toast.error(e?.message || "Could not generate artwork");
+    } finally {
+      setArtworkGenerating(false);
+    }
+  };
+
+  const saveChildAge = async (val: string) => {
+    setChildAge(val);
+    const n = val ? parseInt(val, 10) : null;
+    await supabase.from("parties").update({ child_age: n } as any).eq("id", party.id);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-6">
