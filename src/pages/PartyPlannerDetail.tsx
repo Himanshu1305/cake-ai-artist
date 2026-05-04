@@ -72,6 +72,53 @@ const TRENDING_THEMES = [
   "Custom",
 ];
 
+// Fuzzy match a saved theme string back to one of the trending entries.
+const matchTrendingTheme = (raw?: string | null): string | null => {
+  if (!raw) return null;
+  const s = raw.toLowerCase().trim();
+  const direct = TRENDING_THEMES.find((t) => t.toLowerCase() === s);
+  if (direct) return direct;
+  const aliases: Array<[string[], string]> = [
+    [["iron", "avenger", "superhero", "marvel"], "Iron Man / Avengers"],
+    [["spider"], "Spider-Man"],
+    [["star wars", "jedi", "sith"], "Star Wars"],
+    [["frozen", "elsa", "anna"], "Frozen / Elsa"],
+    [["barbie", "pink doll"], "Barbie Pink"],
+    [["bluey"], "Bluey"],
+    [["taylor", "swift", "eras"], "Taylor Swift Eras"],
+    [["cocomelon"], "Cocomelon"],
+    [["harry potter", "hogwarts", "wizard"], "Harry Potter"],
+    [["floral", "flower", "garden flower"], "Floral Garden"],
+    [["boho"], "Boho Chic"],
+    [["disco", "y2k"], "Disco / Y2K"],
+    [["unicorn", "rainbow"], "Unicorn & Rainbow"],
+    [["pastel", "minimal"], "Pastel Minimal"],
+    [["luau", "tropical", "hawaii"], "Tropical Luau"],
+    [["black & gold", "black and gold", "elegan"], "Black & Gold Elegance"],
+    [["retro", "90s", "90's"], "Retro 90s"],
+    [["football", "soccer", "sports"], "Sports / Football"],
+    [["iskcon", "spiritual", "krishna", "hare", "religious"], "Spiritual / ISKCON"],
+    [["tea party"], "Garden Tea Party"],
+    [["carnival", "circus"], "Carnival / Circus"],
+    [["space", "astronaut", "galaxy", "rocket", "cosmic"], "Space / Astronaut"],
+    [["peppa"], "Peppa Pig"],
+    [["paw patrol"], "Paw Patrol"],
+    [["dinosaur", "dino", "jurassic"], "Dinosaur / Jurassic"],
+    [["mermaid", "under the sea", "ocean"], "Mermaid / Under the Sea"],
+    [["construction", "trucks", "digger"], "Construction / Trucks"],
+    [["jungle", "safari", "lion"], "Jungle Safari"],
+    [["pokemon", "pikachu"], "Pokemon"],
+    [["minecraft"], "Minecraft"],
+    [["princess", "royal"], "Princess / Royal"],
+    [["wonder woman"], "Wonder Woman"],
+    [["hot wheels"], "Hot Wheels"],
+  ];
+  for (const [keys, theme] of aliases) {
+    if (keys.some((k) => s.includes(k))) return theme;
+  }
+  return null;
+};
+
 const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> = {
   "Iron Man / Avengers": [
     {
