@@ -227,8 +227,27 @@ export default function PartyPlannerDetail() {
     setParty(p);
     setPartyTitle(p.title || "");
     const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
-    setInviteHeadline((p as any).invite_headline || suggestedInvite.headline);
-    setInviteMessage((p as any).invite_message || suggestedInvite.message);
+    // Detect stale ISKCON/spiritual copy that doesn't match the current theme and replace silently.
+    const themeStr = (p.theme || "").toLowerCase();
+    const themeIsSpiritual = /iskcon|spiritual|krishna|hare|religious|puja/.test(themeStr);
+    const SPIRITUAL_RX = /(iskcon|spiritual|krishna|hare krishna|aarti|blessing|blessed|puja|prasad|soulful)/i;
+    const savedHeadline = (p as any).invite_headline as string | null;
+    const savedMessage = (p as any).invite_message as string | null;
+    const headlineLeaks = !!savedHeadline && !themeIsSpiritual && SPIRITUAL_RX.test(savedHeadline);
+    const messageLeaks = !!savedMessage && !themeIsSpiritual && SPIRITUAL_RX.test(savedMessage);
+    if (headlineLeaks || messageLeaks) {
+      setInviteHeadline(suggestedInvite.headline);
+      setInviteMessage(suggestedInvite.message);
+      setInviteEdited(false);
+      // Clear stale fields in DB silently so it doesn't re-leak on reload.
+      supabase.from("parties").update({
+        invite_headline: suggestedInvite.headline,
+        invite_message: suggestedInvite.message,
+      } as any).eq("id", id!).then(() => {});
+    } else {
+      setInviteHeadline(savedHeadline || suggestedInvite.headline);
+      setInviteMessage(savedMessage || suggestedInvite.message);
+    }
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
