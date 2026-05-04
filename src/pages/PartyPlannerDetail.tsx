@@ -706,9 +706,14 @@ export default function PartyPlannerDetail() {
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
-                  <Button onClick={saveInvite} disabled={savingInvite}>
-                    <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={saveInvite} disabled={savingInvite}>
+                      <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={applyInviteSuggestion}>
+                      <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Tip: pick a theme in <strong>Details</strong> to restyle the invitation card.
                   </p>
@@ -721,8 +726,7 @@ export default function PartyPlannerDetail() {
                   party={{
                     ...party,
                     title: partyTitle || party.title,
-                    theme:
-                      themePick === "Custom" ? customTheme || party.theme : themePick || party.theme,
+                    theme: currentInviteTheme,
                   }}
                   hostName="You"
                   guestName="Your guest"
