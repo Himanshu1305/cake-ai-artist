@@ -624,6 +624,60 @@ export default function PartyPlannerDetail() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="invite">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customize your invitation</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Edits update the preview live. Save when ready — the email matches what you see.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Invite headline</Label>
+                    <Input
+                      value={inviteHeadline}
+                      onChange={(e) => setInviteHeadline(e.target.value)}
+                      placeholder={`You're invited to ${partyTitle || party.title}!`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Personal note</Label>
+                    <Textarea
+                      rows={5}
+                      value={inviteMessage}
+                      onChange={(e) => setInviteMessage(e.target.value)}
+                      placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
+                    />
+                  </div>
+                  <Button onClick={saveInvite} disabled={savingInvite}>
+                    <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Tip: pick a theme in <strong>Details</strong> to restyle the invitation card.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
+                <InvitePreview
+                  party={{
+                    ...party,
+                    title: partyTitle || party.title,
+                    theme:
+                      themePick === "Custom" ? customTheme || party.theme : themePick || party.theme,
+                  }}
+                  hostName="You"
+                  guestName="Your guest"
+                  headline={inviteHeadline}
+                  message={inviteMessage}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="invites">
             <Card className="mb-4">
               <CardHeader>
