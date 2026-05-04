@@ -1470,12 +1470,29 @@ export default function PartyPlannerDetail() {
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
+                  {/birthday/i.test(party.occasion || "") && (
+                    <div className="space-y-2">
+                      <Label>Celebrant's age (so the artwork matches)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={childAge}
+                        onChange={(e) => saveChildAge(e.target.value)}
+                        placeholder="e.g. 7"
+                        className="max-w-[160px]"
+                      />
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
                     <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()} disabled={inviteGenerating}>
-                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate suggestion"}
+                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate text"}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={regenerateArtwork} disabled={artworkGenerating}>
+                      <Sparkles className="w-4 h-4 mr-2" /> {artworkGenerating ? "Creating artwork..." : "Regenerate artwork"}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -1485,9 +1502,11 @@ export default function PartyPlannerDetail() {
               </Card>
 
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                  Live preview {artworkGenerating && <span className="ml-2 italic">· generating artwork…</span>}
+                </p>
                 <InvitePreview
-                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}`}
+                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}-${party.invite_artwork_url || ""}`}
                   party={{
                     ...party,
                     title: partyTitle || party.title,
@@ -1497,6 +1516,7 @@ export default function PartyPlannerDetail() {
                   guestName="Your guest"
                   headline={inviteHeadline}
                   message={inviteMessage}
+                  artworkUrl={party.invite_artwork_url || null}
                 />
               </div>
             </div>
