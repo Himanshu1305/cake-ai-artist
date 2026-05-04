@@ -111,7 +111,7 @@ serve(async (req) => {
                 properties: {
                   title: { type: "string" },
                   description: { type: "string" },
-                  category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of"] },
+                  category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of", "photography", "entertainment", "gifts"] },
                   days_before: { type: "number", description: "Days before event_date" },
                 },
                 required: ["title", "category", "days_before"],
