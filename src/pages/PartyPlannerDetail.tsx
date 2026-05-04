@@ -833,6 +833,7 @@ export default function PartyPlannerDetail() {
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
                 <InvitePreview
+                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}`}
                   party={{
                     ...party,
                     title: partyTitle || party.title,
