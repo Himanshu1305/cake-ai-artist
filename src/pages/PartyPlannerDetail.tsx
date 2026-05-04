@@ -874,12 +874,44 @@ export default function PartyPlannerDetail() {
     themePick === "Custom"
       ? (customTheme.trim() || party.theme)
       : (themePick || party.theme);
-  const applyInviteSuggestion = (forceIndex?: number) => {
+  const localFallback = (forceIndex?: number) => {
     const nextIndex = forceIndex ?? inviteSuggestionIndex + 1;
     const suggestion = getSuggestedInvite(currentInviteTheme, party.occasion, partyTitle || party.title, nextIndex);
     setInviteSuggestionIndex(nextIndex);
     setInviteHeadline(suggestion.headline);
     setInviteMessage(suggestion.message);
+    setInviteEdited(false);
+  };
+  const applyInviteSuggestion = async () => {
+    if (inviteGenerating) return;
+    setInviteGenerating(true);
+    try {
+      const eventDateStr = party.event_date
+        ? new Date(party.event_date).toLocaleString(undefined, { dateStyle: "long", timeStyle: "short", timeZone: tz })
+        : "";
+      const { data, error } = await supabase.functions.invoke("generate-invite-copy", {
+        body: {
+          theme: currentInviteTheme,
+          occasion: party.occasion,
+          title: partyTitle || party.title,
+          hostName: (party.contact_email || "").split("@")[0] || "the host",
+          eventDate: eventDateStr,
+          avoid: [inviteHeadline].filter(Boolean),
+        },
+      });
+      if (error) throw error;
+      if (!data?.headline || !data?.message) throw new Error("No copy");
+      setInviteHeadline(data.headline);
+      setInviteMessage(data.message);
+      setInviteSuggestionIndex(inviteSuggestionIndex + 1);
+      setInviteEdited(false);
+    } catch (e: any) {
+      console.error("invite copy gen failed", e);
+      toast.message("Using offline suggestion");
+      localFallback();
+    } finally {
+      setInviteGenerating(false);
+    }
   };
 
   return (
