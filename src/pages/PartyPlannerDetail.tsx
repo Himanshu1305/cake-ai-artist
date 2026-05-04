@@ -1406,8 +1406,8 @@ export default function PartyPlannerDetail() {
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()}>
-                      <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
+                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()} disabled={inviteGenerating}>
+                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate suggestion"}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
