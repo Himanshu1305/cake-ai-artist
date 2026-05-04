@@ -314,6 +314,12 @@ const Index = () => {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex gap-2 items-center">
               <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
+              <Link to="/party-planner">
+                <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-purple/10 gap-1.5">
+                  Party Planner
+                  <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">PREMIUM</span>
+                </Button>
+              </Link>
               <Link to="/pricing">
                 <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
@@ -351,6 +357,12 @@ const Index = () => {
                 <div className="flex flex-col gap-2">
                   <Link to="/how-it-works">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button>
+                  </Link>
+                  <Link to="/party-planner">
+                    <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-purple/10">
+                      Party Planner
+                      <span className="ml-2 bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">PREMIUM</span>
+                    </Button>
                   </Link>
                   <Link to="/pricing">
                     <Button variant="ghost" className="w-full justify-start relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
@@ -1019,10 +1031,83 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Party Planner Premium Feature Highlight */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto rounded-3xl p-8 md:p-12 bg-gradient-to-br from-party-purple/15 via-party-pink/10 to-party-gold/15 border-2 border-party-purple/30 relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+              ✨ NEW · PREMIUM
+            </span>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                Plan the whole party — not just the cake
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Meet your AI Party Concierge. Chat your way to a complete plan, get a smart checklist that adapts to your event, and send beautiful digital invites with built-in RSVP tracking.
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-start gap-2 text-foreground">
+                  <span className="text-party-purple font-bold">✓</span>
+                  Conversational AI Party Concierge
+                </li>
+                <li className="flex items-start gap-2 text-foreground">
+                  <span className="text-party-purple font-bold">✓</span>
+                  Smart checklist with countdown reminders
+                </li>
+                <li className="flex items-start gap-2 text-foreground">
+                  <span className="text-party-purple font-bold">✓</span>
+                  Digital invites with live RSVP tracking
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/party-planner")}
+                  className="bg-gradient-to-r from-party-purple to-party-pink hover:opacity-90 text-white border-0"
+                >
+                  Try Party Planner
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate("/pricing")}
+                  className="border-party-purple/40"
+                >
+                  See Premium Plans
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Included with every Premium plan — Monthly, Yearly & Lifetime.
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <div className="bg-background/60 backdrop-blur rounded-2xl p-6 border border-party-purple/20 shadow-elegant">
+                <div className="text-sm space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="bg-party-purple/20 text-party-purple rounded-full px-2 py-1 text-xs font-semibold">You</span>
+                    <p className="text-foreground">Mia turns 7 next month, 15 kids, unicorn theme 🦄</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="bg-party-pink/20 text-party-pink rounded-full px-2 py-1 text-xs font-semibold">AI</span>
+                    <p className="text-foreground">Love it! I've drafted your checklist, menu and an invite — want me to send RSVPs?</p>
+                  </div>
+                  <div className="border-t border-border/50 pt-3 space-y-1.5">
+                    <p className="text-xs text-muted-foreground">📋 12 tasks · 🎂 8 menu items · 💌 15 invites ready</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Ad Banner before CTA */}
       <div className="container mx-auto px-4 py-8">
         <AdSlot size="horizontal" slotId={AD_SLOTS.homepage_horizontal} className="max-w-3xl mx-auto" />
       </div>
+
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-8">

@@ -79,11 +79,25 @@ export default function PartyPlanner() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-4" />
-        <h1 className="text-3xl font-bold mb-2">Party Planner is a Premium feature</h1>
-        <p className="text-muted-foreground mb-6 max-w-md">
-          Plan parties end-to-end with an AI concierge, smart checklists, and shareable digital invites with RSVP tracking.
+        <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-xs font-bold px-3 py-1 rounded-full mb-3">PREMIUM FEATURE</span>
+        <h1 className="text-3xl font-bold mb-3">Party Planner is a Premium feature</h1>
+        <p className="text-muted-foreground mb-4 max-w-md">
+          Plan parties end-to-end with your AI Party Concierge — chat to build a plan, get a smart checklist that adapts to your event, and send digital invites with live RSVP tracking.
         </p>
-        <Button onClick={() => navigate("/pricing")} size="lg">Upgrade to unlock</Button>
+        <ul className="text-left text-sm text-muted-foreground mb-6 space-y-1">
+          <li>✓ Conversational AI Party Concierge</li>
+          <li>✓ Smart checklist with countdown reminders</li>
+          <li>✓ Digital invites with RSVP tracking</li>
+        </ul>
+        <p className="text-sm text-muted-foreground mb-6">Included with every Premium plan — Monthly, Yearly & Lifetime.</p>
+        <div className="flex gap-3 flex-wrap justify-center">
+          <Button onClick={() => navigate("/pricing")} size="lg" className="bg-gradient-to-r from-party-purple to-party-pink text-white border-0">
+            Upgrade to unlock
+          </Button>
+          <Button onClick={() => navigate("/pricing")} size="lg" variant="outline">
+            See plans & pricing
+          </Button>
+        </div>
       </div>
     );
   }

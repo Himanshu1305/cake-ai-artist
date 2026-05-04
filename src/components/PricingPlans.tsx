@@ -43,6 +43,7 @@ const COMMON_FEATURES = [
   "Unlimited cake design ideas",
   "All characters & themes",
   "Party Pack Generator",
+  "AI Party Planner — concierge, smart checklists & RSVP invites",
   "Private gallery",
   "Smart occasion reminders",
 ];

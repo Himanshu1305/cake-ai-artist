@@ -16,13 +16,14 @@ interface PremiumComparisonProps {
 export const PremiumComparison = ({ show }: PremiumComparisonProps) => {
   const navigate = useNavigate();
   const { detectedCountry } = useGeoContext();
-  const monthlyLabel = MONTHLY_PRICE[detectedCountry || ''] || '$9.99/month';
+  const monthlyLabel = MONTHLY_PRICE[detectedCountry ?? ''] || '$9.99/month';
 
   if (!show) return null;
 
   const features = [
     { name: "Cake generations", free: "5 total", premium: "150/year" },
     { name: "Gallery slots", free: "5", premium: "30" },
+    { name: "AI Party Planner (concierge + RSVP invites)", free: false, premium: true },
     { name: "4K high-resolution downloads", free: false, premium: true },
     { name: "No watermark", free: false, premium: true },
     { name: "Priority processing", free: false, premium: true },
