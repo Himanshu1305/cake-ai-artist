@@ -95,7 +95,7 @@ ${party.contact_email ? `✉️ ${party.contact_email}` : ""}`;
         from: "Cake AI Artist <noreply@cakeaiartist.com>",
         to: [task.vendor_email],
         reply_to: party.contact_email || undefined,
-        subject: `${party.title} — ${task.title} (request for quote)`,
+        subject: `${task.title} for ${formatShortDate(party.event_date, party.event_timezone)} — quote request`,
         html,
         text: body,
       }),
