@@ -610,6 +610,34 @@ export default function PartyPlannerDetail() {
     setTasks(t || []);
     setGuests(g || []);
     setMessages(m || []);
+    setChildAge((p as any).child_age != null ? String((p as any).child_age) : "");
+
+    // Auto-generate hero artwork when missing or stale (theme/occasion/age changed).
+    const meta = (p as any).invite_artwork_meta || {};
+    const ageVal = (p as any).child_age ?? null;
+    const stale =
+      !(p as any).invite_artwork_url ||
+      meta.theme !== (p.theme || "") ||
+      meta.occasion !== (p.occasion || "") ||
+      (meta.childAge ?? null) !== ageVal;
+    if (stale && (p.theme || p.occasion)) {
+      // Fire-and-forget; UI will refresh when done.
+      (async () => {
+        try {
+          setArtworkGenerating(true);
+          const { data: art } = await supabase.functions.invoke("generate-invite-artwork", {
+            body: { partyId: p.id, theme: p.theme, occasion: p.occasion, title: p.title, childAge: ageVal },
+          });
+          if (art?.url) {
+            setParty((prev: any) => ({ ...prev, invite_artwork_url: art.url, invite_artwork_meta: art.meta }));
+          }
+        } catch (e) {
+          console.warn("artwork auto-gen failed", e);
+        } finally {
+          setArtworkGenerating(false);
+        }
+      })();
+    }
   };
 
   useEffect(() => {
