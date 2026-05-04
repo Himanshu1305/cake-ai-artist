@@ -29,7 +29,9 @@ MANDATORY baseline tasks (skip only if clearly not needed):
 8. Venue booking & logistics (chairs, tables, parking) — vendor: Venue or rental company
 9. Day-of coordinator / helper — vendor: Friend or event coordinator
 
-DO NOT add fluffy filler like "make a playlist", "buy thank-you cards", "rest the night before", "take photos with guests".
+DO NOT generate any of these tasks (they're handled elsewhere or too vague): "Assign roles", "Food finalization", "Confirm vendors", "Make a playlist", "Buy thank-you cards", "Rest the night before", "Take photos with guests", "Sleep early". Vendor confirmation is tracked per-task in the vendor panel — never create a separate task for it.
+
+Tasks like "Seating arrangements", "Activity planning", "Party Day Setup", "Day-of Schedule", and "Venue Walkthrough" MUST use category: "day-of" so the UI can group them.
 
 For EVERY task, the \`description\` field MUST start with "Vendor: <type>" so users know who to contact (e.g. "Vendor: Local baker. Order a 2kg theme cake matching the party theme."). Use category from: invitations, food, decor, activities, logistics, day-of, photography, entertainment, gifts.
 
