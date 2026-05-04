@@ -1,0 +1,1 @@
+UPDATE public.party_tasks SET title = 'Music Selection' WHERE id = 'adf955c8-1aa1-430a-92ca-ad9718899617';
