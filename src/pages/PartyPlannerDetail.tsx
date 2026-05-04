@@ -820,7 +820,7 @@ export default function PartyPlannerDetail() {
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={applyInviteSuggestion}>
+                    <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()}>
                       <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
                     </Button>
                   </div>
