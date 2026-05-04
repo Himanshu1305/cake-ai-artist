@@ -98,7 +98,15 @@ const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> 
 };
 
 const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0) => {
-  const themeSuggestions = (theme && INVITE_COPY[theme]) || [];
+  const normalizedTheme = theme?.toLowerCase() || "";
+  const themeKey = normalizedTheme.includes("iron") || normalizedTheme.includes("avenger") || normalizedTheme.includes("superhero")
+    ? "Iron Man / Avengers"
+    : normalizedTheme.includes("space") || normalizedTheme.includes("astronaut") || normalizedTheme.includes("galaxy")
+      ? "Space / Astronaut"
+      : normalizedTheme.includes("minecraft")
+        ? "Minecraft"
+        : undefined;
+  const themeSuggestions = (themeKey && INVITE_COPY[themeKey]) || [];
   const fallback = [
     {
       headline: `You're invited to ${title || "our celebration"}!`,
