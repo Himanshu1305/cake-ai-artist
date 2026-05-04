@@ -370,14 +370,17 @@ export default function PartyPlannerDetail() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="details">📋 Details</TabsTrigger>
             <TabsTrigger value="chat">
               <MessageSquare className="w-4 h-4 mr-1" /> Concierge
             </TabsTrigger>
             <TabsTrigger value="checklist">✅ Checklist {tasks.length > 0 && `(${tasks.length})`}</TabsTrigger>
+            <TabsTrigger value="invite">
+              <Ticket className="w-4 h-4 mr-1" /> Invite
+            </TabsTrigger>
             <TabsTrigger value="invites">
-              <Mail className="w-4 h-4 mr-1" /> Invites {guests.length > 0 && `(${guests.length})`}
+              <Mail className="w-4 h-4 mr-1" /> Guests {guests.length > 0 && `(${guests.length})`}
             </TabsTrigger>
           </TabsList>
 
