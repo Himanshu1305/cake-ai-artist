@@ -22,7 +22,7 @@ export default function PartyRSVP() {
         return;
       }
       setGuest(g);
-      const { data: p } = await supabase.from("parties").select("title, occasion, event_date, venue, theme").eq("id", g.party_id).maybeSingle();
+      const { data: p } = await supabase.from("parties").select("title, occasion, event_date, event_timezone, venue, city, theme").eq("id", g.party_id).maybeSingle();
       setParty(p);
       setDone(g.rsvp_status !== "pending");
       setLoading(false);
