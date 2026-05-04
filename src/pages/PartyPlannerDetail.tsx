@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { InvitePreview } from "@/components/InvitePreview";
@@ -35,42 +35,79 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const TRENDING_THEMES = [
-  "Barbie Pink",
-  "Space / Astronaut",
-  "Iron Man / Avengers",
-  "Spider-Man",
-  "Star Wars",
-  "Frozen / Elsa",
-  "Peppa Pig",
-  "Paw Patrol",
-  "Dinosaur / Jurassic",
-  "Mermaid / Under the Sea",
-  "Construction / Trucks",
-  "Jungle Safari",
-  "Pokemon",
-  "Minecraft",
-  "Princess / Royal",
-  "Wonder Woman",
-  "Hot Wheels",
-  "Bluey",
-  "Taylor Swift Eras",
-  "Cocomelon",
-  "Harry Potter",
-  "Floral Garden",
-  "Boho Chic",
-  "Disco / Y2K",
-  "Unicorn & Rainbow",
-  "Pastel Minimal",
-  "Tropical Luau",
-  "Black & Gold Elegance",
-  "Retro 90s",
-  "Sports / Football",
-  "Spiritual / ISKCON",
-  "Garden Tea Party",
-  "Carnival / Circus",
-  "Custom",
+// Themes grouped for the Select UI. Order within group matters; flatten preserves order.
+const THEME_GROUPS: Array<{ label: string; themes: string[] }> = [
+  {
+    label: "Kids & Birthdays",
+    themes: [
+      "Barbie Pink",
+      "Space / Astronaut",
+      "Iron Man / Avengers",
+      "Spider-Man",
+      "Star Wars",
+      "Frozen / Elsa",
+      "Peppa Pig",
+      "Paw Patrol",
+      "Dinosaur / Jurassic",
+      "Mermaid / Under the Sea",
+      "Construction / Trucks",
+      "Jungle Safari",
+      "Pokemon",
+      "Minecraft",
+      "Princess / Royal",
+      "Wonder Woman",
+      "Hot Wheels",
+      "Bluey",
+      "Cocomelon",
+      "Harry Potter",
+      "Unicorn & Rainbow",
+      "Carnival / Circus",
+    ],
+  },
+  {
+    label: "Romantic & Anniversary",
+    themes: [
+      "Romantic Rose Gold",
+      "Candlelight & Champagne",
+      "Vintage Sepia Romance",
+      "Eternal Bond",
+      "Moonlight & Stars",
+    ],
+  },
+  {
+    label: "Elegant & Soothing",
+    themes: [
+      "Floral Garden",
+      "Boho Chic",
+      "Pastel Minimal",
+      "Black & Gold Elegance",
+      "Garden Tea Party",
+      "Ocean Breeze",
+      "Lavender Fields",
+      "Soft Sunrise",
+    ],
+  },
+  {
+    label: "Fun & Trendy",
+    themes: [
+      "Taylor Swift Eras",
+      "Disco / Y2K",
+      "Tropical Luau",
+      "Retro 90s",
+      "Sports / Football",
+    ],
+  },
+  {
+    label: "Spiritual",
+    themes: ["Spiritual / ISKCON"],
+  },
+  {
+    label: "Other",
+    themes: ["Custom"],
+  },
 ];
+
+const TRENDING_THEMES = THEME_GROUPS.flatMap((g) => g.themes);
 
 // Fuzzy match a saved theme string back to one of the trending entries.
 const matchTrendingTheme = (raw?: string | null): string | null => {
@@ -104,7 +141,7 @@ const matchTrendingTheme = (raw?: string | null): string | null => {
     [["peppa"], "Peppa Pig"],
     [["paw patrol"], "Paw Patrol"],
     [["dinosaur", "dino", "jurassic"], "Dinosaur / Jurassic"],
-    [["mermaid", "under the sea", "ocean"], "Mermaid / Under the Sea"],
+    [["mermaid", "under the sea", "ocean theme"], "Mermaid / Under the Sea"],
     [["construction", "trucks", "digger"], "Construction / Trucks"],
     [["jungle", "safari", "lion"], "Jungle Safari"],
     [["pokemon", "pikachu"], "Pokemon"],
@@ -112,6 +149,14 @@ const matchTrendingTheme = (raw?: string | null): string | null => {
     [["princess", "royal"], "Princess / Royal"],
     [["wonder woman"], "Wonder Woman"],
     [["hot wheels"], "Hot Wheels"],
+    [["rose gold", "romantic rose"], "Romantic Rose Gold"],
+    [["candlelight", "champagne"], "Candlelight & Champagne"],
+    [["vintage", "sepia"], "Vintage Sepia Romance"],
+    [["eternal", "burgundy"], "Eternal Bond"],
+    [["moonlight", "starry night"], "Moonlight & Stars"],
+    [["ocean breeze", "coastal"], "Ocean Breeze"],
+    [["lavender"], "Lavender Fields"],
+    [["sunrise", "peach"], "Soft Sunrise"],
   ];
   for (const [keys, theme] of aliases) {
     if (keys.some((k) => s.includes(k))) return theme;
@@ -119,71 +164,349 @@ const matchTrendingTheme = (raw?: string | null): string | null => {
   return null;
 };
 
-const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> = {
-  "Iron Man / Avengers": [
-    {
-      headline: "Suit up — the birthday squad is assembling!",
-      message:
-        "Calling all heroes! Join us for an action-packed celebration with cake, games, big laughs, and a mission your little Avenger will never forget. Come ready for heroic photos and super-powered fun.",
-    },
-    {
-      headline: "Heroes wanted for one epic party!",
-      message:
-        "The celebration signal is on! We would love you to join a red-and-gold day of surprises, cake, and mighty memories. Bring your best hero energy — this party needs the full team.",
-    },
-  ],
-  "Space / Astronaut": [
-    {
-      headline: "3... 2... 1... blast off to the party!",
-      message:
-        "You are invited on a mission to celebrate among stars, planets, cake, and cosmic fun. Pack your biggest smile — this launch window opens for one unforgettable celebration.",
-    },
-  ],
-  Minecraft: [
-    {
-      headline: "Build, play, celebrate — party mode is on!",
-      message:
-        "Join us for a block-by-block celebration filled with cake, games, and creative fun. Bring your explorer spirit and get ready to craft some brilliant memories together.",
-    },
-  ],
-  "Spiritual / ISKCON": [
-    {
-      headline: "A joyful celebration with blessings, cake, and love",
-      message:
-        "Please join us for a warm, soulful celebration filled with blessings, music, sweet moments, cake, and the company of people who make the day meaningful.",
-    },
-    {
-      headline: "Come share a blessed and beautiful celebration",
-      message:
-        "We would love your presence for a peaceful, happy gathering with heartfelt wishes, delicious cake, and memories made together in a festive spiritual theme.",
-    },
-  ],
+type Variant = { headline: string; message: string };
+type ThemeInvite = { default: Variant[]; byOccasion?: Record<string, Variant[]> };
+
+// Resolve a normalized occasion key from free-text occasion field.
+const matchOccasionKey = (occasion?: string | null): string | null => {
+  if (!occasion) return null;
+  const s = occasion.toLowerCase();
+  if (s.includes("anniversary") || s.includes("wedding ann")) return "anniversary";
+  if (s.includes("wedding") || s.includes("marriage")) return "wedding";
+  if (s.includes("engage")) return "engagement";
+  if (s.includes("baby shower") || s.includes("baby")) return "baby_shower";
+  if (s.includes("housewarming") || s.includes("house warming")) return "housewarming";
+  if (s.includes("birthday")) return "birthday";
+  if (s.includes("retire")) return "retirement";
+  if (s.includes("graduat")) return "graduation";
+  return null;
 };
 
-const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0) => {
-  const normalizedTheme = theme?.toLowerCase() || "";
-  const themeKey = normalizedTheme.includes("iron") || normalizedTheme.includes("avenger") || normalizedTheme.includes("superhero")
-    ? "Iron Man / Avengers"
-    : normalizedTheme.includes("space") || normalizedTheme.includes("astronaut") || normalizedTheme.includes("galaxy")
-      ? "Space / Astronaut"
-      : normalizedTheme.includes("minecraft")
-        ? "Minecraft"
-        : normalizedTheme.includes("iskcon") || normalizedTheme.includes("spiritual") || normalizedTheme.includes("krishna")
-          ? "Spiritual / ISKCON"
-        : undefined;
-  const themeSuggestions = (themeKey && INVITE_COPY[themeKey]) || [];
-  const fallback = [
-    {
-      headline: `You're invited to ${title || "our celebration"}!`,
-      message: `Join us for a warm, happy ${occasion || "celebration"} filled with cake, smiles, photos, and little surprises. We would love to celebrate this special day with you.`,
+const INVITE_COPY: Record<string, ThemeInvite> = {
+  "Iron Man / Avengers": {
+    default: [
+      { headline: "Suit up — the squad is assembling!", message: "Calling all heroes! Join us for an action-packed celebration with cake, games, big laughs, and a mission your little Avenger will never forget. Come ready for heroic photos and super-powered fun." },
+      { headline: "Heroes wanted for one epic party!", message: "The celebration signal is on! We'd love you to join a red-and-gold day of surprises, cake, and mighty memories. Bring your best hero energy — this party needs the full team." },
+    ],
+  },
+  "Space / Astronaut": {
+    default: [
+      { headline: "3... 2... 1... blast off to the party!", message: "You're invited on a mission to celebrate among stars, planets, cake, and cosmic fun. Pack your biggest smile — this launch window opens for one unforgettable celebration." },
+    ],
+  },
+  Minecraft: {
+    default: [
+      { headline: "Build, play, celebrate — party mode is on!", message: "Join us for a block-by-block celebration filled with cake, games, and creative fun. Bring your explorer spirit and get ready to craft some brilliant memories together." },
+    ],
+  },
+  "Spiritual / ISKCON": {
+    default: [
+      { headline: "A joyful celebration with blessings, cake, and love", message: "Please join us for a warm, soulful celebration filled with blessings, music, sweet moments, cake, and the company of people who make the day meaningful." },
+      { headline: "Come share a blessed and beautiful celebration", message: "We'd love your presence for a peaceful, happy gathering with heartfelt wishes, delicious cake, and memories made together in a festive spiritual theme." },
+    ],
+  },
+  "Retro 90s": {
+    default: [
+      { headline: "Pop in the cassette — it's a totally rad party!", message: "Neon, scrunchies, and a playlist that still slaps. Come dressed in your favorite 90s vibes for a night of nostalgia, cake, and unforgettable laughs." },
+      { headline: "Rewind, replay, party on", message: "We're cranking the boombox and pulling out the polaroids. Join us for a colorful retro celebration packed with snacks, music, and old-school fun." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Pop in your scrunchies — we're celebrating years of cool", message: "Cassettes are rewound, the playlist is ready, and the love story is still our favorite single. Join us for a totally rad night of neon, nostalgia, cake, and the two people who proved good things never go out of style." },
+        { headline: "All that and a bag of chips — and still in love", message: "From mixtapes to milestones, the journey has been one for the highlight reel. Come dressed in your favorite 90s look and help us celebrate another year of love, laughs, and great hair." },
+      ],
+      wedding: [
+        { headline: "Two people, one playlist, forever pressed play", message: "Bring your boldest 90s outfit and your dancing shoes. We're making it official with neon lights, retro tunes, and the kind of party your future kids will ask about." },
+      ],
     },
-    {
-      headline: "Come celebrate, laugh, and make sweet memories!",
-      message: `We are planning a joyful ${occasion || "party"} with a beautiful theme, delicious cake, and the people who make the day feel extra special. Hope you can be there!`,
+  },
+  "Romantic Rose Gold": {
+    default: [
+      { headline: "An evening of soft light and sweet moments", message: "Candles, roses, a few favorite songs, and the people who make life feel warm. We'd love you to join us for a beautiful, heartfelt celebration." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Still each other's favorite story", message: "Soft candlelight, a few familiar songs, and a table set for the people who've cheered us on. Please join us as we celebrate another beautiful chapter together." },
+        { headline: "Years later, still choosing each other", message: "We're raising a glass to the laughter, the quiet moments, and everyone who's been part of our story. Come share an evening of warmth, roses, and good company." },
+      ],
+      wedding: [
+        { headline: "Two hearts, one beautiful day", message: "We can't imagine this day without you. Join us for a soft, romantic celebration filled with rose-gold light, warm wishes, and the start of forever." },
+      ],
+      engagement: [
+        { headline: "She said yes — and we'd love you there", message: "A quiet candlelit evening, a few sparkling rings, and the people we love most. Come help us celebrate this beautiful new beginning." },
+      ],
     },
+  },
+  "Candlelight & Champagne": {
+    default: [
+      { headline: "A warm, glowing evening just for you", message: "Soft candlelight, a flute of something bubbly, and the people we love most. Please join us for a graceful celebration filled with quiet joy." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Raising a glass to all the years", message: "Years of laughter, of small moments, of choosing each other again and again. Come help us toast another beautiful chapter — bring your favorite memory of us." },
+      ],
+      retirement: [
+        { headline: "A quiet toast to a brilliant chapter", message: "After all the hard work, the long days, and the wins big and small — it's time to pour something gold and celebrate what comes next." },
+      ],
+    },
+  },
+  "Vintage Sepia Romance": {
+    default: [
+      { headline: "A timeless evening, beautifully celebrated", message: "Old photographs, soft music, and a room full of love. Join us for an elegant, classic celebration — the kind of night we'll talk about for years." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "A love story written slowly, one day at a time", message: "Some stories only get richer with the years. Come help us turn another page — with warm light, soft music, and the people who've shared the journey." },
+      ],
+    },
+  },
+  "Moonlight & Stars": {
+    default: [
+      { headline: "Under a quiet sky, we celebrate", message: "Soft starlight, a calm evening, and the people who matter most. Please join us for a gentle, beautiful gathering you'll remember." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Still wishing on the same stars", message: "Years of nights like this one — the talks, the silences, the small moments. Come share a quiet, starlit evening as we celebrate another beautiful year together." },
+      ],
+    },
+  },
+  "Ocean Breeze": {
+    default: [
+      { headline: "Calm waves, warm hearts, simple joy", message: "A gentle breeze, the soft sound of the sea, and the people we love. Come share a peaceful, beautiful afternoon with us." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Years gone by like the tide — beautifully", message: "Through every season, the water still feels like home with you. Come share a soft, seaside evening as we celebrate another year of love." },
+      ],
+      wedding: [
+        { headline: "Where the sea meets forever", message: "With waves at our back and sunlight on our faces, we're saying yes to a lifetime together. We can't wait to share this day with you." },
+      ],
+    },
+  },
+  "Lavender Fields": {
+    default: [
+      { headline: "A gentle, fragrant celebration", message: "Soft purples, garden light, and the people who make the day feel like home. Please join us for a calm, beautiful gathering." },
+    ],
+    byOccasion: {
+      baby_shower: [
+        { headline: "A sweet little someone is on the way 💜", message: "Sip something soft, share a gentle wish, and help us welcome the newest little soul to our family." },
+      ],
+    },
+  },
+  "Eternal Bond": {
+    default: [
+      { headline: "Years of love, beautifully celebrated", message: "Candlelight, deep red roses, and a heart full of gratitude. Please join us as we mark another meaningful chapter together." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Years of love — and still our favorite hello", message: "Through every season and every chapter, we keep choosing each other. Come help us celebrate the warmth, the laughter, and the love that's grown stronger with time." },
+      ],
+      wedding: [
+        { headline: "Tied together, beautifully and forever", message: "With deep love and a few happy tears, we'd love you beside us as we promise the rest of our days to each other." },
+      ],
+    },
+  },
+  "Soft Sunrise": {
+    default: [
+      { headline: "New beginnings, warm welcomes", message: "A gentle morning, soft peach light, and the people we love. Come share a quiet, beautiful gathering with us." },
+    ],
+    byOccasion: {
+      baby_shower: [
+        { headline: "A tiny new sunrise is on the way 🌅", message: "Sip something sweet, share a wish, and help us welcome the newest little light into our family." },
+      ],
+      housewarming: [
+        { headline: "New home, warm beginnings", message: "We've put down roots in a new place and we'd love to fill it with the people who matter. Drop in for cake, a hug, and the start of something lovely." },
+      ],
+      engagement: [
+        { headline: "The start of forever 🌅", message: "Soft light, soft yes, soft beginning. Come share an early morning celebration with us as we step into this new chapter." },
+      ],
+    },
+  },
+  "Floral Garden": {
+    default: [
+      { headline: "A blooming celebration awaits", message: "Petals, sunlight, and a garden full of laughter. Please join us for a fresh, beautiful afternoon together." },
+    ],
+    byOccasion: {
+      baby_shower: [
+        { headline: "A tiny petal is on the way 🌸", message: "Sip something sweet, share a wish, and help us welcome the newest little blossom to our garden." },
+      ],
+      anniversary: [
+        { headline: "Still blooming, year after year", message: "Some loves grow slowly and beautifully, like a well-tended garden. Come share an afternoon of flowers, cake, and warm company." },
+      ],
+    },
+  },
+  "Garden Tea Party": {
+    default: [
+      { headline: "Tea, treats, and lovely company", message: "A pot of something warm, a few favorite cakes, and a soft afternoon together. We'd love you to join us." },
+    ],
+    byOccasion: {
+      baby_shower: [
+        { headline: "A wee one is brewing 🫖", message: "Bring a soft wish for the little one and stay for tea, treats, and a slow, sweet afternoon." },
+      ],
+    },
+  },
+  "Black & Gold Elegance": {
+    default: [
+      { headline: "An elegant evening, just for you", message: "Black tie energy, golden light, and a room full of people we love. Please join us for a sophisticated celebration to remember." },
+    ],
+    byOccasion: {
+      anniversary: [
+        { headline: "Pouring gold for another year of love", message: "Dress sharp, smile wide, and join us for a glamorous evening as we toast another beautiful year together." },
+      ],
+    },
+  },
+  "Pastel Minimal": {
+    default: [
+      { headline: "Soft, simple, lovely", message: "Just the people we love and a few quietly beautiful moments. Please join us for a calm, lovely gathering." },
+    ],
+    byOccasion: {
+      baby_shower: [
+        { headline: "A small, sweet hello is coming", message: "Soft pastels, light bites, and warm wishes for the little one on the way. We'd love you there." },
+      ],
+    },
+  },
+  "Boho Chic": {
+    default: [
+      { headline: "Earthy, warm, and beautifully you", message: "Pampas, candles, and a relaxed celebration with the people who feel like home. Come as you are." },
+    ],
+  },
+  "Disco / Y2K": {
+    default: [
+      { headline: "Get ready to groove", message: "Disco lights, sparkly outfits, and a playlist that won't quit. Come dance, celebrate, and have the time of your life." },
+    ],
+  },
+  "Unicorn & Rainbow": {
+    default: [
+      { headline: "A magical, sparkly celebration awaits!", message: "Rainbows, glitter, cake, and unicorn smiles. Bring your most colorful self for a magical day full of laughter and sweet surprises." },
+    ],
+  },
+  "Tropical Luau": {
+    default: [
+      { headline: "Aloha — let's party island style", message: "Grass skirts, fresh pineapple, and a playlist that feels like a vacation. Come join us for a sunny, laid-back celebration." },
+    ],
+  },
+  "Barbie Pink": {
+    default: [
+      { headline: "Hi Barbie! Hi party!", message: "Pink everything, sparkle everywhere, and the brightest celebration of the year. Wear your boldest pink and come ready to dance." },
+    ],
+  },
+  Bluey: {
+    default: [
+      { headline: "Wackadoo! It's party time", message: "Games, giggles, and a whole lot of Bluey magic. Bring your imagination and your best dance moves." },
+    ],
+  },
+  "Frozen / Elsa": {
+    default: [
+      { headline: "Let it go and join the party", message: "Sparkles, snowflakes, and a celebration as magical as Arendelle. Come dressed as your favorite character." },
+    ],
+  },
+  "Princess / Royal": {
+    default: [
+      { headline: "A royal invitation just for you", message: "Tiaras on, manners ready — a royal celebration awaits with cake, games, and majestic memories." },
+    ],
+  },
+  "Star Wars": {
+    default: [
+      { headline: "May the party be with you", message: "Lightsabers ready, the Force is strong with this one. Join us across the galaxy for an unforgettable celebration." },
+    ],
+  },
+  "Spider-Man": {
+    default: [
+      { headline: "Your friendly neighborhood party invite", message: "Web-slinging, wall-crawling fun awaits. Bring your spidey-sense and get ready for a heroic celebration." },
+    ],
+  },
+  "Harry Potter": {
+    default: [
+      { headline: "Your Hogwarts letter has arrived", message: "Wands at the ready! Join us for a magical celebration filled with spells, sweets, and a little bit of mischief." },
+    ],
+  },
+  "Carnival / Circus": {
+    default: [
+      { headline: "Step right up to the greatest party!", message: "Big top fun, popcorn, and games for everyone. Come ready for a colorful, joyful celebration like no other." },
+    ],
+  },
+  "Sports / Football": {
+    default: [
+      { headline: "Game on — be there or be square", message: "Jerseys on, cheer ready! Join us for a winning celebration with your favorite team energy." },
+    ],
+  },
+  "Taylor Swift Eras": {
+    default: [
+      { headline: "It's me, hi — you're invited, it's me", message: "Friendship bracelets, sparkly outfits, and an Eras-worthy celebration. Come ready to sing every word." },
+    ],
+  },
+  Cocomelon: {
+    default: [
+      { headline: "Sing, dance, and celebrate together", message: "JJ and friends are ready to party! Join us for a sweet, sing-along celebration with all the fun." },
+    ],
+  },
+  "Peppa Pig": {
+    default: [
+      { headline: "Snorts of joy — let's party!", message: "Muddy puddles and pink fun await. Come join Peppa and friends for a playful, sweet celebration." },
+    ],
+  },
+  "Paw Patrol": {
+    default: [
+      { headline: "No job is too big — no pup is too small", message: "Suit up, pups! Join the rescue team for an action-packed celebration with cake and adventure." },
+    ],
+  },
+  "Dinosaur / Jurassic": {
+    default: [
+      { headline: "A roaringly good celebration", message: "Stomp on over for a prehistoric party with dino games, cake, and Jurassic-sized fun." },
+    ],
+  },
+  "Mermaid / Under the Sea": {
+    default: [
+      { headline: "Dive in — the party's making waves", message: "Shells, sparkle, and seaside magic. Come swim into a beautiful underwater celebration." },
+    ],
+  },
+  "Construction / Trucks": {
+    default: [
+      { headline: "Hard hats on — celebration in progress", message: "Diggers, dumpers, and big builds await. Bring your hard hat for a hands-on, fun-filled party." },
+    ],
+  },
+  "Jungle Safari": {
+    default: [
+      { headline: "Time for a wild adventure", message: "Lions, tigers, and cake — oh my! Join us for a roaring jungle celebration with games and surprises." },
+    ],
+  },
+  Pokemon: {
+    default: [
+      { headline: "Gotta party 'em all", message: "Pokeballs ready! Join us for a Pokemon-themed celebration filled with games, prizes, and adventure." },
+    ],
+  },
+  "Wonder Woman": {
+    default: [
+      { headline: "Calling all wonder women", message: "Strength, sparkle, and a celebration fit for a hero. Bring your power pose and your best smile." },
+    ],
+  },
+  "Hot Wheels": {
+    default: [
+      { headline: "Start your engines — party time", message: "Vroom on over for a high-speed celebration with races, cake, and cars galore." },
+    ],
+  },
+};
+
+const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0): Variant => {
+  const themeKey = matchTrendingTheme(theme);
+  const occasionKey = matchOccasionKey(occasion);
+  const themeEntry = themeKey ? INVITE_COPY[themeKey] : undefined;
+
+  const occasionVariants = themeEntry?.byOccasion && occasionKey ? themeEntry.byOccasion[occasionKey] : undefined;
+  const themeVariants = themeEntry?.default;
+
+  const fallback: Variant[] = [
+    { headline: `You're invited to ${title || "our celebration"}!`, message: `Join us for a warm, happy ${occasion || "celebration"} filled with cake, smiles, photos, and little surprises. We'd love to celebrate this special day with you.` },
+    { headline: "Come celebrate, laugh, and make sweet memories!", message: `We're planning a joyful ${occasion || "party"} with a beautiful theme, delicious cake, and the people who make the day feel extra special. Hope you can be there!` },
   ];
-  const options = themeSuggestions.length ? themeSuggestions : fallback;
-  return options[index % options.length];
+
+  const options = (occasionVariants && occasionVariants.length)
+    ? occasionVariants
+    : (themeVariants && themeVariants.length)
+      ? themeVariants
+      : fallback;
+
+  return options[((index % options.length) + options.length) % options.length];
 };
 
 export default function PartyPlannerDetail() {
@@ -534,8 +857,10 @@ export default function PartyPlannerDetail() {
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
   // Group day-of / secondary tasks under a collapsible "Show more" section.
-  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough"];
+  // Detection is by category ("day-of") OR known secondary title substrings, so AI variations still group correctly.
+  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough", "day-of helper", "day of helper"];
   const isSecondary = (t: any) => {
+    if ((t.category || "").toLowerCase() === "day-of") return true;
     const lt = (t.title || "").toLowerCase();
     return SECONDARY_TITLES.some((s) => lt.includes(s));
   };
@@ -699,10 +1024,15 @@ export default function PartyPlannerDetail() {
                         <SelectValue placeholder="Pick a trending theme" />
                       </SelectTrigger>
                       <SelectContent>
-                        {TRENDING_THEMES.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t}
-                          </SelectItem>
+                        {THEME_GROUPS.map((group) => (
+                          <SelectGroup key={group.label}>
+                            <SelectLabel>{group.label}</SelectLabel>
+                            {group.themes.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>
@@ -981,19 +1311,19 @@ export default function PartyPlannerDetail() {
                       <div className="space-y-2">
                         {primaryTasks.map(renderTask)}
                         {secondaryTasks.length > 0 && (
-                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border border-dashed bg-muted/20">
+                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border-2 border-primary/30 bg-primary/5 mt-3">
                             <CollapsibleTrigger asChild>
                               <button
                                 type="button"
-                                className="w-full flex items-center justify-between gap-2 p-3 text-sm font-medium hover:bg-muted/40 transition-colors"
+                                className="w-full flex items-center justify-between gap-2 p-3.5 text-sm font-semibold hover:bg-primary/10 transition-colors rounded-lg"
                               >
-                                <span className="flex items-center gap-2">
-                                  <span className="text-muted-foreground">📅 Day-of details</span>
+                                <span className="flex items-center gap-2 text-foreground">
+                                  <span>📅 Day-of details</span>
                                   <Badge variant="secondary" className="text-xs">{secondaryDone}/{secondaryTasks.length}</Badge>
                                 </span>
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more`}
-                                  {showSecondary ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more day-of task${secondaryTasks.length === 1 ? "" : "s"}`}
+                                  {showSecondary ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </span>
                               </button>
                             </CollapsibleTrigger>

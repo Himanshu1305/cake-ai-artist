@@ -17,6 +17,16 @@ const formatDate = (iso?: string | null, tz?: string | null) => {
   } catch { return new Date(iso).toLocaleString(); }
 };
 
+const formatShortDate = (iso?: string | null, tz?: string | null) => {
+  if (!iso) return "soon";
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      weekday: "short", month: "short", day: "numeric",
+      timeZone: tz || undefined,
+    });
+  } catch { return new Date(iso).toLocaleDateString(); }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -85,7 +95,7 @@ ${party.contact_email ? `✉️ ${party.contact_email}` : ""}`;
         from: "Cake AI Artist <noreply@cakeaiartist.com>",
         to: [task.vendor_email],
         reply_to: party.contact_email || undefined,
-        subject: `${party.title} — ${task.title} (request for quote)`,
+        subject: `${task.title} for ${formatShortDate(party.event_date, party.event_timezone)} — quote request`,
         html,
         text: body,
       }),
