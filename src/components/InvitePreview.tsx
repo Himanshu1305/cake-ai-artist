@@ -1,19 +1,30 @@
+import { useEffect } from "react";
+import cakeLogo from "@/assets/logo.png";
+import superheroArmorActionArt from "@/assets/invite-superhero-armor-action.jpg";
+
 // Theme styles shared between the in-app preview and the email render.
 // Keep keys in sync with TRENDING_THEMES in PartyPlannerDetail.tsx.
 export type ThemeStyle = {
   gradient: string;
   accent: string;
   emoji: string;
+  heroEmojis?: string[];
+  badge?: string;
   font: string;
   textColor: string;
+  artwork?: string;
+  pattern?: string;
 };
 
 export const DEFAULT_THEME: ThemeStyle = {
   gradient: "linear-gradient(135deg,#ff6b9d 0%,#c44569 50%,#8e44ad 100%)",
   accent: "#c44569",
   emoji: "🎉",
+  heroEmojis: ["🎂", "🎈", "✨", "🎁", "🥳"],
+  badge: "A celebration made sweeter",
   font: "Georgia, serif",
   textColor: "#ffffff",
+  pattern: "radial-gradient(circle at 18% 24%, rgba(255,255,255,.32) 0 8px, transparent 9px), radial-gradient(circle at 82% 18%, rgba(255,255,255,.22) 0 12px, transparent 13px)",
 };
 
 export const THEME_STYLES: Record<string, ThemeStyle> = {
@@ -21,15 +32,22 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
     gradient: "linear-gradient(135deg,#0b1437 0%,#3b1d6b 60%,#7a2dcf 100%)",
     accent: "#9ad0ff",
     emoji: "🚀",
+    heroEmojis: ["🚀", "🪐", "👨‍🚀", "🌕", "✨"],
+    badge: "Mission control says: party launch approved",
     font: "'Orbitron', Georgia, serif",
     textColor: "#e9f1ff",
+    pattern: "radial-gradient(circle at 20% 22%, rgba(255,255,255,.55) 0 2px, transparent 3px), radial-gradient(circle at 72% 34%, rgba(154,208,255,.5) 0 3px, transparent 4px), radial-gradient(circle at 80% 78%, rgba(255,255,255,.38) 0 2px, transparent 3px)",
   },
   "Iron Man / Avengers": {
     gradient: "linear-gradient(135deg,#7a0e0e 0%,#c11d1d 50%,#f5b400 100%)",
     accent: "#ffd166",
     emoji: "⚡",
-    font: "'Impact', Georgia, serif",
+    heroEmojis: ["🦾", "🛡️", "⚡", "🔥", "💥"],
+    badge: "Suit up — the birthday squad is assembling",
+    font: "'Bangers', Impact, Georgia, serif",
     textColor: "#fff",
+    artwork: superheroArmorActionArt,
+    pattern: "repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 10px, transparent 10px 22px)",
   },
   "Spider-Man": {
     gradient: "linear-gradient(135deg,#b00020 0%,#1a47b8 100%)",
@@ -154,8 +172,11 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
     gradient: "linear-gradient(135deg,#ff9933 0%,#ffcc66 100%)",
     accent: "#7a2e0e",
     emoji: "🕉️",
-    font: "Georgia, serif",
+    heroEmojis: ["🪷", "🕉️", "🪈", "🌼", "✨"],
+    badge: "A soulful celebration with sweetness and blessings",
+    font: "'Fraunces', Georgia, serif",
     textColor: "#fff",
+    pattern: "radial-gradient(circle at 20% 22%, rgba(255,255,255,.34) 0 10px, transparent 11px), radial-gradient(circle at 78% 30%, rgba(122,46,14,.18) 0 18px, transparent 19px), repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 2px, transparent 2px 22px)",
   },
   "Peppa Pig": {
     gradient: "linear-gradient(135deg,#ff8fb1 0%,#ffc1d6 100%)",
@@ -252,7 +273,31 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
 
 export const getThemeStyle = (theme?: string | null): ThemeStyle => {
   if (!theme) return DEFAULT_THEME;
-  return THEME_STYLES[theme] || DEFAULT_THEME;
+  const direct = THEME_STYLES[theme];
+  if (direct) return direct;
+  const normalized = theme.toLowerCase();
+  if (normalized.includes("iron") || normalized.includes("avenger") || normalized.includes("superhero")) {
+    return THEME_STYLES["Iron Man / Avengers"];
+  }
+  if (normalized.includes("space") || normalized.includes("astronaut") || normalized.includes("galaxy")) {
+    return THEME_STYLES["Space / Astronaut"];
+  }
+  if (normalized.includes("iskcon") || normalized.includes("spiritual") || normalized.includes("krishna")) {
+    return THEME_STYLES["Spiritual / ISKCON"];
+  }
+  return DEFAULT_THEME;
+};
+
+const FONT_LINK_ID = "cake-invite-fonts";
+
+const ensureInviteFonts = () => {
+  if (typeof document === "undefined" || document.getElementById(FONT_LINK_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_LINK_ID;
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700;800&family=Luckiest+Guy&display=swap";
+  document.head.appendChild(link);
 };
 
 interface InvitePreviewProps {
@@ -291,12 +336,22 @@ export const InvitePreview = ({
   message,
   cakeImageUrl,
 }: InvitePreviewProps) => {
+  useEffect(() => {
+    ensureInviteFonts();
+  }, []);
+
   const t = getThemeStyle(party?.theme);
   const finalHeadline = headline?.trim() || `You're invited to ${party?.title || "the party"}!`;
   const finalMessage =
     message?.trim() ||
-    `${hostName} would love for you to join the celebration. Here are the details:`;
+    `${hostName} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`;
   const dateLine = formatDate(party?.event_date, party?.event_timezone);
+  const heroBackground = [
+    t.pattern,
+    t.artwork ? `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.42)), url(${t.artwork})` : t.gradient,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div
@@ -312,19 +367,34 @@ export const InvitePreview = ({
     >
       <div
         style={{
-          background: t.gradient,
+          background: heroBackground,
+          backgroundSize: t.artwork ? "cover" : "auto",
+          backgroundPosition: "center",
           color: t.textColor,
-          padding: "40px 28px",
+          padding: "34px 24px 30px",
+          minHeight: t.artwork ? 310 : 250,
           textAlign: "center",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
         }}
       >
-        <div style={{ fontSize: 44, lineHeight: 1 }}>{t.emoji}</div>
+        <div style={{ fontSize: 30, lineHeight: 1.1, letterSpacing: 6 }}>{(t.heroEmojis || [t.emoji]).join(" ")}</div>
+        {t.badge && (
+          <div style={{ display: "inline-block", alignSelf: "center", marginTop: 16, padding: "7px 14px", borderRadius: 999, background: "rgba(0,0,0,.38)", border: "1px solid rgba(255,255,255,.35)", fontSize: 11, fontWeight: 800, letterSpacing: 0, textTransform: "uppercase" }}>
+            {t.badge}
+          </div>
+        )}
         <h2
           style={{
-            margin: "12px 0 6px",
-            fontSize: 26,
+            margin: "14px 0 8px",
+            fontSize: 34,
             fontFamily: t.font,
-            fontWeight: 700,
+            fontWeight: 800,
+            letterSpacing: 0,
+            lineHeight: 1.02,
+            textShadow: "0 3px 16px rgba(0,0,0,.4)",
           }}
         >
           {finalHeadline}
@@ -352,10 +422,10 @@ export const InvitePreview = ({
       )}
 
       <div style={{ background: "#fff", padding: "28px 24px" }}>
-        <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px" }}>Hi {guestName},</p>
+        <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px", fontWeight: 700 }}>Hi {guestName},</p>
         <p
           style={{
-            fontSize: 14,
+            fontSize: 15,
             color: "#555",
             lineHeight: 1.6,
             margin: "0 0 20px",
@@ -410,7 +480,8 @@ export const InvitePreview = ({
             paddingTop: 14,
           }}
         >
-          ✨ Crafted with <strong>Cake AI Artist</strong>
+          <img src={cakeLogo} alt="Cake AI Artist" loading="lazy" width={120} height={34} style={{ height: 34, width: "auto", display: "block", margin: "0 auto 10px" }} />
+          ✨ Made with <strong>Cake AI Artist</strong> — create your own AI cake, invite, and party look at cakeaiartist.com
         </p>
       </div>
     </div>

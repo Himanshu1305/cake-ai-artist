@@ -68,6 +68,73 @@ const TRENDING_THEMES = [
   "Custom",
 ];
 
+const INVITE_COPY: Record<string, Array<{ headline: string; message: string }>> = {
+  "Iron Man / Avengers": [
+    {
+      headline: "Suit up — the birthday squad is assembling!",
+      message:
+        "Calling all heroes! Join us for an action-packed celebration with cake, games, big laughs, and a mission your little Avenger will never forget. Come ready for heroic photos and super-powered fun.",
+    },
+    {
+      headline: "Heroes wanted for one epic party!",
+      message:
+        "The celebration signal is on! We would love you to join a red-and-gold day of surprises, cake, and mighty memories. Bring your best hero energy — this party needs the full team.",
+    },
+  ],
+  "Space / Astronaut": [
+    {
+      headline: "3... 2... 1... blast off to the party!",
+      message:
+        "You are invited on a mission to celebrate among stars, planets, cake, and cosmic fun. Pack your biggest smile — this launch window opens for one unforgettable celebration.",
+    },
+  ],
+  Minecraft: [
+    {
+      headline: "Build, play, celebrate — party mode is on!",
+      message:
+        "Join us for a block-by-block celebration filled with cake, games, and creative fun. Bring your explorer spirit and get ready to craft some brilliant memories together.",
+    },
+  ],
+  "Spiritual / ISKCON": [
+    {
+      headline: "A joyful celebration with blessings, cake, and love",
+      message:
+        "Please join us for a warm, soulful celebration filled with blessings, music, sweet moments, cake, and the company of people who make the day meaningful.",
+    },
+    {
+      headline: "Come share a blessed and beautiful celebration",
+      message:
+        "We would love your presence for a peaceful, happy gathering with heartfelt wishes, delicious cake, and memories made together in a festive spiritual theme.",
+    },
+  ],
+};
+
+const getSuggestedInvite = (theme: string | null | undefined, occasion: string | null | undefined, title: string, index = 0) => {
+  const normalizedTheme = theme?.toLowerCase() || "";
+  const themeKey = normalizedTheme.includes("iron") || normalizedTheme.includes("avenger") || normalizedTheme.includes("superhero")
+    ? "Iron Man / Avengers"
+    : normalizedTheme.includes("space") || normalizedTheme.includes("astronaut") || normalizedTheme.includes("galaxy")
+      ? "Space / Astronaut"
+      : normalizedTheme.includes("minecraft")
+        ? "Minecraft"
+        : normalizedTheme.includes("iskcon") || normalizedTheme.includes("spiritual") || normalizedTheme.includes("krishna")
+          ? "Spiritual / ISKCON"
+        : undefined;
+  const themeSuggestions = (themeKey && INVITE_COPY[themeKey]) || [];
+  const fallback = [
+    {
+      headline: `You're invited to ${title || "our celebration"}!`,
+      message: `Join us for a warm, happy ${occasion || "celebration"} filled with cake, smiles, photos, and little surprises. We would love to celebrate this special day with you.`,
+    },
+    {
+      headline: "Come celebrate, laugh, and make sweet memories!",
+      message: `We are planning a joyful ${occasion || "party"} with a beautiful theme, delicious cake, and the people who make the day feel extra special. Hope you can be there!`,
+    },
+  ];
+  const options = themeSuggestions.length ? themeSuggestions : fallback;
+  return options[index % options.length];
+};
+
 export default function PartyPlannerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -97,6 +164,7 @@ export default function PartyPlannerDetail() {
   const [inviteHeadline, setInviteHeadline] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [savingInvite, setSavingInvite] = useState(false);
+  const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -106,8 +174,9 @@ export default function PartyPlannerDetail() {
     }
     setParty(p);
     setPartyTitle(p.title || "");
-    setInviteHeadline((p as any).invite_headline || "");
-    setInviteMessage((p as any).invite_message || "");
+    const suggestedInvite = getSuggestedInvite(p.theme, p.occasion, p.title || "your party");
+    setInviteHeadline((p as any).invite_headline || suggestedInvite.headline);
+    setInviteMessage((p as any).invite_message || suggestedInvite.message);
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
@@ -339,6 +408,14 @@ export default function PartyPlannerDetail() {
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const currentInviteTheme = themePick === "Custom" ? customTheme || party.theme : themePick || party.theme;
+  const applyInviteSuggestion = () => {
+    const nextIndex = inviteSuggestionIndex + 1;
+    const suggestion = getSuggestedInvite(currentInviteTheme, party.occasion, partyTitle || party.title, nextIndex);
+    setInviteSuggestionIndex(nextIndex);
+    setInviteHeadline(suggestion.headline);
+    setInviteMessage(suggestion.message);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -651,9 +728,14 @@ export default function PartyPlannerDetail() {
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
-                  <Button onClick={saveInvite} disabled={savingInvite}>
-                    <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={saveInvite} disabled={savingInvite}>
+                      <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={applyInviteSuggestion}>
+                      <Sparkles className="w-4 h-4 mr-2" /> Regenerate suggestion
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Tip: pick a theme in <strong>Details</strong> to restyle the invitation card.
                   </p>
@@ -666,8 +748,7 @@ export default function PartyPlannerDetail() {
                   party={{
                     ...party,
                     title: partyTitle || party.title,
-                    theme:
-                      themePick === "Custom" ? customTheme || party.theme : themePick || party.theme,
+                    theme: currentInviteTheme,
                   }}
                   hostName="You"
                   guestName="Your guest"
