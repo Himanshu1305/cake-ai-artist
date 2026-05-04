@@ -411,6 +411,39 @@ export default function PartyPlannerDetail() {
     await supabase.from("party_tasks").update({ is_completed: !current }).eq("id", taskId);
   };
 
+  const updateTaskVendor = async (taskId: string, patch: Record<string, any>) => {
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, ...patch } : t)));
+    await supabase.from("party_tasks").update(patch).eq("id", taskId);
+  };
+
+  const sendVendorEmail = async (taskId: string) => {
+    toast.loading("Emailing vendor...", { id: `vendor-${taskId}` });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
+      const { data, error } = await supabase.functions.invoke("send-vendor-email", {
+        body: { taskId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Vendor emailed", { id: `vendor-${taskId}` });
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e.message || "Could not send", { id: `vendor-${taskId}` });
+    }
+  };
+
+  const buildVendorMessage = (t: any) => {
+    const dateStr = party?.event_date
+      ? new Date(party.event_date).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short", timeZone: party.event_timezone || undefined })
+      : "TBD";
+    const venue = [party?.venue, party?.city].filter(Boolean).join(", ") || "TBD";
+    const greeting = t.vendor_name ? `Hi ${t.vendor_name},` : "Hello,";
+    return `${greeting}\n\nI'm planning a ${party?.occasion || "celebration"} (${party?.title}) and would love your help with: ${t.title}.\n\n• When: ${dateStr}\n• Where: ${venue}\n• Guests: ${party?.guest_count || "TBD"}\n• Theme: ${party?.theme || "TBD"}\n${t.description ? `\nWhat I'm looking for:\n${t.description}\n` : ""}\nCould you share availability and a quote?\n\nThanks!\n${party?.contact_phone ? `📱 ${party.contact_phone}\n` : ""}${party?.contact_email ? `✉️ ${party.contact_email}` : ""}`;
+  };
+
   const addGuest = async () => {
     if (!guestName.trim()) return;
     const { data, error } = await supabase
