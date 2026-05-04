@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import cakeLogo from "@/assets/logo.png";
-import superheroArmorArt from "@/assets/invite-superhero-armor.jpg";
 import superheroArmorActionArt from "@/assets/invite-superhero-armor-action.jpg";
 
 // Theme styles shared between the in-app preview and the email render.
@@ -274,6 +273,18 @@ export const getThemeStyle = (theme?: string | null): ThemeStyle => {
   return THEME_STYLES[theme] || DEFAULT_THEME;
 };
 
+const FONT_LINK_ID = "cake-invite-fonts";
+
+const ensureInviteFonts = () => {
+  if (typeof document === "undefined" || document.getElementById(FONT_LINK_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_LINK_ID;
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700;800&family=Luckiest+Guy&display=swap";
+  document.head.appendChild(link);
+};
+
 interface InvitePreviewProps {
   party: any;
   hostName?: string;
@@ -310,11 +321,15 @@ export const InvitePreview = ({
   message,
   cakeImageUrl,
 }: InvitePreviewProps) => {
+  useEffect(() => {
+    ensureInviteFonts();
+  }, []);
+
   const t = getThemeStyle(party?.theme);
   const finalHeadline = headline?.trim() || `You're invited to ${party?.title || "the party"}!`;
   const finalMessage =
     message?.trim() ||
-    `${hostName} would love for you to join the celebration. Here are the details:`;
+    `${hostName} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`;
   const dateLine = formatDate(party?.event_date, party?.event_timezone);
 
   return (
