@@ -109,7 +109,9 @@ Ask politely for: availability on the date, a price quote, and what's included. 
       throw new Error("AI gateway error");
     }
     const aiData = await aiResp.json();
-    const message = (aiData.choices?.[0]?.message?.content || "").trim();
+    const raw = (aiData.choices?.[0]?.message?.content || "").trim();
+    // Strip any leading "Subject: ..." line the model may have added despite instructions.
+    const message = raw.replace(/^\s*subject\s*:.*$/im, "").replace(/^\s*\n+/, "").trim();
     if (!message) throw new Error("No message generated");
 
     await supabase.from("party_tasks").update({ vendor_message: message }).eq("id", taskId);
