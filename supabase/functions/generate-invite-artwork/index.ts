@@ -91,11 +91,11 @@ function pickTheme(theme: string): ThemeProfile {
   // Generic fallback — varied so we don't always default to florals
   return {
     motifs: [
-      "an abstract painterly wash with a single sprig of greenery",
-      "soft draped fabric folds catching warm directional light",
-      "an overhead arrangement of seasonal foliage on textured paper",
+      "a warm painterly wash with sun flares and a sprig of fresh greenery",
+      "soft draped fabric folds catching warm golden directional light and faint sparkle",
+      "an overhead arrangement of seasonal foliage on warm cream paper with golden bokeh",
     ],
-    palette: "warm neutrals with one quiet accent colour",
+    palette: "warm celebratory tones — champagne, blush and soft gold accents",
   };
 }
 
