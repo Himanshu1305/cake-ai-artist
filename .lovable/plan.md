@@ -1,75 +1,49 @@
 ## Problem
 
-The invite hero is just a CSS gradient + a row of emoji (🕯️🥂✨, 🌹💕✨, 🫖🌷🍰, etc.). Even on the new "soothing" themes this still reads as childish/clip-art and is not directly tied to the occasion. The user wants:
+Generated invite artwork is repetitive:
+- Almost every adult image features champagne/wine flutes (because the anniversary/wedding/engagement branch in `buildPrompt` hardcodes "two delicate champagne flutes").
+- Background palette is always the same warm cream/blush/gold (hardcoded across all adult variants).
 
-- Real, occasion-appropriate imagery on the hero (not emoji rows).
-- Adult occasions (anniversary, wedding, engagement, retirement, baby shower, housewarming) → elegant, photographic/illustrative, grown-up.
-- Kids' birthdays → playful, but tuned to the child's age (toddler vs 7 vs teen).
-- Background and decorations must visually match the occasion.
+So different anniversaries (and even different themes within the same occasion) all end up looking like the same photo.
 
 ## Fix
 
-### 1. New edge function: `generate-invite-artwork`
+Edit `supabase/functions/generate-invite-artwork/index.ts` `buildPrompt()` to introduce variety:
 
-- Input: `partyId`, `theme`, `occasion`, `title`, optional `childAge`, optional `forceRegenerate`.
-- Auth-required (JWT validated in code).
-- Builds an **occasion-aware art prompt** (no people, no faces, no text in image):
-  - Adult occasions → "elegant editorial still life / soft painterly background", themed to the chosen theme (e.g. *Candlelight & Champagne*: warm bokeh, two champagne flutes, candle glow, gold ribbon — photographic, tasteful, no cartoon).
-  - Kids' birthday → playful illustrated scene tuned to `childAge` (1-3 = soft pastel toy motifs; 4-8 = bright cartoon theme scene; 9-12 = bolder, less babyish; 13+ = teen/aesthetic, no cutesy props).
-  - Wedding/engagement → florals, rings, soft light.
-  - Baby shower → muted pastel nursery still life.
-  - Housewarming/retirement → warm interior, plants, soft light.
-- Negative cues baked in: *no children's cartoon characters, no clip-art emoji, no text/letters, no logos, no balloons-as-faces, no chibi, no glitter overlays for adult themes*.
-- Calls Lovable AI Gateway with `google/gemini-2.5-flash-image` (Nano Banana). On 429/402 returns the proper status so the client can fall back to the existing gradient+emoji hero.
-- Uploads the returned base64 PNG to the existing `party-uploads` (or equivalent) public storage bucket at `invites/{partyId}.png` and returns `{ url }`.
-- Saves `invite_artwork_url` on the `parties` row so it's reused across renders/emails.
+1. **Theme-driven scene, not occasion-driven**
+   - Build the scene primarily from the chosen `theme` (e.g. *Candlelight & Champagne*, *Garden Romance*, *Retro 90s*, *Tea & Roses*, *Starlit Evening*, *Tropical Sunset*, *Rustic Vineyard*, *Modern Minimalist*).
+   - Maintain a small map of theme keyword → motif set + palette so each theme produces visually distinct artwork. Examples:
+     - Garden / Floral → fresh peonies, eucalyptus, soft daylight, sage + blush palette.
+     - Retro 90s → muted neon geometric shapes, cassette-tape texture, teal/magenta/cream palette (still tasteful, no clipart).
+     - Tea & Roses → vintage teacup, lace, dusty rose + ivory.
+     - Starlit / Evening → deep navy, gold constellations, soft candle glow.
+     - Tropical → monstera leaves, sunset gradient, terracotta + coral.
+     - Rustic → wood grain, dried wheat, warm amber.
+     - Minimalist → single sculptural element, neutral stone palette.
+   - Only fall back to the champagne-flutes scene when the theme actually implies champagne (e.g. "champagne", "toast", "celebration drinks").
 
-### 2. DB migration
+2. **Randomized variation per generation**
+   - Add a small randomizer that picks one of 2–3 alternative motif/palette variants per theme so re-clicking "Regenerate artwork" yields a visibly different image instead of essentially the same scene.
+   - Pass a short random `variationSeed` phrase into the prompt (e.g. "variation A: overhead flat-lay" / "variation B: angled close-up" / "variation C: wide soft-focus") to nudge composition diversity.
 
-Add to `parties`:
+3. **Decouple palette from occasion**
+   - Replace the single hardcoded "soft cream/blush/gold palette" instruction with a palette derived from the matched theme entry. Adult vs kids logic still gates tone (elegant vs playful), but no longer dictates colour.
 
-- `invite_artwork_url text`
-- `invite_artwork_meta jsonb` (stores `{ theme, occasion, childAge }` so we can detect when it's stale and auto-regenerate).
-- `child_age int` (nullable) — only collected when occasion = birthday.
+4. **Kids branch unchanged in spirit, but also gets theme-driven palette**
+   - Same idea: pull palette + motifs from the theme map first, then layer the age-band style instruction on top.
 
-No RLS changes — existing party-owner policies apply.
+5. **Persist variation in meta**
+   - Include the chosen `variationSeed` in `invite_artwork_meta` so the auto-regenerate-on-stale-meta logic in `PartyPlannerDetail.tsx` does not loop, and so manual "Regenerate artwork" forces a *new* random variation each time (force a new seed when `forceRegenerate` is true).
 
-### 3. `PartyPlannerDetail.tsx`
-
-- In the Invite tab, when occasion is "birthday", show a small **"Child's age"** number input (1–17). Save to `parties.child_age`.
-- "Regenerate suggestion" button gets a sibling **"Regenerate artwork"** button (or, simpler: the existing button regenerates **both** copy and artwork in one click — preferred so the user sees a coherent refresh). Show spinner while artwork generates.
-- On first load of the Invite tab, if `invite_artwork_url` is missing OR `invite_artwork_meta` doesn't match current `(theme, occasion, child_age)`, auto-call `generate-invite-artwork`.
-- Pass `artworkUrl` down to `<InvitePreview />`.
-
-### 4. `InvitePreview.tsx`
-
-- Add prop `artworkUrl?: string`.
-- Hero rendering:
-  - When `artworkUrl` is present → use it as the hero background (cover, center) with a soft gradient scrim for text legibility, and **hide the emoji row entirely**.
-  - When absent (fallback) → keep existing gradient + emoji row, but for **adult occasions** (anniversary/wedding/engagement/baby shower/housewarming/retirement) render at most **2 small accent emojis** at reduced opacity instead of the current 5-emoji row, and skip the floating corner emojis. Detection uses the same `ADULT_OCC_RX` already in `PartyPlannerDetail.tsx` (lift it into a small shared util).
-- Keep brand bar, copy, details card, RSVP button, footer unchanged.
-
-### 5. `send-party-invite/index.ts`
-
-- Read `invite_artwork_url` from the party row and use it as the hero `background-image` in the email HTML (same scrim + same suppression of emoji row when artwork exists). Same adult-occasion emoji reduction in the fallback path.
-
-### 6. Tone guardrails (small extension)
-
-- Extend the existing `KIDDIE_RX` leak check so that when the artwork is stale for the current occasion (meta mismatch) it also forces a regeneration, not just the copy.
+No DB schema changes. No UI changes. No email template changes — `send-party-invite` already reads the stored `invite_artwork_url`.
 
 ## Files
 
 | File | Change |
 |---|---|
-| `supabase/functions/generate-invite-artwork/index.ts` (new) | AI image generation with occasion + age aware prompt; uploads to storage; returns URL. |
-| `supabase/config.toml` | Register new function. |
-| Migration | Add `invite_artwork_url`, `invite_artwork_meta`, `child_age` to `parties`. |
-| `src/pages/PartyPlannerDetail.tsx` | Child-age input (birthdays only), wire artwork generation, auto-regenerate on stale meta, pass `artworkUrl` to preview. |
-| `src/components/InvitePreview.tsx` | New `artworkUrl` prop; use as hero bg with scrim; suppress/reduce emoji rows for adult occasions in fallback. |
-| `supabase/functions/send-party-invite/index.ts` | Mirror artwork hero + adult-occasion emoji reduction in email HTML. |
+| `supabase/functions/generate-invite-artwork/index.ts` | Rewrite `buildPrompt` with theme→(motifs, palette) map, randomized variation seed, and decoupled palette. Pass seed into stored meta. |
 
 ## Out of scope
 
-- No changes to themes list, RSVP flow, or copy generator (already in place).
-- No on-image text rendering (text stays as HTML over the artwork for crispness and i18n).
-- No per-guest personalized artwork (single artwork per party).
+- No new themes added to the picker.
+- No changes to copy generation, RSVP, emails, or storage layout.
