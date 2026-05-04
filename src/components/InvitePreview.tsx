@@ -172,8 +172,11 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
     gradient: "linear-gradient(135deg,#ff9933 0%,#ffcc66 100%)",
     accent: "#7a2e0e",
     emoji: "🕉️",
-    font: "Georgia, serif",
+    heroEmojis: ["🪷", "🕉️", "🪈", "🌼", "✨"],
+    badge: "A soulful celebration with sweetness and blessings",
+    font: "'Fraunces', Georgia, serif",
     textColor: "#fff",
+    pattern: "radial-gradient(circle at 20% 22%, rgba(255,255,255,.34) 0 10px, transparent 11px), radial-gradient(circle at 78% 30%, rgba(122,46,14,.18) 0 18px, transparent 19px), repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 2px, transparent 2px 22px)",
   },
   "Peppa Pig": {
     gradient: "linear-gradient(135deg,#ff8fb1 0%,#ffc1d6 100%)",
@@ -270,7 +273,19 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
 
 export const getThemeStyle = (theme?: string | null): ThemeStyle => {
   if (!theme) return DEFAULT_THEME;
-  return THEME_STYLES[theme] || DEFAULT_THEME;
+  const direct = THEME_STYLES[theme];
+  if (direct) return direct;
+  const normalized = theme.toLowerCase();
+  if (normalized.includes("iron") || normalized.includes("avenger") || normalized.includes("superhero")) {
+    return THEME_STYLES["Iron Man / Avengers"];
+  }
+  if (normalized.includes("space") || normalized.includes("astronaut") || normalized.includes("galaxy")) {
+    return THEME_STYLES["Space / Astronaut"];
+  }
+  if (normalized.includes("iskcon") || normalized.includes("spiritual") || normalized.includes("krishna")) {
+    return THEME_STYLES["Spiritual / ISKCON"];
+  }
+  return DEFAULT_THEME;
 };
 
 const FONT_LINK_ID = "cake-invite-fonts";
