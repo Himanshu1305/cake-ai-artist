@@ -619,7 +619,8 @@ export default function PartyPlannerDetail() {
       !(p as any).invite_artwork_url ||
       meta.theme !== (p.theme || "") ||
       meta.occasion !== (p.occasion || "") ||
-      (meta.childAge ?? null) !== ageVal;
+      (meta.childAge ?? null) !== ageVal ||
+      meta.promptVersion !== "v2-warm";
     if (stale && (p.theme || p.occasion)) {
       // Fire-and-forget; UI will refresh when done.
       (async () => {

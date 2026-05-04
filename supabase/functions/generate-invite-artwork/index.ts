@@ -11,77 +11,78 @@ const ADULT_OCC = /(anniversary|wedding|engage|baby shower|housewarm|retire|fare
 type ThemeProfile = { motifs: string[]; palette: string };
 
 // Theme keyword → (motif variants, palette). The first motif that matches a keyword wins.
+// Palettes are deliberately warm, inviting and celebratory — never cold, grey or washed-out.
 const THEME_MAP: Array<{ rx: RegExp; profile: ThemeProfile }> = [
   { rx: /champagne|toast|gala|black ?tie/i, profile: {
     motifs: [
-      "two slender champagne flutes with rising bubbles, satin ribbon, soft candlelight",
-      "an open vintage champagne bottle laid on silk, scattered gold sequins",
-      "overhead flat-lay of crystal coupes and a sprig of jasmine on dark marble",
+      "two slender champagne flutes with rising golden bubbles, satin ribbon and warm candlelight glow",
+      "an open vintage champagne bottle on warm silk with scattered gold sequins catching the light",
+      "overhead flat-lay of crystal coupes and jasmine on warm marble lit by soft golden bokeh",
     ],
-    palette: "deep ink, brushed gold and ivory" } },
+    palette: "warm gold, champagne and blush ivory with candle-glow highlights" } },
   { rx: /retro|90s|80s|disco|vintage|nostalg/i, profile: {
     motifs: [
-      "muted neon geometric shapes, soft grain, cassette-tape silhouette in shadow",
-      "a vinyl record at an angle with abstract memphis-style confetti shapes",
-      "a soft-focus arcade-light bokeh wash with a single retro polaroid frame",
+      "vivid neon geometric shapes with soft grain and warm party-light bokeh",
+      "a vinyl record at an angle with playful confetti shapes and a glow of warm stage light",
+      "warm arcade-light bokeh wash with a single retro polaroid frame and gold sparkle",
     ],
-    palette: "dusty teal, magenta and warm cream — tasteful, not garish" } },
+    palette: "hot coral, warm magenta and golden cream — vibrant and joyful, not garish" } },
   { rx: /garden|floral|rose|bloom|botanic|peony/i, profile: {
     motifs: [
-      "lush peonies and eucalyptus draped on a linen runner, morning daylight",
-      "an overhead bouquet of garden roses and ferns on weathered stone",
-      "wild dahlias in a clay vase beside an open journal, soft window light",
+      "lush peonies and warm greenery on a linen runner in golden-hour sunlight",
+      "an overhead bouquet of peach roses and soft ferns on warm stone with sun flares",
+      "wild dahlias in a clay vase beside warm candlelight, sunlit window glow",
     ],
-    palette: "sage, blush and ivory" } },
+    palette: "blush, peach and warm ivory with soft gold light" } },
   { rx: /tea|high tea|afternoon|rose ?garden/i, profile: {
     motifs: [
-      "vintage porcelain teacup, lace doily, a single dusty rose, soft daylight",
-      "a tiered cake stand with macarons in soft focus, linen backdrop",
-      "an antique silver teapot beside dried rosebuds on parchment",
+      "porcelain teacup, lace, a single peach rose under warm afternoon sun",
+      "a tiered cake stand with macarons in soft golden light on linen",
+      "an antique gold teapot beside fresh rosebuds and a warm candle glow",
     ],
-    palette: "dusty rose, ivory and antique brass" } },
+    palette: "rose, peach and warm gold — soft but joyful" } },
   { rx: /star|night|evening|midnight|celest|moon/i, profile: {
     motifs: [
-      "a deep midnight sky with faint gold constellations and a single drifting candle",
-      "a velvet cloth scattered with brass stars and a quartz crystal",
-      "soft navy textured backdrop with a crescent of warm candle glow",
+      "a deep midnight sky with bright gold constellations and a warm glowing candle",
+      "velvet cloth scattered with brass stars, a quartz crystal and warm fairy-light bokeh",
+      "rich navy backdrop with a crescent of warm candle glow and gold sparkle",
     ],
-    palette: "midnight navy, antique gold and cool ivory" } },
+    palette: "midnight navy lit by warm candle-gold and brushed gold accents — never cold" } },
   { rx: /tropical|beach|sunset|island|paradise/i, profile: {
     motifs: [
-      "monstera and palm leaves casting soft shadows over a warm sunset wash",
-      "a halved coconut and hibiscus on woven rattan, golden-hour light",
-      "overhead flat-lay of citrus, banana leaves and terracotta pottery",
+      "monstera and palm leaves in vivid sunset light with warm golden flares",
+      "a halved coconut and hibiscus on rattan in rich golden-hour light",
+      "overhead flat-lay of citrus, banana leaves and terracotta in warm afternoon sun",
     ],
-    palette: "terracotta, coral and warm cream" } },
+    palette: "sunset coral, terracotta and warm gold" } },
   { rx: /rustic|barn|vineyard|country|farm|wood/i, profile: {
     motifs: [
-      "weathered oak grain with a sprig of dried wheat and twine",
-      "an enamel mug, dried lavender bunch and a slice of fig on aged wood",
-      "amber bottle, cork and sprigs of rosemary on a linen sack",
+      "warm oak grain with dried wheat, twine and a glowing tea-light",
+      "an enamel mug, dried lavender and figs on amber-lit aged wood",
+      "amber bottle, cork and rosemary on linen with warm candle glow",
     ],
-    palette: "warm amber, oat and forest" } },
+    palette: "amber, terracotta and candle-gold — warm and welcoming" } },
   { rx: /minimal|modern|scandi|architect/i, profile: {
     motifs: [
-      "a single sculptural ceramic vessel casting a long soft shadow",
-      "two smooth river stones balanced on raw plaster",
-      "a folded linen napkin and one olive branch on stone",
+      "a single sculptural ceramic vessel with one warm gold accent and soft golden side light",
+      "two smooth stones on warm plaster catching golden-hour glow",
+      "a folded linen napkin and one olive branch on warm cream stone, sunlit",
     ],
-    palette: "warm stone, bone and soft taupe" } },
+    palette: "warm cream and champagne with a single warm gold accent" } },
   { rx: /candle|cosy|cozy|fireside|hygge/i, profile: {
     motifs: [
-      "a cluster of unlit pillar candles on a slate tray with a knit throw",
-      "a single tall taper candle beside dried orange slices",
-      "a wooden bowl of pinecones and a softly glowing lantern",
+      "a cluster of glowing pillar candles on a warm wood tray with a knit throw",
+      "a tall taper candle beside dried orange slices in warm amber light",
+      "a wooden bowl of pinecones and a softly glowing lantern radiating warm light",
     ],
-    palette: "warm umber, cream and ember orange" } },
+    palette: "warm umber, candle-gold and ember orange" } },
   { rx: /royal|regal|baroque|opulent|luxe/i, profile: {
     motifs: [
-      "rich velvet drape with an antique gilded frame corner and a single rose",
-      "ornate brass key on a damask cloth with a wax seal",
-      "a brocade cushion holding a single pearl strand under soft side light",
+      "rich velvet drape with a gilded frame corner and a warm rose under candlelight",
+      "ornate brass key on damask cloth with a wax seal in warm golden light",
+      "a brocade cushion holding a pearl strand under warm side light",
     ],
-    palette: "burgundy, deep emerald and antique gold" } },
+    palette: "warm burgundy, ruby and antique gold" } },
 ];
 
 function pickTheme(theme: string): ThemeProfile {
@@ -90,11 +91,11 @@ function pickTheme(theme: string): ThemeProfile {
   // Generic fallback — varied so we don't always default to florals
   return {
     motifs: [
-      "an abstract painterly wash with a single sprig of greenery",
-      "soft draped fabric folds catching warm directional light",
-      "an overhead arrangement of seasonal foliage on textured paper",
+      "a warm painterly wash with sun flares and a sprig of fresh greenery",
+      "soft draped fabric folds catching warm golden directional light and faint sparkle",
+      "an overhead arrangement of seasonal foliage on warm cream paper with golden bokeh",
     ],
-    palette: "warm neutrals with one quiet accent colour",
+    palette: "warm celebratory tones — champagne, blush and soft gold accents",
   };
 }
 
@@ -128,7 +129,7 @@ function buildPrompt(theme: string, occasion: string, _title: string, childAge?:
       /wedding|engage/i.test(occ) ? " Evoke a romantic, ceremonial mood." :
       /anniversary/i.test(occ) ? " Evoke an enduring, romantic mood." : "";
     return {
-      prompt: `Sophisticated, grown-up invitation hero background. ${composition}: ${motif}.${occHint} Painterly photographic feel, palette: ${profile.palette}. Generous negative space at top and centre for overlaid title text. Tasteful, magazine-quality editorial styling. NOT cartoonish, NO champagne flutes unless explicitly described above. ${negative}`,
+      prompt: `Sophisticated, grown-up celebration invitation hero background. ${composition}: ${motif}.${occHint} Warm, inviting, celebratory editorial photography with golden-hour light, soft glowing bokeh and a clear sense of joyful occasion. Palette: ${profile.palette}. The image MUST feel warm, festive and welcoming — never cold, dull, washed-out, grey, desaturated or overly neutral. Generous negative space at top and centre for overlaid title text. Tasteful and elegant — NOT cartoonish, NO champagne flutes unless explicitly described above. ${negative}`,
       style: "adult-elegant",
       variationSeed,
     };
@@ -149,14 +150,14 @@ function buildPrompt(theme: string, occasion: string, _title: string, childAge?:
       ageBand = "cheerful illustrated party styling";
     }
     return {
-      prompt: `Birthday invitation hero background. ${composition}: ${motif}, reinterpreted as ${ageBand}. Palette: ${profile.palette}. Generous empty space at top and centre for overlaid title text. ${negative}`,
+      prompt: `Birthday celebration invitation hero background. ${composition}: ${motif}, reinterpreted as ${ageBand}. Warm, inviting, celebratory feel with soft glowing light and a sense of joyful occasion. Palette: ${profile.palette}. The image MUST feel warm and festive — never dull, grey or washed-out. Generous empty space at top and centre for overlaid title text. ${negative}`,
       style: "birthday",
       variationSeed,
     };
   }
 
   return {
-    prompt: `Tasteful celebration invitation hero background. ${composition}: ${motif}. Palette: ${profile.palette}. Painterly editorial feel, generous negative space at the top for overlaid title text. ${negative}`,
+    prompt: `Warm, inviting celebration invitation hero background. ${composition}: ${motif}. Palette: ${profile.palette}. Celebratory editorial photography with golden-hour light and a joyful occasion mood — never cold, dull or washed-out. Generous negative space at the top for overlaid title text. ${negative}`,
     style: "generic",
     variationSeed,
   };
@@ -246,7 +247,7 @@ serve(async (req) => {
     const { data: pub } = supabase.storage.from("party-invites").getPublicUrl(path);
     const url = pub.publicUrl;
 
-    const metaJson = { theme: effTheme, occasion: effOcc, childAge: effAge, style, variationSeed, generatedAt: new Date().toISOString() };
+    const metaJson = { theme: effTheme, occasion: effOcc, childAge: effAge, style, variationSeed, promptVersion: "v2-warm", generatedAt: new Date().toISOString() };
     await supabase
       .from("parties")
       .update({ invite_artwork_url: url, invite_artwork_meta: metaJson })
