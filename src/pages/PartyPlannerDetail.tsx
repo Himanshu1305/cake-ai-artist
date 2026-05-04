@@ -532,6 +532,16 @@ export default function PartyPlannerDetail() {
 
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
+  // Group day-of / secondary tasks under a collapsible "Show more" section.
+  const SECONDARY_TITLES = ["seating arrangement", "activity planning", "party day setup", "day-of schedule", "day of schedule", "venue walkthrough"];
+  const isSecondary = (t: any) => {
+    const lt = (t.title || "").toLowerCase();
+    return SECONDARY_TITLES.some((s) => lt.includes(s));
+  };
+  const primaryTasks = tasks.filter((t) => !isSecondary(t));
+  const secondaryTasks = tasks.filter(isSecondary);
+  const secondaryDone = secondaryTasks.filter((t) => t.is_completed).length;
+  const [showSecondary, setShowSecondary] = useState(false);
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const currentInviteTheme =
     themePick === "Custom"
