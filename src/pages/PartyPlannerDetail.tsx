@@ -105,6 +105,8 @@ const getSuggestedInvite = (theme: string | null | undefined, occasion: string |
       ? "Space / Astronaut"
       : normalizedTheme.includes("minecraft")
         ? "Minecraft"
+        : normalizedTheme.includes("iskcon") || normalizedTheme.includes("spiritual") || normalizedTheme.includes("krishna")
+          ? "Spiritual / ISKCON"
         : undefined;
   const themeSuggestions = (themeKey && INVITE_COPY[themeKey]) || [];
   const fallback = [
