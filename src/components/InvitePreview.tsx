@@ -1,19 +1,30 @@
+import { useEffect } from "react";
+import cakeLogo from "@/assets/logo.png";
+import superheroArmorArt from "@/assets/invite-superhero-armor.jpg";
+
 // Theme styles shared between the in-app preview and the email render.
 // Keep keys in sync with TRENDING_THEMES in PartyPlannerDetail.tsx.
 export type ThemeStyle = {
   gradient: string;
   accent: string;
   emoji: string;
+  heroEmojis?: string[];
+  badge?: string;
   font: string;
   textColor: string;
+  artwork?: string;
+  pattern?: string;
 };
 
 export const DEFAULT_THEME: ThemeStyle = {
   gradient: "linear-gradient(135deg,#ff6b9d 0%,#c44569 50%,#8e44ad 100%)",
   accent: "#c44569",
   emoji: "🎉",
+  heroEmojis: ["🎂", "🎈", "✨", "🎁", "🥳"],
+  badge: "A celebration made sweeter",
   font: "Georgia, serif",
   textColor: "#ffffff",
+  pattern: "radial-gradient(circle at 18% 24%, rgba(255,255,255,.32) 0 8px, transparent 9px), radial-gradient(circle at 82% 18%, rgba(255,255,255,.22) 0 12px, transparent 13px)",
 };
 
 export const THEME_STYLES: Record<string, ThemeStyle> = {
@@ -21,15 +32,22 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
     gradient: "linear-gradient(135deg,#0b1437 0%,#3b1d6b 60%,#7a2dcf 100%)",
     accent: "#9ad0ff",
     emoji: "🚀",
+    heroEmojis: ["🚀", "🪐", "👨‍🚀", "🌕", "✨"],
+    badge: "Mission control says: party launch approved",
     font: "'Orbitron', Georgia, serif",
     textColor: "#e9f1ff",
+    pattern: "radial-gradient(circle at 20% 22%, rgba(255,255,255,.55) 0 2px, transparent 3px), radial-gradient(circle at 72% 34%, rgba(154,208,255,.5) 0 3px, transparent 4px), radial-gradient(circle at 80% 78%, rgba(255,255,255,.38) 0 2px, transparent 3px)",
   },
   "Iron Man / Avengers": {
     gradient: "linear-gradient(135deg,#7a0e0e 0%,#c11d1d 50%,#f5b400 100%)",
     accent: "#ffd166",
     emoji: "⚡",
-    font: "'Impact', Georgia, serif",
+    heroEmojis: ["🦾", "🛡️", "⚡", "🔥", "💥"],
+    badge: "Suit up — the birthday squad is assembling",
+    font: "'Bangers', Impact, Georgia, serif",
     textColor: "#fff",
+    artwork: superheroArmorArt,
+    pattern: "repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 10px, transparent 10px 22px)",
   },
   "Spider-Man": {
     gradient: "linear-gradient(135deg,#b00020 0%,#1a47b8 100%)",
