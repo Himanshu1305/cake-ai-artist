@@ -43,6 +43,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const EmbedGalleryPage = lazy(() =>
   import("./components/EmbeddableGalleryWidget").then((m) => ({ default: m.EmbedGalleryPage }))
 );
+const PartyPlanner = lazy(() => import("./pages/PartyPlanner"));
+const PartyPlannerDetail = lazy(() => import("./pages/PartyPlannerDetail"));
+const PartyRSVP = lazy(() => import("./pages/PartyRSVP"));
 
 const queryClient = new QueryClient();
 
@@ -94,6 +97,9 @@ const App = () => {
                   <Route path="/complete-profile" element={<CompleteProfile />} />
                   <Route path="/blog/unsubscribe" element={<BlogUnsubscribe />} />
                   <Route path="/embed/gallery" element={<EmbedGalleryPage />} />
+                  <Route path="/party-planner" element={<PartyPlanner />} />
+                  <Route path="/party-planner/:id" element={<PartyPlannerDetail />} />
+                  <Route path="/rsvp/:token" element={<PartyRSVP />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
