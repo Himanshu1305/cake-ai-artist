@@ -730,6 +730,12 @@ export type Database = {
           party_id: string
           sort_order: number
           title: string
+          vendor_contacted_at: string | null
+          vendor_email: string | null
+          vendor_name: string | null
+          vendor_notes: string | null
+          vendor_phone: string | null
+          vendor_status: string
         }
         Insert: {
           category?: string | null
@@ -741,6 +747,12 @@ export type Database = {
           party_id: string
           sort_order?: number
           title: string
+          vendor_contacted_at?: string | null
+          vendor_email?: string | null
+          vendor_name?: string | null
+          vendor_notes?: string | null
+          vendor_phone?: string | null
+          vendor_status?: string
         }
         Update: {
           category?: string | null
@@ -752,6 +764,12 @@ export type Database = {
           party_id?: string
           sort_order?: number
           title?: string
+          vendor_contacted_at?: string | null
+          vendor_email?: string | null
+          vendor_name?: string | null
+          vendor_notes?: string | null
+          vendor_phone?: string | null
+          vendor_status?: string
         }
         Relationships: [
           {
