@@ -675,11 +675,11 @@ export const InvitePreview = ({
       <div
         style={{
           background: heroBackground,
-          backgroundSize: t.artwork ? "cover" : "auto",
+          backgroundSize: effectiveArtwork ? "cover" : "auto",
           backgroundPosition: "center",
-          color: t.textColor,
+          color: effectiveArtwork ? "#fff" : t.textColor,
           padding: "30px 24px 28px",
-          minHeight: t.artwork ? 290 : 230,
+          minHeight: effectiveArtwork ? 320 : 230,
           textAlign: "center",
           position: "relative",
           display: "flex",
@@ -687,9 +687,16 @@ export const InvitePreview = ({
           justifyContent: "flex-end",
         }}
       >
-        <div style={{ fontSize: 38, lineHeight: 1.1, letterSpacing: 6 }}>
-          {(t.heroEmojis || [t.emoji]).join(" ")}
-        </div>
+        {!effectiveArtwork && !isAdultOccasion && (
+          <div style={{ fontSize: 38, lineHeight: 1.1, letterSpacing: 6 }}>
+            {(t.heroEmojis || [t.emoji]).join(" ")}
+          </div>
+        )}
+        {!effectiveArtwork && isAdultOccasion && (
+          <div style={{ fontSize: 28, lineHeight: 1, letterSpacing: 10, opacity: 0.85 }}>
+            {(t.heroEmojis || [t.emoji]).slice(0, 2).join(" ")}
+          </div>
+        )}
         {t.badge && (
           <div
             style={{
