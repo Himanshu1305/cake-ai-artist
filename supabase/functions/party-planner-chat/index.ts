@@ -70,7 +70,7 @@ serve(async (req) => {
     });
 
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT + `\n\nCurrent party context: ${JSON.stringify({ title: party.title, occasion: party.occasion, event_date: party.event_date, guest_count: party.guest_count, venue: party.venue, theme: party.theme })}` },
+      { role: "system", content: SYSTEM_PROMPT + `\n\nCurrent party context: ${JSON.stringify({ title: party.title, occasion: party.occasion, event_date: party.event_date, event_timezone: party.event_timezone, guest_count: party.guest_count, venue: party.venue, city: party.city, theme: party.theme, contact_email: party.contact_email, contact_phone: party.contact_phone })}` },
       ...(history || []).map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: userMessage },
     ];
