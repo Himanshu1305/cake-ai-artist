@@ -217,6 +217,7 @@ export default function PartyPlannerDetail() {
   const [savingInvite, setSavingInvite] = useState(false);
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
   const [inviteEdited, setInviteEdited] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
