@@ -838,16 +838,16 @@ export const InvitePreview = ({
           style={{
             textAlign: "center",
             margin: "22px 0 0",
-            borderTop: `1px dashed ${t.accent}55`,
+            borderTop: `1px solid ${t.accent}55`,
             paddingTop: 16,
             position: "relative",
           }}
         >
-          <p style={{ fontSize: 12, color: "#777", margin: "0 0 6px", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: "#333", margin: "0 0 6px", lineHeight: 1.5, fontWeight: 600 }}>
             ✨ Crafted with <strong style={{ color: t.accent }}>Cake AI Artist</strong>
           </p>
-          <p style={{ fontSize: 11, color: "#999", margin: 0 }}>
-            Design your own AI cake & invite at <strong>cakeaiartist.com</strong>
+          <p style={{ fontSize: 12, color: "#444", margin: 0 }}>
+            Design your own AI cake & invite at <strong style={{ color: t.accent }}>cakeaiartist.com</strong>
           </p>
         </div>
       </div>
