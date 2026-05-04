@@ -166,11 +166,11 @@ const inviteEmail = (host: string, party: any, guestName: string, rsvpUrl: strin
           <p style="margin:12px 0 0;font-size:12px;color:#999;">Tap to let ${safeHost} know if you can make it.</p>
         </div>
 
-        <div style="border-top:1px dashed ${t.accent}55;padding-top:18px;margin-top:18px;text-align:center;">
-          <p style="font-size:12px;color:#777;margin:0 0 6px;line-height:1.5;">
+        <div style="border-top:1px solid ${t.accent}55;padding-top:18px;margin-top:18px;text-align:center;">
+          <p style="font-size:13px;color:#333;margin:0 0 6px;line-height:1.5;font-weight:600;">
             ✨ Crafted with <strong style="color:${t.accent};">Cake AI Artist</strong>
           </p>
-          <p style="font-size:11px;color:#999;margin:0 0 12px;">Design your own AI cake, invite, and party look in minutes.</p>
+          <p style="font-size:12px;color:#444;margin:0 0 12px;">Design your own AI cake, invite, and party look in minutes.</p>
           <p style="margin:6px 0 0;">
             <a href="https://cakeaiartist.com/?utm_source=party_invite&utm_medium=email&utm_campaign=invite_footer" style="color:${t.accent};text-decoration:none;font-weight:700;font-size:12px;margin:0 8px;">Design your own cake →</a>
             <a href="https://cakeaiartist.com/party-planner?utm_source=party_invite&utm_medium=email&utm_campaign=invite_footer" style="color:${t.accent};text-decoration:none;font-weight:700;font-size:12px;margin:0 8px;">Plan a party free →</a>
