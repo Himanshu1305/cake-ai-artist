@@ -80,7 +80,7 @@ Name: ${hostName}
 Phone: ${party.contact_phone || "(not provided)"}
 Email: ${party.contact_email || "(not provided)"}
 
-Ask politely for: availability on the date, a price quote, and what's included. Mention the theme so they can suggest themed options. Do NOT add disclaimers or "here is your message" preamble — return only the message itself.`;
+Ask politely for: availability on the date, a price quote, and what's included. Mention the theme so they can suggest themed options. Do NOT include a "Subject:" line, do NOT add disclaimers or "here is your message" preamble — return only the message body itself.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
