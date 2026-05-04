@@ -11,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { InvitePreview } from "@/components/InvitePreview";
 import {
   Send,
   Sparkles,
@@ -23,6 +25,7 @@ import {
   MessageSquare,
   Save,
   Wand2,
+  Ticket,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -30,6 +33,22 @@ import { cn } from "@/lib/utils";
 
 const TRENDING_THEMES = [
   "Barbie Pink",
+  "Space / Astronaut",
+  "Iron Man / Avengers",
+  "Spider-Man",
+  "Star Wars",
+  "Frozen / Elsa",
+  "Peppa Pig",
+  "Paw Patrol",
+  "Dinosaur / Jurassic",
+  "Mermaid / Under the Sea",
+  "Construction / Trucks",
+  "Jungle Safari",
+  "Pokemon",
+  "Minecraft",
+  "Princess / Royal",
+  "Wonder Woman",
+  "Hot Wheels",
   "Bluey",
   "Taylor Swift Eras",
   "Cocomelon",
@@ -37,7 +56,6 @@ const TRENDING_THEMES = [
   "Floral Garden",
   "Boho Chic",
   "Disco / Y2K",
-  "Spider-Man",
   "Unicorn & Rainbow",
   "Pastel Minimal",
   "Tropical Luau",
@@ -45,6 +63,8 @@ const TRENDING_THEMES = [
   "Retro 90s",
   "Sports / Football",
   "Spiritual / ISKCON",
+  "Garden Tea Party",
+  "Carnival / Circus",
   "Custom",
 ];
 
