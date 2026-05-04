@@ -27,7 +27,7 @@ const formatEventDate = (iso: string, tz?: string | null) => {
   }
 };
 
-const THEME_STYLES: Record<string, { gradient: string; emoji: string; heroEmojis: string; badge: string; font: string; artwork?: string }> = {
+const THEME_STYLES: Record<string, { gradient: string; emoji: string; heroEmojis?: string; badge?: string; font?: string; artwork?: string }> = {
   "Space / Astronaut": { gradient: "linear-gradient(135deg,#0b1437 0%,#3b1d6b 60%,#7a2dcf 100%)", emoji: "🚀", heroEmojis: "🚀 🪐 👨‍🚀 🌕 ✨", badge: "Mission control says: party launch approved", font: "Orbitron, Georgia, serif" },
   "Iron Man / Avengers": { gradient: "linear-gradient(135deg,#7a0e0e 0%,#c11d1d 50%,#f5b400 100%)", emoji: "⚡", heroEmojis: "🦾 🛡️ ⚡ 🔥 💥", badge: "Suit up — the birthday squad is assembling", font: "Impact, Georgia, serif", artwork: "https://cakeaiartist.com/invite-superhero-armor-action.jpg" },
   "Spider-Man": { gradient: "linear-gradient(135deg,#b00020 0%,#1a47b8 100%)", emoji: "🕸️" },
