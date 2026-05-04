@@ -401,10 +401,10 @@ export const InvitePreview = ({
       )}
 
       <div style={{ background: "#fff", padding: "28px 24px" }}>
-        <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px" }}>Hi {guestName},</p>
+        <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px", fontWeight: 700 }}>Hi {guestName},</p>
         <p
           style={{
-            fontSize: 14,
+            fontSize: 15,
             color: "#555",
             lineHeight: 1.6,
             margin: "0 0 20px",
@@ -459,7 +459,8 @@ export const InvitePreview = ({
             paddingTop: 14,
           }}
         >
-          ✨ Crafted with <strong>Cake AI Artist</strong>
+          <img src={cakeLogo} alt="Cake AI Artist" loading="lazy" width={120} height={34} style={{ height: 34, width: "auto", display: "block", margin: "0 auto 10px" }} />
+          ✨ Made with <strong>Cake AI Artist</strong> — create your own AI cake, invite, and party look at cakeaiartist.com
         </p>
       </div>
     </div>
