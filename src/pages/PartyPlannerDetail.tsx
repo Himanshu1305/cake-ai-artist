@@ -224,6 +224,25 @@ export default function PartyPlannerDetail() {
     await loadAll();
   };
 
+  const saveInvite = async () => {
+    if (!id) return;
+    setSavingInvite(true);
+    const { error } = await supabase
+      .from("parties")
+      .update({
+        invite_headline: inviteHeadline.trim() || null,
+        invite_message: inviteMessage.trim() || null,
+      } as any)
+      .eq("id", id);
+    setSavingInvite(false);
+    if (error) {
+      toast.error("Couldn't save invite");
+      return;
+    }
+    toast.success("Invite saved");
+    await loadAll();
+  };
+
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim();
     if (!text || sending) return;
