@@ -804,7 +804,7 @@ export default function PartyPlannerDetail() {
                     <Label>Invite headline</Label>
                     <Input
                       value={inviteHeadline}
-                      onChange={(e) => setInviteHeadline(e.target.value)}
+                      onChange={(e) => { setInviteHeadline(e.target.value); setInviteEdited(true); }}
                       placeholder={`You're invited to ${partyTitle || party.title}!`}
                     />
                   </div>
@@ -813,7 +813,7 @@ export default function PartyPlannerDetail() {
                     <Textarea
                       rows={5}
                       value={inviteMessage}
-                      onChange={(e) => setInviteMessage(e.target.value)}
+                      onChange={(e) => { setInviteMessage(e.target.value); setInviteEdited(true); }}
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
