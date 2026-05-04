@@ -386,6 +386,14 @@ export default function PartyPlannerDetail() {
   const completedCount = tasks.filter((t) => t.is_completed).length;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const currentInviteTheme = themePick === "Custom" ? customTheme || party.theme : themePick || party.theme;
+  const applyInviteSuggestion = () => {
+    const nextIndex = inviteSuggestionIndex + 1;
+    const suggestion = getSuggestedInvite(currentInviteTheme, party.occasion, partyTitle || party.title, nextIndex);
+    setInviteSuggestionIndex(nextIndex);
+    setInviteHeadline(suggestion.headline);
+    setInviteMessage(suggestion.message);
+  };
 
   return (
     <div className="min-h-screen bg-background">
