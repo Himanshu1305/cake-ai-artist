@@ -541,6 +541,8 @@ export default function PartyPlannerDetail() {
   const [inviteSuggestionIndex, setInviteSuggestionIndex] = useState(0);
   const [inviteEdited, setInviteEdited] = useState(false);
   const [inviteGenerating, setInviteGenerating] = useState(false);
+  const [artworkGenerating, setArtworkGenerating] = useState(false);
+  const [childAge, setChildAge] = useState<string>("");
   const [showSecondary, setShowSecondary] = useState(false);
 
   const loadAll = async () => {
@@ -608,6 +610,34 @@ export default function PartyPlannerDetail() {
     setTasks(t || []);
     setGuests(g || []);
     setMessages(m || []);
+    setChildAge((p as any).child_age != null ? String((p as any).child_age) : "");
+
+    // Auto-generate hero artwork when missing or stale (theme/occasion/age changed).
+    const meta = (p as any).invite_artwork_meta || {};
+    const ageVal = (p as any).child_age ?? null;
+    const stale =
+      !(p as any).invite_artwork_url ||
+      meta.theme !== (p.theme || "") ||
+      meta.occasion !== (p.occasion || "") ||
+      (meta.childAge ?? null) !== ageVal;
+    if (stale && (p.theme || p.occasion)) {
+      // Fire-and-forget; UI will refresh when done.
+      (async () => {
+        try {
+          setArtworkGenerating(true);
+          const { data: art } = await supabase.functions.invoke("generate-invite-artwork", {
+            body: { partyId: p.id, theme: p.theme, occasion: p.occasion, title: p.title, childAge: ageVal },
+          });
+          if (art?.url) {
+            setParty((prev: any) => ({ ...prev, invite_artwork_url: art.url, invite_artwork_meta: art.meta }));
+          }
+        } catch (e) {
+          console.warn("artwork auto-gen failed", e);
+        } finally {
+          setArtworkGenerating(false);
+        }
+      })();
+    }
   };
 
   useEffect(() => {
@@ -917,6 +947,39 @@ export default function PartyPlannerDetail() {
     } finally {
       setInviteGenerating(false);
     }
+  };
+
+  const regenerateArtwork = async () => {
+    if (artworkGenerating) return;
+    setArtworkGenerating(true);
+    try {
+      const ageVal = childAge ? parseInt(childAge, 10) : null;
+      const { data, error } = await supabase.functions.invoke("generate-invite-artwork", {
+        body: {
+          partyId: party.id,
+          theme: currentInviteTheme,
+          occasion: party.occasion,
+          title: partyTitle || party.title,
+          childAge: ageVal,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        setParty((prev: any) => ({ ...prev, invite_artwork_url: data.url, invite_artwork_meta: data.meta }));
+        toast.success("New invitation artwork ready");
+      }
+    } catch (e: any) {
+      console.error("artwork gen failed", e);
+      toast.error(e?.message || "Could not generate artwork");
+    } finally {
+      setArtworkGenerating(false);
+    }
+  };
+
+  const saveChildAge = async (val: string) => {
+    setChildAge(val);
+    const n = val ? parseInt(val, 10) : null;
+    await supabase.from("parties").update({ child_age: n } as any).eq("id", party.id);
   };
 
   return (
@@ -1407,12 +1470,29 @@ export default function PartyPlannerDetail() {
                       placeholder="Add a warm note for your guests — why you'd love them there, what to expect, dress code, etc."
                     />
                   </div>
+                  {/birthday/i.test(party.occasion || "") && (
+                    <div className="space-y-2">
+                      <Label>Celebrant's age (so the artwork matches)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={childAge}
+                        onChange={(e) => saveChildAge(e.target.value)}
+                        placeholder="e.g. 7"
+                        className="max-w-[160px]"
+                      />
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={saveInvite} disabled={savingInvite}>
                       <Save className="w-4 h-4 mr-2" /> {savingInvite ? "Saving..." : "Save invite"}
                     </Button>
                     <Button type="button" variant="secondary" onClick={() => applyInviteSuggestion()} disabled={inviteGenerating}>
-                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate suggestion"}
+                      <Sparkles className="w-4 h-4 mr-2" /> {inviteGenerating ? "Generating..." : "Regenerate text"}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={regenerateArtwork} disabled={artworkGenerating}>
+                      <Sparkles className="w-4 h-4 mr-2" /> {artworkGenerating ? "Creating artwork..." : "Regenerate artwork"}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -1422,9 +1502,11 @@ export default function PartyPlannerDetail() {
               </Card>
 
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Live preview</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                  Live preview {artworkGenerating && <span className="ml-2 italic">· generating artwork…</span>}
+                </p>
                 <InvitePreview
-                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}`}
+                  key={`${currentInviteTheme}-${inviteHeadline}-${inviteMessage}-${party.invite_artwork_url || ""}`}
                   party={{
                     ...party,
                     title: partyTitle || party.title,
@@ -1434,6 +1516,7 @@ export default function PartyPlannerDetail() {
                   guestName="Your guest"
                   headline={inviteHeadline}
                   message={inviteMessage}
+                  artworkUrl={party.invite_artwork_url || null}
                 />
               </div>
             </div>

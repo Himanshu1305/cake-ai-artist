@@ -577,7 +577,10 @@ interface InvitePreviewProps {
   headline?: string;
   message?: string;
   cakeImageUrl?: string | null;
+  artworkUrl?: string | null;
 }
+
+export const ADULT_OCC_RX_PREVIEW = /(anniversary|wedding|engage|baby shower|housewarm|retire|farewell|reunion|graduation)/i;
 
 const formatDate = (iso?: string | null, tz?: string | null) => {
   if (!iso) return "";
@@ -605,6 +608,7 @@ export const InvitePreview = ({
   headline,
   message,
   cakeImageUrl,
+  artworkUrl,
 }: InvitePreviewProps) => {
   useEffect(() => {
     ensureInviteFonts();
@@ -616,12 +620,11 @@ export const InvitePreview = ({
     message?.trim() ||
     `${hostName} would love for you to join the celebration. Expect smiles, cake, surprises, and a party table full of little wow moments.`;
   const dateLine = formatDate(party?.event_date, party?.event_timezone);
-  const heroBackground = [
-    t.pattern,
-    t.artwork ? `linear-gradient(rgba(0,0,0,.22), rgba(0,0,0,.5)), url(${t.artwork})` : t.gradient,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const isAdultOccasion = ADULT_OCC_RX_PREVIEW.test((party?.occasion || "").toString());
+  const effectiveArtwork = artworkUrl || t.artwork || null;
+  const heroBackground = effectiveArtwork
+    ? `linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.45) 100%), url(${effectiveArtwork})`
+    : [t.pattern, t.gradient].filter(Boolean).join(", ");
   const bodyTint = t.bodyTint || "#fff5f8";
   const corner1 = t.cornerEmojis?.[0] || t.heroEmojis?.[0] || t.emoji;
   const corner2 = t.cornerEmojis?.[1] || t.heroEmojis?.[1] || t.emoji;
@@ -672,11 +675,11 @@ export const InvitePreview = ({
       <div
         style={{
           background: heroBackground,
-          backgroundSize: t.artwork ? "cover" : "auto",
+          backgroundSize: effectiveArtwork ? "cover" : "auto",
           backgroundPosition: "center",
-          color: t.textColor,
+          color: effectiveArtwork ? "#fff" : t.textColor,
           padding: "30px 24px 28px",
-          minHeight: t.artwork ? 290 : 230,
+          minHeight: effectiveArtwork ? 320 : 230,
           textAlign: "center",
           position: "relative",
           display: "flex",
@@ -684,9 +687,16 @@ export const InvitePreview = ({
           justifyContent: "flex-end",
         }}
       >
-        <div style={{ fontSize: 38, lineHeight: 1.1, letterSpacing: 6 }}>
-          {(t.heroEmojis || [t.emoji]).join(" ")}
-        </div>
+        {!effectiveArtwork && !isAdultOccasion && (
+          <div style={{ fontSize: 38, lineHeight: 1.1, letterSpacing: 6 }}>
+            {(t.heroEmojis || [t.emoji]).join(" ")}
+          </div>
+        )}
+        {!effectiveArtwork && isAdultOccasion && (
+          <div style={{ fontSize: 28, lineHeight: 1, letterSpacing: 10, opacity: 0.85 }}>
+            {(t.heroEmojis || [t.emoji]).slice(0, 2).join(" ")}
+          </div>
+        )}
         {t.badge && (
           <div
             style={{
@@ -742,35 +752,23 @@ export const InvitePreview = ({
           overflow: "hidden",
         }}
       >
-        {/* Floating corner emojis */}
-        <span
-          style={{
-            position: "absolute",
-            top: 10,
-            left: 14,
-            fontSize: 38,
-            opacity: 0.18,
-            transform: "rotate(-12deg)",
-            pointerEvents: "none",
-          }}
-          aria-hidden
-        >
-          {corner1}
-        </span>
-        <span
-          style={{
-            position: "absolute",
-            top: 14,
-            right: 18,
-            fontSize: 32,
-            opacity: 0.16,
-            transform: "rotate(14deg)",
-            pointerEvents: "none",
-          }}
-          aria-hidden
-        >
-          {corner2}
-        </span>
+        {/* Floating corner emojis — hidden for adult occasions to keep it elegant */}
+        {!isAdultOccasion && (
+          <>
+            <span
+              style={{ position: "absolute", top: 10, left: 14, fontSize: 38, opacity: 0.18, transform: "rotate(-12deg)", pointerEvents: "none" }}
+              aria-hidden
+            >
+              {corner1}
+            </span>
+            <span
+              style={{ position: "absolute", top: 14, right: 18, fontSize: 32, opacity: 0.16, transform: "rotate(14deg)", pointerEvents: "none" }}
+              aria-hidden
+            >
+              {corner2}
+            </span>
+          </>
+        )}
 
         <p style={{ fontSize: 15, color: "#333", margin: "0 0 6px", fontWeight: 700, position: "relative" }}>
           Hi {guestName},

@@ -77,3 +77,6 @@ verify_jwt = true
 
 [functions.generate-invite-copy]
 verify_jwt = true
+
+[functions.generate-invite-artwork]
+verify_jwt = true
