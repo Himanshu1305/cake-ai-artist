@@ -26,7 +26,11 @@ import {
   Save,
   Wand2,
   Ticket,
+  ChevronDown,
+  ChevronUp,
+  Phone,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
