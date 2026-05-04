@@ -240,9 +240,10 @@ export default function PartyPlannerDetail() {
     setContactEmail((p as any).contact_email || "");
     setContactPhone((p as any).contact_phone || "");
     if (p.theme) {
-      const match = TRENDING_THEMES.find((t) => t.toLowerCase() === p.theme.toLowerCase());
+      const match = matchTrendingTheme(p.theme);
       if (match) {
         setThemePick(match);
+        setCustomTheme("");
       } else {
         setThemePick("Custom");
         setCustomTheme(p.theme);
