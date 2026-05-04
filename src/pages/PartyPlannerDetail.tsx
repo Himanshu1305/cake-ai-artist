@@ -881,10 +881,32 @@ export default function PartyPlannerDetail() {
                                   onBlur={(e) => updateTaskVendor(t.id, { vendor_notes: e.target.value.trim() || null })}
                                 />
                               </div>
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <Label className="text-xs">Message to vendor (editable)</Label>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 px-2 text-xs"
+                                      onClick={() => generateVendorMessage(t.id, 0)}
+                                    >
+                                      <Sparkles className="w-3 h-3 mr-1" /> {t.vendor_message ? "Regenerate" : "✨ Generate AI message"}
+                                    </Button>
+                                  </div>
+                                </div>
+                                <Textarea
+                                  rows={6}
+                                  placeholder="Click 'Generate AI message' to draft a personalized note based on your event details, or write your own."
+                                  value={t.vendor_message || ""}
+                                  onChange={(e) => setTasks((ts) => ts.map((x) => x.id === t.id ? { ...x, vendor_message: e.target.value } : x))}
+                                  onBlur={(e) => updateTaskVendor(t.id, { vendor_message: e.target.value.trim() || null })}
+                                />
+                              </div>
                               <div className="flex flex-wrap gap-2">
                                 <Button
                                   size="sm"
-                                  onClick={() => sendVendorEmail(t.id)}
+                                  onClick={() => sendVendorEmail(t.id, t.vendor_message || undefined)}
                                   disabled={!t.vendor_email}
                                 >
                                   <Mail className="w-3 h-3 mr-1" /> Email vendor
