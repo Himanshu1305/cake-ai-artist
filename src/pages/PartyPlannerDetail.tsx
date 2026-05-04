@@ -812,8 +812,8 @@ export default function PartyPlannerDetail() {
                     <Button onClick={() => setActiveTab("details")}>Go to details</Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {tasks.map((t) => {
+                  (() => {
+                    const renderTask = (t: any) => {
                       const statusColor =
                         t.vendor_status === "confirmed" ? "default" :
                         t.vendor_status === "declined" ? "destructive" :
@@ -976,8 +976,37 @@ export default function PartyPlannerDetail() {
                           </CollapsibleContent>
                         </Collapsible>
                       );
-                    })}
-                  </div>
+                    };
+                    return (
+                      <div className="space-y-2">
+                        {primaryTasks.map(renderTask)}
+                        {secondaryTasks.length > 0 && (
+                          <Collapsible open={showSecondary} onOpenChange={setShowSecondary} className="rounded-lg border border-dashed bg-muted/20">
+                            <CollapsibleTrigger asChild>
+                              <button
+                                type="button"
+                                className="w-full flex items-center justify-between gap-2 p-3 text-sm font-medium hover:bg-muted/40 transition-colors"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">📅 Day-of details</span>
+                                  <Badge variant="secondary" className="text-xs">{secondaryDone}/{secondaryTasks.length}</Badge>
+                                </span>
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  {showSecondary ? "Hide" : `Show ${secondaryTasks.length} more`}
+                                  {showSecondary ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                </span>
+                              </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="px-3 pb-3 space-y-2">
+                                {secondaryTasks.map(renderTask)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
               </CardContent>
             </Card>
