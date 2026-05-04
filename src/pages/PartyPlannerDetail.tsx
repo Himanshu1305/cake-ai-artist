@@ -105,6 +105,9 @@ export default function PartyPlannerDetail() {
       return;
     }
     setParty(p);
+    setPartyTitle(p.title || "");
+    setInviteHeadline((p as any).invite_headline || "");
+    setInviteMessage((p as any).invite_message || "");
     // Hydrate form
     if (p.event_date) {
       const d = new Date(p.event_date);
