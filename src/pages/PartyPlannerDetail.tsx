@@ -541,7 +541,7 @@ export default function PartyPlannerDetail() {
   const primaryTasks = tasks.filter((t) => !isSecondary(t));
   const secondaryTasks = tasks.filter(isSecondary);
   const secondaryDone = secondaryTasks.filter((t) => t.is_completed).length;
-  const [showSecondary, setShowSecondary] = useState(false);
+  // showSecondary is declared above with the other hooks.
   const tz = party.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const currentInviteTheme =
     themePick === "Custom"
