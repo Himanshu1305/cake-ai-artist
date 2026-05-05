@@ -618,6 +618,22 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         throw new Error('All image generations failed. Please try again.');
       }
 
+      // High Quality: only the hero view was generated. Pad remaining slots
+      // with nulls + mark them as failed so the client renders placeholders
+      // with a "Regenerate" button per missing view.
+      if (quality === 'high') {
+        const allViewNames = cakeStyle === 'sculpted'
+          ? ['main', 'top']
+          : ['front', 'side', 'top'];
+        const generatedNames = viewsToRun.map(v => v.name);
+        for (const vn of allViewNames) {
+          if (!generatedNames.includes(vn)) {
+            generatedImages.push(null);
+            failedViews.push(vn);
+          }
+        }
+      }
+
       // Message: fall back to default if it failed.
       const msgRes = messageSettled[0];
       if (msgRes.status === 'fulfilled') {
