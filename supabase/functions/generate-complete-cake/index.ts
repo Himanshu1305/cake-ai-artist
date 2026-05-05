@@ -398,6 +398,22 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
         return `- "Happy Birthday, Mom! Everything I am is because of you. Thank you for your endless love, wisdom, and support. You're not just the best mom – you're my hero. Love you more than words can say!"
 - "To the most amazing mother, ${name}, Happy Birthday! Your love has shaped my life in countless beautiful ways. Thank you for everything you do. Here's to celebrating YOU today!"`;
       }
+      if (rel === 'friend' && occ === 'birthday') {
+        return `- "Happy Birthday, ${name}! Hope this year is everything you've been hyped about — count me in for the celebrations."
+- "Another year of putting up with me — happy birthday, ${name}! Genuinely lucky to call you a friend."`;
+      }
+      if (rel === 'friend' && (occ === 'congratulations' || occ === 'graduation' || occ === 'promotion')) {
+        return `- "Congrats, ${name}! Honestly not surprised — you've been working for this and it shows. So proud of you."
+- "You did it, ${name}! Drinks are on you now, obviously. Beyond happy for you."`;
+      }
+      if (rel === 'colleague' && (occ === 'congratulations' || occ === 'promotion' || occ === 'graduation')) {
+        return `- "Congratulations, ${name} — really well deserved. It's been great working alongside you."
+- "Huge congrats, ${name}! You've put in the work and it shows. Cheering you on."`;
+      }
+      if (rel === 'colleague' && occ === 'birthday') {
+        return `- "Happy Birthday, ${name}! Hope you get a proper break from the inbox today."
+- "Wishing you a great birthday, ${name} — thanks for making the team a better place to be."`;
+      }
       // Christmas messages
       if (occ === 'christmas') {
         return `- "Merry Christmas, ${name}! May your holidays be filled with warmth, joy, and wonderful memories. Wishing you a season of love and happiness!"
