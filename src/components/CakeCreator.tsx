@@ -691,28 +691,30 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         }
 
         // Soft-failure: surface partial success.
-        // For High Quality, keep null slots so the user can regenerate
-        // missing views one-by-one. For Standard we filter nulls out.
+        // For High Quality, replace null slots with a placeholder so the
+        // user can use Regenerate on each missing view; for Standard we
+        // drop nulls entirely.
         const rawImages: (string | null)[] = data.images;
         const failedViews: string[] = data.failedViews || [];
-        const images: (string | null)[] = generationQuality === 'high'
-          ? rawImages
-          : rawImages.filter((u) => !!u);
+        const images: string[] = generationQuality === 'high'
+          ? rawImages.map((u) => u || '/placeholder.svg')
+          : rawImages.filter((u): u is string => !!u);
         const aiMessage = data.greetingMessage;
+        const okCount = generationQuality === 'high'
+          ? images.filter((u) => u !== '/placeholder.svg').length
+          : images.length;
 
-        console.log('Native generation complete:', { imageCount: images.filter(Boolean).length, failed: failedViews, hasMessage: !!aiMessage });
+        console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage });
 
-        // Validate we have at least one image
-        const okImages = images.filter((u): u is string => !!u);
-        if (okImages.length === 0) {
+        if (okCount === 0) {
           throw new Error('No images were generated. Please try again.');
         }
 
         if (failedViews.length > 0) {
           toast({
             title: generationQuality === 'high'
-              ? `Your premium ${okImages.length === 1 ? 'view is' : 'views are'} ready!`
-              : `Generated ${okImages.length} of ${rawImages.length} views`,
+              ? `Your premium ${okCount === 1 ? 'view is' : 'views are'} ready!`
+              : `Generated ${okCount} of ${rawImages.length} views`,
             description: generationQuality === 'high'
               ? `Tap Regenerate on the empty slot${failedViews.length > 1 ? 's' : ''} to add the ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} in high quality.`
               : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
