@@ -489,9 +489,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   // Helper with single-attempt timeout (no auto-retry — retrying a 30s+ image
   // generation just makes users wait twice as long to fail again).
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
-    // High quality: 2.5 min budget (backend ~2x60s per view + margin).
+    // High Quality now generates only the hero view in the initial call,
+    // so the function finishes quickly. We keep a generous 90s budget for
+    // single high-quality view regeneration too.
     // Standard: 50s (backend ~28s + 15s fallback per view + margin).
-    const TIMEOUT_MS = body?.quality === 'high' ? 150000 : 50000;
+    const TIMEOUT_MS = body?.quality === 'high' ? 90000 : 50000;
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -688,23 +690,34 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('Invalid response from cake generation service');
         }
 
-        // Soft-failure: filter null slots, surface partial success.
+        // Soft-failure: surface partial success.
+        // For High Quality, replace null slots with a placeholder so the
+        // user can use Regenerate on each missing view; for Standard we
+        // drop nulls entirely.
         const rawImages: (string | null)[] = data.images;
         const failedViews: string[] = data.failedViews || [];
-        const images = rawImages.filter((u): u is string => !!u);
+        const images: string[] = generationQuality === 'high'
+          ? rawImages.map((u) => u || '/placeholder.svg')
+          : rawImages.filter((u): u is string => !!u);
         const aiMessage = data.greetingMessage;
+        const okCount = generationQuality === 'high'
+          ? images.filter((u) => u !== '/placeholder.svg').length
+          : images.length;
 
-        console.log('Native generation complete:', { imageCount: images.length, failed: failedViews, hasMessage: !!aiMessage });
+        console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage });
 
-        // Validate we have images
-        if (!images || images.length === 0) {
+        if (okCount === 0) {
           throw new Error('No images were generated. Please try again.');
         }
 
         if (failedViews.length > 0) {
           toast({
-            title: `Generated ${images.length} of ${rawImages.length} views`,
-            description: `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
+            title: generationQuality === 'high'
+              ? `Your premium ${okCount === 1 ? 'view is' : 'views are'} ready!`
+              : `Generated ${okCount} of ${rawImages.length} views`,
+            description: generationQuality === 'high'
+              ? `Tap Regenerate on the empty slot${failedViews.length > 1 ? 's' : ''} to add the ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} in high quality.`
+              : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
           });
         }
 
