@@ -88,15 +88,17 @@ serve(async (req) => {
       quality
     } = validationResult.data;
 
-    // Model selection based on quality setting
-    // Standard: Nano Banana 2 (faster, pro-level quality). High: Pro preview.
-    const imageModel = quality === 'high'
+    // Model selection based on quality setting.
+    // Both modes use Nano Banana 2 (fast, pro-level quality) as the PRIMARY
+    // model so users always get 3 images quickly. High quality differs by
+    // using a richer prompt + a longer timeout + a slower premium fallback
+    // (gemini-3-pro-image-preview) only when the primary fails.
+    const imageModel = 'google/gemini-3.1-flash-image-preview';
+    const FALLBACK_MODEL = quality === 'high'
       ? 'google/gemini-3-pro-image-preview'
-      : 'google/gemini-3.1-flash-image-preview';
-    // Fallback if primary times out / 503s
-    const FALLBACK_MODEL = 'google/gemini-2.5-flash-image';
-    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 90000 : 28000;
-    const FALLBACK_TIMEOUT_MS = 15000;
+      : 'google/gemini-2.5-flash-image';
+    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 60000 : 28000;
+    const FALLBACK_TIMEOUT_MS = quality === 'high' ? 60000 : 15000;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
