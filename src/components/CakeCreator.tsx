@@ -489,9 +489,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   // Helper with single-attempt timeout (no auto-retry — retrying a 30s+ image
   // generation just makes users wait twice as long to fail again).
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
-    // High quality: 2.5 min budget (backend ~2x60s per view + margin).
+    // High Quality now generates only the hero view in the initial call,
+    // so the function finishes quickly. We keep a generous 90s budget for
+    // single high-quality view regeneration too.
     // Standard: 50s (backend ~28s + 15s fallback per view + margin).
-    const TIMEOUT_MS = body?.quality === 'high' ? 150000 : 50000;
+    const TIMEOUT_MS = body?.quality === 'high' ? 90000 : 50000;
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
