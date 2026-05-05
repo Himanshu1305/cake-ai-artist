@@ -88,15 +88,17 @@ serve(async (req) => {
       quality
     } = validationResult.data;
 
-    // Model selection based on quality setting
-    // Standard: Nano Banana 2 (faster, pro-level quality). High: Pro preview.
-    const imageModel = quality === 'high'
+    // Model selection based on quality setting.
+    // Both modes use Nano Banana 2 (fast, pro-level quality) as the PRIMARY
+    // model so users always get 3 images quickly. High quality differs by
+    // using a richer prompt + a longer timeout + a slower premium fallback
+    // (gemini-3-pro-image-preview) only when the primary fails.
+    const imageModel = 'google/gemini-3.1-flash-image-preview';
+    const FALLBACK_MODEL = quality === 'high'
       ? 'google/gemini-3-pro-image-preview'
-      : 'google/gemini-3.1-flash-image-preview';
-    // Fallback if primary times out / 503s
-    const FALLBACK_MODEL = 'google/gemini-2.5-flash-image';
-    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 90000 : 28000;
-    const FALLBACK_TIMEOUT_MS = 15000;
+      : 'google/gemini-2.5-flash-image';
+    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 60000 : 28000;
+    const FALLBACK_TIMEOUT_MS = quality === 'high' ? 60000 : 15000;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
@@ -195,12 +197,15 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
     const viewAngles = cakeStyle === 'sculpted' ? sculptedViewAngles : decoratedViewAngles;
 
     // Shared rules — appended to every prompt to avoid duplication.
+    const qualityBoost = quality === 'high'
+      ? `\n- ULTRA HIGH QUALITY: maximize fine detail — fondant micro-textures, crisp piping, accurate caustics, realistic crumb on any cut surface, photoreal soft shadows, color-graded like a magazine cover.`
+      : '';
     const BASE_RULES = `
 COMPOSITION RULES:
 - Generate EXACTLY ONE CAKE — no collage, comparison, side-by-side, before/after, or multiple angles.
 - Centered on a luxurious marble pedestal; complete cake visible top to bottom with adequate padding.
 - Soft studio lighting, shallow depth of field, hyper-realistic, 8K, professional food photography, award-winning pastry art aesthetic, warm appetizing tones.
-- Show each text element ONCE only — do NOT repeat any text.`;
+- Show each text element ONCE only — do NOT repeat any text.${qualityBoost}`;
 
     const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake. For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
 
@@ -393,6 +398,22 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
         return `- "Happy Birthday, Mom! Everything I am is because of you. Thank you for your endless love, wisdom, and support. You're not just the best mom – you're my hero. Love you more than words can say!"
 - "To the most amazing mother, ${name}, Happy Birthday! Your love has shaped my life in countless beautiful ways. Thank you for everything you do. Here's to celebrating YOU today!"`;
       }
+      if (rel === 'friend' && occ === 'birthday') {
+        return `- "Happy Birthday, ${name}! Hope this year is everything you've been hyped about — count me in for the celebrations."
+- "Another year of putting up with me — happy birthday, ${name}! Genuinely lucky to call you a friend."`;
+      }
+      if (rel === 'friend' && (occ === 'congratulations' || occ === 'graduation' || occ === 'promotion')) {
+        return `- "Congrats, ${name}! Honestly not surprised — you've been working for this and it shows. So proud of you."
+- "You did it, ${name}! Drinks are on you now, obviously. Beyond happy for you."`;
+      }
+      if (rel === 'colleague' && (occ === 'congratulations' || occ === 'promotion' || occ === 'graduation')) {
+        return `- "Congratulations, ${name} — really well deserved. It's been great working alongside you."
+- "Huge congrats, ${name}! You've put in the work and it shows. Cheering you on."`;
+      }
+      if (rel === 'colleague' && occ === 'birthday') {
+        return `- "Happy Birthday, ${name}! Hope you get a proper break from the inbox today."
+- "Wishing you a great birthday, ${name} — thanks for making the team a better place to be."`;
+      }
       // Christmas messages
       if (occ === 'christmas') {
         return `- "Merry Christmas, ${name}! May your holidays be filled with warmth, joy, and wonderful memories. Wishing you a season of love and happiness!"
@@ -425,33 +446,62 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
       return '';
     };
 
+    // Tone profile by relationship — drives how casual/warm/formal the message sounds.
+    const getToneProfile = (rel: string): string => {
+      switch (rel) {
+        case 'friend':
+          return `TONE: Casual, warm, like a real text message between close friends. Use contractions ("you're", "can't", "we've"). Sound a little playful, a little proud of them. Reference the vibe of friendship, not just the occasion. Avoid greeting-card phrases. It should feel like something you'd actually send on WhatsApp, not write in a corporate card.`;
+        case 'colleague':
+          return `TONE: Warm, sincere, professionally respectful. Friendly but NOT intimate — no "love you", no pet names, no overly emotional lines. Acknowledge them as a person, not just a coworker. Avoid corporate filler like "wishing you continued success in your endeavors". Sound like a real human teammate who genuinely respects them.`;
+        case 'partner':
+          return `TONE: Romantic, intimate, emotionally present. Sound like you wrote it for them alone — specific, tender, a little vulnerable. Avoid clichés.`;
+        case 'husband':
+        case 'wife':
+          return `TONE: Deeply romantic and personal. Speak from the heart, like a private note between spouses. Avoid generic love-poem clichés.`;
+        case 'mother':
+        case 'father':
+          return `TONE: Grateful, respectful, warm. Sound like an adult child writing honestly, not performatively. Avoid greeting-card filler.`;
+        case 'daughter':
+        case 'son':
+          return `TONE: Loving, proud, tender — a parent speaking to their child. Sound like a real parent, not a Hallmark card.`;
+        case 'sister':
+        case 'brother':
+          return `TONE: Affectionate sibling energy — warm, a little teasing, a lot of love. Sound real, not formal.`;
+        case 'in-laws':
+          return `TONE: Warm and respectful, family-friendly. Not as intimate as nuclear family. Sincere appreciation.`;
+        default:
+          return `TONE: Warm, sincere, human. Match the relationship without sounding scripted.`;
+      }
+    };
+
     // Message generation function
     const generateMessageAsync = async (): Promise<string> => {
       const inverseRel = getInverseRelation(relation);
       const occasionGuidance = getOccasionGuidance(occasion || 'birthday');
-      const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
+      const toneProfile = getToneProfile(relation);
+      const messagePrompt = `You are writing a short ${occasion || 'birthday'} message FROM a ${inverseRel} TO their ${relation} named ${name}.
 
-RECIPIENT DETAILS:
-- Name: ${name}
-- Relationship to sender: ${relation} (meaning the sender is the ${inverseRel})
-- Gender: ${gender || 'other'}
+CONTEXT:
+- Recipient: ${name} (${gender || 'unspecified'})
+- Relationship to sender: ${relation} (sender is the ${inverseRel})
 - Occasion: ${occasion || 'birthday'}
+
+${toneProfile}
 
 ${occasionGuidance}
 
-YOUR TASK:
-Write a 2-3 sentence message that:
-1. Speaks AS the ${inverseRel} writing TO their ${relation}
-2. Uses ${gender === 'female' ? 'feminine' : gender === 'male' ? 'masculine' : 'neutral'} language appropriate for ${name}
-3. Captures the emotional depth and warmth of the ${relation} relationship from the ${inverseRel}'s perspective
-4. Feels deeply personal, genuine, and emotionally resonant – NOT generic or AI-like
-5. Uses the CORRECT greeting for the occasion (e.g., "Merry Christmas" for Christmas, "Happy New Year" for New Year, "Happy Birthday" for Birthday)
-
 ${getRelationshipGuidance(relation, gender)}
 
-${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the emotional tone and perspective:\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}
+HARD RULES — DO NOT BREAK:
+1. Exactly 2 short sentences. Total under 200 characters if possible.
+2. It MUST sound like a real human wrote it — not AI, not a greeting card.
+3. BAN these phrases (and anything similar): "on this special occasion", "may your day be filled with", "wishing you continued success", "heartfelt congratulations", "warmest wishes", "may all your dreams come true", "endless joy and prosperity".
+4. Use contractions naturally where the tone allows.
+5. Use the CORRECT greeting for the occasion (Merry Christmas, Happy New Year, Happy Birthday, Congratulations, etc.).
+6. Do NOT mention the cake, the character theme, or any visual element. Only the message.
+7. Return ONLY the message text. No quotes, no preface, no signature.
 
-Return ONLY the message text. Make it feel like it came from the heart, not from AI. Do NOT mention the character theme unless it creates a meaningful, natural message.`;
+${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the right tone (do not copy verbatim):\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}`;
 
       const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',

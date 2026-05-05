@@ -486,41 +486,29 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
   };
 
-  // Helper function with retry logic and timeout for network interruptions
-  const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
-    // Dynamic timeout: 3 min for high quality, 45s for standard (server budget ~40s + margin)
-    const TIMEOUT_MS = body?.quality === 'high' ? 180000 : 45000;
-    
-    let lastError;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        // Create timeout promise
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Generation timed out. Please try again.')), TIMEOUT_MS);
-        });
-        
-        // Race between actual call and timeout
-        const result = await Promise.race([
-          supabase.functions.invoke(functionName, { body }),
-          timeoutPromise
-        ]);
-        
-        if (result.error) throw result.error;
-        return { data: result.data, error: null };
-      } catch (err) {
-        lastError = err;
-        console.log(`Attempt ${attempt + 1} failed:`, err);
-        if (attempt < maxRetries) {
-          // Wait 2 seconds before retry
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          toast({
-            title: "Reconnecting...",
-            description: "Connection interrupted. Trying again...",
-          });
-        }
-      }
+  // Helper with single-attempt timeout (no auto-retry — retrying a 30s+ image
+  // generation just makes users wait twice as long to fail again).
+  const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
+    // High quality: 2.5 min budget (backend ~2x60s per view + margin).
+    // Standard: 50s (backend ~28s + 15s fallback per view + margin).
+    const TIMEOUT_MS = body?.quality === 'high' ? 150000 : 50000;
+
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Generation timed out. Please try again.')), TIMEOUT_MS);
+      });
+
+      const result = await Promise.race([
+        supabase.functions.invoke(functionName, { body }),
+        timeoutPromise
+      ]);
+
+      if (result.error) throw result.error;
+      return { data: result.data, error: null };
+    } catch (err) {
+      console.log('Generation attempt failed:', err);
+      return { data: null, error: err };
     }
-    return { data: null, error: lastError };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -784,7 +772,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           } else if (error.message.includes('CREDITS_EXHAUSTED') || error.message.includes('402') || error.message.includes('credits')) {
             errorMessage = "AI generation credits are temporarily exhausted. Please try again later.";
           } else if (error.message.includes('timed out')) {
-            errorMessage = "Generation took too long. The AI service may be busy. Please try again in a moment.";
+            errorMessage = generationQuality === 'high'
+              ? "High Quality is taking longer than usual. Try Standard mode, or try High Quality again in a moment."
+              : "Generation took too long. The AI service may be busy. Please try again in a moment.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
             errorMessage = "Connection was interrupted during generation. Please try again - your internet may have briefly disconnected.";
           } else if (error.message.includes('No images')) {

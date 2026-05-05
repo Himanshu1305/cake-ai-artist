@@ -1,79 +1,40 @@
-## Goal
+I found two separate issues:
 
-Restore the "3 images in ~30 seconds" USP for cake generation, without going async, without dropping image count, without lowering quality.
+1. The greeting message prompt is technically asking for warmth, but it still allows “polished greeting-card” language. It needs stronger relationship-specific tone rules: friend should sound casual and emotionally real; colleague should stay warm but respectful/professional.
+2. High Quality is likely timing out before it can return. The client currently waits 3 minutes, but the backend can spend up to about 105 seconds per image attempt, and because there is one retry enabled on the client, the visible failure can happen even while the backend/model is still slow or being restarted. Also, High Quality currently uses the slowest image model for all 3 parallel views, which increases timeout risk.
 
-## Changes
+Plan:
 
-### 1. `supabase/functions/generate-complete-cake/index.ts`
+1. Humanize the AI message generator
+   - Update the backend message prompt in `generate-complete-cake`.
+   - Add a small `getToneProfile(relation)` helper with separate tone rules:
+     - Friend: casual, affectionate, specific-feeling, light, natural; contractions allowed; avoid formal words like “wishing you continued success”.
+     - Colleague: warm and encouraging but not overly intimate; professional respect without corporate-sounding language.
+     - Family/partner: more emotionally expressive and personal.
+   - Add hard “avoid” rules for robotic/formal phrases such as “on this special occasion”, “may your day be filled”, “wishing you continued success”, “heartfelt congratulations”, unless the relationship genuinely calls for it.
+   - Keep the output at 2 short sentences so it feels like a real WhatsApp/card note, not a formal letter.
+   - Add better examples for `friend + congratulations`, `friend + birthday`, and `colleague + congratulations`.
 
-**Model**
-- Default standard model: switch from `google/gemini-2.5-flash-image` to **`google/gemini-3.1-flash-image-preview`** (Nano Banana 2 — pro-level quality, faster).
-- High-quality model unchanged: `google/gemini-3-pro-image-preview`.
-- Add a fallback model constant `FALLBACK_MODEL = 'google/gemini-2.5-flash-image'` used only when a primary call times out.
+2. Make High Quality reliable without hurting Standard mode
+   - Keep Standard exactly on the current fast path: 3 images, parallel, target ~30 seconds.
+   - Change High Quality from “slowest model for all 3 views” to a safer premium-quality path:
+     - Use the faster pro-level image model as the primary model for High Quality as well.
+     - Strengthen the High Quality prompt with more detail/quality instructions instead of relying only on the slowest model.
+     - Use the slowest pro model only as an optional fallback for a single failed view/regeneration later, not for the initial 3-image generation.
+   - This preserves the “3 images” promise and avoids the repeated timeout shown in your screenshot.
 
-**Per-image timeout + fallback**
-- Wrap each AI `fetch` in an `AbortController` with a **28s** budget for standard, **90s** for high quality.
-- On `AbortError` or 503, retry that single view ONCE on `FALLBACK_MODEL` with a **15s** budget. No retry storms; max one fallback attempt per view.
-- Keep existing 429 / 402 handling (surface as RATE_LIMIT / CREDITS_EXHAUSTED).
+3. Fix timeout/retry behavior
+   - Remove automatic retry for full cake generation. Retrying the whole 3-image job doubles the time and cost, and can make users wait only to fail again.
+   - Keep a longer client timeout for High Quality only, but align it with the backend budget.
+   - Improve error text so High Quality timeout says something like: “High Quality is taking longer than usual. Please try Standard or regenerate the missing view,” instead of the generic “AI service may be busy.”
 
-**Soft-failure (2-of-3 still wins)**
-- Replace the inner `Promise.all([generateView, generateView, generateView])` with `Promise.allSettled`.
-- Build the response from settled results: successful slots get the image; failed slots get `null` and a `failedViews: string[]` array listing which view names failed.
-- Only throw the whole request if **zero** views succeeded, or if any view returned `RATE_LIMIT` / `CREDITS_EXHAUSTED` (those still bubble up as 429/402).
-- Message generation stays in the outer `Promise.all` and is best-effort: if it fails, fall back to the existing default greeting string and continue (do not fail the request).
+4. Keep partial success behavior
+   - If High Quality returns 1–2 views successfully, still show them instead of failing the whole cake.
+   - Keep `failedViews` so the user can retry the missing view.
 
-**Drop the hidden 4th image**
-- Remove the `generateBothStyles` branch that generates 4 views (3 decorated + 1 sculpted main) when a character is selected.
-- New behaviour:
-  - `cakeStyle === 'decorated'` → always 3 views (front, side, top), with character themed *into* the decorations (existing prompt already does this).
-  - `cakeStyle === 'sculpted'` → always 2 views (main, top) — unchanged.
-- Keep `generateBothStyles: false` in the response payload so the client UI keeps working.
-- The "see it as a sculpted cake" option remains available on the result page via the existing `specificView='main'` regenerate flow (no new endpoint needed).
+5. Deploy and test
+   - Redeploy the `generate-complete-cake` backend function.
+   - Test Standard to confirm it still returns 3 images quickly.
+   - Test High Quality to confirm it no longer hits the timeout path as easily and returns partial/successful output instead of the red failure toast.
 
-**Prompt trimming (~60% smaller per call)**
-- Extract one shared `BASE_RULES` constant containing the duplicated rules currently restated in every view:
-  - "Generate EXACTLY ONE CAKE / no collage / no side-by-side"
-  - "Centered on a marble pedestal, complete cake visible"
-  - "Soft studio lighting, shallow DOF, hyper-realistic, 8K, professional food photography, award-winning pastry art aesthetic"
-  - "Do NOT repeat any text — show each text element ONCE only"
-- Each view prompt becomes: `view.description` + view-specific text/photo rules + `BASE_RULES` + cake spec (style/theme/colors).
-- Keep all substantive rules intact: occasion text, exact-spelling name (`name.split('').join('-')`), photo placement on top view, sculpted-cake material rules.
-- Remove the `sculptedSystemPrompt` vs `standardSystemPrompt` split — fold the appetising-food-photography sentence into `BASE_RULES`. Saves a system message round-trip on tokenisation.
-
-**Timing logs**
-- At the start of each `generateView` call, capture `const t0 = Date.now()`.
-- On success/failure log `console.log(\`⏱ ${view.name} ${ok ? 'ok' : 'fail'} in ${Date.now()-t0}ms (model=${modelUsed})\`)`.
-- After the `allSettled` resolves, log total wall-clock and per-view summary so we can verify the 30s target in Supabase logs.
-
-### 2. `src/components/CakeCreator.tsx`
-
-**Tighten timeout**
-- In `invokeWithRetry`, change standard `TIMEOUT_MS` from 60000 → **45000** (5s margin over the 40s server worst case). Keep 180000 for `quality === 'high'`.
-
-**Handle partial success**
-- After `invokeWithRetry` returns, if `data.failedViews?.length > 0`:
-  - Filter the `images` array to drop nulls before passing to the existing image-processing pipeline.
-  - Show a non-destructive toast: *"Generated {n} of {total} views — tap Regenerate on the missing one."*
-- If `images.length === 0` after filtering, treat as full failure (existing error path).
-
-**Copy update**
-- In the "Creating your cake..." toast, change the high-quality description to `"High quality mode — slower (~2 min). Standard mode targets ~30s."` so users self-select correctly.
-
-### 3. No changes to
-
-- Database schema (no migration).
-- `supabase/config.toml` (no new function).
-- `specificView` regenerate flow — already supports per-view retry, which the new "Regenerate" button leans on.
-- Party Pack, invites, message generation logic.
-
-## Files
-
-| File | Change |
-|---|---|
-| `supabase/functions/generate-complete-cake/index.ts` | Switch default model to `gemini-3.1-flash-image-preview`; add per-image `AbortController` timeout (28s std / 90s hi) with single fallback to `gemini-2.5-flash-image` (15s); replace `Promise.all` with `Promise.allSettled` + soft-failure response shape (`failedViews`); remove 4-image `generateBothStyles` branch; extract shared `BASE_RULES` and trim repeated rules; merge system prompts; add per-view + total timing logs. |
-| `src/components/CakeCreator.tsx` | Reduce standard timeout 60s → 45s; filter null images and toast partial success when `failedViews` present; update high-quality description copy. |
-
-## Out of scope
-
-- No async jobs, no polling, no DB tables, no quality reduction, no UI redesign.
-- High-quality mode keeps its longer budget — the 30s promise applies to Standard only.
+No database changes are needed.
