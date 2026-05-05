@@ -197,12 +197,15 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
     const viewAngles = cakeStyle === 'sculpted' ? sculptedViewAngles : decoratedViewAngles;
 
     // Shared rules — appended to every prompt to avoid duplication.
+    const qualityBoost = quality === 'high'
+      ? `\n- ULTRA HIGH QUALITY: maximize fine detail — fondant micro-textures, crisp piping, accurate caustics, realistic crumb on any cut surface, photoreal soft shadows, color-graded like a magazine cover.`
+      : '';
     const BASE_RULES = `
 COMPOSITION RULES:
 - Generate EXACTLY ONE CAKE — no collage, comparison, side-by-side, before/after, or multiple angles.
 - Centered on a luxurious marble pedestal; complete cake visible top to bottom with adequate padding.
 - Soft studio lighting, shallow depth of field, hyper-realistic, 8K, professional food photography, award-winning pastry art aesthetic, warm appetizing tones.
-- Show each text element ONCE only — do NOT repeat any text.`;
+- Show each text element ONCE only — do NOT repeat any text.${qualityBoost}`;
 
     const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake. For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
 
