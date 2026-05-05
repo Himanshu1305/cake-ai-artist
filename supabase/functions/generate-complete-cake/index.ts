@@ -93,12 +93,17 @@ serve(async (req) => {
     // model so users always get 3 images quickly. High quality differs by
     // using a richer prompt + a longer timeout + a slower premium fallback
     // (gemini-3-pro-image-preview) only when the primary fails.
+    // For initial full generation we always use the fast pro-quality model.
+    // High quality differs by: (a) richer prompt suffix, (b) only generating
+    // the hero view initially so we don't blow the function timeout,
+    // (c) reserving the slowest premium model strictly for manual single-view
+    // regeneration (specificView) — never as automatic fallback in bulk.
     const imageModel = 'google/gemini-3.1-flash-image-preview';
-    const FALLBACK_MODEL = quality === 'high'
+    const FALLBACK_MODEL = (quality === 'high' && specificView)
       ? 'google/gemini-3-pro-image-preview'
       : 'google/gemini-2.5-flash-image';
-    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 60000 : 28000;
-    const FALLBACK_TIMEOUT_MS = quality === 'high' ? 60000 : 15000;
+    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 55000 : 28000;
+    const FALLBACK_TIMEOUT_MS = quality === 'high' ? 50000 : 15000;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
@@ -557,14 +562,28 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         );
       }
 
-      // Pick view list + labels
+      // Pick view list + labels.
+      // High Quality intentionally only renders the HERO view first so the
+      // function reliably finishes within timeout. The user can then use
+      // "Regenerate" on the placeholder slots to fill the remaining views
+      // one-by-one (those single-view calls have a much larger time budget).
       let viewsToRun: typeof viewAngles;
       if (cakeStyle === 'sculpted') {
-        viewsToRun = [viewAngles[0], viewAngles[1]];
-        imageLabels = ['Main View', 'Top-Down View'];
+        if (quality === 'high') {
+          viewsToRun = [viewAngles[0]]; // main only
+          imageLabels = ['Main View', 'Top-Down View'];
+        } else {
+          viewsToRun = [viewAngles[0], viewAngles[1]];
+          imageLabels = ['Main View', 'Top-Down View'];
+        }
       } else {
-        viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
-        imageLabels = ['Front View', 'Side View', 'Top-Down View'];
+        if (quality === 'high') {
+          viewsToRun = [viewAngles[0]]; // front only
+          imageLabels = ['Front View', 'Side View', 'Top-Down View'];
+        } else {
+          viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
+          imageLabels = ['Front View', 'Side View', 'Top-Down View'];
+        }
       }
 
       const wallStart = Date.now();
