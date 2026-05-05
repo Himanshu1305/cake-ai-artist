@@ -488,8 +488,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
   // Helper function with retry logic and timeout for network interruptions
   const invokeWithRetry = async (functionName: string, body: any, maxRetries = 1) => {
-    // Dynamic timeout based on quality: 3 min for high quality, 1 min for fast
-    const TIMEOUT_MS = body?.quality === 'high' ? 180000 : 60000;
+    // Dynamic timeout: 3 min for high quality, 45s for standard (server budget ~40s + margin)
+    const TIMEOUT_MS = body?.quality === 'high' ? 180000 : 45000;
     
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
