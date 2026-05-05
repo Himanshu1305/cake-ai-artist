@@ -89,9 +89,14 @@ serve(async (req) => {
     } = validationResult.data;
 
     // Model selection based on quality setting
-    const imageModel = quality === 'high' 
-      ? 'google/gemini-3-pro-image-preview' 
-      : 'google/gemini-2.5-flash-image';
+    // Standard: Nano Banana 2 (faster, pro-level quality). High: Pro preview.
+    const imageModel = quality === 'high'
+      ? 'google/gemini-3-pro-image-preview'
+      : 'google/gemini-3.1-flash-image-preview';
+    // Fallback if primary times out / 503s
+    const FALLBACK_MODEL = 'google/gemini-2.5-flash-image';
+    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 90000 : 28000;
+    const FALLBACK_TIMEOUT_MS = 15000;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
@@ -183,207 +188,151 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
       }
     ];
 
-    // Determine if we should generate both styles (when character is selected)
-    const generateBothStyles = !!character && !specificView;
-    
-    // Select view angles based on cake style (or both if character selected)
+    // Always 3 (decorated) or 2 (sculpted) views — no hidden 4th image.
+    const generateBothStyles = false;
+
+    // Select view angles based on cake style
     const viewAngles = cakeStyle === 'sculpted' ? sculptedViewAngles : decoratedViewAngles;
 
-    // Helper function to generate a single view with retry logic
-    const generateView = async (view: typeof viewAngles[0], retries = 2): Promise<string> => {
-      // Special handling for top-down view with photo
-      if (userPhotoBase64 && view.name === 'top') {
-        const topPrompt = `${view.description}
+    // Shared rules — appended to every prompt to avoid duplication.
+    const BASE_RULES = `
+COMPOSITION RULES:
+- Generate EXACTLY ONE CAKE — no collage, comparison, side-by-side, before/after, or multiple angles.
+- Centered on a luxurious marble pedestal; complete cake visible top to bottom with adequate padding.
+- Soft studio lighting, shallow depth of field, hyper-realistic, 8K, professional food photography, award-winning pastry art aesthetic, warm appetizing tones.
+- Show each text element ONCE only — do NOT repeat any text.`;
 
-CRITICAL COMPOSITION RULES:
-- Generate EXACTLY ONE CAKE in the image
-- DO NOT generate a collage, comparison, side-by-side, or before/after image
-- DO NOT show multiple angles in one image - just ONE view of ONE cake
-- The single cake must be centered on a marble pedestal
-- The COMPLETE cake must be visible from top to bottom with adequate padding
+    const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake. For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
 
-The top surface features a large, circular edible photo print that COVERS THE ENTIRE TOP of the cake from edge to edge, showing the provided reference image. The photo is the centerpiece surrounded by ${theme || 'elegant'} decorative borders.
-
-CRITICAL TEXT ON CAKE:
-- Display "${occasionText}" or "HBD" prominently ${view.occasionPosition} in elegant fondant letters
-- Display the name "${name}" elegantly ${view.namePosition} in beautiful fondant script
-- Text must be clearly readable and in a complementary color (gold, pink #D4687A, or blue #2563EB)
-- EXACT SPELLING for name: ${name.split('').join('-')}
-- The photo AND the text together create an inspiring, complete design
-
-Cake specifications:
-- Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
-- Theme: ${theme || 'elegant celebration'}
-- Color scheme: ${colors || 'soft pastels with white base'}`;
-
-        const topMessages: any[] = [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: topPrompt },
-              { 
-                type: 'image_url', 
-                image_url: { url: `data:image/jpeg;base64,${userPhotoBase64}` } 
-              }
-            ]
-          }
-        ];
-
-        console.log(`Generating ${view.name} view...`);
-
-        const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Low-level call with abort timeout — returns base64 data URL or throws.
+    const callImageModel = async (
+      messages: any[],
+      model: string,
+      timeoutMs: number,
+      label: string,
+    ): Promise<string> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${LOVABLE_API_KEY}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            model: imageModel,
-            messages: topMessages,
-            modalities: ['image', 'text']
-          }),
+          body: JSON.stringify({ model, messages, modalities: ['image', 'text'] }),
+          signal: controller.signal,
         });
-
-        if (!imageResponse.ok) {
-          const errorText = await imageResponse.text();
-          console.error(`Image generation failed for ${view.name}:`, imageResponse.status, errorText);
-          if (imageResponse.status === 429) throw new Error('RATE_LIMIT');
-          if (imageResponse.status === 402) throw new Error('CREDITS_EXHAUSTED');
-          if (imageResponse.status === 503 && retries > 0) {
-            console.log(`Retrying ${view.name} view after 503 error (${retries} retries left)...`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return generateView(view, retries - 1);
-          }
-          throw new Error(`Image generation failed: ${imageResponse.status}`);
+        if (!resp.ok) {
+          const errText = await resp.text().catch(() => '');
+          console.error(`[${label}] gateway ${resp.status}:`, errText.slice(0, 300));
+          if (resp.status === 429) throw new Error('RATE_LIMIT');
+          if (resp.status === 402) throw new Error('CREDITS_EXHAUSTED');
+          if (resp.status === 503) throw new Error('UPSTREAM_503');
+          throw new Error(`Image generation failed: ${resp.status}`);
         }
-
-        const imageData = await imageResponse.json();
-        const generatedImageBase64 = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        if (!generatedImageBase64) throw new Error(`No image returned for ${view.name} view`);
-        console.log(`✓ Generated ${view.name} view`);
-        return generatedImageBase64;
+        const data = await resp.json();
+        const url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (!url) throw new Error('No image returned');
+        return url;
+      } finally {
+        clearTimeout(timer);
       }
+    };
 
-      // Standard prompt for all non-photo views
-      let prompt = `${view.description}
+    // Build the per-view messages payload (text + optional photo).
+    const buildMessages = (view: typeof viewAngles[0]): any[] => {
+      // Top view with user photo — special photo overlay prompt.
+      if (userPhotoBase64 && view.name === 'top') {
+        const topPrompt = `${view.description}
 
-CRITICAL COMPOSITION RULES:
-- Generate EXACTLY ONE CAKE in the image
-- DO NOT generate a collage, comparison, side-by-side, or before/after image
-- DO NOT show multiple angles in one image - just ONE view of ONE cake
-- The single cake must be centered on a marble pedestal
-- The COMPLETE cake must be visible from top to bottom with adequate padding
+The top surface features a large, circular edible photo print COVERING THE ENTIRE TOP from edge to edge using the provided reference image. The photo is the centerpiece, surrounded by ${theme || 'elegant'} decorative borders.
 
 CRITICAL TEXT ON CAKE:
-- Display "${occasionText}" prominently ${view.occasionPosition} in elegant fondant/icing lettering
-- Display the name "${name}" ${view.namePosition} in beautiful script
-- Text must be clearly readable, large, and in complementary colors (gold, pink #D4687A, or blue #2563EB)
-- EXACT SPELLING for name: ${name.split('').join('-')}
-- DO NOT repeat any text - show each text element ONCE only
-`;
+- Display "${occasionText}" or "HBD" prominently ${view.occasionPosition} in elegant fondant letters.
+- Display the name "${name}" elegantly ${view.namePosition} in beautiful fondant script.
+- Text in complementary color (gold, pink #D4687A, or blue #2563EB).
+- EXACT SPELLING for name: ${name.split('').join('-')}.
 
-      // Different cake specifications based on style
+Cake spec: ${layers || '2-tier'} ${cakeType || 'fondant'} cake, theme ${theme || 'elegant celebration'}, colors ${colors || 'soft pastels with white base'}.
+${BASE_RULES}`;
+
+        return [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: topPrompt },
+              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${userPhotoBase64}` } },
+            ],
+          },
+        ];
+      }
+
+      // Standard text-only prompt for all other views.
+      let prompt = `${view.description}
+
+CRITICAL TEXT ON CAKE:
+- Display "${occasionText}" prominently ${view.occasionPosition} in elegant fondant/icing lettering.
+- Display the name "${name}" ${view.namePosition} in beautiful script.
+- Text large, readable, in complementary colors (gold, pink #D4687A, or blue #2563EB).
+- EXACT SPELLING for name: ${name.split('').join('-')}.`;
+
       if (cakeStyle === 'sculpted' && view.name === 'main') {
-        // Sculpted main view - the cake IS the character but MUST look like a cake
         prompt += `
-SCULPTED CAKE SPECIFICATIONS - MUST LOOK LIKE A REAL EDIBLE CAKE:
-- This is a 3D SCULPTED character cake INSPIRED BY ${character || 'the character'}
-- Made ENTIRELY of visible edible materials: fondant covering, modeling chocolate, cake layers inside, buttercream details
-- MUST show visible cake characteristics: fondant texture and seams, handcrafted tool marks, slight imperfections
-- The character should be STYLIZED for cake art - cute/rounded/simplified, NOT hyper-realistic like a figurine
-- Show the cake sitting on a cake board/drum with decorative piped border around the base
-- Include bakery elements: cake stand, decorative base, visible fondant work
-- Warm, appetizing FOOD PHOTOGRAPHY lighting (NOT cold studio CGI lighting)
-- Theme: ${theme || 'fun celebration'}
-- Color scheme: ${colors || 'vibrant but obviously edible-looking fondant colors'}
-- CRITICAL: Viewer must IMMEDIATELY recognize this as a handcrafted bakery creation, NOT a toy, figurine, or CGI render
-- Do NOT show a tiered/layered cake - this is a sculpted 3D figure cake that IS made of cake`;
+
+SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || 'the character'}:
+- Made of visible edible materials: fondant covering with subtle seams, modeling chocolate, buttercream details, cake layers inside.
+- STYLIZED, rounded, cake-art look — NOT a hyper-real figurine, toy, or CGI render.
+- Sitting on a cake board/drum with decorative piped border.
+- Theme: ${theme || 'fun celebration'}; colors: ${colors || 'vibrant fondant tones'}.
+- Do NOT show a tiered cake — this is a sculpted figure cake.`;
       } else if (cakeStyle === 'sculpted' && view.name === 'top') {
-        // Sculpted top view - standard decorated cake top
-        prompt += `
-Cake specifications:
-- Style: round ${cakeType || 'fondant'} cake
-- Theme: ${theme || 'elegant celebration'} with ${character || ''} themed decorations
-- Color scheme: ${colors || 'soft pastels with white base'}`;
+        prompt += `\n\nCake spec: round ${cakeType || 'fondant'} cake, theme ${theme || 'elegant celebration'} with ${character || ''} themed decorations, colors ${colors || 'soft pastels with white base'}.`;
       } else {
-        // Decorated cake - standard tiered cake with decorations
-        prompt += `
-Cake specifications:
-- Style: ${layers || '2-tier'} ${cakeType || 'fondant'} cake
-- Theme: ${theme || 'elegant celebration'}
-- Color scheme: ${colors || 'soft pastels with white base'}`;
-        
-        if (character) {
-          prompt += `\n- Character: ${character} themed decorations and figurines placed tastefully`;
-        }
+        prompt += `\n\nCake spec: ${layers || '2-tier'} ${cakeType || 'fondant'} cake, theme ${theme || 'elegant celebration'}, colors ${colors || 'soft pastels with white base'}.`;
+        if (character) prompt += `\nCharacter: ${character} themed decorations and figurines placed tastefully.`;
       }
 
-      prompt += `\n\nStandard photography specifications: luxurious marble pedestal, soft studio lighting, shallow depth of field, hyper-realistic detail, cinematic composition, 8K resolution, professional food photography, award-winning pastry art aesthetic.`;
+      prompt += `\n${BASE_RULES}`;
 
-      console.log(`Generating ${view.name} view...`);
-
-      // Prepare messages with system instruction - use sculpted-specific system prompt when needed
-      const sculptedSystemPrompt = 'You are a professional food photographer specializing in custom sculpted cakes from high-end bakeries. Generate an image of a REAL EDIBLE CAKE that was sculpted by a master pastry chef. The cake should look appetizing and handcrafted - NOT like a plastic figurine, toy, or CGI render. Show visible fondant texture, cake structure, and professional bakery presentation. The lighting should be warm and appetizing like food photography.';
-      
-      const standardSystemPrompt = 'You are a professional food photographer. Generate a single high-quality photograph of ONE cake. Never generate collages, comparisons, or multiple cakes in one image.';
-      
-      const messages: any[] = [
-        {
-          role: 'system',
-          content: (cakeStyle === 'sculpted' && view.name === 'main') ? sculptedSystemPrompt : standardSystemPrompt
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
+      return [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
       ];
+    };
 
-      // Generate image with Lovable AI
-      const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: imageModel,
-          messages: messages,
-          modalities: ['image', 'text']
-        }),
-      });
-
-      if (!imageResponse.ok) {
-        const errorText = await imageResponse.text();
-        console.error(`Image generation failed for ${view.name}:`, imageResponse.status, errorText);
-        
-        // Handle rate limits gracefully
-        if (imageResponse.status === 429) {
-          throw new Error('RATE_LIMIT');
+    // Generate one view: primary model + timeout, fallback model on timeout/503.
+    // 429/402 still bubble up as RATE_LIMIT / CREDITS_EXHAUSTED.
+    const generateView = async (view: typeof viewAngles[0]): Promise<string> => {
+      const messages = buildMessages(view);
+      const t0 = Date.now();
+      try {
+        const url = await callImageModel(messages, imageModel, PRIMARY_TIMEOUT_MS, view.name);
+        console.log(`⏱ ${view.name} ok in ${Date.now() - t0}ms (model=${imageModel})`);
+        return url;
+      } catch (err: any) {
+        const msg = err?.message || String(err);
+        if (msg === 'RATE_LIMIT' || msg === 'CREDITS_EXHAUSTED') throw err;
+        const isTimeout = err?.name === 'AbortError' || msg.includes('aborted');
+        const is503 = msg === 'UPSTREAM_503';
+        if (!isTimeout && !is503) {
+          console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
+          throw err;
         }
-        
-        if (imageResponse.status === 402) {
-          throw new Error('CREDITS_EXHAUSTED');
+        console.log(`⏱ ${view.name} primary ${isTimeout ? 'timeout' : '503'} after ${Date.now() - t0}ms — falling back to ${FALLBACK_MODEL}`);
+        const tFb = Date.now();
+        try {
+          const url = await callImageModel(messages, FALLBACK_MODEL, FALLBACK_TIMEOUT_MS, `${view.name}/fallback`);
+          console.log(`⏱ ${view.name} ok via fallback in ${Date.now() - tFb}ms`);
+          return url;
+        } catch (err2: any) {
+          const msg2 = err2?.message || String(err2);
+          if (msg2 === 'RATE_LIMIT' || msg2 === 'CREDITS_EXHAUSTED') throw err2;
+          console.log(`⏱ ${view.name} fallback fail in ${Date.now() - tFb}ms — ${msg2}`);
+          throw err2;
         }
-        
-        // Retry on 503 errors (upstream connection issues)
-        if (imageResponse.status === 503 && retries > 0) {
-          console.log(`Retrying ${view.name} view after 503 error (${retries} retries left)...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return generateView(view, retries - 1);
-        }
-        
-        throw new Error(`Image generation failed: ${imageResponse.status}`);
       }
-
-      const imageData = await imageResponse.json();
-      const generatedImageBase64 = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-      if (!generatedImageBase64) {
-        throw new Error(`No image returned for ${view.name} view`);
-      }
-
-      console.log(`✓ Generated ${view.name} view`);
-      return generatedImageBase64;
     };
 
     // Helper functions for message generation
@@ -527,20 +476,19 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
     };
 
     // Generate images - either specific view or all views
-    let generatedImages: string[] = [];
+    let generatedImages: (string | null)[] = [];
     let greetingMessage = '';
     let imageLabels: string[] = [];
-    
+    let failedViews: string[] = [];
+
     try {
       if (specificView) {
         // Regenerate only the specified view
         console.log(`Regenerating only ${specificView} view...`);
-        
-        // Determine which view angles array to use based on view name
+
         let viewAnglesToUse = viewAngles;
         let viewStyle: 'decorated' | 'sculpted' = cakeStyle;
-        
-        // If specificView is 'main', it's a sculpted view
+
         if (specificView === 'main') {
           viewAnglesToUse = sculptedViewAngles;
           viewStyle = 'sculpted';
@@ -548,75 +496,79 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
           viewAnglesToUse = decoratedViewAngles;
           viewStyle = 'decorated';
         }
-        // 'top' exists in both, use the cakeStyle to determine
-        
+
         const viewIndex = viewAnglesToUse.findIndex(v => v.name === specificView);
-        if (viewIndex === -1) {
-          throw new Error(`Invalid view name: ${specificView}`);
-        }
+        if (viewIndex === -1) throw new Error(`Invalid view name: ${specificView}`);
         const regeneratedImage = await generateView(viewAnglesToUse[viewIndex]);
-        
+
         return new Response(
-          JSON.stringify({ 
-            regeneratedImage,
-            viewIndex,
-            viewName: specificView,
-            viewStyle
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
+          JSON.stringify({ regeneratedImage, viewIndex, viewName: specificView, viewStyle }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
-      
-      // Generate views AND message in parallel for maximum speed
-      if (generateBothStyles) {
-        // Character selected: Generate 3 decorated views + 1 sculpted main view = 4 total
-        console.log('Starting parallel generation of 4 views (3 decorated + 1 sculpted main) and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(decoratedViewAngles[0]), // front (decorated)
-            generateView(decoratedViewAngles[1]), // side (decorated)
-            generateView(decoratedViewAngles[2]), // top (decorated)
-            generateView(sculptedViewAngles[0])   // main (sculpted - character-shaped)
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
-        imageLabels = ['Front View (Decorated)', 'Side View (Decorated)', 'Top-Down (Decorated)', 'Character-Shaped Cake'];
-        console.log('✓ All 4 views and message generated successfully (both styles)');
-      } else if (cakeStyle === 'sculpted') {
-        // Sculpted cakes: 2 views (main + top)
-        console.log('Starting parallel generation of 2 views (sculpted) and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(viewAngles[0]), // main
-            generateView(viewAngles[1])  // top
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
+
+      // Pick view list + labels
+      let viewsToRun: typeof viewAngles;
+      if (cakeStyle === 'sculpted') {
+        viewsToRun = [viewAngles[0], viewAngles[1]];
         imageLabels = ['Main View', 'Top-Down View'];
-        console.log('✓ All 2 views and message generated successfully (sculpted cake)');
       } else {
-        // Decorated cakes: 3 views (front + side + top)
-        console.log('Starting parallel generation of all 3 views and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(viewAngles[0]), // front
-            generateView(viewAngles[1]), // side
-            generateView(viewAngles[2])  // top
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
+        viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
         imageLabels = ['Front View', 'Side View', 'Top-Down View'];
-        console.log('✓ All 3 views and message generated successfully (decorated cake)');
       }
-    
+
+      const wallStart = Date.now();
+      console.log(`Starting parallel generation of ${viewsToRun.length} views + message...`);
+
+      // allSettled for soft-failure on images; message is best-effort.
+      const [imageSettled, messageSettled] = await Promise.all([
+        Promise.allSettled(viewsToRun.map(v => generateView(v))),
+        Promise.allSettled([generateMessageAsync()]),
+      ]);
+
+      // Check for hard fails (rate-limit / credits) — bubble immediately.
+      for (const r of imageSettled) {
+        if (r.status === 'rejected') {
+          const m = r.reason?.message || String(r.reason);
+          if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
+          if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
+        }
+      }
+
+      generatedImages = imageSettled.map((r, i) => {
+        if (r.status === 'fulfilled') return r.value;
+        failedViews.push(viewsToRun[i].name);
+        console.error(`View ${viewsToRun[i].name} failed:`, r.reason?.message || r.reason);
+        return null;
+      });
+
+      const okCount = generatedImages.filter(Boolean).length;
+      console.log(`⏱ TOTAL ${Date.now() - wallStart}ms — ${okCount}/${viewsToRun.length} views ok, failed: [${failedViews.join(',') || 'none'}]`);
+
+      if (okCount === 0) {
+        throw new Error('All image generations failed. Please try again.');
+      }
+
+      // Message: fall back to default if it failed.
+      const msgRes = messageSettled[0];
+      if (msgRes.status === 'fulfilled') {
+        greetingMessage = msgRes.value;
+      } else {
+        console.error('Message generation failed, using default:', msgRes.reason?.message);
+        greetingMessage = `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
+      }
     } catch (error) {
-      if (error instanceof Error && error.message === 'RATE_LIMIT') {
+      const m = error instanceof Error ? error.message : String(error);
+      if (m === 'RATE_LIMIT') {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (m === 'CREDITS_EXHAUSTED') {
+        return new Response(
+          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       throw error;
@@ -626,9 +578,10 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
       JSON.stringify({
         success: true,
         images: generatedImages,
-        imageLabels: imageLabels,
-        generateBothStyles: generateBothStyles,
-        greetingMessage: greetingMessage
+        imageLabels,
+        generateBothStyles,
+        failedViews,
+        greetingMessage,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
