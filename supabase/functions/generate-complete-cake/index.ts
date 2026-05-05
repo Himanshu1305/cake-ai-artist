@@ -89,9 +89,14 @@ serve(async (req) => {
     } = validationResult.data;
 
     // Model selection based on quality setting
-    const imageModel = quality === 'high' 
-      ? 'google/gemini-3-pro-image-preview' 
-      : 'google/gemini-2.5-flash-image';
+    // Standard: Nano Banana 2 (faster, pro-level quality). High: Pro preview.
+    const imageModel = quality === 'high'
+      ? 'google/gemini-3-pro-image-preview'
+      : 'google/gemini-3.1-flash-image-preview';
+    // Fallback if primary times out / 503s
+    const FALLBACK_MODEL = 'google/gemini-2.5-flash-image';
+    const PRIMARY_TIMEOUT_MS = quality === 'high' ? 90000 : 28000;
+    const FALLBACK_TIMEOUT_MS = 15000;
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
 
