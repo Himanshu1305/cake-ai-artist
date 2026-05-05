@@ -690,23 +690,32 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('Invalid response from cake generation service');
         }
 
-        // Soft-failure: filter null slots, surface partial success.
+        // Soft-failure: surface partial success.
+        // For High Quality, keep null slots so the user can regenerate
+        // missing views one-by-one. For Standard we filter nulls out.
         const rawImages: (string | null)[] = data.images;
         const failedViews: string[] = data.failedViews || [];
-        const images = rawImages.filter((u): u is string => !!u);
+        const images: (string | null)[] = generationQuality === 'high'
+          ? rawImages
+          : rawImages.filter((u) => !!u);
         const aiMessage = data.greetingMessage;
 
-        console.log('Native generation complete:', { imageCount: images.length, failed: failedViews, hasMessage: !!aiMessage });
+        console.log('Native generation complete:', { imageCount: images.filter(Boolean).length, failed: failedViews, hasMessage: !!aiMessage });
 
-        // Validate we have images
-        if (!images || images.length === 0) {
+        // Validate we have at least one image
+        const okImages = images.filter((u): u is string => !!u);
+        if (okImages.length === 0) {
           throw new Error('No images were generated. Please try again.');
         }
 
         if (failedViews.length > 0) {
           toast({
-            title: `Generated ${images.length} of ${rawImages.length} views`,
-            description: `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
+            title: generationQuality === 'high'
+              ? `Your premium ${okImages.length === 1 ? 'view is' : 'views are'} ready!`
+              : `Generated ${okImages.length} of ${rawImages.length} views`,
+            description: generationQuality === 'high'
+              ? `Tap Regenerate on the empty slot${failedViews.length > 1 ? 's' : ''} to add the ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} in high quality.`
+              : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
           });
         }
 
