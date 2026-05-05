@@ -430,33 +430,62 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
       return '';
     };
 
+    // Tone profile by relationship — drives how casual/warm/formal the message sounds.
+    const getToneProfile = (rel: string): string => {
+      switch (rel) {
+        case 'friend':
+          return `TONE: Casual, warm, like a real text message between close friends. Use contractions ("you're", "can't", "we've"). Sound a little playful, a little proud of them. Reference the vibe of friendship, not just the occasion. Avoid greeting-card phrases. It should feel like something you'd actually send on WhatsApp, not write in a corporate card.`;
+        case 'colleague':
+          return `TONE: Warm, sincere, professionally respectful. Friendly but NOT intimate — no "love you", no pet names, no overly emotional lines. Acknowledge them as a person, not just a coworker. Avoid corporate filler like "wishing you continued success in your endeavors". Sound like a real human teammate who genuinely respects them.`;
+        case 'partner':
+          return `TONE: Romantic, intimate, emotionally present. Sound like you wrote it for them alone — specific, tender, a little vulnerable. Avoid clichés.`;
+        case 'husband':
+        case 'wife':
+          return `TONE: Deeply romantic and personal. Speak from the heart, like a private note between spouses. Avoid generic love-poem clichés.`;
+        case 'mother':
+        case 'father':
+          return `TONE: Grateful, respectful, warm. Sound like an adult child writing honestly, not performatively. Avoid greeting-card filler.`;
+        case 'daughter':
+        case 'son':
+          return `TONE: Loving, proud, tender — a parent speaking to their child. Sound like a real parent, not a Hallmark card.`;
+        case 'sister':
+        case 'brother':
+          return `TONE: Affectionate sibling energy — warm, a little teasing, a lot of love. Sound real, not formal.`;
+        case 'in-laws':
+          return `TONE: Warm and respectful, family-friendly. Not as intimate as nuclear family. Sincere appreciation.`;
+        default:
+          return `TONE: Warm, sincere, human. Match the relationship without sounding scripted.`;
+      }
+    };
+
     // Message generation function
     const generateMessageAsync = async (): Promise<string> => {
       const inverseRel = getInverseRelation(relation);
       const occasionGuidance = getOccasionGuidance(occasion || 'birthday');
-      const messagePrompt = `You are writing a heartfelt ${occasion || 'birthday'} message FROM someone TO their ${relation}.
+      const toneProfile = getToneProfile(relation);
+      const messagePrompt = `You are writing a short ${occasion || 'birthday'} message FROM a ${inverseRel} TO their ${relation} named ${name}.
 
-RECIPIENT DETAILS:
-- Name: ${name}
-- Relationship to sender: ${relation} (meaning the sender is the ${inverseRel})
-- Gender: ${gender || 'other'}
+CONTEXT:
+- Recipient: ${name} (${gender || 'unspecified'})
+- Relationship to sender: ${relation} (sender is the ${inverseRel})
 - Occasion: ${occasion || 'birthday'}
+
+${toneProfile}
 
 ${occasionGuidance}
 
-YOUR TASK:
-Write a 2-3 sentence message that:
-1. Speaks AS the ${inverseRel} writing TO their ${relation}
-2. Uses ${gender === 'female' ? 'feminine' : gender === 'male' ? 'masculine' : 'neutral'} language appropriate for ${name}
-3. Captures the emotional depth and warmth of the ${relation} relationship from the ${inverseRel}'s perspective
-4. Feels deeply personal, genuine, and emotionally resonant – NOT generic or AI-like
-5. Uses the CORRECT greeting for the occasion (e.g., "Merry Christmas" for Christmas, "Happy New Year" for New Year, "Happy Birthday" for Birthday)
-
 ${getRelationshipGuidance(relation, gender)}
 
-${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the emotional tone and perspective:\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}
+HARD RULES — DO NOT BREAK:
+1. Exactly 2 short sentences. Total under 200 characters if possible.
+2. It MUST sound like a real human wrote it — not AI, not a greeting card.
+3. BAN these phrases (and anything similar): "on this special occasion", "may your day be filled with", "wishing you continued success", "heartfelt congratulations", "warmest wishes", "may all your dreams come true", "endless joy and prosperity".
+4. Use contractions naturally where the tone allows.
+5. Use the CORRECT greeting for the occasion (Merry Christmas, Happy New Year, Happy Birthday, Congratulations, etc.).
+6. Do NOT mention the cake, the character theme, or any visual element. Only the message.
+7. Return ONLY the message text. No quotes, no preface, no signature.
 
-Return ONLY the message text. Make it feel like it came from the heart, not from AI. Do NOT mention the character theme unless it creates a meaningful, natural message.`;
+${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the right tone (do not copy verbatim):\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}`;
 
       const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
