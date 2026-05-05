@@ -476,20 +476,19 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
     };
 
     // Generate images - either specific view or all views
-    let generatedImages: string[] = [];
+    let generatedImages: (string | null)[] = [];
     let greetingMessage = '';
     let imageLabels: string[] = [];
-    
+    let failedViews: string[] = [];
+
     try {
       if (specificView) {
         // Regenerate only the specified view
         console.log(`Regenerating only ${specificView} view...`);
-        
-        // Determine which view angles array to use based on view name
+
         let viewAnglesToUse = viewAngles;
         let viewStyle: 'decorated' | 'sculpted' = cakeStyle;
-        
-        // If specificView is 'main', it's a sculpted view
+
         if (specificView === 'main') {
           viewAnglesToUse = sculptedViewAngles;
           viewStyle = 'sculpted';
@@ -497,75 +496,79 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
           viewAnglesToUse = decoratedViewAngles;
           viewStyle = 'decorated';
         }
-        // 'top' exists in both, use the cakeStyle to determine
-        
+
         const viewIndex = viewAnglesToUse.findIndex(v => v.name === specificView);
-        if (viewIndex === -1) {
-          throw new Error(`Invalid view name: ${specificView}`);
-        }
+        if (viewIndex === -1) throw new Error(`Invalid view name: ${specificView}`);
         const regeneratedImage = await generateView(viewAnglesToUse[viewIndex]);
-        
+
         return new Response(
-          JSON.stringify({ 
-            regeneratedImage,
-            viewIndex,
-            viewName: specificView,
-            viewStyle
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
+          JSON.stringify({ regeneratedImage, viewIndex, viewName: specificView, viewStyle }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
-      
-      // Generate views AND message in parallel for maximum speed
-      if (generateBothStyles) {
-        // Character selected: Generate 3 decorated views + 1 sculpted main view = 4 total
-        console.log('Starting parallel generation of 4 views (3 decorated + 1 sculpted main) and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(decoratedViewAngles[0]), // front (decorated)
-            generateView(decoratedViewAngles[1]), // side (decorated)
-            generateView(decoratedViewAngles[2]), // top (decorated)
-            generateView(sculptedViewAngles[0])   // main (sculpted - character-shaped)
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
-        imageLabels = ['Front View (Decorated)', 'Side View (Decorated)', 'Top-Down (Decorated)', 'Character-Shaped Cake'];
-        console.log('✓ All 4 views and message generated successfully (both styles)');
-      } else if (cakeStyle === 'sculpted') {
-        // Sculpted cakes: 2 views (main + top)
-        console.log('Starting parallel generation of 2 views (sculpted) and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(viewAngles[0]), // main
-            generateView(viewAngles[1])  // top
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
+
+      // Pick view list + labels
+      let viewsToRun: typeof viewAngles;
+      if (cakeStyle === 'sculpted') {
+        viewsToRun = [viewAngles[0], viewAngles[1]];
         imageLabels = ['Main View', 'Top-Down View'];
-        console.log('✓ All 2 views and message generated successfully (sculpted cake)');
       } else {
-        // Decorated cakes: 3 views (front + side + top)
-        console.log('Starting parallel generation of all 3 views and personalized message...');
-        [generatedImages, greetingMessage] = await Promise.all([
-          Promise.all([
-            generateView(viewAngles[0]), // front
-            generateView(viewAngles[1]), // side
-            generateView(viewAngles[2])  // top
-          ]),
-          generateMessageAsync()  // message generation in parallel
-        ]);
+        viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
         imageLabels = ['Front View', 'Side View', 'Top-Down View'];
-        console.log('✓ All 3 views and message generated successfully (decorated cake)');
       }
-    
+
+      const wallStart = Date.now();
+      console.log(`Starting parallel generation of ${viewsToRun.length} views + message...`);
+
+      // allSettled for soft-failure on images; message is best-effort.
+      const [imageSettled, messageSettled] = await Promise.all([
+        Promise.allSettled(viewsToRun.map(v => generateView(v))),
+        Promise.allSettled([generateMessageAsync()]),
+      ]);
+
+      // Check for hard fails (rate-limit / credits) — bubble immediately.
+      for (const r of imageSettled) {
+        if (r.status === 'rejected') {
+          const m = r.reason?.message || String(r.reason);
+          if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
+          if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
+        }
+      }
+
+      generatedImages = imageSettled.map((r, i) => {
+        if (r.status === 'fulfilled') return r.value;
+        failedViews.push(viewsToRun[i].name);
+        console.error(`View ${viewsToRun[i].name} failed:`, r.reason?.message || r.reason);
+        return null;
+      });
+
+      const okCount = generatedImages.filter(Boolean).length;
+      console.log(`⏱ TOTAL ${Date.now() - wallStart}ms — ${okCount}/${viewsToRun.length} views ok, failed: [${failedViews.join(',') || 'none'}]`);
+
+      if (okCount === 0) {
+        throw new Error('All image generations failed. Please try again.');
+      }
+
+      // Message: fall back to default if it failed.
+      const msgRes = messageSettled[0];
+      if (msgRes.status === 'fulfilled') {
+        greetingMessage = msgRes.value;
+      } else {
+        console.error('Message generation failed, using default:', msgRes.reason?.message);
+        greetingMessage = `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
+      }
     } catch (error) {
-      if (error instanceof Error && error.message === 'RATE_LIMIT') {
+      const m = error instanceof Error ? error.message : String(error);
+      if (m === 'RATE_LIMIT') {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (m === 'CREDITS_EXHAUSTED') {
+        return new Response(
+          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       throw error;
@@ -575,9 +578,10 @@ Return ONLY the message text. Make it feel like it came from the heart, not from
       JSON.stringify({
         success: true,
         images: generatedImages,
-        imageLabels: imageLabels,
-        generateBothStyles: generateBothStyles,
-        greetingMessage: greetingMessage
+        imageLabels,
+        generateBothStyles,
+        failedViews,
+        greetingMessage,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
