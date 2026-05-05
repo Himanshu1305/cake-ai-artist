@@ -672,7 +672,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         toast({
           title: "Creating your cake...",
           description: generationQuality === 'high'
-            ? `AI is generating ${viewDescription} in high quality mode - this takes about 2 minutes!`
+            ? `High quality mode — slower (~2 min). Standard mode targets ~30s.`
             : `AI is generating ${viewDescription} with your personalization!`,
         });
 
@@ -700,14 +700,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('Invalid response from cake generation service');
         }
 
-        const images = data.images;
+        // Soft-failure: filter null slots, surface partial success.
+        const rawImages: (string | null)[] = data.images;
+        const failedViews: string[] = data.failedViews || [];
+        const images = rawImages.filter((u): u is string => !!u);
         const aiMessage = data.greetingMessage;
 
-        console.log('Native generation complete:', { imageCount: images.length, hasMessage: !!aiMessage });
+        console.log('Native generation complete:', { imageCount: images.length, failed: failedViews, hasMessage: !!aiMessage });
 
         // Validate we have images
         if (!images || images.length === 0) {
           throw new Error('No images were generated. Please try again.');
+        }
+
+        if (failedViews.length > 0) {
+          toast({
+            title: `Generated ${images.length} of ${rawImages.length} views`,
+            description: `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
+          });
         }
 
         // Set message
