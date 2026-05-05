@@ -772,7 +772,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           } else if (error.message.includes('CREDITS_EXHAUSTED') || error.message.includes('402') || error.message.includes('credits')) {
             errorMessage = "AI generation credits are temporarily exhausted. Please try again later.";
           } else if (error.message.includes('timed out')) {
-            errorMessage = "Generation took too long. The AI service may be busy. Please try again in a moment.";
+            errorMessage = generationQuality === 'high'
+              ? "High Quality is taking longer than usual. Try Standard mode, or try High Quality again in a moment."
+              : "Generation took too long. The AI service may be busy. Please try again in a moment.";
           } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
             errorMessage = "Connection was interrupted during generation. Please try again - your internet may have briefly disconnected.";
           } else if (error.message.includes('No images')) {
