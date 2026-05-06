@@ -2383,6 +2383,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             e.currentTarget.src = '/placeholder.svg';
                           }}
                         />
+                        {imageUrl === '/placeholder.svg' && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-celebration/40 backdrop-blur-sm rounded-lg">
+                            <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
+                            <p className="text-xs font-semibold text-foreground">Rendering high-quality view…</p>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Selection Checkbox */}
