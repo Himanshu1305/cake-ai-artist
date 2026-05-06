@@ -718,6 +718,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             side_error: 'side',
             top_error: 'top',
           };
+          const viewLabelMap: Record<string, string> = {
+            front: 'Front View',
+            side: 'Side View',
+            top: 'Top-Down View',
+            main: 'Main View',
+          };
+
+          // Seed pending state from initial response (failedViews = pending background slots)
+          const initialPending = new Set<number>();
+          for (const vn of failedViews) {
+            const idx = viewOrder.indexOf(vn);
+            if (idx >= 0) initialPending.add(idx);
+          }
+          setBgPending(initialPending);
+          setBgFailed(new Set());
+          setBgViewLabels(viewOrder.map((vn) => viewLabelMap[vn] || vn));
+
           let finished = false;
 
           const applyRow = (row: any) => {
@@ -736,12 +753,34 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             setGeneratedImages(swap);
             setOriginalImages(swap);
 
-            // Log per-slot errors; user can click Regenerate on that slot.
-            for (const [errCol, viewName] of Object.entries(errToView)) {
-              if (row[errCol]) {
-                console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+            // Update pending/failed sets per slot
+            setBgPending((prev) => {
+              const next = new Set(prev);
+              for (const [col, viewName] of Object.entries(colToView)) {
+                if (row[col]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.delete(idx);
+                }
               }
-            }
+              for (const [errCol, viewName] of Object.entries(errToView)) {
+                if (row[errCol]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.delete(idx);
+                }
+              }
+              return next;
+            });
+            setBgFailed((prev) => {
+              const next = new Set(prev);
+              for (const [errCol, viewName] of Object.entries(errToView)) {
+                if (row[errCol]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.add(idx);
+                  console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+                }
+              }
+              return next;
+            });
 
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
             if (isTerminal && !finished) {
@@ -751,11 +790,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 toast({
                   title: 'All premium views ready!',
                   description: 'Your cake is fully rendered.',
-                });
-              } else {
-                toast({
-                  title: 'Some views need a retry',
-                  description: 'Tap Regenerate on any empty slot to render it again.',
                 });
               }
             }
@@ -782,14 +816,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (row) applyRow(row);
           }, 15000);
 
-          // Watchdog: 4-min hard ceiling. Stops listeners; user can still click Regenerate per slot.
+          // Watchdog: 4-min hard ceiling.
           const watchdog = setTimeout(() => {
             if (!finished) {
               finished = true;
               cleanup();
-              toast({
-                title: 'Some views are still pending',
-                description: 'Tap Regenerate on any empty slot to render it.',
+              // Mark any still-pending slots as failed so the user sees a clear Regenerate prompt.
+              setBgPending((prev) => {
+                setBgFailed((f) => {
+                  const nf = new Set(f);
+                  prev.forEach((i) => nf.add(i));
+                  return nf;
+                });
+                return new Set();
               });
             }
           }, 4 * 60 * 1000);
@@ -799,17 +838,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             clearInterval(pollTimer);
             clearTimeout(watchdog);
           };
-        }
-
-        if (failedViews.length > 0) {
-          toast({
-            title: generationQuality === 'high'
-              ? 'Your first premium view is ready!'
-              : `Generated ${okCount} of ${rawImages.length} views`,
-            description: generationQuality === 'high'
-              ? `Rendering the ${failedViews.join(' & ')} view${failedViews.length > 1 ? 's' : ''} in the background — they'll appear in a moment.`
-              : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
-          });
         }
 
         // Set message
