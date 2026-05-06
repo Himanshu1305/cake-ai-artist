@@ -2482,9 +2482,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           }}
                         />
                         {imageUrl === '/placeholder.svg' && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-celebration/40 backdrop-blur-sm rounded-lg">
-                            <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
-                            <p className="text-xs font-semibold text-foreground">Rendering high-quality view…</p>
+                          <div className={`absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm rounded-lg ${
+                            bgFailed.has(index)
+                              ? "bg-destructive/30"
+                              : "bg-gradient-celebration/40"
+                          }`}>
+                            {bgFailed.has(index) ? (
+                              <>
+                                <p className="text-sm font-bold text-foreground mb-1">⚠️ Couldn't render</p>
+                                <p className="text-xs text-muted-foreground mb-2">Tap Regenerate below</p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
+                                <p className="text-xs font-semibold text-foreground">
+                                  Rendering {(["Front View", "Side View", "Top-Down View", "3/4 View"][index]) || "view"}…
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">This usually takes 30–60s</p>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -2521,7 +2537,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         }
                       </div>
                       
-                      {/* Regenerate View Button */}
+                      {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only */}
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2530,7 +2546,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         disabled={regeneratingView !== null}
                         size="sm"
                         variant="secondary"
-                        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className={`absolute top-2 left-2 transition-opacity ${
+                          bgFailed.has(index) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}
                       >
                         {regeneratingView === index ? (
                           <>
