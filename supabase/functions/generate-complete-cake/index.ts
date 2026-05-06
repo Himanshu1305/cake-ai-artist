@@ -634,9 +634,8 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           hero_view: heroView.name,
           hero_url: heroUrl,
           greeting_message: greetingMessage,
+          view_count: allViewNames.length,
         };
-        // Also store hero in its named slot for the client.
-        if (heroView.name === 'front') jobInsert.side_url = null;
         const { data: jobRow, error: jobErr } = await supabase
           .from('cake_generation_jobs')
           .insert(jobInsert)
@@ -660,30 +659,43 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         const bgTask = (async () => {
           const tBg = Date.now();
           console.log(`[bg ${jobId}] starting ${remainingViews.length} background views`);
+          const colMap: Record<string, { url: string; err: string }> = {
+            front: { url: 'hero_url', err: 'hero_error' },
+            side: { url: 'side_url', err: 'side_error' },
+            top: { url: 'top_url', err: 'top_error' },
+            main: { url: 'hero_url', err: 'hero_error' },
+          };
           await Promise.all(remainingViews.map(async (v) => {
             const tv = Date.now();
+            const slot = colMap[v.name] || { url: 'side_url', err: 'side_error' };
             try {
               const url = await generateView(v);
-              const colMap: Record<string, string> = {
-                front: 'hero_url', // unlikely (front is hero)
-                side: 'side_url',
-                top: 'top_url',
-                main: 'hero_url',
-              };
-              const col = colMap[v.name] || 'side_url';
-              const update: Record<string, unknown> = { [col]: url };
               await supabase.from('cake_generation_jobs')
-                .update(update)
+                .update({ [slot.url]: url })
                 .eq('id', jobId);
               console.log(`[bg ${jobId}] ${v.name} ok in ${Date.now() - tv}ms`);
             } catch (e: any) {
-              console.error(`[bg ${jobId}] ${v.name} failed in ${Date.now() - tv}ms:`, e?.message || e);
+              const errMsg = (e?.message || String(e)).slice(0, 200);
+              console.error(`[bg ${jobId}] ${v.name} failed in ${Date.now() - tv}ms:`, errMsg);
+              await supabase.from('cake_generation_jobs')
+                .update({ [slot.err]: errMsg })
+                .eq('id', jobId);
             }
           }));
+          // Determine final status by re-reading the row.
+          const { data: finalRow } = await supabase
+            .from('cake_generation_jobs')
+            .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
+            .eq('id', jobId)
+            .single();
+          const expected = finalRow?.view_count ?? allViewNames.length;
+          const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
+          const anyErr = !!(finalRow?.hero_error || finalRow?.side_error || finalRow?.top_error);
+          const status = filled >= expected ? 'completed' : (anyErr ? 'partial_failed' : 'completed');
           await supabase.from('cake_generation_jobs')
-            .update({ status: 'completed', completed_at: new Date().toISOString() })
+            .update({ status, completed_at: new Date().toISOString() })
             .eq('id', jobId);
-          console.log(`[bg ${jobId}] all background views done in ${Date.now() - tBg}ms`);
+          console.log(`[bg ${jobId}] all background views done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
         })();
         // Keep the worker alive after the response is sent.
         // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
