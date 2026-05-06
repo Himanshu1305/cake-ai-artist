@@ -651,7 +651,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         toast({
           title: "Creating your cake...",
           description: generationQuality === 'high'
-            ? `High quality mode — slower (~2 min). Standard mode targets ~30s.`
+            ? `Premium quality — your first view appears in ~25s, the rest stream in right after.`
             : `AI is generating ${viewDescription} with your personalization!`,
         });
 
