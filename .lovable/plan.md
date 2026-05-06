@@ -1,86 +1,90 @@
 ## Goal
 
-High Quality should deliver all 3 views like Standard does — without the 150s frontend timeout killing the request. The current "front only" behavior is unacceptable for a future paid feature.
+Make cake image generation reliable in almost all scenarios. Both Standard and High Quality return the first (hero) view fast, then stream the remaining views in the background. No client race timer can kill a successful job.
 
-## Why the old "all 3 in parallel" approach failed
-
-- Edge function returned only after all 3 HQ images finished.
-- If any single view hit the slow fallback model, total time exceeded the 150s client budget.
-- One slow view = entire response lost, including the 2 that already succeeded.
-
-## Recommended fix: stream views back as they finish (background continuation)
-
-Switch from "one big request returns everything" to "first view returns fast, remaining views finish in the background and the client picks them up." This gives the user the perceived speed of Standard while still producing all 3 HQ images.
-
-### How it works
+## Architecture
 
 ```text
-Client clicks Generate (HQ)
-   │
-   ▼
-Edge function: generate-complete-cake
-   • Creates a job row in `cake_generation_jobs` (status=pending, 3 view slots)
-   • Generates the HERO view inline (front/main), ~15–30s
-   • Kicks off the remaining 2 views via EdgeRuntime.waitUntil(...)
-   • Returns hero image + jobId immediately
-   │
-   ▼
-Client shows hero image + 2 "generating…" placeholders
-   │
-   ▼
-Client subscribes to Realtime on `cake_generation_jobs` (or polls every 3s)
-   • Side view row updates → swap placeholder for image
-   • Top view row updates → swap placeholder for image
-   • All done → toast "All 3 high-quality views ready"
+Generate clicked
+  │
+  ▼
+Edge fn: generate-complete-cake
+  • INSERT job row (status=pending, view_count=3 or 4)
+  • Generate HERO inline (~15-25s) with primary→fallback per-view timeout
+  • UPDATE job: hero_url, status=hero_ready
+  • EdgeRuntime.waitUntil(generateRemaining(jobId))
+       ↳ side, top, [fourth] in parallel, each independent try/catch
+       ↳ UPDATE job per slot as each finishes
+       ↳ status=completed when all done (or partial_failed if any view failed)
+  • RETURN { jobId, heroUrl, message } immediately
+  │
+  ▼
+Client (CakeCreator)
+  • Render hero + N "generating…" placeholders
+  • Subscribe Realtime on cake_generation_jobs id=eq.{jobId}
+  • Poll fallback every 15s (in case Realtime drops)
+  • 4-min watchdog → if any slot still empty, show per-slot Regenerate button
+  • NO 50s race timer
 ```
 
-`EdgeRuntime.waitUntil()` keeps the worker alive after the HTTP response is sent, so the remaining views are not bound by the client's 150s budget. Each background view gets its own generous timeout (e.g. 90s primary + 60s fallback) without blocking anyone.
+## Backend changes — `supabase/functions/generate-complete-cake/index.ts`
 
-### Backend changes
+1. Remove the "HQ returns front-only, Standard returns 3-in-one-response" split. Both modes use the hero-first pattern.
+2. Per-view generation helper:
+   - Primary model with 60s timeout
+   - On timeout/error → fallback model with 60s timeout
+   - On both fail → write `error` for that slot only; never throw out of `waitUntil`
+3. Hero view runs inline before the HTTP response.
+4. `EdgeRuntime.waitUntil(generateRemaining(...))` runs side/top/(fourth) in parallel, each updating its own column independently.
+5. Final status:
+   - `completed` if all slots have URLs
+   - `partial_failed` if any slot ended in error (hero already returned, so user still has something)
+6. Robust logging at each stage so we can debug from edge logs.
 
-`supabase/functions/generate-complete-cake/index.ts`
-- For HQ:
-  1. Insert a row into a new `cake_generation_jobs` table with columns: `id, user_id, status, hero_url, side_url, top_url, error, created_at, updated_at, prompt_payload jsonb`.
-  2. Generate hero view inline; update row with `hero_url`.
-  3. `EdgeRuntime.waitUntil(generateRemaining(jobId, payload))` — generates side + top, updates the row column-by-column as each finishes.
-  4. Return `{ jobId, heroUrl, message }` immediately.
-- Standard mode unchanged (still parallel-in-one-response).
-- Fallback model only used after primary fails on a per-view basis; never auto-uses the slowest premium model unless user manually regenerates a specific view.
+## Database migration
 
-### New table + RLS
+Add to `cake_generation_jobs`:
+- `fourth_url text` — for character/sculpted cakes that need 4 views
+- `view_count int not null default 3` — how many slots this job expects
+- `hero_error text`, `side_error text`, `top_error text`, `fourth_error text` — per-slot error messages (so frontend can show "Regenerate this view" only on failed slots)
 
-`cake_generation_jobs`
-- Row owned by `user_id`.
-- RLS: user can `select` their own rows; only the function (service role) writes.
-- Realtime enabled: `ALTER PUBLICATION supabase_realtime ADD TABLE public.cake_generation_jobs;`
+Add INSERT/UPDATE policies (service-role only writes; user can SELECT own rows — already in place).
 
-### Frontend changes — `src/components/CakeCreator.tsx`
+Confirm `cake_generation_jobs` is in the `supabase_realtime` publication and `REPLICA IDENTITY FULL` is set so partial column updates broadcast.
 
-- On HQ generate response:
-  - Render `[heroUrl, '/placeholder-loading.svg', '/placeholder-loading.svg']` with a small "Generating high-quality view…" spinner overlay on slots 2 & 3.
-  - Open a Supabase Realtime channel filtered on `id=eq.{jobId}`.
-  - On each update, replace the matching placeholder; clear spinner when both finish.
-  - Safety net: 3-minute client watchdog. If side/top still missing, show a "Regenerate this view" button on the empty slots (existing flow).
-- Remove the current "front-only + manual regenerate" UX.
+## Frontend changes — `src/components/CakeCreator.tsx`
 
-### Why not fully async (queue + worker)?
+1. **Remove the 50s client race timer** entirely (this is what produced the "taking too long" toast).
+2. On generate response: render hero + (view_count - 1) placeholder slots with a soft pulsing "Generating high-quality view…" overlay.
+3. Subscribe to Realtime on `cake_generation_jobs` filtered by `id=eq.{jobId}`. On each UPDATE:
+   - Swap placeholder → image when a `*_url` arrives
+   - If a `*_error` arrives, replace placeholder with a small "Regenerate this view" button (existing manual flow)
+4. Polling fallback: every 15s fetch the row directly (covers dropped Realtime connections; stops when status is terminal).
+5. Watchdog: 4-minute soft timeout. If any slot still missing AND no error recorded, show the Regenerate button on it. No destructive toast — the hero is still there, the user is not blocked.
+6. Replace existing "Generation timed out" toast with a non-blocking inline notice on the affected slots only.
 
-A full job-queue + cron worker (as suggested in the stack-overflow snippet) would also work, but is heavier: needs a scheduler, separate worker function, and longer perceived wait for the first image. `EdgeRuntime.waitUntil` is the lightest correct solution and fits Supabase Edge Functions natively.
+## Standard vs HQ
+
+Same code path. Only differences:
+- Standard uses faster/cheaper primary model
+- HQ uses higher-quality primary model
+- Both use the same fallback chain and timeouts
+
+This means when HQ becomes a paid feature later, the reliability story is identical to Standard — no surprises.
 
 ## Files to change
 
-- `supabase/functions/generate-complete-cake/index.ts` — split into "hero inline + waitUntil(remaining)"; update job row per view.
-- `src/components/CakeCreator.tsx` — handle jobId, render loading placeholders, subscribe to Realtime, swap images as they arrive.
-- New migration:
-  - Create `public.cake_generation_jobs` table + RLS policies.
-  - Add it to `supabase_realtime` publication.
+- `supabase/migrations/<new>.sql` — add columns + ensure realtime publication
+- `supabase/functions/generate-complete-cake/index.ts` — unify hero-first flow, per-view error isolation, waitUntil
+- `src/components/CakeCreator.tsx` — remove race timer, add Realtime + polling + per-slot regenerate, watchdog
 
-No changes to Standard mode, pricing, or other components.
+No changes to pricing, gallery, party pack, or other components.
 
 ## Verification
 
-1. Run HQ generation; confirm hero image appears within ~30s and `jobId` returned.
-2. Watch Realtime updates land for side/top within ~60–90s each.
-3. Confirm all 3 final images render without manual regeneration.
-4. Confirm Standard mode is unchanged.
-5. Edge function logs show `waitUntil` completion entries after the HTTP response was already sent.
+1. Standard generate → hero appears <25s, side+top appear within ~60s, no toast.
+2. HQ generate → same UX as Standard, all 3 (or 4) views land.
+3. Force-fail one view (kill model temporarily): hero + remaining views still arrive; failed slot shows Regenerate button only.
+4. Disconnect/reconnect network mid-generation: polling fallback still surfaces the completed views.
+5. Edge logs show `waitUntil` entries continuing after the HTTP response was sent.
+6. No "Generation timed out" toast in any normal scenario.
