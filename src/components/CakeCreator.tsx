@@ -486,25 +486,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     });
   };
 
-  // Helper with single-attempt timeout (no auto-retry — retrying a 30s+ image
-  // generation just makes users wait twice as long to fail again).
+  // Single-attempt invoke. We deliberately do NOT race a client-side timer here:
+  // the backend now returns the hero view fast (HQ + Standard) and finishes the
+  // remaining views in the background, so a client race timer can only do harm
+  // (kill a successful job and show a confusing "timed out" toast). A long
+  // watchdog (4 min) is applied separately in handleSubmit only as a safety net.
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
-    // High Quality now generates only the hero view in the initial call,
-    // so the function finishes quickly. We keep a generous 90s budget for
-    // single high-quality view regeneration too.
-    // Standard: 50s (backend ~28s + 15s fallback per view + margin).
-    const TIMEOUT_MS = body?.quality === 'high' ? 90000 : 50000;
-
     try {
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Generation timed out. Please try again.')), TIMEOUT_MS);
-      });
-
-      const result = await Promise.race([
-        supabase.functions.invoke(functionName, { body }),
-        timeoutPromise
-      ]);
-
+      const result = await supabase.functions.invoke(functionName, { body });
       if (result.error) throw result.error;
       return { data: result.data, error: null };
     } catch (err) {
