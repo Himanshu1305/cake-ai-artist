@@ -691,11 +691,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         }
 
         // Soft-failure: surface partial success.
-        // For High Quality, replace null slots with a placeholder so the
-        // user can use Regenerate on each missing view; for Standard we
-        // drop nulls entirely.
+        // For High Quality, the backend returns the hero view immediately
+        // and continues generating the remaining views in the background.
+        // We render placeholders for the missing slots and subscribe to
+        // Realtime updates on cake_generation_jobs to swap them in as
+        // they finish — no manual regenerate needed.
         const rawImages: (string | null)[] = data.images;
         const failedViews: string[] = data.failedViews || [];
+        const jobId: string | undefined = data.jobId;
+        const viewOrder: string[] | undefined = data.viewOrder;
+        const heroView: string | undefined = data.heroView;
         const images: string[] = generationQuality === 'high'
           ? rawImages.map((u) => u || '/placeholder.svg')
           : rawImages.filter((u): u is string => !!u);
@@ -704,19 +709,64 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           ? images.filter((u) => u !== '/placeholder.svg').length
           : images.length;
 
-        console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage });
+        console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage, jobId });
 
         if (okCount === 0) {
           throw new Error('No images were generated. Please try again.');
         }
 
+        // High Quality: subscribe to Realtime so background views appear in
+        // their slots as soon as they finish.
+        if (generationQuality === 'high' && jobId && viewOrder && heroView && failedViews.length > 0) {
+          const colToView: Record<string, string> = {
+            side_url: 'side',
+            top_url: 'top',
+          };
+          const channel = supabase
+            .channel(`cake-job-${jobId}`)
+            .on('postgres_changes' as any, {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'cake_generation_jobs',
+              filter: `id=eq.${jobId}`,
+            }, (payload: any) => {
+              const row = payload.new;
+              const swap = (prev: string[]) => {
+                const next = [...prev];
+                for (const [col, viewName] of Object.entries(colToView)) {
+                  const url = row[col];
+                  if (!url) continue;
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0 && (next[idx] === '/placeholder.svg' || !next[idx])) {
+                    next[idx] = url;
+                  }
+                }
+                return next;
+              };
+              setGeneratedImages(swap);
+              setOriginalImages(swap);
+              if (row.status === 'completed') {
+                supabase.removeChannel(channel);
+                toast({
+                  title: 'All high-quality views ready!',
+                  description: 'Your cake is fully rendered in premium quality.',
+                });
+              }
+            })
+            .subscribe();
+
+          setTimeout(() => {
+            try { supabase.removeChannel(channel); } catch {}
+          }, 5 * 60 * 1000);
+        }
+
         if (failedViews.length > 0) {
           toast({
             title: generationQuality === 'high'
-              ? `Your premium ${okCount === 1 ? 'view is' : 'views are'} ready!`
+              ? 'Your first premium view is ready!'
               : `Generated ${okCount} of ${rawImages.length} views`,
             description: generationQuality === 'high'
-              ? `Tap Regenerate on the empty slot${failedViews.length > 1 ? 's' : ''} to add the ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} in high quality.`
+              ? `Rendering the ${failedViews.join(' & ')} view${failedViews.length > 1 ? 's' : ''} in the background — they'll appear in a moment.`
               : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
           });
         }
@@ -2333,6 +2383,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                             e.currentTarget.src = '/placeholder.svg';
                           }}
                         />
+                        {imageUrl === '/placeholder.svg' && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-celebration/40 backdrop-blur-sm rounded-lg">
+                            <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
+                            <p className="text-xs font-semibold text-foreground">Rendering high-quality view…</p>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Selection Checkbox */}

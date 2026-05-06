@@ -204,6 +204,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cake_generation_jobs: {
+        Row: {
+          cake_style: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          greeting_message: string | null
+          hero_url: string | null
+          hero_view: string | null
+          id: string
+          side_url: string | null
+          status: string
+          top_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cake_style: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          greeting_message?: string | null
+          hero_url?: string | null
+          hero_view?: string | null
+          id?: string
+          side_url?: string | null
+          status?: string
+          top_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cake_style?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          greeting_message?: string | null
+          hero_url?: string | null
+          hero_view?: string | null
+          id?: string
+          side_url?: string | null
+          status?: string
+          top_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string | null
