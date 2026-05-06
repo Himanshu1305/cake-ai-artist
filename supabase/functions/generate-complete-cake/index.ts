@@ -188,10 +188,10 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
       },
       { 
         name: 'top', 
-        description: 'Professional food photography of a SINGLE, COMPLETE luxurious cake from DIRECTLY ABOVE (bird\'s eye view). Frame the shot to FILL THE IMAGE with the cake - the cake should occupy most of the frame with minimal empty space. Show the entire circular top surface with just a hint of the cake stand edge. MINIMIZE BLANK SPACE above and below the cake. The cake should be the dominant element filling 80-90% of the frame.',
-        namePosition: 'elegantly around the outer edge or on a decorative banner',
-        occasionPosition: 'prominently on the top surface in elegant fondant letters (even when photo is present)',
-        photoPosition: 'covering the ENTIRE top surface of the cake from edge to edge'
+        description: 'Professional overhead (bird\'s-eye / top-down) food photography of a SINGLE, COMPLETE luxurious cake. Camera is directly above the cake\'s center, slightly pulled back so the FULL circular silhouette of the cake is clearly visible with comfortable margin (approximately 15-25%) of negative space around it. The surrounding area can show the cake stand, table surface, and scattered decorative props (petals, sprinkles, small macarons, berries). The cake should occupy roughly 55-70% of the frame — DO NOT crop to its edge. Sharp focus on the top surface, soft natural studio lighting, magazine-style composition. The complete top decoration (text, photo, designs) must be fully visible and centered, never clipped.',
+        namePosition: 'elegantly on the top surface or on a decorative banner — fully within the visible cake surface, never clipped at the rim',
+        occasionPosition: 'prominently on the top surface in elegant fondant letters, fully visible and centered',
+        photoPosition: 'centered on the top surface, occupying roughly 70% of the cake\'s top with a thin decorated border ring of frosting/fondant around it (NOT edge-to-edge)'
       }
     ];
 
