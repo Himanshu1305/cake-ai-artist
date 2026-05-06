@@ -2233,6 +2233,33 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </span>
               </div>
 
+              {/* Persistent background-progress banner */}
+              {(bgPending.size > 0 || bgFailed.size > 0) && (
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 ${
+                  bgPending.size > 0
+                    ? "bg-party-purple/10 border-party-purple/40"
+                    : "bg-destructive/10 border-destructive/40"
+                }`}>
+                  {bgPending.size > 0 && (
+                    <div className="w-5 h-5 border-2 border-party-pink border-t-transparent rounded-full animate-spin shrink-0" />
+                  )}
+                  <div className="text-sm text-foreground">
+                    {bgPending.size > 0 ? (
+                      <>
+                        <strong>✨ Hero view ready!</strong> Rendering{" "}
+                        {Array.from(bgPending).map((i) => bgViewLabels[i] || `View ${i + 1}`).join(" & ")}{" "}
+                        in the background — usually 30–60 seconds.
+                      </>
+                    ) : (
+                      <>
+                        <strong>Some views need a retry.</strong> Tap{" "}
+                        <em>Regenerate</em> on any failed slot below.
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Check if we're in dual-style mode (4 images with character) */}
               {generatedImages.length === 4 && character ? (
                 // Dual-style mode: Show grouped sections
