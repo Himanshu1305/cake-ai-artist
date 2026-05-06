@@ -95,6 +95,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
   const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
+  const [bgPending, setBgPending] = useState<Set<number>>(new Set());
+  const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
+  const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
