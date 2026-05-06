@@ -211,14 +211,18 @@ export type Database = {
           created_at: string
           error_message: string | null
           greeting_message: string | null
+          hero_error: string | null
           hero_url: string | null
           hero_view: string | null
           id: string
+          side_error: string | null
           side_url: string | null
           status: string
+          top_error: string | null
           top_url: string | null
           updated_at: string
           user_id: string
+          view_count: number
         }
         Insert: {
           cake_style: string
@@ -226,14 +230,18 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           greeting_message?: string | null
+          hero_error?: string | null
           hero_url?: string | null
           hero_view?: string | null
           id?: string
+          side_error?: string | null
           side_url?: string | null
           status?: string
+          top_error?: string | null
           top_url?: string | null
           updated_at?: string
           user_id: string
+          view_count?: number
         }
         Update: {
           cake_style?: string
@@ -241,14 +249,18 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           greeting_message?: string | null
+          hero_error?: string | null
           hero_url?: string | null
           hero_view?: string | null
           id?: string
+          side_error?: string | null
           side_url?: string | null
           status?: string
+          top_error?: string | null
           top_url?: string | null
           updated_at?: string
           user_id?: string
+          view_count?: number
         }
         Relationships: []
       }
