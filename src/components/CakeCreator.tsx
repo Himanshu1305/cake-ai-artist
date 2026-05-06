@@ -229,6 +229,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const newImages = [...generatedImages];
         newImages[viewIndex] = data.regeneratedImage;
         setGeneratedImages(newImages);
+        setBgPending((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
+        setBgFailed((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
         
         // Get the appropriate label based on mode
         let label: string;
