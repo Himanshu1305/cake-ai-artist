@@ -704,6 +704,8 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             failedViews: responseFailed,
             greetingMessage,
             jobId,
+            viewOrder: allViewNames,
+            heroView: heroView.name,
             backgroundViews: remainingViews.map(v => v.name),
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
