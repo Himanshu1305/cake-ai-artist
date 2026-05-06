@@ -1,90 +1,46 @@
-## Goal
+## Issues observed
 
-Make cake image generation reliable in almost all scenarios. Both Standard and High Quality return the first (hero) view fast, then stream the remaining views in the background. No client race timer can kill a successful job.
+1. **No visible "background work in progress" indicator.** After Hero arrives, only a toast announces "remaining views rendering in background." The toast auto-dismisses, leaving the empty slots looking broken. Empty slots also don't show a clear shimmer/spinner with text. User assumed generation was done with 1 view.
+2. **Top-Down view is over-zoomed.** Current prompt forces "fill 80-90% of the frame" + "minimize blank space above and below" → result is a tight close-up that crops the cake's circular silhouette and looks unappetizing (screenshot 3).
 
-## Architecture
+## Fix 1 — Persistent in-grid progress indicator (frontend only)
 
-```text
-Generate clicked
-  │
-  ▼
-Edge fn: generate-complete-cake
-  • INSERT job row (status=pending, view_count=3 or 4)
-  • Generate HERO inline (~15-25s) with primary→fallback per-view timeout
-  • UPDATE job: hero_url, status=hero_ready
-  • EdgeRuntime.waitUntil(generateRemaining(jobId))
-       ↳ side, top, [fourth] in parallel, each independent try/catch
-       ↳ UPDATE job per slot as each finishes
-       ↳ status=completed when all done (or partial_failed if any view failed)
-  • RETURN { jobId, heroUrl, message } immediately
-  │
-  ▼
-Client (CakeCreator)
-  • Render hero + N "generating…" placeholders
-  • Subscribe Realtime on cake_generation_jobs id=eq.{jobId}
-  • Poll fallback every 15s (in case Realtime drops)
-  • 4-min watchdog → if any slot still empty, show per-slot Regenerate button
-  • NO 50s race timer
-```
+`src/components/CakeCreator.tsx`
 
-## Backend changes — `supabase/functions/generate-complete-cake/index.ts`
+- **Track background state explicitly.** Add `bgPending: Set<number>` (slot indices still rendering) and `bgFailed: Set<number>` (slot indices with a stored `*_error`). Initialize from response (`failedViews` → pending). Update from each Realtime/poll payload. Clear pending entries the moment the corresponding `*_url` arrives; mark failed when `*_error` arrives.
+- **Persistent banner above the grid** while `bgPending.size > 0`:
+  > "✨ Hero view ready — rendering Side & Top-Down in the background (~30–60s)…" with a small spinner. Stays visible until pending is empty. No toast spam.
+- **Per-slot overlay** (the placeholder branch already exists at lines 2424–2429). Tighten it so it always renders for slots in `bgPending`, with three states:
+  - Pending: pulse + "Rendering Side View…" / "Rendering Top-Down View…" (use the actual view label).
+  - Failed: muted red tint + "This view didn't render" + the existing Regenerate button surfaced (not hover-only).
+  - Done: image fades in.
+- **Remove the small dismissable toast** that announces background work — replaced by the persistent banner. Keep the final "All views ready!" toast.
+- **Slot label cleanup.** "Project preview" tooltip on empty slots (visible in screenshot 1) is just the alt text being read by the platform overlay; ensure each img has an alt that matches the actual view name (already done) and the placeholder overlay covers it so it's not ambiguous.
 
-1. Remove the "HQ returns front-only, Standard returns 3-in-one-response" split. Both modes use the hero-first pattern.
-2. Per-view generation helper:
-   - Primary model with 60s timeout
-   - On timeout/error → fallback model with 60s timeout
-   - On both fail → write `error` for that slot only; never throw out of `waitUntil`
-3. Hero view runs inline before the HTTP response.
-4. `EdgeRuntime.waitUntil(generateRemaining(...))` runs side/top/(fourth) in parallel, each updating its own column independently.
-5. Final status:
-   - `completed` if all slots have URLs
-   - `partial_failed` if any slot ended in error (hero already returned, so user still has something)
-6. Robust logging at each stage so we can debug from edge logs.
+## Fix 2 — Top-Down view framing (backend prompt only)
 
-## Database migration
+`supabase/functions/generate-complete-cake/index.ts` — both `sculptedViewAngles` and `decoratedViewAngles` `top` entries (lines 165–170 and 189–195).
 
-Add to `cake_generation_jobs`:
-- `fourth_url text` — for character/sculpted cakes that need 4 views
-- `view_count int not null default 3` — how many slots this job expects
-- `hero_error text`, `side_error text`, `top_error text`, `fourth_error text` — per-slot error messages (so frontend can show "Regenerate this view" only on failed slots)
+Replace the "fill 80–90% of the frame" instruction with framing that gives breathing room:
 
-Add INSERT/UPDATE policies (service-role only writes; user can SELECT own rows — already in place).
+> "Professional overhead (bird's-eye / top-down) food photography of a SINGLE, COMPLETE luxurious cake. Camera is **directly above the cake's center, slightly pulled back** so the FULL circular silhouette of the cake is visible with **comfortable margin (15–25%) of negative space** around it (the cake stand, table surface, scattered decorative props like petals, sprinkles, or small macarons may fill the surrounding area). The cake should occupy roughly **55–70% of the frame**, NOT crop to its edge. Sharp focus on the top surface, soft natural studio lighting, magazine-style composition. The complete top decoration (text, photo, designs) must be fully visible and centered."
 
-Confirm `cake_generation_jobs` is in the `supabase_realtime` publication and `REPLICA IDENTITY FULL` is set so partial column updates broadcast.
+Also adjust:
+- `namePosition` for top view: keep "elegantly around the outer edge or on a decorative banner" but add "fully within the visible cake surface — never clipped at the rim."
+- `photoPosition` for top view (decorated + sculpted): change "covering the ENTIRE top surface of the cake from edge to edge" → "centered on the top surface, occupying ~70% of the cake's top with a thin decorated border ring around it." (prevents the photo from being pushed off-frame when the camera is pulled back).
 
-## Frontend changes — `src/components/CakeCreator.tsx`
+These prompt changes apply to both fresh generation and the manual Regenerate path because both go through the same `viewAngles` definitions.
 
-1. **Remove the 50s client race timer** entirely (this is what produced the "taking too long" toast).
-2. On generate response: render hero + (view_count - 1) placeholder slots with a soft pulsing "Generating high-quality view…" overlay.
-3. Subscribe to Realtime on `cake_generation_jobs` filtered by `id=eq.{jobId}`. On each UPDATE:
-   - Swap placeholder → image when a `*_url` arrives
-   - If a `*_error` arrives, replace placeholder with a small "Regenerate this view" button (existing manual flow)
-4. Polling fallback: every 15s fetch the row directly (covers dropped Realtime connections; stops when status is terminal).
-5. Watchdog: 4-minute soft timeout. If any slot still missing AND no error recorded, show the Regenerate button on it. No destructive toast — the hero is still there, the user is not blocked.
-6. Replace existing "Generation timed out" toast with a non-blocking inline notice on the affected slots only.
+## Files changed
 
-## Standard vs HQ
+- `src/components/CakeCreator.tsx` — add bgPending/bgFailed state, persistent banner, tighter per-slot overlay, remove redundant background-progress toast.
+- `supabase/functions/generate-complete-cake/index.ts` — rewrite the two `top` view descriptions + their `namePosition` / `photoPosition`.
 
-Same code path. Only differences:
-- Standard uses faster/cheaper primary model
-- HQ uses higher-quality primary model
-- Both use the same fallback chain and timeouts
-
-This means when HQ becomes a paid feature later, the reliability story is identical to Standard — no surprises.
-
-## Files to change
-
-- `supabase/migrations/<new>.sql` — add columns + ensure realtime publication
-- `supabase/functions/generate-complete-cake/index.ts` — unify hero-first flow, per-view error isolation, waitUntil
-- `src/components/CakeCreator.tsx` — remove race timer, add Realtime + polling + per-slot regenerate, watchdog
-
-No changes to pricing, gallery, party pack, or other components.
+No DB migration. No pricing/business logic changes.
 
 ## Verification
 
-1. Standard generate → hero appears <25s, side+top appear within ~60s, no toast.
-2. HQ generate → same UX as Standard, all 3 (or 4) views land.
-3. Force-fail one view (kill model temporarily): hero + remaining views still arrive; failed slot shows Regenerate button only.
-4. Disconnect/reconnect network mid-generation: polling fallback still surfaces the completed views.
-5. Edge logs show `waitUntil` entries continuing after the HTTP response was sent.
-6. No "Generation timed out" toast in any normal scenario.
+1. Generate a cake (HQ): hero appears → persistent banner reads "rendering Side & Top-Down…" → both slots show their own labeled spinner overlay → fill in via Realtime → banner disappears.
+2. Force a background failure: failed slot shows error overlay with always-visible Regenerate button; banner says "1 view needs a retry."
+3. Generate a cake with a Top-Down view: result shows the full circular cake with margin around it (not zoomed-in close-up like screenshot 3).
+4. Click Regenerate on Top-Down → same well-framed shot.
