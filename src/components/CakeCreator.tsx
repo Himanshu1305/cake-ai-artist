@@ -704,13 +704,60 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('No images were generated. Please try again.');
         }
 
-        // High Quality: subscribe to Realtime so background views appear in
-        // their slots as soon as they finish.
+        // High Quality: subscribe to Realtime AND poll as a safety net so
+        // background views appear in their slots even if Realtime drops.
         if (generationQuality === 'high' && jobId && viewOrder && heroView && failedViews.length > 0) {
           const colToView: Record<string, string> = {
             side_url: 'side',
             top_url: 'top',
           };
+          const errToView: Record<string, string> = {
+            side_error: 'side',
+            top_error: 'top',
+          };
+          let finished = false;
+
+          const applyRow = (row: any) => {
+            const swap = (prev: string[]) => {
+              const next = [...prev];
+              for (const [col, viewName] of Object.entries(colToView)) {
+                const url = row[col];
+                if (!url) continue;
+                const idx = viewOrder.indexOf(viewName);
+                if (idx >= 0 && (next[idx] === '/placeholder.svg' || !next[idx])) {
+                  next[idx] = url;
+                }
+              }
+              return next;
+            };
+            setGeneratedImages(swap);
+            setOriginalImages(swap);
+
+            // Log per-slot errors; user can click Regenerate on that slot.
+            for (const [errCol, viewName] of Object.entries(errToView)) {
+              if (row[errCol]) {
+                console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+              }
+            }
+
+            const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
+            if (isTerminal && !finished) {
+              finished = true;
+              cleanup();
+              if (row.status === 'completed') {
+                toast({
+                  title: 'All premium views ready!',
+                  description: 'Your cake is fully rendered.',
+                });
+              } else {
+                toast({
+                  title: 'Some views need a retry',
+                  description: 'Tap Regenerate on any empty slot to render it again.',
+                });
+              }
+            }
+          };
+
           const channel = supabase
             .channel(`cake-job-${jobId}`)
             .on('postgres_changes' as any, {
@@ -718,35 +765,37 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               schema: 'public',
               table: 'cake_generation_jobs',
               filter: `id=eq.${jobId}`,
-            }, (payload: any) => {
-              const row = payload.new;
-              const swap = (prev: string[]) => {
-                const next = [...prev];
-                for (const [col, viewName] of Object.entries(colToView)) {
-                  const url = row[col];
-                  if (!url) continue;
-                  const idx = viewOrder.indexOf(viewName);
-                  if (idx >= 0 && (next[idx] === '/placeholder.svg' || !next[idx])) {
-                    next[idx] = url;
-                  }
-                }
-                return next;
-              };
-              setGeneratedImages(swap);
-              setOriginalImages(swap);
-              if (row.status === 'completed') {
-                supabase.removeChannel(channel);
-                toast({
-                  title: 'All high-quality views ready!',
-                  description: 'Your cake is fully rendered in premium quality.',
-                });
-              }
-            })
+            }, (payload: any) => applyRow(payload.new))
             .subscribe();
 
-          setTimeout(() => {
+          // Polling fallback every 15s — covers dropped Realtime connections.
+          const pollTimer = setInterval(async () => {
+            if (finished) return;
+            const { data: row } = await supabase
+              .from('cake_generation_jobs')
+              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count')
+              .eq('id', jobId)
+              .maybeSingle();
+            if (row) applyRow(row);
+          }, 15000);
+
+          // Watchdog: 4-min hard ceiling. Stops listeners; user can still click Regenerate per slot.
+          const watchdog = setTimeout(() => {
+            if (!finished) {
+              finished = true;
+              cleanup();
+              toast({
+                title: 'Some views are still pending',
+                description: 'Tap Regenerate on any empty slot to render it.',
+              });
+            }
+          }, 4 * 60 * 1000);
+
+          const cleanup = () => {
             try { supabase.removeChannel(channel); } catch {}
-          }, 5 * 60 * 1000);
+            clearInterval(pollTimer);
+            clearTimeout(watchdog);
+          };
         }
 
         if (failedViews.length > 0) {
