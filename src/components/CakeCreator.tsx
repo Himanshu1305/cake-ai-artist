@@ -95,6 +95,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
   const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
+  const [bgPending, setBgPending] = useState<Set<number>>(new Set());
+  const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
+  const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
@@ -226,6 +229,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const newImages = [...generatedImages];
         newImages[viewIndex] = data.regeneratedImage;
         setGeneratedImages(newImages);
+        setBgPending((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
+        setBgFailed((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
         
         // Get the appropriate label based on mode
         let label: string;
@@ -715,6 +720,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             side_error: 'side',
             top_error: 'top',
           };
+          const viewLabelMap: Record<string, string> = {
+            front: 'Front View',
+            side: 'Side View',
+            top: 'Top-Down View',
+            main: 'Main View',
+          };
+
+          // Seed pending state from initial response (failedViews = pending background slots)
+          const initialPending = new Set<number>();
+          for (const vn of failedViews) {
+            const idx = viewOrder.indexOf(vn);
+            if (idx >= 0) initialPending.add(idx);
+          }
+          setBgPending(initialPending);
+          setBgFailed(new Set());
+          setBgViewLabels(viewOrder.map((vn) => viewLabelMap[vn] || vn));
+
           let finished = false;
 
           const applyRow = (row: any) => {
@@ -733,12 +755,34 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             setGeneratedImages(swap);
             setOriginalImages(swap);
 
-            // Log per-slot errors; user can click Regenerate on that slot.
-            for (const [errCol, viewName] of Object.entries(errToView)) {
-              if (row[errCol]) {
-                console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+            // Update pending/failed sets per slot
+            setBgPending((prev) => {
+              const next = new Set(prev);
+              for (const [col, viewName] of Object.entries(colToView)) {
+                if (row[col]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.delete(idx);
+                }
               }
-            }
+              for (const [errCol, viewName] of Object.entries(errToView)) {
+                if (row[errCol]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.delete(idx);
+                }
+              }
+              return next;
+            });
+            setBgFailed((prev) => {
+              const next = new Set(prev);
+              for (const [errCol, viewName] of Object.entries(errToView)) {
+                if (row[errCol]) {
+                  const idx = viewOrder.indexOf(viewName);
+                  if (idx >= 0) next.add(idx);
+                  console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+                }
+              }
+              return next;
+            });
 
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
             if (isTerminal && !finished) {
@@ -748,11 +792,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 toast({
                   title: 'All premium views ready!',
                   description: 'Your cake is fully rendered.',
-                });
-              } else {
-                toast({
-                  title: 'Some views need a retry',
-                  description: 'Tap Regenerate on any empty slot to render it again.',
                 });
               }
             }
@@ -779,14 +818,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (row) applyRow(row);
           }, 15000);
 
-          // Watchdog: 4-min hard ceiling. Stops listeners; user can still click Regenerate per slot.
+          // Watchdog: 4-min hard ceiling.
           const watchdog = setTimeout(() => {
             if (!finished) {
               finished = true;
               cleanup();
-              toast({
-                title: 'Some views are still pending',
-                description: 'Tap Regenerate on any empty slot to render it.',
+              // Mark any still-pending slots as failed so the user sees a clear Regenerate prompt.
+              setBgPending((prev) => {
+                setBgFailed((f) => {
+                  const nf = new Set(f);
+                  prev.forEach((i) => nf.add(i));
+                  return nf;
+                });
+                return new Set();
               });
             }
           }, 4 * 60 * 1000);
@@ -796,17 +840,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             clearInterval(pollTimer);
             clearTimeout(watchdog);
           };
-        }
-
-        if (failedViews.length > 0) {
-          toast({
-            title: generationQuality === 'high'
-              ? 'Your first premium view is ready!'
-              : `Generated ${okCount} of ${rawImages.length} views`,
-            description: generationQuality === 'high'
-              ? `Rendering the ${failedViews.join(' & ')} view${failedViews.length > 1 ? 's' : ''} in the background — they'll appear in a moment.`
-              : `Tap Regenerate on the missing ${failedViews.join(', ')} view${failedViews.length > 1 ? 's' : ''} to retry.`,
-          });
         }
 
         // Set message
@@ -2200,6 +2233,33 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </span>
               </div>
 
+              {/* Persistent background-progress banner */}
+              {(bgPending.size > 0 || bgFailed.size > 0) && (
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 ${
+                  bgPending.size > 0
+                    ? "bg-party-purple/10 border-party-purple/40"
+                    : "bg-destructive/10 border-destructive/40"
+                }`}>
+                  {bgPending.size > 0 && (
+                    <div className="w-5 h-5 border-2 border-party-pink border-t-transparent rounded-full animate-spin shrink-0" />
+                  )}
+                  <div className="text-sm text-foreground">
+                    {bgPending.size > 0 ? (
+                      <>
+                        <strong>✨ Hero view ready!</strong> Rendering{" "}
+                        {Array.from(bgPending).map((i) => bgViewLabels[i] || `View ${i + 1}`).join(" & ")}{" "}
+                        in the background — usually 30–60 seconds.
+                      </>
+                    ) : (
+                      <>
+                        <strong>Some views need a retry.</strong> Tap{" "}
+                        <em>Regenerate</em> on any failed slot below.
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Check if we're in dual-style mode (4 images with character) */}
               {generatedImages.length === 4 && character ? (
                 // Dual-style mode: Show grouped sections
@@ -2422,9 +2482,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           }}
                         />
                         {imageUrl === '/placeholder.svg' && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-celebration/40 backdrop-blur-sm rounded-lg">
-                            <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
-                            <p className="text-xs font-semibold text-foreground">Rendering high-quality view…</p>
+                          <div className={`absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm rounded-lg ${
+                            bgFailed.has(index)
+                              ? "bg-destructive/30"
+                              : "bg-gradient-celebration/40"
+                          }`}>
+                            {bgFailed.has(index) ? (
+                              <>
+                                <p className="text-sm font-bold text-foreground mb-1">⚠️ Couldn't render</p>
+                                <p className="text-xs text-muted-foreground mb-2">Tap Regenerate below</p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-10 h-10 border-4 border-party-pink border-t-transparent rounded-full animate-spin mb-2" />
+                                <p className="text-xs font-semibold text-foreground">
+                                  Rendering {(["Front View", "Side View", "Top-Down View", "3/4 View"][index]) || "view"}…
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">This usually takes 30–60s</p>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -2461,7 +2537,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         }
                       </div>
                       
-                      {/* Regenerate View Button */}
+                      {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only */}
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2470,7 +2546,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         disabled={regeneratingView !== null}
                         size="sm"
                         variant="secondary"
-                        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className={`absolute top-2 left-2 transition-opacity ${
+                          bgFailed.has(index) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}
                       >
                         {regeneratingView === index ? (
                           <>
