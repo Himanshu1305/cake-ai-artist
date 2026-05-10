@@ -103,8 +103,17 @@
       })();
     </script>
     
-    <!-- Critical CSS: Prevent scroll compensation layout shift on mobile portrait -->
+    <!-- Critical CSS: theme background + scroll compensation fix -->
     <style>
+      /* Apply real theme background instantly to avoid unthemed flash before React/CSS loads */
+      html, body {
+        margin: 0;
+        background-color: hsl(35, 50%, 98%);
+        background-image: linear-gradient(45deg, hsl(315 88% 82%), hsl(270 85% 82%), hsl(45 90% 82%));
+        background-attachment: fixed;
+        color: hsl(35, 15%, 15%);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
       /* Must load before react-remove-scroll JS runs */
       @media (max-width: 767px) {
         :root, html, body {
