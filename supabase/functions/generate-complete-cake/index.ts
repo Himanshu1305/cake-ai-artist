@@ -135,7 +135,7 @@ serve(async (req) => {
 
     const occasionText = getOccasionText(occasion || 'birthday');
 
-    // Sculpted cake view angles (2 views only - for character-shaped cakes)
+    // Sculpted cake view angles (3 views - for character-shaped cakes)
     const sculptedViewAngles = [
       { 
         name: 'main', 
@@ -160,6 +160,13 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
         namePosition: 'on a decorative fondant banner/plaque integrated at the base',
         occasionPosition: 'on a fondant scroll or banner prominently displayed',
         photoPosition: null // No photo on main sculpted view
+      },
+      { 
+        name: 'angle', 
+        description: `Professional food photography of the SAME sculpted fondant cake from a 3/4 ANGLED perspective (camera roughly 30-40° to the side and slightly above). The full sculpted cake form must be visible from base to top with the cake board/drum included. Show the depth and dimensionality of the sculpt — visible fondant texture, side profile of details, and shading that emphasizes the handcrafted edible nature of the piece. Soft studio lighting from a slight side angle, magazine-style composition.`,
+        namePosition: 'on a fondant banner or plaque on the visible side of the base, fully readable',
+        occasionPosition: 'on a decorative side panel or fondant scroll, prominent and clear',
+        photoPosition: null
       },
       { 
         name: 'top', 
@@ -570,15 +577,17 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       let viewsToRun: typeof viewAngles;
       if (cakeStyle === 'sculpted') {
         if (quality === 'high') {
-          viewsToRun = [viewAngles[0]]; // main only
-          imageLabels = ['Main View', 'Top-Down View'];
+          // High quality: all 3 views (main + angle + top), parallel kick-off below
+          viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
+          imageLabels = ['Main View', 'Angle View', 'Top-Down View'];
         } else {
-          viewsToRun = [viewAngles[0], viewAngles[1]];
+          // Standard quality: 2 views only (cost saving)
+          viewsToRun = [viewAngles[0], viewAngles[2]]; // main + top
           imageLabels = ['Main View', 'Top-Down View'];
         }
       } else {
         if (quality === 'high') {
-          viewsToRun = [viewAngles[0]]; // front only
+          viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]]; // all 3, parallel kick-off below
           imageLabels = ['Front View', 'Side View', 'Top-Down View'];
         } else {
           viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
@@ -598,33 +607,36 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       //      Client subscribes via Supabase Realtime to pick them up.
       // ============================================================
       if (quality === 'high') {
-        const heroView = viewAngles[0];
-        const allViewNames = cakeStyle === 'sculpted'
-          ? ['main', 'top']
-          : ['front', 'side', 'top'];
+        // viewsToRun is already set to all 3 views above (hero + 2 background).
+        const heroView = viewsToRun[0];
+        const allViewNames = viewsToRun.map(v => v.name);
+        const tStart = Date.now();
 
-        const [heroSettled, messageSettled] = await Promise.all([
-          Promise.allSettled([generateView(heroView)]),
-          Promise.allSettled([generateMessageAsync()]),
+        // CRITICAL: fire ALL image promises at the same instant. They run truly
+        // in parallel inside the Lovable AI Gateway. We only AWAIT the hero
+        // here so we can return it ASAP; the others continue in the background.
+        const viewPromises = viewsToRun.map(v => generateView(v));
+        const messagePromise = generateMessageAsync();
+
+        // Await hero + message before responding (~15-20s).
+        const [heroSettled, messageSettled] = await Promise.allSettled([
+          viewPromises[0],
+          messagePromise,
         ]);
 
-        const heroRes = heroSettled[0];
-        if (heroRes.status === 'rejected') {
-          const m = heroRes.reason?.message || String(heroRes.reason);
+        if (heroSettled.status === 'rejected') {
+          const m = heroSettled.reason?.message || String(heroSettled.reason);
           if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
           if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
           throw new Error('Hero view generation failed. Please try again.');
         }
-        const heroUrl = heroRes.value;
+        const heroUrl = heroSettled.value as string;
 
-        greetingMessage = messageSettled[0].status === 'fulfilled'
-          ? (messageSettled[0] as PromiseFulfilledResult<string>).value
+        greetingMessage = messageSettled.status === 'fulfilled'
+          ? (messageSettled.value as string)
           : `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
 
-        // Map hero view name -> column
-        const heroColumn = heroView.name === 'main' || heroView.name === 'front'
-          ? (heroView.name === 'main' ? 'hero_url' : 'hero_url')
-          : 'hero_url';
+        console.log(`⏱ HQ hero ready in ${Date.now() - tStart}ms — responding now, ${viewPromises.length - 1} views still streaming`);
 
         // Insert job row with hero already filled.
         const jobInsert: Record<string, unknown> = {
@@ -647,42 +659,44 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         }
         const jobId = jobRow.id;
 
-        // Build response images aligned with allViewNames; missing views are
-        // null (client shows "generating…" placeholder & subscribes to Realtime).
-        const responseImages: (string | null)[] = allViewNames.map(vn =>
-          vn === heroView.name ? heroUrl : null
+        // Build response images aligned with viewsToRun; hero filled, others null.
+        const responseImages: (string | null)[] = viewsToRun.map((v, i) =>
+          i === 0 ? heroUrl : null
         );
-        const responseFailed: string[] = allViewNames.filter(vn => vn !== heroView.name);
+        const responseFailed: string[] = viewsToRun.slice(1).map(v => v.name);
 
-        // Kick off remaining views in background — independent of HTTP response.
-        const remainingViews = viewAngles.filter(v => v.name !== heroView.name);
+        // Index-based slot mapping.
+        const slotForIndex = (i: number): { url: string; err: string } => (
+          i === 1 ? { url: 'side_url', err: 'side_error' } :
+          i === 2 ? { url: 'top_url', err: 'top_error' } :
+          { url: 'side_url', err: 'side_error' }
+        );
+
+        // Background task: AWAIT the already-running promises and write each
+        // result into its slot the moment it lands.
         const bgTask = (async () => {
           const tBg = Date.now();
-          console.log(`[bg ${jobId}] starting ${remainingViews.length} background views`);
-          const colMap: Record<string, { url: string; err: string }> = {
-            front: { url: 'hero_url', err: 'hero_error' },
-            side: { url: 'side_url', err: 'side_error' },
-            top: { url: 'top_url', err: 'top_error' },
-            main: { url: 'hero_url', err: 'hero_error' },
-          };
-          await Promise.all(remainingViews.map(async (v) => {
+          console.log(`[bg ${jobId}] awaiting ${viewPromises.length - 1} background views (already running in parallel)`);
+          await Promise.all(viewPromises.slice(1).map(async (p, j) => {
+            const i = j + 1;
+            const v = viewsToRun[i];
+            const slot = slotForIndex(i);
             const tv = Date.now();
-            const slot = colMap[v.name] || { url: 'side_url', err: 'side_error' };
             try {
-              const url = await generateView(v);
+              const url = await p;
               await supabase.from('cake_generation_jobs')
                 .update({ [slot.url]: url })
                 .eq('id', jobId);
-              console.log(`[bg ${jobId}] ${v.name} ok in ${Date.now() - tv}ms`);
+              console.log(`[bg ${jobId}] ${v.name} stored in ${slot.url} (wait ${Date.now() - tv}ms)`);
             } catch (e: any) {
               const errMsg = (e?.message || String(e)).slice(0, 200);
-              console.error(`[bg ${jobId}] ${v.name} failed in ${Date.now() - tv}ms:`, errMsg);
+              console.error(`[bg ${jobId}] ${v.name} failed:`, errMsg);
               await supabase.from('cake_generation_jobs')
                 .update({ [slot.err]: errMsg })
                 .eq('id', jobId);
             }
           }));
-          // Determine final status by re-reading the row.
+          // Honest final status — never silently mark "completed" when slots are missing.
           const { data: finalRow } = await supabase
             .from('cake_generation_jobs')
             .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
@@ -690,20 +704,18 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             .single();
           const expected = finalRow?.view_count ?? allViewNames.length;
           const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
-          const anyErr = !!(finalRow?.hero_error || finalRow?.side_error || finalRow?.top_error);
-          const status = filled >= expected ? 'completed' : (anyErr ? 'partial_failed' : 'completed');
+          const status = filled >= expected ? 'completed' : 'partial_failed';
           await supabase.from('cake_generation_jobs')
             .update({ status, completed_at: new Date().toISOString() })
             .eq('id', jobId);
-          console.log(`[bg ${jobId}] all background views done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
+          console.log(`[bg ${jobId}] background done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
         })();
-        // Keep the worker alive after the response is sent.
+
         // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
         if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
           // @ts-ignore
           EdgeRuntime.waitUntil(bgTask);
         } else {
-          // Fallback: fire-and-forget (still works in most cases).
           bgTask.catch(() => {});
         }
 
@@ -718,7 +730,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             jobId,
             viewOrder: allViewNames,
             heroView: heroView.name,
-            backgroundViews: remainingViews.map(v => v.name),
+            backgroundViews: viewsToRun.slice(1).map(v => v.name),
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

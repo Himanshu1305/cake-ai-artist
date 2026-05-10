@@ -712,22 +712,30 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // High Quality: subscribe to Realtime AND poll as a safety net so
         // background views appear in their slots even if Realtime drops.
         if (generationQuality === 'high' && jobId && viewOrder && heroView && failedViews.length > 0) {
-          const colToView: Record<string, string> = {
-            side_url: 'side',
-            top_url: 'top',
+          // Backend writes results by SLOT INDEX, not by view name:
+          //   index 0 -> hero_url   (already filled in initial response)
+          //   index 1 -> side_url
+          //   index 2 -> top_url
+          // This works for any cake style (decorated front/side/top OR sculpted main/angle/top).
+          const colToIndex: Record<string, number> = {
+            hero_url: 0,
+            side_url: 1,
+            top_url: 2,
           };
-          const errToView: Record<string, string> = {
-            side_error: 'side',
-            top_error: 'top',
+          const errToIndex: Record<string, number> = {
+            hero_error: 0,
+            side_error: 1,
+            top_error: 2,
           };
           const viewLabelMap: Record<string, string> = {
             front: 'Front View',
             side: 'Side View',
             top: 'Top-Down View',
             main: 'Main View',
+            angle: 'Angle View',
           };
 
-          // Seed pending state from initial response (failedViews = pending background slots)
+          // Seed pending state from initial response (failedViews = pending background slots).
           const initialPending = new Set<number>();
           for (const vn of failedViews) {
             const idx = viewOrder.indexOf(vn);
@@ -738,16 +746,20 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           setBgViewLabels(viewOrder.map((vn) => viewLabelMap[vn] || vn));
 
           let finished = false;
+          // Track latest images locally so the toast-gate can verify real fill
+          // without waiting for React state to commit.
+          const latestImages: (string | null)[] = viewOrder.map((_, i) => (rawImages[i] as string | null) || null);
 
           const applyRow = (row: any) => {
+            // Swap any URL columns into their slot indices.
             const swap = (prev: string[]) => {
               const next = [...prev];
-              for (const [col, viewName] of Object.entries(colToView)) {
+              for (const [col, idx] of Object.entries(colToIndex)) {
                 const url = row[col];
                 if (!url) continue;
-                const idx = viewOrder.indexOf(viewName);
-                if (idx >= 0 && (next[idx] === '/placeholder.svg' || !next[idx])) {
+                if (idx < next.length && (next[idx] === '/placeholder.svg' || !next[idx])) {
                   next[idx] = url;
+                  latestImages[idx] = url;
                 }
               }
               return next;
@@ -755,30 +767,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             setGeneratedImages(swap);
             setOriginalImages(swap);
 
-            // Update pending/failed sets per slot
+            // Update pending/failed sets per slot.
             setBgPending((prev) => {
               const next = new Set(prev);
-              for (const [col, viewName] of Object.entries(colToView)) {
-                if (row[col]) {
-                  const idx = viewOrder.indexOf(viewName);
-                  if (idx >= 0) next.delete(idx);
-                }
+              for (const [col, idx] of Object.entries(colToIndex)) {
+                if (row[col]) next.delete(idx);
               }
-              for (const [errCol, viewName] of Object.entries(errToView)) {
-                if (row[errCol]) {
-                  const idx = viewOrder.indexOf(viewName);
-                  if (idx >= 0) next.delete(idx);
-                }
+              for (const [errCol, idx] of Object.entries(errToIndex)) {
+                if (row[errCol]) next.delete(idx);
               }
               return next;
             });
             setBgFailed((prev) => {
               const next = new Set(prev);
-              for (const [errCol, viewName] of Object.entries(errToView)) {
+              for (const [errCol, idx] of Object.entries(errToIndex)) {
                 if (row[errCol]) {
-                  const idx = viewOrder.indexOf(viewName);
-                  if (idx >= 0) next.add(idx);
-                  console.warn(`View "${viewName}" failed in background:`, row[errCol]);
+                  next.add(idx);
+                  console.warn(`Slot ${idx} (${viewOrder[idx]}) failed in background:`, row[errCol]);
                 }
               }
               return next;
@@ -788,14 +793,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (isTerminal && !finished) {
               finished = true;
               cleanup();
-              if (row.status === 'completed') {
+              // Gate the success toast on REAL FILL of every slot — not just status.
+              const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
+              if (row.status === 'completed' && allFilled) {
                 toast({
-                  title: 'All premium views ready!',
+                  title: `All ${viewOrder.length} views ready!`,
                   description: 'Your cake is fully rendered.',
+                });
+              } else if (!allFilled) {
+                const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
+                toast({
+                  title: `${missing} view${missing > 1 ? 's' : ''} need a retry`,
+                  description: 'Tap Regenerate on any empty slot to try again.',
                 });
               }
             }
           };
+
 
           const channel = supabase
             .channel(`cake-job-${jobId}`)
@@ -842,20 +856,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           };
         }
 
-        // Set message
-        if (aiMessage) {
-          setGeneratedMessage(aiMessage);
-          if (!useCustomMessage) {
-            setDisplayedMessage(aiMessage);
-          }
-        }
-
-        // Update displayed message
-        if (useCustomMessage && customMessage.trim()) {
-          setDisplayedMessage(customMessage);
-        } else if (aiMessage) {
-          setDisplayedMessage(aiMessage);
-        }
+        // Set message — always populate something so the card always renders.
+        const finalMessage = (useCustomMessage && customMessage.trim())
+          || aiMessage
+          || `Happy ${occasion || 'Birthday'}, ${name}!`;
+        if (aiMessage) setGeneratedMessage(aiMessage);
+        else setGeneratedMessage(finalMessage);
+        setDisplayedMessage(finalMessage);
 
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
@@ -2455,7 +2462,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
               ) : (
                 // Standard mode: Single grid
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${generatedImages.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                   {generatedImages.map((imageUrl, index) => (
                     <div
                       key={index}
