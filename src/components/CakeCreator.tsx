@@ -2462,7 +2462,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 </div>
               ) : (
                 // Standard mode: Single grid
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${generatedImages.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                   {generatedImages.map((imageUrl, index) => (
                     <div
                       key={index}
