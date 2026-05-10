@@ -162,6 +162,13 @@ This is a REAL bakery creation by a professional cake artist, photographed on a 
         photoPosition: null // No photo on main sculpted view
       },
       { 
+        name: 'angle', 
+        description: `Professional food photography of the SAME sculpted fondant cake from a 3/4 ANGLED perspective (camera roughly 30-40° to the side and slightly above). The full sculpted cake form must be visible from base to top with the cake board/drum included. Show the depth and dimensionality of the sculpt — visible fondant texture, side profile of details, and shading that emphasizes the handcrafted edible nature of the piece. Soft studio lighting from a slight side angle, magazine-style composition.`,
+        namePosition: 'on a fondant banner or plaque on the visible side of the base, fully readable',
+        occasionPosition: 'on a decorative side panel or fondant scroll, prominent and clear',
+        photoPosition: null
+      },
+      { 
         name: 'top', 
         description: 'Professional overhead (bird\'s-eye / top-down) food photography of a SINGLE, COMPLETE luxurious cake. Camera is directly above the cake\'s center, slightly pulled back so the FULL circular silhouette of the cake is clearly visible with comfortable margin (approximately 15-25%) of negative space around it. The surrounding area can show the cake stand, table surface, and scattered decorative props (petals, sprinkles, small macarons, berries). The cake should occupy roughly 55-70% of the frame — DO NOT crop to its edge. Sharp focus on the top surface, soft natural studio lighting, magazine-style composition. The complete top decoration (text, photo, designs) must be fully visible and centered, never clipped.',
         namePosition: 'elegantly on the top surface or on a decorative banner — fully within the visible cake surface, never clipped at the rim',
