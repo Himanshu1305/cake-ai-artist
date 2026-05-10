@@ -868,6 +868,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           const cleanup = () => {
             try { supabase.removeChannel(channel); } catch {}
             clearInterval(pollTimer);
+            clearTimeout(fastPoll1);
+            clearTimeout(fastPoll2);
             clearTimeout(watchdog);
           };
         }
