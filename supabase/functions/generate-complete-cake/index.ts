@@ -135,7 +135,7 @@ serve(async (req) => {
 
     const occasionText = getOccasionText(occasion || 'birthday');
 
-    // Sculpted cake view angles (2 views only - for character-shaped cakes)
+    // Sculpted cake view angles (3 views - for character-shaped cakes)
     const sculptedViewAngles = [
       { 
         name: 'main', 
