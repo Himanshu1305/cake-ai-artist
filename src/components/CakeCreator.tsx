@@ -790,17 +790,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             });
 
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
-            if (isTerminal && !finished) {
+            const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
+            const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
+
+            // Only declare "finished" when EITHER all slots are filled, OR a
+            // real backend error was recorded. A premature 'completed' status
+            // event with URLs not-yet-merged should NOT trigger the failure toast.
+            if ((isTerminal && allFilled) || hasRealError) {
+              if (finished) return;
               finished = true;
               cleanup();
-              // Gate the success toast on REAL FILL of every slot — not just status.
-              const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
-              if (row.status === 'completed' && allFilled) {
+              if (allFilled) {
                 toast({
                   title: `All ${viewOrder.length} views ready!`,
                   description: 'Your cake is fully rendered.',
                 });
-              } else if (!allFilled) {
+              } else {
                 const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
                 toast({
                   title: `${missing} view${missing > 1 ? 's' : ''} need a retry`,
@@ -821,8 +826,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             }, (payload: any) => applyRow(payload.new))
             .subscribe();
 
-          // Polling fallback every 15s — covers dropped Realtime connections.
-          const pollTimer = setInterval(async () => {
+          // CRITICAL: fetch the row IMMEDIATELY. Background generation often
+          // finishes (~9s) BEFORE the client receives the hero response (~16s)
+          // and subscribes to realtime — meaning all UPDATE events were already
+          // emitted and missed. This initial fetch picks up that completed state.
+          const fetchOnce = async () => {
             if (finished) return;
             const { data: row } = await supabase
               .from('cake_generation_jobs')
@@ -830,7 +838,15 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               .eq('id', jobId)
               .maybeSingle();
             if (row) applyRow(row);
-          }, 15000);
+          };
+          // Fire immediately, then again at 1s and 3s to catch races where
+          // the bg task is in flight at hero-response time.
+          fetchOnce();
+          const fastPoll1 = setTimeout(fetchOnce, 1000);
+          const fastPoll2 = setTimeout(fetchOnce, 3000);
+
+          // Polling fallback every 5s — covers dropped Realtime connections.
+          const pollTimer = setInterval(fetchOnce, 5000);
 
           // Watchdog: 4-min hard ceiling.
           const watchdog = setTimeout(() => {
@@ -852,6 +868,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           const cleanup = () => {
             try { supabase.removeChannel(channel); } catch {}
             clearInterval(pollTimer);
+            clearTimeout(fastPoll1);
+            clearTimeout(fastPoll2);
             clearTimeout(watchdog);
           };
         }
