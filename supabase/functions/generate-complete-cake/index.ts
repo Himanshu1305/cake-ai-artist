@@ -577,15 +577,17 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       let viewsToRun: typeof viewAngles;
       if (cakeStyle === 'sculpted') {
         if (quality === 'high') {
-          viewsToRun = [viewAngles[0]]; // main only
-          imageLabels = ['Main View', 'Top-Down View'];
+          // High quality: all 3 views (main + angle + top), parallel kick-off below
+          viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
+          imageLabels = ['Main View', 'Angle View', 'Top-Down View'];
         } else {
-          viewsToRun = [viewAngles[0], viewAngles[1]];
+          // Standard quality: 2 views only (cost saving)
+          viewsToRun = [viewAngles[0], viewAngles[2]]; // main + top
           imageLabels = ['Main View', 'Top-Down View'];
         }
       } else {
         if (quality === 'high') {
-          viewsToRun = [viewAngles[0]]; // front only
+          viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]]; // all 3, parallel kick-off below
           imageLabels = ['Front View', 'Side View', 'Top-Down View'];
         } else {
           viewsToRun = [viewAngles[0], viewAngles[1], viewAngles[2]];
