@@ -1,46 +1,34 @@
-## Issues observed
+I found the actual issue: the backend did generate and save all 3 views quickly. The latest job completed with all 3 image URLs in about 9 seconds after the hero response. The problem is in the frontend race handling: background updates can arrive before the React image grid is fully initialized, so the UI can incorrectly decide the missing slots need regeneration and then stop polling.
 
-1. **No visible "background work in progress" indicator.** After Hero arrives, only a toast announces "remaining views rendering in background." The toast auto-dismisses, leaving the empty slots looking broken. Empty slots also don't show a clear shimmer/spinner with text. User assumed generation was done with 1 view.
-2. **Top-Down view is over-zoomed.** Current prompt forces "fill 80-90% of the frame" + "minimize blank space above and below" → result is a tight close-up that crops the cake's circular silhouette and looks unappetizing (screenshot 3).
+Plan:
 
-## Fix 1 — Persistent in-grid progress indicator (frontend only)
+1. Fix the frontend race in `CakeCreator.tsx`
+   - Initialize the hero + placeholder grid before subscribing to background updates.
+   - Change the background row merge logic so it always writes incoming `side_url` and `top_url` into a stable local `latestImages` array, even if React state has not committed yet.
+   - Re-render the grid from `latestImages` instead of relying on the previous `generatedImages` length.
 
-`src/components/CakeCreator.tsx`
+2. Stop false “needs retry” messages
+   - Do not show “2 views need a retry” just because a terminal status arrived before the UI merged the URLs.
+   - Only mark a slot failed when the backend has a real `side_error` / `top_error`, or when the 4-minute watchdog expires.
+   - If status is `completed` but the UI has not merged all URLs yet, immediately fetch the job row once more and keep polling instead of stopping.
 
-- **Track background state explicitly.** Add `bgPending: Set<number>` (slot indices still rendering) and `bgFailed: Set<number>` (slot indices with a stored `*_error`). Initialize from response (`failedViews` → pending). Update from each Realtime/poll payload. Clear pending entries the moment the corresponding `*_url` arrives; mark failed when `*_error` arrives.
-- **Persistent banner above the grid** while `bgPending.size > 0`:
-  > "✨ Hero view ready — rendering Side & Top-Down in the background (~30–60s)…" with a small spinner. Stays visible until pending is empty. No toast spam.
-- **Per-slot overlay** (the placeholder branch already exists at lines 2424–2429). Tighten it so it always renders for slots in `bgPending`, with three states:
-  - Pending: pulse + "Rendering Side View…" / "Rendering Top-Down View…" (use the actual view label).
-  - Failed: muted red tint + "This view didn't render" + the existing Regenerate button surfaced (not hover-only).
-  - Done: image fades in.
-- **Remove the small dismissable toast** that announces background work — replaced by the persistent banner. Keep the final "All views ready!" toast.
-- **Slot label cleanup.** "Project preview" tooltip on empty slots (visible in screenshot 1) is just the alt text being read by the platform overlay; ensure each img has an alt that matches the actual view name (already done) and the placeholder overlay covers it so it's not ambiguous.
+3. Make missed realtime updates harmless
+   - Add an immediate job-row fetch right after subscription starts.
+   - Reduce the fallback polling delay from 15 seconds to a shorter interval so completed views appear quickly even if realtime misses an event.
+   - Cleanup polling only after all expected image slots are actually filled, or a real failure is confirmed.
 
-## Fix 2 — Top-Down view framing (backend prompt only)
+4. Keep backend generation unchanged
+   - No database migration needed.
+   - No API/cost changes.
+   - The deployed backend logs already show all 3 HQ views are being generated and stored; the fix is to make the UI reliably pick them up.
 
-`supabase/functions/generate-complete-cake/index.ts` — both `sculptedViewAngles` and `decoratedViewAngles` `top` entries (lines 165–170 and 189–195).
+Verification after implementation:
+- Generate a High Quality cake.
+- Confirm hero appears first.
+- Confirm side/top appear automatically without clicking Regenerate.
+- Confirm no “needs retry” message appears while generation is still in progress.
+- Confirm final “All 3 views ready” appears only after all 3 image slots are filled.
 
-Replace the "fill 80–90% of the frame" instruction with framing that gives breathing room:
-
-> "Professional overhead (bird's-eye / top-down) food photography of a SINGLE, COMPLETE luxurious cake. Camera is **directly above the cake's center, slightly pulled back** so the FULL circular silhouette of the cake is visible with **comfortable margin (15–25%) of negative space** around it (the cake stand, table surface, scattered decorative props like petals, sprinkles, or small macarons may fill the surrounding area). The cake should occupy roughly **55–70% of the frame**, NOT crop to its edge. Sharp focus on the top surface, soft natural studio lighting, magazine-style composition. The complete top decoration (text, photo, designs) must be fully visible and centered."
-
-Also adjust:
-- `namePosition` for top view: keep "elegantly around the outer edge or on a decorative banner" but add "fully within the visible cake surface — never clipped at the rim."
-- `photoPosition` for top view (decorated + sculpted): change "covering the ENTIRE top surface of the cake from edge to edge" → "centered on the top surface, occupying ~70% of the cake's top with a thin decorated border ring around it." (prevents the photo from being pushed off-frame when the camera is pulled back).
-
-These prompt changes apply to both fresh generation and the manual Regenerate path because both go through the same `viewAngles` definitions.
-
-## Files changed
-
-- `src/components/CakeCreator.tsx` — add bgPending/bgFailed state, persistent banner, tighter per-slot overlay, remove redundant background-progress toast.
-- `supabase/functions/generate-complete-cake/index.ts` — rewrite the two `top` view descriptions + their `namePosition` / `photoPosition`.
-
-No DB migration. No pricing/business logic changes.
-
-## Verification
-
-1. Generate a cake (HQ): hero appears → persistent banner reads "rendering Side & Top-Down…" → both slots show their own labeled spinner overlay → fill in via Realtime → banner disappears.
-2. Force a background failure: failed slot shows error overlay with always-visible Regenerate button; banner says "1 view needs a retry."
-3. Generate a cake with a Top-Down view: result shows the full circular cake with margin around it (not zoomed-in close-up like screenshot 3).
-4. Click Regenerate on Top-Down → same well-framed shot.
+<lov-actions>
+<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
+</lov-actions>
