@@ -856,20 +856,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           };
         }
 
-        // Set message
-        if (aiMessage) {
-          setGeneratedMessage(aiMessage);
-          if (!useCustomMessage) {
-            setDisplayedMessage(aiMessage);
-          }
-        }
-
-        // Update displayed message
-        if (useCustomMessage && customMessage.trim()) {
-          setDisplayedMessage(customMessage);
-        } else if (aiMessage) {
-          setDisplayedMessage(aiMessage);
-        }
+        // Set message — always populate something so the card always renders.
+        const finalMessage = (useCustomMessage && customMessage.trim())
+          || aiMessage
+          || `Happy ${occasion || 'Birthday'}, ${name}!`;
+        if (aiMessage) setGeneratedMessage(aiMessage);
+        else setGeneratedMessage(finalMessage);
+        setDisplayedMessage(finalMessage);
 
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
