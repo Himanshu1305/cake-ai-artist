@@ -220,7 +220,7 @@ COMPOSITION RULES:
 - Show each text element ONCE only — do NOT repeat any text.
 - ABSOLUTELY NO PEOPLE, humans, faces, hands, body parts, silhouettes, or person-shaped figures anywhere in the frame or background. The scene must contain ONLY the cake, its stand, and tasteful bakery/studio props (flowers, utensils, fabric, plates). If a human would otherwise appear, replace that area with neutral bakery background.${qualityBoost}`;
 
-    const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake. For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
+    const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake with NO people, humans, faces, or body parts anywhere in the image (including the background). For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
 
     // Low-level call with abort timeout — returns base64 data URL or throws.
     const callImageModel = async (
