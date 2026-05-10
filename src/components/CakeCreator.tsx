@@ -790,17 +790,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             });
 
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
-            if (isTerminal && !finished) {
+            const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
+            const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
+
+            // Only declare "finished" when EITHER all slots are filled, OR a
+            // real backend error was recorded. A premature 'completed' status
+            // event with URLs not-yet-merged should NOT trigger the failure toast.
+            if ((isTerminal && allFilled) || hasRealError) {
+              if (finished) return;
               finished = true;
               cleanup();
-              // Gate the success toast on REAL FILL of every slot — not just status.
-              const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
-              if (row.status === 'completed' && allFilled) {
+              if (allFilled) {
                 toast({
                   title: `All ${viewOrder.length} views ready!`,
                   description: 'Your cake is fully rendered.',
                 });
-              } else if (!allFilled) {
+              } else {
                 const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
                 toast({
                   title: `${missing} view${missing > 1 ? 's' : ''} need a retry`,
