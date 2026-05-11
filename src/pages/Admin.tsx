@@ -92,6 +92,8 @@ export default function Admin() {
   const [images, setImages] = useState<CommunityImage[]>([]);
   const [subscribers, setSubscribers] = useState<BlogSubscriber[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [activityFilter, setActivityFilter] = useState<'all' | 'created_cakes' | 'never_created' | 'free_with_cakes' | 'premium' | 'dormant'>('all');
+  const [activityPanel, setActivityPanel] = useState<{ open: boolean; userId: string | null; email: string | null }>({ open: false, userId: null, email: null });
   const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
   const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
   const [grantingPremium, setGrantingPremium] = useState<Set<string>>(new Set());
