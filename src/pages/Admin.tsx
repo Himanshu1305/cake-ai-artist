@@ -786,6 +786,59 @@ export default function Admin() {
     }
   };
 
+  const getEngagementTag = (p: Profile): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className?: string } | null => {
+    const cakes = p.cake_count || 0;
+    const isPaid = p.is_premium || p.is_founding_member;
+    const lastSeenMs = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : null;
+    const dormant = lastSeenMs !== null && lastSeenMs > 30 * 24 * 60 * 60 * 1000;
+    if (!isPaid && cakes >= 3) return { label: '🔥 Hot lead', variant: 'default', className: 'bg-orange-500 hover:bg-orange-500' };
+    if (isPaid && lastSeenMs !== null && lastSeenMs < 14 * 24 * 60 * 60 * 1000) return { label: 'Active premium', variant: 'default' };
+    if (cakes === 0 && p.last_seen) return { label: 'Window shopper', variant: 'outline' };
+    if (dormant) return { label: 'Dormant', variant: 'secondary' };
+    return null;
+  };
+
+  const filteredProfiles = profiles
+    .filter((p) => countryFilter === 'all' || p.country === countryFilter)
+    .filter((p) => {
+      const cakes = p.cake_count || 0;
+      const isPaid = p.is_premium || p.is_founding_member;
+      const lastSeenMs = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : null;
+      switch (activityFilter) {
+        case 'created_cakes': return cakes > 0;
+        case 'never_created': return cakes === 0;
+        case 'free_with_cakes': return !isPaid && cakes > 0;
+        case 'premium': return isPaid;
+        case 'dormant': return lastSeenMs !== null && lastSeenMs > 30 * 24 * 60 * 60 * 1000;
+        default: return true;
+      }
+    });
+
+  const exportEmailsCSV = () => {
+    const rows = [['email', 'country', 'cakes', 'parties', 'status', 'last_seen', 'joined']];
+    filteredProfiles.forEach((p) => {
+      const status = p.is_premium ? 'Premium' : p.is_founding_member ? 'Founding' : 'Free';
+      rows.push([
+        p.email,
+        p.country || '',
+        String(p.cake_count || 0),
+        String(p.party_count || 0),
+        status,
+        p.last_seen ? new Date(p.last_seen).toISOString() : '',
+        new Date(p.created_at).toISOString(),
+      ]);
+    });
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-${activityFilter}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredProfiles.length} users`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
