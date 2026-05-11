@@ -1370,12 +1370,11 @@ export default function Admin() {
               {/* User Management Table */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <CardTitle>User Management</CardTitle>
-                      <CardDescription>Manage user accounts and premium status</CardDescription>
+                      <CardDescription>Manage accounts, see activity & export for outreach</CardDescription>
                     </div>
-                    {/* Country Filter Tabs */}
                     <div className="flex gap-1 flex-wrap">
                       {['all', 'IN', 'US', 'UK', 'CA', 'AU', 'Unknown'].map((filter) => (
                         <Button
@@ -1389,6 +1388,36 @@ export default function Admin() {
                       ))}
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 flex-wrap pt-3">
+                    <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as any)}>
+                      <SelectTrigger className="w-[220px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All users</SelectItem>
+                        <SelectItem value="created_cakes">Created at least 1 cake</SelectItem>
+                        <SelectItem value="never_created">Never created a cake</SelectItem>
+                        <SelectItem value="free_with_cakes">🔥 Free + created cakes (best upsell)</SelectItem>
+                        <SelectItem value="premium">Premium / Founding</SelectItem>
+                        <SelectItem value="dormant">Dormant (30+ days)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Badge variant="secondary">{filteredProfiles.length} matches</Badge>
+                    <Button size="sm" variant="outline" onClick={exportEmailsCSV}>
+                      <Download className="w-3 h-3 mr-1" /> Export CSV
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const emails = filteredProfiles.map((p) => p.email).join(', ');
+                        navigator.clipboard.writeText(emails);
+                        toast.success(`Copied ${filteredProfiles.length} emails`);
+                      }}
+                    >
+                      <Copy className="w-3 h-3 mr-1" /> Copy emails
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -1397,16 +1426,18 @@ export default function Admin() {
                         <TableHead>Email</TableHead>
                         <TableHead>Country</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead className="text-center">Cakes</TableHead>
+                        <TableHead>Last seen</TableHead>
+                        <TableHead>Engagement</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {profiles
-                        .filter((profile) => countryFilter === 'all' || profile.country === countryFilter)
-                        .map((profile) => (
+                      {filteredProfiles.map((profile) => {
+                        const tag = getEngagementTag(profile);
+                        return (
                           <TableRow key={profile.id}>
-                            <TableCell className="font-medium">{profile.email}</TableCell>
+                            <TableCell className="font-medium max-w-[220px] truncate" title={profile.email}>{profile.email}</TableCell>
                             <TableCell>
                               <CountryPicker
                                 value={profile.country || 'Unknown'}
@@ -1414,33 +1445,56 @@ export default function Admin() {
                               />
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
+                              <div className="flex gap-1 flex-wrap">
                                 {profile.is_premium && <Badge variant="default">Premium</Badge>}
                                 {profile.is_founding_member && <Badge className="bg-amber-600">Founding</Badge>}
                                 {!profile.is_premium && !profile.is_founding_member && <Badge variant="secondary">Free</Badge>}
                               </div>
                             </TableCell>
-                            <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-center font-semibold">{profile.cake_count || 0}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '—'}
+                            </TableCell>
                             <TableCell>
-                              <Button
-                                size="sm"
-                                variant={profile.is_premium ? "destructive" : "default"}
-                                onClick={() => togglePremium(profile.id, profile.is_premium)}
-                                disabled={grantingPremium.has(profile.id)}
-                              >
-                                {grantingPremium.has(profile.id) 
-                                  ? 'Processing...' 
-                                  : (profile.is_premium ? 'Remove Premium' : 'Grant Premium')}
-                              </Button>
+                              {tag ? <Badge variant={tag.variant} className={tag.className}>{tag.label}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setActivityPanel({ open: true, userId: profile.id, email: profile.email })}
+                                >
+                                  <Eye className="w-3 h-3 mr-1" /> View
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={profile.is_premium ? "destructive" : "default"}
+                                  onClick={() => togglePremium(profile.id, profile.is_premium)}
+                                  disabled={grantingPremium.has(profile.id)}
+                                >
+                                  {grantingPremium.has(profile.id)
+                                    ? '...'
+                                    : (profile.is_premium ? 'Remove' : 'Grant')}
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
+
+          <UserActivityPanel
+            open={activityPanel.open}
+            onOpenChange={(open) => setActivityPanel((s) => ({ ...s, open }))}
+            userId={activityPanel.userId}
+            email={activityPanel.email}
+          />
 
           <TabsContent value="images" className="space-y-4">
             <Card>
