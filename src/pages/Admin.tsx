@@ -279,7 +279,28 @@ export default function Admin() {
       return { ...profile, country: primaryCountry };
     });
 
-    setProfiles(profilesWithCountry);
+    // Fetch aggregates: cake counts, party counts, last seen — for engagement filters
+    const [imagesAgg, partiesAgg, lastSeenAgg] = await Promise.all([
+      supabase.from('generated_images').select('user_id'),
+      supabase.from('parties').select('user_id'),
+      supabase.from('page_visits').select('user_id, visited_at').not('user_id', 'is', null).order('visited_at', { ascending: false }).limit(5000),
+    ]);
+
+    const cakeCounts: Record<string, number> = {};
+    (imagesAgg.data || []).forEach((r: any) => { if (r.user_id) cakeCounts[r.user_id] = (cakeCounts[r.user_id] || 0) + 1; });
+    const partyCounts: Record<string, number> = {};
+    (partiesAgg.data || []).forEach((r: any) => { if (r.user_id) partyCounts[r.user_id] = (partyCounts[r.user_id] || 0) + 1; });
+    const lastSeenMap: Record<string, string> = {};
+    (lastSeenAgg.data || []).forEach((r: any) => { if (r.user_id && !lastSeenMap[r.user_id]) lastSeenMap[r.user_id] = r.visited_at; });
+
+    const enriched = profilesWithCountry.map((p) => ({
+      ...p,
+      cake_count: cakeCounts[p.id] || 0,
+      party_count: partyCounts[p.id] || 0,
+      last_seen: lastSeenMap[p.id] || null,
+    }));
+
+    setProfiles(enriched);
 
     // Calculate country stats for pie chart
     const countryStatsMap: Record<string, number> = {};
