@@ -37,6 +37,9 @@ interface Profile {
   created_at: string;
   country?: string;
   founding_member_number?: string;
+  cake_count?: number;
+  party_count?: number;
+  last_seen?: string | null;
 }
 
 interface CommunityImage {
