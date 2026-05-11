@@ -8,8 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings, FileText, Clock, Calendar } from 'lucide-react';
+import { Users, BarChart3, ImageIcon, Shield, Trash2, Star, Mail, Globe, Settings, FileText, Clock, Calendar, Eye, Download, Copy } from 'lucide-react';
 import { ScheduledTasksWidget } from '@/components/ScheduledTasksWidget';
+import { UserActivityPanel } from '@/components/admin/UserActivityPanel';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HolidaySalesManager } from '@/components/HolidaySalesManager';
 import { CountryPicker } from '@/components/CountryPicker';
 import { Helmet } from 'react-helmet-async';
@@ -35,6 +37,9 @@ interface Profile {
   created_at: string;
   country?: string;
   founding_member_number?: string;
+  cake_count?: number;
+  party_count?: number;
+  last_seen?: string | null;
 }
 
 interface CommunityImage {
@@ -87,6 +92,8 @@ export default function Admin() {
   const [images, setImages] = useState<CommunityImage[]>([]);
   const [subscribers, setSubscribers] = useState<BlogSubscriber[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [activityFilter, setActivityFilter] = useState<'all' | 'created_cakes' | 'never_created' | 'free_with_cakes' | 'premium' | 'dormant'>('all');
+  const [activityPanel, setActivityPanel] = useState<{ open: boolean; userId: string | null; email: string | null }>({ open: false, userId: null, email: null });
   const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
   const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
   const [grantingPremium, setGrantingPremium] = useState<Set<string>>(new Set());
@@ -272,7 +279,28 @@ export default function Admin() {
       return { ...profile, country: primaryCountry };
     });
 
-    setProfiles(profilesWithCountry);
+    // Fetch aggregates: cake counts, party counts, last seen — for engagement filters
+    const [imagesAgg, partiesAgg, lastSeenAgg] = await Promise.all([
+      supabase.from('generated_images').select('user_id'),
+      supabase.from('parties').select('user_id'),
+      supabase.from('page_visits').select('user_id, visited_at').not('user_id', 'is', null).order('visited_at', { ascending: false }).limit(5000),
+    ]);
+
+    const cakeCounts: Record<string, number> = {};
+    (imagesAgg.data || []).forEach((r: any) => { if (r.user_id) cakeCounts[r.user_id] = (cakeCounts[r.user_id] || 0) + 1; });
+    const partyCounts: Record<string, number> = {};
+    (partiesAgg.data || []).forEach((r: any) => { if (r.user_id) partyCounts[r.user_id] = (partyCounts[r.user_id] || 0) + 1; });
+    const lastSeenMap: Record<string, string> = {};
+    (lastSeenAgg.data || []).forEach((r: any) => { if (r.user_id && !lastSeenMap[r.user_id]) lastSeenMap[r.user_id] = r.visited_at; });
+
+    const enriched = profilesWithCountry.map((p) => ({
+      ...p,
+      cake_count: cakeCounts[p.id] || 0,
+      party_count: partyCounts[p.id] || 0,
+      last_seen: lastSeenMap[p.id] || null,
+    }));
+
+    setProfiles(enriched);
 
     // Calculate country stats for pie chart
     const countryStatsMap: Record<string, number> = {};
@@ -756,6 +784,59 @@ export default function Admin() {
       setSendingNudgeAll(false);
       setNudgeDialog(false);
     }
+  };
+
+  const getEngagementTag = (p: Profile): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className?: string } | null => {
+    const cakes = p.cake_count || 0;
+    const isPaid = p.is_premium || p.is_founding_member;
+    const lastSeenMs = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : null;
+    const dormant = lastSeenMs !== null && lastSeenMs > 30 * 24 * 60 * 60 * 1000;
+    if (!isPaid && cakes >= 3) return { label: '🔥 Hot lead', variant: 'default', className: 'bg-orange-500 hover:bg-orange-500' };
+    if (isPaid && lastSeenMs !== null && lastSeenMs < 14 * 24 * 60 * 60 * 1000) return { label: 'Active premium', variant: 'default' };
+    if (cakes === 0 && p.last_seen) return { label: 'Window shopper', variant: 'outline' };
+    if (dormant) return { label: 'Dormant', variant: 'secondary' };
+    return null;
+  };
+
+  const filteredProfiles = profiles
+    .filter((p) => countryFilter === 'all' || p.country === countryFilter)
+    .filter((p) => {
+      const cakes = p.cake_count || 0;
+      const isPaid = p.is_premium || p.is_founding_member;
+      const lastSeenMs = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : null;
+      switch (activityFilter) {
+        case 'created_cakes': return cakes > 0;
+        case 'never_created': return cakes === 0;
+        case 'free_with_cakes': return !isPaid && cakes > 0;
+        case 'premium': return isPaid;
+        case 'dormant': return lastSeenMs !== null && lastSeenMs > 30 * 24 * 60 * 60 * 1000;
+        default: return true;
+      }
+    });
+
+  const exportEmailsCSV = () => {
+    const rows = [['email', 'country', 'cakes', 'parties', 'status', 'last_seen', 'joined']];
+    filteredProfiles.forEach((p) => {
+      const status = p.is_premium ? 'Premium' : p.is_founding_member ? 'Founding' : 'Free';
+      rows.push([
+        p.email,
+        p.country || '',
+        String(p.cake_count || 0),
+        String(p.party_count || 0),
+        status,
+        p.last_seen ? new Date(p.last_seen).toISOString() : '',
+        new Date(p.created_at).toISOString(),
+      ]);
+    });
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-${activityFilter}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredProfiles.length} users`);
   };
 
   if (loading) {
@@ -1289,12 +1370,11 @@ export default function Admin() {
               {/* User Management Table */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <CardTitle>User Management</CardTitle>
-                      <CardDescription>Manage user accounts and premium status</CardDescription>
+                      <CardDescription>Manage accounts, see activity & export for outreach</CardDescription>
                     </div>
-                    {/* Country Filter Tabs */}
                     <div className="flex gap-1 flex-wrap">
                       {['all', 'IN', 'US', 'UK', 'CA', 'AU', 'Unknown'].map((filter) => (
                         <Button
@@ -1308,6 +1388,36 @@ export default function Admin() {
                       ))}
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 flex-wrap pt-3">
+                    <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as any)}>
+                      <SelectTrigger className="w-[220px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All users</SelectItem>
+                        <SelectItem value="created_cakes">Created at least 1 cake</SelectItem>
+                        <SelectItem value="never_created">Never created a cake</SelectItem>
+                        <SelectItem value="free_with_cakes">🔥 Free + created cakes (best upsell)</SelectItem>
+                        <SelectItem value="premium">Premium / Founding</SelectItem>
+                        <SelectItem value="dormant">Dormant (30+ days)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Badge variant="secondary">{filteredProfiles.length} matches</Badge>
+                    <Button size="sm" variant="outline" onClick={exportEmailsCSV}>
+                      <Download className="w-3 h-3 mr-1" /> Export CSV
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const emails = filteredProfiles.map((p) => p.email).join(', ');
+                        navigator.clipboard.writeText(emails);
+                        toast.success(`Copied ${filteredProfiles.length} emails`);
+                      }}
+                    >
+                      <Copy className="w-3 h-3 mr-1" /> Copy emails
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -1316,16 +1426,18 @@ export default function Admin() {
                         <TableHead>Email</TableHead>
                         <TableHead>Country</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead className="text-center">Cakes</TableHead>
+                        <TableHead>Last seen</TableHead>
+                        <TableHead>Engagement</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {profiles
-                        .filter((profile) => countryFilter === 'all' || profile.country === countryFilter)
-                        .map((profile) => (
+                      {filteredProfiles.map((profile) => {
+                        const tag = getEngagementTag(profile);
+                        return (
                           <TableRow key={profile.id}>
-                            <TableCell className="font-medium">{profile.email}</TableCell>
+                            <TableCell className="font-medium max-w-[220px] truncate" title={profile.email}>{profile.email}</TableCell>
                             <TableCell>
                               <CountryPicker
                                 value={profile.country || 'Unknown'}
@@ -1333,33 +1445,56 @@ export default function Admin() {
                               />
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
+                              <div className="flex gap-1 flex-wrap">
                                 {profile.is_premium && <Badge variant="default">Premium</Badge>}
                                 {profile.is_founding_member && <Badge className="bg-amber-600">Founding</Badge>}
                                 {!profile.is_premium && !profile.is_founding_member && <Badge variant="secondary">Free</Badge>}
                               </div>
                             </TableCell>
-                            <TableCell>{new Date(profile.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-center font-semibold">{profile.cake_count || 0}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '—'}
+                            </TableCell>
                             <TableCell>
-                              <Button
-                                size="sm"
-                                variant={profile.is_premium ? "destructive" : "default"}
-                                onClick={() => togglePremium(profile.id, profile.is_premium)}
-                                disabled={grantingPremium.has(profile.id)}
-                              >
-                                {grantingPremium.has(profile.id) 
-                                  ? 'Processing...' 
-                                  : (profile.is_premium ? 'Remove Premium' : 'Grant Premium')}
-                              </Button>
+                              {tag ? <Badge variant={tag.variant} className={tag.className}>{tag.label}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setActivityPanel({ open: true, userId: profile.id, email: profile.email })}
+                                >
+                                  <Eye className="w-3 h-3 mr-1" /> View
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={profile.is_premium ? "destructive" : "default"}
+                                  onClick={() => togglePremium(profile.id, profile.is_premium)}
+                                  disabled={grantingPremium.has(profile.id)}
+                                >
+                                  {grantingPremium.has(profile.id)
+                                    ? '...'
+                                    : (profile.is_premium ? 'Remove' : 'Grant')}
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
+
+          <UserActivityPanel
+            open={activityPanel.open}
+            onOpenChange={(open) => setActivityPanel((s) => ({ ...s, open }))}
+            userId={activityPanel.userId}
+            email={activityPanel.email}
+          />
 
           <TabsContent value="images" className="space-y-4">
             <Card>
