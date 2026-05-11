@@ -1,34 +1,37 @@
-I found the actual issue: the backend did generate and save all 3 views quickly. The latest job completed with all 3 image URLs in about 9 seconds after the hero response. The problem is in the frontend race handling: background updates can arrive before the React image grid is fully initialized, so the UI can incorrectly decide the missing slots need regeneration and then stop polling.
+## Goal
+Give admin a per-user activity view so you can see what each visitor/user did (cakes generated, gallery activity, party packs, parties, premium status) — perfect for outreach with offers.
 
-Plan:
+## What you'll see
 
-1. Fix the frontend race in `CakeCreator.tsx`
-   - Initialize the hero + placeholder grid before subscribing to background updates.
-   - Change the background row merge logic so it always writes incoming `side_url` and `top_url` into a stable local `latestImages` array, even if React state has not committed yet.
-   - Re-render the grid from `latestImages` instead of relying on the previous `generatedImages` length.
+For each user (in the existing Admin → Users table), add a "View Activity" button that opens a panel/modal with:
 
-2. Stop false “needs retry” messages
-   - Do not show “2 views need a retry” just because a terminal status arrived before the UI merged the URLs.
-   - Only mark a slot failed when the backend has a real `side_error` / `top_error`, or when the 4-minute watchdog expires.
-   - If status is `completed` but the UI has not merged all URLs yet, immediately fetch the job row once more and keep polling instead of stopping.
+- **Profile summary**: email, name, country, signup date, premium/founding status
+- **Cakes created**: total count + list (thumbnails, occasion, recipient name, date)
+- **Gallery activity**: how many they featured/starred, likes given, comments posted
+- **Party packs generated**: count + list
+- **Parties planned**: count + event dates
+- **Page visits**: total, last seen, top pages visited
+- **Generation usage**: this month's count, lifetime count
+- **Engagement signal**: a simple tag like "Hot lead" (created 3+ cakes, free tier), "Active premium", "Window shopper" (visits but no cakes), "Dormant" (no activity 30+ days)
 
-3. Make missed realtime updates harmless
-   - Add an immediate job-row fetch right after subscription starts.
-   - Reduce the fallback polling delay from 15 seconds to a shorter interval so completed views appear quickly even if realtime misses an event.
-   - Cleanup polling only after all expected image slots are actually filled, or a real failure is confirmed.
+Plus a top-level **filter bar** on the Users table:
+- Show only: created cakes / never created / free tier with cakes (best upsell targets) / premium / dormant
+- Sort by: most cakes / most recent activity / signup date
 
-4. Keep backend generation unchanged
-   - No database migration needed.
-   - No API/cost changes.
-   - The deployed backend logs already show all 3 HQ views are being generated and stored; the fix is to make the UI reliably pick them up.
+## Outreach helper
 
-Verification after implementation:
-- Generate a High Quality cake.
-- Confirm hero appears first.
-- Confirm side/top appear automatically without clicking Regenerate.
-- Confirm no “needs retry” message appears while generation is still in progress.
-- Confirm final “All 3 views ready” appears only after all 3 image slots are filled.
+- Each user row gets a **"Copy email"** and **"Email this user"** button
+- Bulk select users matching a filter → **"Export emails as CSV"** for sending campaigns from Brevo
 
-<lov-actions>
-<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
-</lov-actions>
+## Technical notes
+
+- All data already exists in your DB (`generated_images`, `gallery_likes`, `gallery_comments`, `party_packs`, `parties`, `page_visits`, `generation_tracking`) — no new tables needed
+- Admin RLS policies already grant access on these tables (or we'll add `has_role(auth.uid(),'admin')` SELECT policies where missing — only `parties`, `party_packs`, `gallery_*` need a quick check)
+- New file: `src/components/admin/UserActivityPanel.tsx` (the modal)
+- Edit `src/pages/Admin.tsx`: extend `loadProfiles` to also fetch aggregate counts per user in one batched query, add the filter bar and "View Activity" button
+- The engagement tags are computed client-side from the aggregates
+
+## Out of scope (ask if you want these too)
+
+- In-app email sending (currently you'd copy emails to Brevo). I can add a "Send offer email" button later that triggers an edge function.
+- Tracking *which* pages a logged-out visitor saw before signing up (would need session→user linking, which `link_session_visits_to_user` already does — so this works automatically once they sign up).
