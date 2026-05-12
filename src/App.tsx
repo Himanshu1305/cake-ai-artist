@@ -46,6 +46,7 @@ const EmbedGalleryPage = lazy(() =>
 const PartyPlanner = lazy(() => import("./pages/PartyPlanner"));
 const PartyPlannerDetail = lazy(() => import("./pages/PartyPlannerDetail"));
 const PartyRSVP = lazy(() => import("./pages/PartyRSVP"));
+const SharedCake = lazy(() => import("./pages/SharedCake"));
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,7 @@ const App = () => {
                   <Route path="/party-planner" element={<PartyPlanner />} />
                   <Route path="/party-planner/:id" element={<PartyPlannerDetail />} />
                   <Route path="/rsvp/:token" element={<PartyRSVP />} />
+                  <Route path="/cake/:id" element={<SharedCake />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
