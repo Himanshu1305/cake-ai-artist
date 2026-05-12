@@ -410,6 +410,8 @@ export type Database = {
       }
       generated_images: {
         Row: {
+          audio_duration_seconds: number | null
+          audio_url: string | null
           created_at: string | null
           featured: boolean | null
           id: string
@@ -423,6 +425,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
           id?: string
@@ -436,6 +440,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
           id?: string
