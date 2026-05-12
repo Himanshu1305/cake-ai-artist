@@ -1021,6 +1021,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Store the first saved image ID for party pack generation
         if (insertedImage && !savedCakeImageId) {
           setSavedCakeImageId(insertedImage.id);
+          setAudioUrl(null);
+          setAudioDuration(null);
         }
       }
 
@@ -2744,6 +2746,96 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <p className="text-xs text-center text-muted-foreground">
                       💡 Saved images can be starred ⭐ in your gallery to feature on our homepage!
                     </p>
+                  </div>
+                )}
+
+                {/* Voice Message - Show after saving to gallery */}
+                {isLoggedIn && savedCakeImageId && user?.id && (
+                  <div className="pt-4 border-t border-muted">
+                    <div className="space-y-2 mb-4 text-center">
+                      <h4 className="font-semibold text-foreground flex items-center justify-center gap-2">
+                        🎙️ Add a Voice Message
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Record up to 30 seconds — recipients hear it when they open your cake link.
+                      </p>
+                    </div>
+
+                    {audioUrl ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 justify-center text-sm font-semibold text-party-pink">
+                          <Volume2 className="h-4 w-4" />
+                          Voice message attached{audioDuration ? ` · ${audioDuration}s` : ""}
+                        </div>
+                        <audio controls src={audioUrl} className="w-full" preload="metadata" />
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setShowAudioRecorder(true)}
+                          >
+                            <Mic className="h-4 w-4 mr-2" /> Re-record
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={async () => {
+                              if (!savedCakeImageId) return;
+                              const { error } = await supabase
+                                .from("generated_images")
+                                .update({ audio_url: null, audio_duration_seconds: null })
+                                .eq("id", savedCakeImageId);
+                              if (!error) {
+                                setAudioUrl(null);
+                                setAudioDuration(null);
+                                toast({ title: "Voice message removed" });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" /> Remove
+                          </Button>
+                        </div>
+                        <Button
+                          variant="secondary"
+                          className="w-full bg-party-purple/10 hover:bg-party-purple/20 text-party-purple border border-party-purple/30"
+                          onClick={async () => {
+                            const url = `${window.location.origin}/cake/${savedCakeImageId}`;
+                            try {
+                              await navigator.clipboard.writeText(url);
+                              toast({
+                                title: "Link copied! 🔗",
+                                description: "Paste it into WhatsApp, Messages, or anywhere.",
+                              });
+                            } catch {
+                              toast({ title: "Link", description: url });
+                            }
+                          }}
+                        >
+                          <Link2 className="h-4 w-4 mr-2" />
+                          Copy share link with voice message
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => setShowAudioRecorder(true)}
+                        className="w-full bg-party-pink hover:bg-party-pink/90"
+                      >
+                        <Mic className="h-4 w-4 mr-2" />
+                        Record voice message
+                      </Button>
+                    )}
+
+                    <AudioRecorder
+                      open={showAudioRecorder}
+                      onOpenChange={setShowAudioRecorder}
+                      cakeImageId={savedCakeImageId}
+                      userId={user.id}
+                      existingAudioUrl={audioUrl}
+                      onSaved={(url, dur) => {
+                        setAudioUrl(url);
+                        setAudioDuration(dur);
+                      }}
+                    />
                   </div>
                 )}
 
