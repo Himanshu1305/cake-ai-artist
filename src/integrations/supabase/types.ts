@@ -410,6 +410,8 @@ export type Database = {
       }
       generated_images: {
         Row: {
+          audio_duration_seconds: number | null
+          audio_url: string | null
           created_at: string | null
           featured: boolean | null
           id: string
@@ -423,6 +425,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
           id?: string
@@ -436,6 +440,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
           id?: string
@@ -1243,6 +1249,19 @@ export type Database = {
         Returns: undefined
       }
       get_available_spots: { Args: never; Returns: Json }
+      get_public_cake: {
+        Args: { p_id: string }
+        Returns: {
+          audio_duration_seconds: number
+          audio_url: string
+          created_at: string
+          id: string
+          image_url: string
+          message: string
+          occasion_type: string
+          recipient_name: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
