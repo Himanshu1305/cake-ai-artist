@@ -30,6 +30,8 @@ import { processCakeWithPhoto, FALLBACK_PHOTO_POSITIONS } from "@/utils/cakePhot
 import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
 import { z } from "zod";
 import { PartyPackGenerator } from "@/components/PartyPackGenerator";
+import { AudioRecorder } from "@/components/AudioRecorder";
+import { Mic, Volume2, Link2, Trash2 } from "lucide-react";
 
 // Input validation schema
 const cakeFormSchema = z.object({
@@ -99,6 +101,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
   const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
 
