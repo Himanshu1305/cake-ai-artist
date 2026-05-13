@@ -40,6 +40,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema, FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { PopularCakesSection } from "@/components/PopularCakesSection";
+import { GlobalReachWidget } from "@/components/GlobalReachWidget";
 import { CakeWall } from "@/components/CakeWall";
 import { HomepageFAQ, HOMEPAGE_FAQS } from "@/components/HomepageFAQ";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -966,6 +967,9 @@ const Index = () => {
         <TrustBadges />
       </Suspense>
       */}
+
+      {/* Global Reach */}
+      <GlobalReachWidget />
 
       {/* Most Popular Cakes This Week */}
       <PopularCakesSection />
