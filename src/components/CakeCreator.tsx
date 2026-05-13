@@ -760,13 +760,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             side_error: 1,
             top_error: 2,
           };
-          const viewLabelMap: Record<string, string> = {
-            front: 'Front View',
-            side: 'Side View',
-            top: 'Top-Down View',
-            main: 'Main View',
-            angle: 'Angle View',
-          };
+
 
           // Seed pending state from initial response (failedViews = pending background slots).
           const initialPending = new Set<number>();
