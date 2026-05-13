@@ -662,7 +662,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           title: "Creating your cake...",
           description: generationQuality === 'high'
             ? `Premium quality — your first view appears in ~25s, the rest stream in right after.`
-            : `AI is generating ${viewDescription} with your personalization!`,
+            : `AI is generating ${viewDescription} together — back in ~30 seconds!`,
         });
 
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
