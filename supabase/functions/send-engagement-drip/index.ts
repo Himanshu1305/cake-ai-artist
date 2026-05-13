@@ -263,9 +263,10 @@ serve(async (req) => {
     // Test mode
     if (testEmail && testVariant) {
       const { data: profile } = await supabase.from("profiles")
-        .select("first_name").eq("email", testEmail).maybeSingle();
+        .select("first_name, country").eq("email", testEmail).maybeSingle();
       const firstName = profile?.first_name || "there";
-      const html = buildEmailHtml(testVariant, firstName, "https://cakeaiartist.com/settings");
+      const country = profile?.country || null;
+      const html = buildEmailHtml(testVariant, firstName, "https://cakeaiartist.com/settings", country);
       const result = await sendBrevo(testEmail, firstName, `[TEST] ${SUBJECTS[testVariant]}`, html);
 
       if (taskRun) {
