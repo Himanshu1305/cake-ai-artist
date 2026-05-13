@@ -11,40 +11,20 @@ const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type EmailType = "day2_welcome" | "day7_trends" | "day14_final";
+type Campaign = "recent_visitors" | "we_miss_you";
+type EmailType = "recent_visitor_no_cake" | "we_miss_you";
 
-const SUBJECTS: Record<EmailType, string> = {
-  day2_welcome: "Did something stop you? Here's what you're missing 🎂",
-  day7_trends: "See what's trending on Cake AI Artist this week ✨",
-  day14_final: "A free design idea, just for you 🎁",
+const TASK_NAME: Record<Campaign, string> = {
+  recent_visitors: "engagement-recent-visitors",
+  we_miss_you: "engagement-we-miss-you",
 };
 
-function emailLayout(inner: string, unsubscribeUrl: string): string {
-  return `
-    <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-    <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8f5f2;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f5f2;padding:40px 20px;"><tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-      <tr><td style="background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 50%,#F97316 100%);padding:30px;text-align:center;">
-        <img src="https://cakeaiartist.com/logo.png" alt="Cake AI Artist" width="48" height="48" style="border-radius:12px;margin-bottom:8px;">
-        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;">Cake AI Artist</h1>
-        <p style="margin:4px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">AI-Powered Cake Design</p>
-      </td></tr>
-      ${inner}
-      <tr><td style="background-color:#f9fafb;padding:20px 30px;border-top:1px solid #e5e7eb;">
-        <p style="margin:0 0 8px;color:#888;font-size:12px;text-align:center;">
-          You're receiving this because you signed up for Cake AI Artist.
-        </p>
-        <p style="margin:0 0 8px;color:#888;font-size:12px;text-align:center;">
-          <a href="${unsubscribeUrl}" style="color:#8B5CF6;text-decoration:underline;">Unsubscribe from these emails</a>
-        </p>
-        <p style="margin:0;color:#aaa;font-size:11px;text-align:center;">
-          © ${new Date().getFullYear()} Cake AI Artist by USD Vision AI LLP | support@cakeaiartist.com
-        </p>
-      </td></tr>
-    </table></td></tr></table></body></html>`;
-}
+const EMAIL_TYPE: Record<Campaign, EmailType> = {
+  recent_visitors: "recent_visitor_no_cake",
+  we_miss_you: "we_miss_you",
+};
 
+// ---------------- Layout (Day-2 finalized template) ----------------
 function day2Layout(inner: string, unsubscribeUrl: string): string {
   return `
     <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -96,7 +76,8 @@ function localizedPath(path: string, country?: string | null): string {
   return `https://cakeaiartist.com${path}${sep}ref=email${c ? `&country=${c}` : ""}`;
 }
 
-function day2Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
+// ---------------- Email A: Recent visitor, no cake yet ----------------
+function recentVisitorEmail(firstName: string, unsubscribeUrl: string, country?: string | null): { subject: string; html: string } {
   const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
     <tr><td style="padding:0 0 14px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
@@ -137,76 +118,117 @@ function day2Email(firstName: string, unsubscribeUrl: string, country?: string |
         🎂 Start with a cake
       </a>
     </td></tr>`;
-  return day2Layout(inner, unsubscribeUrl);
+  return {
+    subject: "Did something stop you? Here's what you're missing 🎂",
+    html: day2Layout(inner, unsubscribeUrl),
+  };
 }
 
-function day7Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
-  const inner = `
-    <tr><td style="padding:30px 30px 10px;">
-      <p style="margin:0 0 16px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"}! ✨</p>
-      <p style="margin:0 0 18px;color:#333;font-size:15px;line-height:1.6;">
-        We noticed you haven't designed your first cake yet — totally fine! Sometimes a little inspiration is all it takes. Here's what other creators have been making this week:
-      </p>
-      <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:20px;">🔥 Trending right now</h2>
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-        <tr><td style="padding:8px 0;font-size:15px;color:#333;">🎂 Birthday cakes with names spelled in icing</td></tr>
-        <tr><td style="padding:8px 0;font-size:15px;color:#333;">💍 Elegant anniversary cakes with floral details</td></tr>
-        <tr><td style="padding:8px 0;font-size:15px;color:#333;">🦄 Kids' party cakes with favourite characters</td></tr>
-        <tr><td style="padding:8px 0;font-size:15px;color:#333;">🌸 Cute mini-cakes for "just because" moments</td></tr>
+// ---------------- Email B: We Miss You (3 random variants) ----------------
+function weMissYouVariant1(firstName: string, country?: string | null): { subject: string; inner: string } {
+  // Warm + features recap
+  const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
+    <tr><td style="padding:0 0 14px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
+        <tr><td style="padding:16px 18px;">
+          <p style="margin:0 0 4px;color:#1a1a2e;font-size:16px;font-weight:700;">${emoji} ${title}</p>
+          <p style="margin:0 0 10px;color:#555;font-size:14px;line-height:1.5;">${desc}</p>
+          <a href="${href}" style="color:#2563EB;font-size:14px;font-weight:600;text-decoration:none;">${cta} →</a>
+        </td></tr>
       </table>
-      <p style="margin:0 0 18px;color:#555;font-size:15px;line-height:1.6;">
-        Browse hundreds of fresh designs from our community for ideas:
+    </td></tr>`;
+
+  const inner = `
+    <tr><td style="padding:30px 30px 8px;">
+      <p style="margin:0 0 14px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 💛</p>
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.6;">
+        It's been a little while — we've genuinely missed you around here. ✨
       </p>
-      <p style="margin:0 0 18px;text-align:center;">
-        <a href="${localizedPath("/gallery", country)}" style="color:#2563EB;font-weight:600;text-decoration:underline;">→ Visit the Community Gallery</a>
+      <p style="margin:0 0 22px;color:#333;font-size:15px;line-height:1.6;">
+        Quite a bit has been happening at Cake AI Artist since you last popped in. Here's a quick look at what's waiting for you:
       </p>
+      <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:18px;">What's new and worth a peek ✨</h2>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${featureCard("🎂", "Free Cake Designer", "Type a name and an occasion — and watch a beautiful AI cake appear in seconds.", localizedPath("/free-cake-designer", country), "Try a fresh design")}
+        ${featureCard("🖼️", "Community Gallery", "Hundreds of brand-new creations from people all over the world this month.", localizedPath("/gallery", country), "Get inspired")}
+        ${featureCard("🎁", "Party Pack Generator", "Turn a single cake design into matching invites, thank-you cards & printables.", localizedPath("/party-planner", country), "Plan a party")}
+        ${featureCard("📖", "Blog & Trends", "Fresh ideas for birthdays, anniversaries, baby showers and more.", localizedPath("/blog", country), "Read what's new")}
+      </table>
       <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
-        Want more cake ideas, tips, and trends? Our <a href="${localizedPath("/blog", country)}" style="color:#2563EB;">blog</a> is full of inspiration for every occasion.
+        Whenever you're ready, we'd love to have you back. And if anything was confusing or frustrating last time — just hit reply, we read every email.
       </p>
     </td></tr>
-    <tr><td style="padding:18px 30px 30px;text-align:center;">
-      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
-        🎨 Design My Cake Now
+    <tr><td style="padding:8px 30px 30px;text-align:center;">
+      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+        ✨ Take a look around
       </a>
     </td></tr>`;
-  return emailLayout(inner, unsubscribeUrl);
+  return { subject: "We've missed you at Cake AI Artist 💛", inner };
 }
 
-function day14Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
+function weMissYouVariant2(firstName: string, country?: string | null): { subject: string; inner: string } {
+  // Single big idea / inspiration
   const inner = `
-    <tr><td style="padding:30px 30px 10px;">
-      <p style="margin:0 0 16px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 💛</p>
-      <p style="margin:0 0 18px;color:#333;font-size:15px;line-height:1.6;">
-        Last little nudge from us — promise! We just wanted to share one quick idea before you go.
+    <tr><td style="padding:30px 30px 8px;">
+      <p style="margin:0 0 14px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 🎂</p>
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.6;">
+        Quick thought before you go about your day — whose birthday or anniversary is coming up next?
       </p>
-      <div style="background:#fef9f5;border-left:4px solid #F97316;padding:18px 20px;border-radius:8px;margin:0 0 20px;">
-        <p style="margin:0 0 8px;color:#1a1a2e;font-size:15px;font-weight:600;">🎁 A free idea, on us:</p>
+      <div style="margin:18px 0 22px;padding:18px 20px;background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
+        <p style="margin:0 0 8px;color:#1a1a2e;font-size:16px;font-weight:700;">🎯 One small idea:</p>
         <p style="margin:0;color:#333;font-size:15px;line-height:1.6;">
-          Whose birthday or anniversary is coming up? Type their name + the occasion into our designer and you'll have a beautiful, personalised cake design in under a minute. Print it, share it, or just save it as a fun keepsake.
+          Pop their name + the occasion into our designer — and in about 30 seconds you'll have a beautiful, personalised cake design ready to share, print, or save as a keepsake. No baking required. 😄
         </p>
       </div>
-      <p style="margin:0 0 18px;color:#555;font-size:15px;line-height:1.6;">
-        If something's been blocking you from trying it, just hit reply — we read every email and we'd love to help.
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.6;">
+        It's the kind of thing that makes someone smile, and you can do it on a coffee break.
       </p>
-      <p style="margin:0 0 18px;color:#555;font-size:14px;line-height:1.6;">
-        Either way, thanks so much for joining us. Whenever you're ready, we'll be here. 🎂
+      <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
+        Need a little nudge for inspiration? Have a quick browse of the <a href="${localizedPath("/gallery", country)}" style="color:#2563EB;">community gallery</a> — there's something for every kind of celebration.
       </p>
     </td></tr>
-    <tr><td style="padding:0 30px 30px;text-align:center;">
-      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
-        ✨ Try It Free
+    <tr><td style="padding:8px 30px 30px;text-align:center;">
+      <a href="${localizedPath("/free-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+        🎂 Design a cake now
       </a>
-      <p style="margin:18px 0 0;color:#888;font-size:13px;">Questions? Browse the <a href="${localizedPath("/faq", country)}" style="color:#2563EB;">FAQ</a>.</p>
     </td></tr>`;
-  return emailLayout(inner, unsubscribeUrl);
+  return { subject: "Your next cake idea is one click away ✨", inner };
 }
 
-function buildEmailHtml(type: EmailType, firstName: string, unsubscribeUrl: string, country?: string | null): string {
-  switch (type) {
-    case "day2_welcome": return day2Email(firstName, unsubscribeUrl, country);
-    case "day7_trends": return day7Email(firstName, unsubscribeUrl, country);
-    case "day14_final": return day14Email(firstName, unsubscribeUrl, country);
-  }
+function weMissYouVariant3(firstName: string, country?: string | null): { subject: string; inner: string } {
+  // Gift / freebie framing
+  const inner = `
+    <tr><td style="padding:30px 30px 8px;">
+      <p style="margin:0 0 14px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 🎁</p>
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.6;">
+        Just a tiny, friendly nudge — there's a free cake design idea waiting for you. ✨
+      </p>
+      <div style="margin:18px 0 22px;padding:18px 20px;background:#fef9f5;border-left:4px solid #F97316;border-radius:8px;">
+        <p style="margin:0 0 8px;color:#1a1a2e;font-size:16px;font-weight:700;">🎁 Here's our little gift:</p>
+        <p style="margin:0 0 10px;color:#333;font-size:15px;line-height:1.6;">
+          Come back, type any name + occasion, and we'll create a personalised cake design for you — completely free. No card, no catch, just a fun creative moment.
+        </p>
+        <p style="margin:0;color:#333;font-size:14px;line-height:1.6;">
+          It usually takes less than a minute, and the result is the kind of thing people love receiving on WhatsApp. 💬
+        </p>
+      </div>
+      <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
+        If something stopped you last time, just hit reply and tell us — we read every email and we're happy to help. Or peek at the <a href="${localizedPath("/faq", country)}" style="color:#2563EB;">FAQ</a> if you have a quick question.
+      </p>
+    </td></tr>
+    <tr><td style="padding:8px 30px 30px;text-align:center;">
+      <a href="${localizedPath("/free-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+        🎁 Claim my free design
+      </a>
+    </td></tr>`;
+  return { subject: "A little gift waiting for you 🎁", inner };
+}
+
+function weMissYouEmail(firstName: string, unsubscribeUrl: string, country?: string | null): { subject: string; html: string; variant: number } {
+  const variant = Math.floor(Math.random() * 3); // 0, 1, 2
+  const builders = [weMissYouVariant1, weMissYouVariant2, weMissYouVariant3];
+  const { subject, inner } = builders[variant](firstName, country);
+  return { subject, html: day2Layout(inner, unsubscribeUrl), variant };
 }
 
 function safeRecipientName(firstName: string | null | undefined, email: string): string {
@@ -237,7 +259,6 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Auth: CRON_SECRET or valid JWT
     const cronSecret = req.headers.get("X-Cron-Secret");
     const expected = Deno.env.get("CRON_SECRET");
     const authHeader = req.headers.get("Authorization");
@@ -256,102 +277,137 @@ serve(async (req) => {
       });
     }
 
-    // Optional body: testEmail + variant for admin test
+    let campaign: Campaign = "recent_visitors";
     let testEmail: string | null = null;
-    let testVariant: EmailType | null = null;
     try {
       const body = await req.json();
+      if (body?.campaign === "we_miss_you" || body?.campaign === "recent_visitors") {
+        campaign = body.campaign;
+      }
       testEmail = body?.testEmail || null;
-      testVariant = body?.variant || null;
     } catch { /* no body */ }
 
+    const taskName = TASK_NAME[campaign];
+    const emailType = EMAIL_TYPE[campaign];
+
     const { data: taskRun } = await supabase.from("scheduled_task_runs").insert({
-      task_name: "engagement-drip", status: "running", started_at: new Date().toISOString(),
+      task_name: taskName, status: "running", started_at: new Date().toISOString(),
     }).select().single();
 
-    // Test mode
-    if (testEmail && testVariant) {
+    // -------- Test mode: send a single preview to one email --------
+    if (testEmail) {
       const { data: profile } = await supabase.from("profiles")
         .select("first_name, country").eq("email", testEmail).maybeSingle();
       const firstName = profile?.first_name || "there";
       const country = profile?.country || null;
-      const html = buildEmailHtml(testVariant, firstName, "https://cakeaiartist.com/settings", country);
-      const result = await sendBrevo(testEmail, firstName, `[TEST] ${SUBJECTS[testVariant]}`, html);
-
+      const built = campaign === "recent_visitors"
+        ? recentVisitorEmail(firstName, "https://cakeaiartist.com/settings", country)
+        : weMissYouEmail(firstName, "https://cakeaiartist.com/settings", country);
+      const result = await sendBrevo(testEmail, firstName, `[TEST] ${built.subject}`, built.html);
       if (taskRun) {
         await supabase.from("scheduled_task_runs").update({
           status: result.ok ? "success" : "failed",
           completed_at: new Date().toISOString(),
           records_processed: result.ok ? 1 : 0,
-          result_message: `Test ${testVariant} sent to ${testEmail}`,
+          result_message: `Test ${campaign} sent to ${testEmail}`,
           error_message: result.ok ? null : result.body,
         }).eq("id", taskRun.id);
       }
-      return new Response(JSON.stringify({ success: result.ok, variant: testVariant, error: result.ok ? null : result.body }), {
+      return new Response(JSON.stringify({ success: result.ok, campaign, error: result.ok ? null : result.body }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Production: find inactive users (never generated an image)
-    // Get all users who HAVE created images so we can exclude them
-    const { data: activeUsers } = await supabase
-      .from("generated_images")
-      .select("user_id");
-    const activeIds = new Set((activeUsers || []).map((r: any) => r.user_id));
-
+    // -------- Build candidate set --------
     const { data: profiles, error: profilesErr } = await supabase
       .from("profiles")
-      .select("id, email, first_name, created_at, is_premium, country");
+      .select("id, email, first_name, country");
     if (profilesErr) throw profilesErr;
+    const allUsers = (profiles || []).filter((p: any) => p.email);
+    const idSet = new Set(allUsers.map((p: any) => p.id));
 
-    const candidates = (profiles || []).filter((p: any) =>
-      !p.is_premium && !activeIds.has(p.id) && p.email
-    );
+    let eligible: any[] = [];
 
-    // Settings opt-out
-    const ids = candidates.map((p: any) => p.id);
-    const { data: settings } = await supabase
-      .from("user_settings").select("user_id, marketing_emails").in("user_id", ids);
-    const optedOut = new Set((settings || []).filter((s: any) => s.marketing_emails === false).map((s: any) => s.user_id));
+    if (campaign === "recent_visitors") {
+      // visited in last 7 days (incl today)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data: recentVisits } = await supabase
+        .from("page_visits")
+        .select("user_id")
+        .gte("visited_at", sevenDaysAgo)
+        .not("user_id", "is", null);
+      const recentIds = new Set((recentVisits || []).map((r: any) => r.user_id).filter((id: any) => id && idSet.has(id)));
 
-    // Already-sent logs
-    const { data: existingLogs } = await supabase
-      .from("engagement_email_logs").select("user_id, email_type").in("user_id", ids);
-    const sentMap = new Map<string, Set<string>>();
-    (existingLogs || []).forEach((l: any) => {
-      if (!sentMap.has(l.user_id)) sentMap.set(l.user_id, new Set());
-      sentMap.get(l.user_id)!.add(l.email_type);
-    });
+      // exclude users with any generated_images
+      const { data: imgRows } = await supabase.from("generated_images").select("user_id");
+      const creatorIds = new Set((imgRows || []).map((r: any) => r.user_id));
 
-    const now = Date.now();
+      eligible = allUsers.filter((u: any) => recentIds.has(u.id) && !creatorIds.has(u.id));
+    } else {
+      // we_miss_you: max page_visits per user is >= 30 days ago, AND user has at least one historical visit
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).getTime();
+      // Get latest visit per user (paginate guard at 1000 default; bump limit)
+      const { data: visits } = await supabase
+        .from("page_visits")
+        .select("user_id, visited_at")
+        .not("user_id", "is", null)
+        .order("visited_at", { ascending: false })
+        .limit(50000);
+      const latestByUser = new Map<string, number>();
+      (visits || []).forEach((v: any) => {
+        if (!v.user_id || !idSet.has(v.user_id)) return;
+        const t = new Date(v.visited_at).getTime();
+        if (!latestByUser.has(v.user_id)) latestByUser.set(v.user_id, t);
+      });
+      eligible = allUsers.filter((u: any) => {
+        const last = latestByUser.get(u.id);
+        return typeof last === "number" && last <= thirtyDaysAgo;
+      });
+    }
+
+    const ids = eligible.map((u: any) => u.id);
+
+    // opt-out
+    let optedOut = new Set<string>();
+    if (ids.length > 0) {
+      const { data: settings } = await supabase
+        .from("user_settings").select("user_id, marketing_emails").in("user_id", ids);
+      optedOut = new Set((settings || []).filter((s: any) => s.marketing_emails === false).map((s: any) => s.user_id));
+    }
+
+    // already-sent dedupe
+    let alreadySent = new Set<string>();
+    if (ids.length > 0) {
+      const { data: logs } = await supabase
+        .from("engagement_email_logs")
+        .select("user_id")
+        .eq("email_type", emailType)
+        .in("user_id", ids);
+      alreadySent = new Set((logs || []).map((l: any) => l.user_id));
+    }
+
     let sentCount = 0;
     let failCount = 0;
     let skipCount = 0;
     const errors: string[] = [];
 
-    for (const user of candidates) {
+    for (const user of eligible) {
       if (optedOut.has(user.id)) { skipCount++; continue; }
-      const ageDays = Math.floor((now - new Date(user.created_at).getTime()) / 86400000);
-
-      let type: EmailType | null = null;
-      if (ageDays >= 14) type = "day14_final";
-      else if (ageDays >= 7) type = "day7_trends";
-      else if (ageDays >= 2) type = "day2_welcome";
-
-      if (!type) { skipCount++; continue; }
-      if (sentMap.get(user.id)?.has(type)) { skipCount++; continue; }
+      if (alreadySent.has(user.id)) { skipCount++; continue; }
 
       try {
-        const html = buildEmailHtml(type, user.first_name || "", "https://cakeaiartist.com/settings", user.country);
-        const result = await sendBrevo(user.email, user.first_name || "", SUBJECTS[type], html);
+        const built = campaign === "recent_visitors"
+          ? recentVisitorEmail(user.first_name || "", "https://cakeaiartist.com/settings", user.country)
+          : weMissYouEmail(user.first_name || "", "https://cakeaiartist.com/settings", user.country);
+        const result = await sendBrevo(user.email, user.first_name || "", built.subject, built.html);
 
         if (result.ok) {
           await supabase.from("engagement_email_logs").insert({
-            user_id: user.id, email_type: type, sent_at: new Date().toISOString(),
+            user_id: user.id, email_type: emailType, sent_at: new Date().toISOString(),
           });
           sentCount++;
         } else {
-          errors.push(`${user.email} (${type}): ${result.status} ${result.body.substring(0, 200)}`);
+          errors.push(`${user.email}: ${result.status} ${result.body.substring(0, 200)}`);
           failCount++;
         }
       } catch (err: any) {
@@ -365,16 +421,18 @@ serve(async (req) => {
         status: failCount > 0 && sentCount === 0 ? "failed" : "success",
         completed_at: new Date().toISOString(),
         records_processed: sentCount,
-        result_message: `Sent ${sentCount}, failed ${failCount}, skipped ${skipCount}`,
+        result_message: `Sent ${sentCount}, failed ${failCount}, skipped ${skipCount} (eligible ${eligible.length})`,
         error_message: errors.length > 0 ? errors.slice(0, 5).join(" | ") : null,
       }).eq("id", taskRun.id);
     }
 
     return new Response(JSON.stringify({
       success: true,
+      campaign,
       sent: sentCount, failed: failCount, skipped: skipCount,
+      eligible: eligible.length,
       records_processed: sentCount,
-      message: `Sent ${sentCount}, failed ${failCount}, skipped ${skipCount}`,
+      message: `Sent ${sentCount}, failed ${failCount}, skipped ${skipCount} (eligible ${eligible.length})`,
       errors: errors.slice(0, 10),
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: any) {

@@ -68,12 +68,21 @@ const SCHEDULED_TASKS: Omit<ScheduledTask, 'lastRun'>[] = [
     functionName: 'send-weekly-upgrade-nudge',
   },
   {
-    name: 'engagement-drip',
-    displayName: 'Inactive User Engagement Drip',
-    icon: '🌱',
-    description: 'Day 2 / Day 7 / Day 14 onboarding emails to users who never created a cake',
-    schedule: '0 9 * * *', // Daily at 9 AM UTC
-    scheduleHuman: 'Every day at 09:00 UTC',
+    name: 'engagement-recent-visitors',
+    displayName: 'Recent Visitors – No Cake Yet',
+    icon: '👀',
+    description: 'Manual: emails users who visited in the last 7 days but never created a cake. One-time per user.',
+    schedule: 'manual',
+    scheduleHuman: 'Manual only — does not run automatically',
+    functionName: 'send-engagement-drip',
+  },
+  {
+    name: 'engagement-we-miss-you',
+    displayName: 'We Miss You (30+ days inactive)',
+    icon: '💛',
+    description: 'Manual: emails users whose last visit was 30+ days ago. Random variant per recipient. One-time per user.',
+    schedule: 'manual',
+    scheduleHuman: 'Manual only — does not run automatically',
     functionName: 'send-engagement-drip',
   },
 ];
@@ -159,9 +168,13 @@ export function ScheduledTasksWidget() {
   const handleRunNow = async (task: ScheduledTask) => {
     setRunningTask(task.name);
     try {
-      let body = {};
+      let body: Record<string, any> = {};
       if (task.functionName === 'generate-blog-post') {
         body = { generate_weekly_batch: true };
+      } else if (task.name === 'engagement-recent-visitors') {
+        body = { campaign: 'recent_visitors' };
+      } else if (task.name === 'engagement-we-miss-you') {
+        body = { campaign: 'we_miss_you' };
       }
 
       const { data, error } = await supabase.functions.invoke(task.functionName, { body });
@@ -226,30 +239,6 @@ export function ScheduledTasksWidget() {
     }
   };
 
-  const handleTestEngagementDrip = async (variant: 'day2_welcome' | 'day7_trends' | 'day14_final') => {
-    const key = `engagement-drip-test-${variant}`;
-    setRunningTask(key);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) {
-        toast.error('Could not get your email for test send');
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke('send-engagement-drip', {
-        body: { testEmail: user.email, variant },
-      });
-      if (error) throw error;
-      if (data?.success) {
-        toast.success(`Test ${variant} sent to ${user.email}`);
-      } else {
-        toast.error('Test failed', { description: data?.error || 'Unknown error' });
-      }
-    } catch (error: any) {
-      toast.error('Test failed', { description: error.message });
-    } finally {
-      setRunningTask(null);
-    }
-  };
 
   const getStatusBadge = (run: TaskRun | null) => {
     if (!run) {
@@ -356,7 +345,8 @@ export function ScheduledTasksWidget() {
       </CardHeader>
       <CardContent className="space-y-4">
         {tasks.map((task) => {
-          const nextRun = getNextRunTime(task.schedule);
+          const isManual = task.schedule === 'manual';
+          const nextRun = isManual ? null : getNextRunTime(task.schedule);
           const isRunning = runningTask === task.name;
           const isTestRunning = runningTask === 'anniversary-reminders-test';
 
@@ -414,30 +404,6 @@ export function ScheduledTasksWidget() {
                       )}
                     </Button>
                   )}
-                  {task.name === 'engagement-drip' && (
-                    <>
-                      {(['day2_welcome', 'day7_trends', 'day14_final'] as const).map((v) => {
-                        const label = v === 'day2_welcome' ? 'Day 2' : v === 'day7_trends' ? 'Day 7' : 'Day 14';
-                        const isThisRunning = runningTask === `engagement-drip-test-${v}`;
-                        return (
-                          <Button
-                            key={v}
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleTestEngagementDrip(v)}
-                            disabled={!!runningTask}
-                          >
-                            {isThisRunning ? (
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            ) : (
-                              <Send className="w-3 h-3 mr-1" />
-                            )}
-                            Test {label}
-                          </Button>
-                        );
-                      })}
-                    </>
-                  )}
                   <Button
                     size="sm"
                     variant="outline"
@@ -466,7 +432,7 @@ export function ScheduledTasksWidget() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Next Run:</span>
-                  <p className="font-medium">{format(nextRun, "EEE, MMM d 'at' HH:mm")} UTC</p>
+                  <p className="font-medium">{nextRun ? `${format(nextRun, "EEE, MMM d 'at' HH:mm")} UTC` : '—'}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Last Run:</span>
