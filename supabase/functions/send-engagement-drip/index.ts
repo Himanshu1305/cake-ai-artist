@@ -86,7 +86,7 @@ function day2Layout(inner: string, unsubscribeUrl: string): string {
 function day2Email(firstName: string, unsubscribeUrl: string): string {
   const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
     <tr><td style="padding:0 0 14px;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9f5;border-left:4px solid #F97316;border-radius:8px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
         <tr><td style="padding:16px 18px;">
           <p style="margin:0 0 4px;color:#1a1a2e;font-size:16px;font-weight:700;">${emoji} ${title}</p>
           <p style="margin:0 0 10px;color:#555;font-size:14px;line-height:1.5;">${desc}</p>
@@ -111,7 +111,7 @@ function day2Email(firstName: string, unsubscribeUrl: string): string {
         ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", "https://cakeaiartist.com/blog", "Read latest posts")}
         ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", "https://cakeaiartist.com/party-planner", "Plan a party")}
       </table>
-      <div style="margin:18px 0 22px;padding:14px 16px;background:#fff7ed;border-radius:8px;text-align:center;">
+      <div style="margin:18px 0 22px;padding:14px 16px;background:#fdf6e3;border:1px solid #f0e3c4;border-radius:8px;text-align:center;">
         <p style="margin:0;color:#1a1a2e;font-size:14px;font-weight:600;">⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide</p>
         <p style="margin:6px 0 0;font-size:13px;"><a href="https://cakeaiartist.com/gallery" style="color:#2563EB;text-decoration:underline;">See real reviews & creations →</a></p>
       </div>
@@ -120,11 +120,11 @@ function day2Email(firstName: string, unsubscribeUrl: string): string {
       </p>
     </td></tr>
     <tr><td style="padding:8px 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.3);">
+      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
         🎂 Start with a cake
       </a>
     </td></tr>`;
-  return emailLayout(inner, unsubscribeUrl);
+  return day2Layout(inner, unsubscribeUrl);
 }
 
 function day7Email(firstName: string, unsubscribeUrl: string): string {
