@@ -1,53 +1,47 @@
-# Share Page Improvements
+# Global Reach — Simple Version
 
-## 1. Share URL on production
+## 1. Banner update
 
-The share link currently uses `window.location.origin`, so on preview it becomes `…lovableproject.com/cake/<id>`.
+In `src/components/UrgencyBanner.tsx`, append "🌍 Loved in 30+ countries" to the existing copy.
 
-**Fix:** Hardcode `https://cakeaiartist.com` as the base for share URLs (everywhere we copy a `/cake/:id` link). Every newly copied link will then always be `https://cakeaiartist.com/cake/<id>`, regardless of which environment generated it.
+- Hardcoded "30+" string (evergreen, no data fetch).
+- Desktop: `#1 AI Cake Generator — design birthday, wedding & anniversary cakes · Free · 🌍 Loved in 30+ countries`
+- Mobile: `#1 AI Cake Generator · Free · 🌍 30+ countries`
 
-## 2. Let the user choose which image is shared
+That's it for the banner. No DB, no fetch.
 
-Today only the first generated image is saved to `savedCakeImageId`, so the share link always points to image #1.
+## 2. World map widget on homepage
 
-Changes in `src/components/CakeCreator.tsx`:
-- Track `savedCakeImageIds: string[]` (one per saved image, parallel to `selectedImageUrls` / `generatedImages`).
-- When the user selects/clicks a thumbnail (the existing checkmark UI), set `savedCakeImageId` to the saved row id of that image.
-- "Copy share link" and the audio recorder both already key off `savedCakeImageId`, so they automatically follow the user's selection.
-- Visual cue: highlight the currently-shared image with a small "Sharing this one" badge.
+New component `src/components/GlobalReachWidget.tsx`, mounted in `src/pages/Index.tsx` between hero and pricing.
 
-## 3. Beautify the `/cake/:id` page (`SharedCake.tsx`)
+- Lightweight inline SVG world map (no new dependency).
+- Top countries shaded in `party-pink` gradient by intensity.
+- Below map: 5–6 country chips with flag + % (e.g. 🇺🇸 USA 44% · 🇨🇦 Canada 12% · 🇬🇧 UK 9% · 🇩🇪 Germany 8% · 🇦🇺 Australia 6% · 🌍 Others 21%).
+- Reads percentages from `site_settings` key `country_stats` (single row).
+- If row missing or `enabled = false` → widget hidden.
+- No raw user counts ever shown.
 
-Rebuild the page into a celebratory landing experience using existing tokens (`party-pink`, `party-purple`, `party-cream`) — no new colors, no new deps:
+## 3. Admin tab — manual control
 
-- Animated gradient background (party-pink → party-purple → party-blue).
-- Reuse `FloatingEmojis` + `ConfettiRain` for ambient celebration.
-- One-time confetti burst on load (reuse `canvas-confetti`, already used in `SuccessCelebration.tsx`).
-- Cake image: rounded card with soft glow ring, hover zoom, click → `ZoomableImage` modal.
-- `CandleRow` above the image with a "Blow out the candles 🎂" button that triggers blow-out animation + confetti burst.
-- Hero typography: large display script for the message, centered.
-- Voice message: replace the plain `<audio>` with a styled play pill (large circular play, animated waveform bars while playing, duration chip).
-- Sticky bottom CTA on mobile: "Make one for someone you love →" linking to `/`.
-- Reuse `SocialShareButtons` so the recipient can re-share (WhatsApp, Pinterest, FB, X, Copy).
-- Per-cake OG/meta tags (title = recipient name, image = cake image) for great WhatsApp/Twitter previews.
-- Footer: "Made with Cake AI Artist" with link + tiny logo.
+New section in `src/pages/Admin.tsx`: **"Global Reach Stats"**.
 
-## 4. Replace the repetitive "For Von 🎂" heading
+- Shows the same `page_visits` country breakdown the admin already sees (live data, % only).
+- A simple editable table: `Country code | % shown on site` — admin can tweak numbers (e.g. boost US visibility) before approving.
+- "Enabled on homepage" toggle.
+- "Save & publish" button → writes to `site_settings.country_stats`:
+  ```json
+  { "enabled": true, "top": [{"code":"US","name":"USA","flag":"🇺🇸","pct":44}, ...], "others_pct": 21 }
+  ```
+- Homepage widget reads this same row → updates instantly after admin saves.
 
-The cake image already shows the recipient's name, so repeating it as a heading feels flat.
-
-Replace the heading block with:
-- **Kicker chip** above the message: **"🎁 Someone special made this for you"** (small pill, party-pink/purple gradient text).
-- The personal message becomes the hero text (large, script font, centered) — that carries the emotion.
-- Optional small date stamp ("Sent May 13, 2026") under the message.
-
-Net result: image carries the name visually, page copy carries the emotion.
+No cron, no edge function, no pending/published split. Admin manually reviews + publishes whenever they want.
 
 ## Technical notes
 
-- Files touched:
-  - `src/components/CakeCreator.tsx` — multi-image saved-id tracking + use hardcoded `https://cakeaiartist.com` base for share URL.
-  - `src/pages/SharedCake.tsx` — visual rebuild, kicker chip, candles, confetti, styled voice player, OG meta tags, sticky CTA, social share buttons.
-- No DB schema changes — image rows already exist per generated image; we just stop hard-pinning to the first.
-- Reuses existing components: `ConfettiRain`, `FloatingEmojis`, `CandleRow`, `AnimatedFlame`, `ZoomableImage`, `SocialShareButtons`, `canvas-confetti`.
-- All colors via semantic tokens (`party-*`, `primary`, `muted-foreground`).
+Files touched:
+- `src/components/UrgencyBanner.tsx` — append country string.
+- `src/components/GlobalReachWidget.tsx` — new (SVG map + chips, reads `site_settings`).
+- `src/pages/Index.tsx` — mount widget.
+- `src/pages/Admin.tsx` — new admin section (live country breakdown + editable % table + save button).
+
+DB: no schema changes. One new row in existing `site_settings` table (`key = 'country_stats'`). Existing RLS already allows admins to write and everyone to read.
