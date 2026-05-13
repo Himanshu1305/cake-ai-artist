@@ -1,105 +1,126 @@
-# Audio Greeting for Cakes
+I did a deeper investigation before planning the fix. The audio recorder itself is not calling the cake generation function, but the rollout coincided with changes that made the generator fragile again.
 
-Let users record a short voice message (up to 30 seconds) and attach it to a generated cake. The audio plays on the public share page alongside the cake image, making the gift feel personal — a grandma's voice on a birthday cake link, a partner's anniversary note, etc.
+Findings
 
----
+1. The backend is healthy
+- Lovable Cloud is responding normally.
+- I tested `generate-complete-cake` directly for both Fast and High Quality and it returned successfully.
+- That means the API key, backend, and AI gateway are not globally down.
 
-## User Flow
+2. The “98% stuck” symptom is a frontend wait-state problem
+- `CakeCreator.tsx` uses simulated progress and intentionally caps at 98% until the edge function returns.
+- If the function call hangs, stalls, or takes too long, the UI stays at 98% with no recovery.
+- The client currently has no real hard timeout for the main generation request.
 
-1. After a cake is generated (or from the gallery card later), user sees a **"🎙️ Add voice message"** button.
-2. Clicking opens a modal:
-   - Mic permission prompt (with a friendly explainer if denied).
-   - Big record button → recording timer (counts up to 30s, auto-stops at 30s).
-   - Stop → playback with waveform + duration.
-   - "Re-record" or "Save & attach" buttons.
-3. On save, the audio uploads to storage and links to the cake.
-4. Cake card shows a small **🔊 Voice message attached** badge with play/delete controls.
-5. Share link / share card includes a play button so the recipient hears it on open.
+3. The current frontend assumption is wrong
+- The frontend comment says the backend returns the hero view quickly for “HQ + Standard”.
+- Current backend code does not do that for Fast mode.
+- Fast mode still waits for all views inline:
+  - front
+  - side
+  - top
+  - greeting message
+- If any one image call is slow, the whole request remains pending and the UI stays at 98%.
 
----
+4. High Quality was made risky again
+- The earlier fix from 2 days ago was based on “return hero first, then background the remaining views”.
+- Later backend code changed High Quality to start all 3 image calls at the same instant and only await the hero.
+- That can still delay the hero because the hero competes with side/top calls for gateway/model capacity.
+- The safe pattern should be: generate hero first, return it, then start remaining views in the background.
 
-## Scope
+5. Audio rollout likely exposed the issue, but is not the direct cause
+- Audio changes added:
+  - audio columns on saved images
+  - `cake-audio` storage bucket
+  - `AudioRecorder`
+  - `/cake/:id` share route
+- None of those should block `generate-complete-cake` directly.
+- But the audio rollout redeployed/changed the main cake page and removed confidence in the previous generation behavior. The generator now needs to be protected so future feature work cannot break the main USP again.
 
-**In scope (v1):**
-- Record, preview, save, replace, delete one audio clip per cake.
-- Playback on owner's cake card and on the public cake share page.
-- 30-second hard cap, ~500KB max file size.
-- Works on Chrome, Safari (desktop + iOS 14.3+), Android Chrome, Firefox.
+6. There is also one unrelated runtime error
+- The AdSense `No slot size for availableWidth=0` error is visible in runtime logs.
+- It is not the cause of cake generation being stuck, but it can add noise and should be handled separately if it starts breaking page interactions.
 
-**Out of scope (later):**
-- Multiple audio clips per cake.
-- Audio waveform visualization (use simple HTML5 `<audio>` controls for v1; add wavesurfer later if wanted).
-- AI voice cloning / TTS generation.
-- Moderation tools (audio is only reachable via the share link — security through obscurity is acceptable for v1).
+Fix plan
 
----
+1. Make Fast and High Quality use the same safe progressive generation architecture
+- Change `generate-complete-cake` so both modes return the first real cake image as soon as the hero view is ready.
+- Do not make Fast mode wait for all 3 views before returning.
+- Do not start side/top before the hero is finished.
+- After the hero returns, start side/top in `EdgeRuntime.waitUntil` and update `cake_generation_jobs` as each view finishes.
 
-## Technical Plan
+2. Reuse the existing `cake_generation_jobs` table
+- No new database table should be needed.
+- Use the existing fields:
+  - `hero_url`
+  - `side_url`
+  - `top_url`
+  - `hero_error`
+  - `side_error`
+  - `top_error`
+  - `status`
+  - `view_count`
+- Fast mode will now also create a job row, just like High Quality.
 
-### 1. Database (migration)
-Add to existing `generated_images` table (avoids new join):
-- `audio_url TEXT NULL` — public URL of the audio file.
-- `audio_duration_seconds INTEGER NULL` — for displaying duration without loading the file.
+3. Update the frontend to subscribe/poll for both Fast and High Quality jobs
+- Currently `CakeCreator.tsx` only attaches realtime/polling behavior when `generationQuality === 'high'`.
+- Change it to attach whenever the backend returns `jobId`, `viewOrder`, and pending views.
+- This makes the UI consistent:
+  - first cake view appears quickly
+  - missing views show “rendering” placeholders
+  - side/top fill automatically
+  - failed slots show a clear “Regenerate” action
 
-No new RLS needed — `generated_images` policies already cover owner read/write and admin read.
+4. Add a true UI recovery timeout
+- Add a hard watchdog around the initial hero request.
+- If no hero view returns within a safe time, stop the loading state and show a clear retry message.
+- Do not let the progress bar remain at 98% forever.
+- Keep errors specific:
+  - session expired
+  - rate limit
+  - credits exhausted
+  - network interruption
+  - generation service slow/unavailable
 
-### 2. Storage (migration)
-New public bucket `cake-audio`:
-- Path convention: `{user_id}/{cake_id}.webm`
-- RLS on `storage.objects`:
-  - Public SELECT (so share link recipients can play it).
-  - Authenticated INSERT/UPDATE/DELETE only on own folder (`auth.uid()::text = (storage.foldername(name))[1]`).
-- File size limit: 1MB (enforced client-side; storage bucket also gets `file_size_limit`).
-- Allowed mime types: `audio/webm`, `audio/mp4`, `audio/mpeg`.
+5. Prevent placeholders from being treated as finished cakes
+- Ensure `/placeholder.svg` is never selected by default.
+- Ensure placeholder URLs are never sent to “Save to Gallery”.
+- If only the hero is ready, select only the hero.
+- When background views arrive, they can be selected normally.
 
-### 3. New component: `AudioRecorder.tsx`
-- Uses browser `MediaRecorder` API (no external library needed for v1).
-- Detects best supported mime type (`audio/webm;codecs=opus` on Chrome/Firefox, `audio/mp4` on Safari/iOS).
-- States: `idle → requesting-permission → recording → preview → uploading → done`.
-- Uploads directly via `supabase.storage.from('cake-audio').upload(...)`.
-- After upload, updates `generated_images.audio_url` + `audio_duration_seconds`.
-- Handles permission denied with clear retry guidance.
-- Disposes `MediaStream` tracks on unmount to release the mic.
+6. Add defensive backend logging
+- Add logs for:
+  - request received
+  - mode/quality
+  - hero generation started
+  - hero generated
+  - job row created
+  - each background view started/completed/failed
+  - final job status
+- This gives us immediate future diagnostics if generation slows or breaks again.
 
-### 4. Integration points
-- **`CakeCreator.tsx`**: After successful cake save, show "🎙️ Add voice message" button that opens the recorder modal.
-- **Cake card** (gallery / "My cakes"): If `audio_url` exists, show small player + "Replace" / "Remove" menu. If not, show "Add voice message".
-- **Public share page** (the page reached from a share link): If `audio_url` exists, show a prominent play button under the cake image with "🎙️ A voice message from {sender}".
-- **Share flow**: No change to URLs — audio rides along with the existing cake share link automatically.
+7. Verify after implementation
+- Deploy/test `generate-complete-cake` directly for Fast mode.
+- Deploy/test `generate-complete-cake` directly for High Quality mode.
+- Verify in browser preview that:
+  - progress no longer gets stuck at 98%
+  - a first cake appears quickly
+  - side/top placeholders update or become retryable
+  - save does not accept placeholders
+- Check edge function logs after both test runs.
 
-### 5. UX details
-- Recording UI uses brand party colors and a pulsing red dot during recording.
-- Big mic icon, large hit target (mobile-friendly).
-- Show estimated remaining seconds as a ring around the record button.
-- Auto-stop with a soft chime + haptic buzz at 30s.
-- Show file size after recording so user knows it's tiny (~150KB typical).
+Why this is the right fix
 
-### 6. iOS Safari considerations
-- iOS records as `audio/mp4` (AAC), not webm. Detect and use whichever the browser supports — both play universally.
-- iOS requires user gesture to start recording (already handled — record button click is a gesture).
-- Test on iOS 14.3+ (older versions don't support `MediaRecorder`).
+- It protects the main USP by making the first generated cake image the success threshold, not all views.
+- It avoids edge-function timeout risk.
+- It avoids model concurrency starving the hero view.
+- It makes future features like audio, GIF, sharing, gallery, or admin tracking less likely to break generation because the generator becomes a resilient progressive job flow.
 
----
+Files expected to change
 
-## Difficulty & Estimate
+- `supabase/functions/generate-complete-cake/index.ts`
+- `src/components/CakeCreator.tsx`
 
-**Difficulty: 4/10.** Mostly UI polish and storage wiring — no new backend logic, no edge functions, no AI calls.
+Possible optional follow-up
 
-**Estimated effort:** 2–3 focused build sessions:
-1. Migration + storage bucket + RLS + `AudioRecorder` component (record/preview/upload).
-2. Integration into CakeCreator + cake cards.
-3. Public share page playback + cross-browser testing (especially iOS Safari).
-
----
-
-## Open questions to confirm before building
-
-1. **Where exactly should the "Add voice message" entry point appear?** Options:
-   - Only right after cake creation (prominent celebration step).
-   - Only on the cake card in the gallery.
-   - Both. ← my recommendation.
-2. **Free vs Premium feature?** Currently free tier is capped at 5 lifetime images. Should audio greetings be:
-   - Free for everyone. ← my recommendation (drives shareability + virality).
-   - Premium-only.
-   - Free for 1 audio per user, premium for unlimited.
-3. **Privacy default on share page**: should audio autoplay when the recipient opens the link, or require a tap on a play button? My recommendation: **require tap** (browsers block autoplay anyway, and a tap feels more intentional like opening a gift).
+- Add a small admin-only generation health panel showing recent job success/failure rates from `cake_generation_jobs`, so you can spot generation issues before users report them.
