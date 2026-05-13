@@ -1,63 +1,49 @@
+# Add `reengagement_emails` toggle
+
 ## Goal
 
-Scrap the day-2 / day-7 / day-14 automatic drip. Replace it with **two manual-only** email campaigns, each triggered by its own Run Now button in the admin Scheduled Tasks widget. Nothing sends automatically.
+Stop conflating promotional marketing with re-engagement. Add a new per-user preference `reengagement_emails` (default **on**), independent of `marketing_emails`. The two manual engagement campaigns ("Recent Visitors – No Cake Yet" and "We Miss You") will be sent if **either** flag is on. Other marketing-only flows (weekly upgrade nudge, blog promotion, etc.) keep using `marketing_emails` only.
 
-## The two campaigns
+## Behavior summary
 
-**Campaign A — "Recent Visitor, No Cake Yet"**
-- Eligibility: user has at least one `page_visits` row in the last 7 days (including today) AND has zero rows in `generated_images` ever.
-- Audience: all users regardless of plan (free + premium).
-- Content: reuse the existing finalized Day-2 email (subject + `day2Email()` body + `day2Layout`), unchanged.
+| Email type | Filter |
+|---|---|
+| Recent Visitors – No Cake Yet (manual) | `marketing_emails = true` **OR** `reengagement_emails = true` |
+| We Miss You – 30+ days inactive (manual) | `marketing_emails = true` **OR** `reengagement_emails = true` |
+| Weekly upgrade nudge | `marketing_emails = true` (unchanged) |
+| Blog digest | `blog_digest_emails = true` (unchanged) |
+| Anniversary/birthday reminders | their own flags (unchanged) |
+| Welcome / receipts / RSVP | transactional, no flag (unchanged) |
 
-**Campaign B — "We Miss You"**
-- Eligibility: user's most recent `page_visits` row is **30+ days ago** (and they have at least one historical visit). Includes both users who created cakes and users who didn't.
-- Audience: all users regardless of plan.
-- Content: brand-new email using the **same Day-2 template** (`day2Layout` — cream header, gold accent bar, ⭐ rating chip, blue links, gold CTA button). Three body variants picked at random per recipient so re-runs over time feel fresh:
-  1. **Warm + features recap** — "We've missed you. Here's what's new since you were last here…" lists Free Cake Designer, Community Gallery, Party Pack Generator, Blog.
-  2. **Single big idea** — "Whose birthday or anniversary is coming up? Design a cake in 30 seconds."
-  3. **Gift framing** — "A free design idea waiting for you 🎁" — invites them back to try one cake on us.
-- Subject also rotates with the variant (e.g. "We miss you at Cake AI Artist 💛", "Your next cake idea is one click away ✨", "A little gift waiting for you 🎁").
+Effect on current data: 6 of the 9 "We Miss You" eligible users who had `marketing_emails = false` would have received the email on the next run, because the new `reengagement_emails` defaults to true.
 
-## Duplicate prevention
+## Changes
 
-One-time per user per campaign. Reuse the existing `engagement_email_logs` table with two new `email_type` values:
-- `recent_visitor_no_cake`
-- `we_miss_you`
+### 1. Database (migration)
+- `ALTER TABLE public.user_settings ADD COLUMN reengagement_emails boolean NOT NULL DEFAULT true;`
+- Backfill: existing rows get `true` automatically via the default. No other backfill needed.
+- No RLS changes (existing user/admin policies already cover the column).
 
-Before sending to a user, check `engagement_email_logs` for that `(user_id, email_type)` — skip if present. After a successful send, insert a log row. This means clicking Run Now twice is safe — second click sends 0.
+### 2. Edge function `send-engagement-drip`
+- Replace the `marketing_emails = true` filter with `marketing_emails.eq.true,reengagement_emails.eq.true` (Supabase `.or(...)` syntax) for both `recent_visitors` and `we_miss_you` branches.
+- All other logic (one-time dedupe via `engagement_email_logs`, 7-day / 30-day windows, random variant for We Miss You, `scheduled_task_runs` logging) stays identical.
 
-## Admin UI changes (`ScheduledTasksWidget.tsx`)
+### 3. Settings page (`src/pages/Settings.tsx`)
+- Add a new toggle row "Re-engagement emails" with help text:
+  > Occasional emails when you haven't visited in a while or started a design but didn't finish. Separate from promotional emails.
+- Wire it to `user_settings.reengagement_emails` using the same pattern as the existing `marketing_emails` switch.
+- Order in UI: marketing_emails, **reengagement_emails (new)**, blog_digest_emails, anniversary/birthday reminders.
 
-- Remove the `engagement-drip` card and its day2/day7/day14 test buttons.
-- Add two new cards: "Recent Visitors – No Cake" and "We Miss You (30+ days inactive)". Each card shows:
-  - Description, last run summary, and a single **Run Now** button.
-  - No "next scheduled run" line (manual only) — replace with a "Manual only — does not run automatically" badge.
-- Keep all other tasks (welcome, blog digest, anniversary reminders, weekly upgrade nudge) untouched.
-
-## Edge function changes
-
-Rewrite `supabase/functions/send-engagement-drip/index.ts` into a single function that accepts a `campaign` body param: `"recent_visitors"` or `"we_miss_you"`. Behavior:
-
-- Auth: keep existing CRON_SECRET / JWT check.
-- Branch on `campaign`:
-  - `recent_visitors`: query distinct `user_id` from `page_visits` where `visited_at >= now() - 7 days`; filter out users present in `generated_images`; filter out opt-outs (`user_settings.marketing_emails = false`); filter out anyone already logged with `email_type = 'recent_visitor_no_cake'`; send Day-2 email.
-  - `we_miss_you`: for each profile, find max `visited_at` from `page_visits`; keep users whose max is `<= now() - 30 days`; same opt-out + dedupe filters with `email_type = 'we_miss_you'`; pick variant `Math.floor(Math.random()*3)`; send corresponding subject + body.
-- Log into `scheduled_task_runs` with `task_name` = `engagement-recent-visitors` or `engagement-we-miss-you` so the two cards have independent "Last Run" history.
-- Return `{ sent, failed, skipped, message, records_processed: sent }`.
-- Delete the old `day2_welcome` / `day7_trends` / `day14_final` switch and the unused `day7Email` / `day14Email` template functions.
-
-## Cron / automation
-
-Disable any existing `pg_cron` schedule that calls `send-engagement-drip`. Concretely: list `cron.job` rows, then `cron.unschedule(...)` the engagement-drip job. (Will be done via the insert tool since cron.* contains project-specific URLs.) After this change there is **no** automated trigger for engagement emails.
-
-## Files touched
-
-- `supabase/functions/send-engagement-drip/index.ts` — rewrite.
-- `src/components/ScheduledTasksWidget.tsx` — replace one card with two; wire new `campaign` param into `supabase.functions.invoke('send-engagement-drip', { body: { campaign: '…' } })`.
-- DB: unschedule cron job (no schema change). `engagement_email_logs` already supports the two new `email_type` strings — no migration needed.
+### 4. Types
+- `src/integrations/supabase/types.ts` regenerates automatically after the migration — no manual edit.
 
 ## Out of scope
+- No changes to dedupe logic; clicking Run Now twice still sends 0.
+- No automation; both campaigns remain manual-only.
+- No change to weekly upgrade nudge / blog / anniversary flows.
+- No "test account" concept — all filtering remains behavior + consent based.
 
-- No new tables, no schema migration.
-- No changes to welcome / blog / anniversary / weekly-upgrade flows.
-- No automation; emails only ever go out when you click Run Now.
+## Files touched
+- New migration (adds column).
+- `supabase/functions/send-engagement-drip/index.ts` — filter change in two places.
+- `src/pages/Settings.tsx` — one new toggle row.

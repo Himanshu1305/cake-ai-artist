@@ -57,6 +57,7 @@ export default function Settings() {
     email_reminders: true,
     birthday_reminders: true,
     marketing_emails: true,
+    reengagement_emails: true,
     anniversary_reminders: true,
     blog_digest_emails: true,
   });
@@ -99,6 +100,7 @@ export default function Settings() {
           email_reminders: data.email_reminders ?? true,
           birthday_reminders: data.birthday_reminders ?? true,
           marketing_emails: data.marketing_emails ?? true,
+          reengagement_emails: (data as any).reengagement_emails ?? true,
           anniversary_reminders: data.anniversary_reminders ?? true,
           blog_digest_emails: data.blog_digest_emails ?? true,
         });
@@ -431,6 +433,22 @@ export default function Settings() {
                 checked={settings.marketing_emails}
                 onCheckedChange={(checked) =>
                   setSettings({ ...settings, marketing_emails: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="reengagement_emails">Re-engagement Emails</Label>
+                <p className="text-sm text-muted-foreground">
+                  Occasional emails when you haven't visited in a while or started a design but didn't finish. Separate from promotional emails.
+                </p>
+              </div>
+              <Switch
+                id="reengagement_emails"
+                checked={settings.reengagement_emails}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, reengagement_emails: checked })
                 }
               />
             </div>
