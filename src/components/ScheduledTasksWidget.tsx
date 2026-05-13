@@ -411,6 +411,30 @@ export function ScheduledTasksWidget() {
                       )}
                     </Button>
                   )}
+                  {task.name === 'engagement-drip' && (
+                    <>
+                      {(['day2_welcome', 'day7_trends', 'day14_final'] as const).map((v) => {
+                        const label = v === 'day2_welcome' ? 'Day 2' : v === 'day7_trends' ? 'Day 7' : 'Day 14';
+                        const isThisRunning = runningTask === `engagement-drip-test-${v}`;
+                        return (
+                          <Button
+                            key={v}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleTestEngagementDrip(v)}
+                            disabled={!!runningTask}
+                          >
+                            {isThisRunning ? (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            ) : (
+                              <Send className="w-3 h-3 mr-1" />
+                            )}
+                            Test {label}
+                          </Button>
+                        );
+                      })}
+                    </>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
