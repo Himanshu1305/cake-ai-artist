@@ -45,10 +45,48 @@ function emailLayout(inner: string, unsubscribeUrl: string): string {
     </table></td></tr></table></body></html>`;
 }
 
+function day2Layout(inner: string, unsubscribeUrl: string): string {
+  return `
+    <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8f5f2;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f5f2;padding:40px 20px;"><tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+      <tr><td style="background:linear-gradient(135deg,#fdf8f0 0%,#fcecc9 100%);padding:18px 24px;border-bottom:2px solid #E5B547;">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td align="left" style="vertical-align:middle;">
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="vertical-align:middle;padding-right:12px;">
+                <img src="https://cakeaiartist.com/logo.png" alt="Cake AI Artist" width="52" height="52" style="border-radius:12px;display:block;">
+              </td>
+              <td style="vertical-align:middle;">
+                <h1 style="margin:0;color:#1a1a2e;font-size:22px;font-weight:800;font-family:Georgia,'Times New Roman',serif;">Cake AI Artist</h1>
+              </td>
+            </tr></table>
+          </td>
+          <td align="right" style="vertical-align:middle;">
+            <span style="display:inline-block;background:#ffffff;color:#8a6a1a;font-size:12px;font-weight:700;padding:7px 14px;border-radius:50px;border:1px solid #E5B547;white-space:nowrap;">⭐ 4.9 · Loved in 30+ countries</span>
+          </td>
+        </tr></table>
+      </td></tr>
+      ${inner}
+      <tr><td style="background-color:#fdf8f0;padding:20px 30px;border-top:1px solid #f0e3c4;">
+        <p style="margin:0 0 8px;color:#888;font-size:12px;text-align:center;">
+          You're receiving this because you signed up for Cake AI Artist.
+        </p>
+        <p style="margin:0 0 8px;color:#888;font-size:12px;text-align:center;">
+          <a href="${unsubscribeUrl}" style="color:#2563EB;text-decoration:underline;">Unsubscribe from these emails</a>
+        </p>
+        <p style="margin:0;color:#aaa;font-size:11px;text-align:center;">
+          © ${new Date().getFullYear()} Cake AI Artist by USD Vision AI LLP | support@cakeaiartist.com
+        </p>
+      </td></tr>
+    </table></td></tr></table></body></html>`;
+}
+
 function day2Email(firstName: string, unsubscribeUrl: string): string {
   const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
     <tr><td style="padding:0 0 14px;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9f5;border-left:4px solid #F97316;border-radius:8px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
         <tr><td style="padding:16px 18px;">
           <p style="margin:0 0 4px;color:#1a1a2e;font-size:16px;font-weight:700;">${emoji} ${title}</p>
           <p style="margin:0 0 10px;color:#555;font-size:14px;line-height:1.5;">${desc}</p>
@@ -73,7 +111,7 @@ function day2Email(firstName: string, unsubscribeUrl: string): string {
         ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", "https://cakeaiartist.com/blog", "Read latest posts")}
         ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", "https://cakeaiartist.com/party-planner", "Plan a party")}
       </table>
-      <div style="margin:18px 0 22px;padding:14px 16px;background:#fff7ed;border-radius:8px;text-align:center;">
+      <div style="margin:18px 0 22px;padding:14px 16px;background:#fdf6e3;border:1px solid #f0e3c4;border-radius:8px;text-align:center;">
         <p style="margin:0;color:#1a1a2e;font-size:14px;font-weight:600;">⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide</p>
         <p style="margin:6px 0 0;font-size:13px;"><a href="https://cakeaiartist.com/gallery" style="color:#2563EB;text-decoration:underline;">See real reviews & creations →</a></p>
       </div>
@@ -82,11 +120,11 @@ function day2Email(firstName: string, unsubscribeUrl: string): string {
       </p>
     </td></tr>
     <tr><td style="padding:8px 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.3);">
+      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
         🎂 Start with a cake
       </a>
     </td></tr>`;
-  return emailLayout(inner, unsubscribeUrl);
+  return day2Layout(inner, unsubscribeUrl);
 }
 
 function day7Email(firstName: string, unsubscribeUrl: string): string {
