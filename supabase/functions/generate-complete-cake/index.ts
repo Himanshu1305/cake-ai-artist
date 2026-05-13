@@ -599,23 +599,79 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       const wallStart = Date.now();
 
       // ============================================================
-      // PROGRESSIVE HERO-FIRST FLOW (Fast + High Quality both).
-      //   1. Generate the HERO (first) view inline + greeting message.
-      //   2. Insert a cake_generation_jobs row with the hero filled.
-      //   3. Return immediately to the client with the hero image + jobId.
-      //   4. EdgeRuntime.waitUntil(...) generates the remaining views in
-      //      the background and updates the job row column-by-column so
-      //      the client picks them up via Realtime / polling.
-      //
-      // This is critical: the user always sees the first cake quickly,
-      // and the function never depends on every view succeeding to
-      // return success. Protects the main USP.
+      // Two flows by quality:
+      //   FAST  -> generate ALL views in parallel inline; return them
+      //            together. Fast must always feel "complete in one shot".
+      //   HIGH  -> hero-first; return hero + jobId, finish remaining
+      //            views in EdgeRuntime.waitUntil so the function never
+      //            stalls waiting on the slowest premium model.
+      // ============================================================
+
+      if (quality === 'fast') {
+        const allViewNames = viewsToRun.map(v => v.name);
+        const tStart = Date.now();
+        console.log(`[gen fast] views=[${allViewNames.join(',')}] (parallel, sync)`);
+
+        // Run all views + greeting message in parallel.
+        const [imageResults, messageSettled] = await Promise.all([
+          Promise.allSettled(viewsToRun.map(v => generateView(v))),
+          generateMessageAsync().then(
+            (m) => ({ ok: true as const, m }),
+            () => ({ ok: false as const, m: `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!` }),
+          ),
+        ]);
+
+        // Surface auth-style failures fast (rate limit / credits exhausted).
+        for (const r of imageResults) {
+          if (r.status === 'rejected') {
+            const m = r.reason?.message || String(r.reason);
+            if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
+            if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
+          }
+        }
+
+        const responseImages: (string | null)[] = imageResults.map(
+          (r) => (r.status === 'fulfilled' ? (r.value as string) : null),
+        );
+        const responseFailed: string[] = imageResults
+          .map((r, i) => (r.status === 'rejected' ? viewsToRun[i].name : null))
+          .filter((x): x is string => !!x);
+        greetingMessage = (messageSettled as any).m;
+
+        const okCount = responseImages.filter(Boolean).length;
+        console.log(`⏱ [gen fast] done in ${Date.now() - tStart}ms — ok=${okCount}/${viewsToRun.length}, failed=[${responseFailed.join(',')}]`);
+
+        if (okCount === 0) {
+          throw new Error('Hero view generation failed. Please try again.');
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            images: responseImages,
+            imageLabels,
+            generateBothStyles,
+            failedViews: responseFailed,
+            greetingMessage,
+            // No jobId for Fast — frontend skips realtime/polling and
+            // shows a Regenerate prompt only if a slot failed.
+            jobId: null,
+            viewOrder: allViewNames,
+            heroView: viewsToRun[0].name,
+            backgroundViews: [],
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+
+      // ============================================================
+      // HIGH QUALITY — progressive hero-first flow.
       // ============================================================
       {
         const heroView = viewsToRun[0];
         const allViewNames = viewsToRun.map(v => v.name);
         const tStart = Date.now();
-        console.log(`[gen ${quality}] hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
+        console.log(`[gen high] hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
 
         // Hero + greeting message in parallel — both must finish before we respond.
         const [heroSettled, messageSettled] = await Promise.allSettled([
@@ -627,7 +683,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           const m = heroSettled.reason?.message || String(heroSettled.reason);
           if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
           if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
-          console.error(`[gen ${quality}] hero ${heroView.name} failed:`, m);
+          console.error(`[gen high] hero ${heroView.name} failed:`, m);
           throw new Error('Hero view generation failed. Please try again.');
         }
         const heroUrl = heroSettled.value as string;
@@ -636,12 +692,10 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           ? (messageSettled.value as string)
           : `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
 
-        console.log(`⏱ [gen ${quality}] hero ready in ${Date.now() - tStart}ms — responding now, ${viewsToRun.length - 1} background views`);
+        console.log(`⏱ [gen high] hero ready in ${Date.now() - tStart}ms — responding now, ${viewsToRun.length - 1} background views`);
 
         const backgroundViews = viewsToRun.slice(1);
 
-        // Insert job row with hero already filled (only when there are
-        // background views to track — single-view requests skip this).
         let jobId: string | null = null;
         if (backgroundViews.length > 0) {
           const jobInsert: Record<string, unknown> = {
@@ -659,10 +713,10 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             .select('id')
             .single();
           if (jobErr || !jobRow) {
-            console.error('[gen] Failed to create job row:', jobErr);
+            console.error('[gen high] Failed to create job row:', jobErr);
           } else {
             jobId = jobRow.id;
-            console.log(`[gen ${quality}] job row ${jobId} created`);
+            console.log(`[gen high] job row ${jobId} created`);
           }
         }
 

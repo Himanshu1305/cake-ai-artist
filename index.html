@@ -137,17 +137,14 @@
 
   <body>
     <div id="root">
-      <!-- Pre-React LCP fallback: paints instantly so Lighthouse measures real content,
-           not the JS-mounted H1. React replaces this on hydration; users see no change. -->
-      <main style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px;font-family:'Inter',system-ui,-apple-system,sans-serif;background:transparent;color:hsl(35,15%,15%)">
-        <img src="/hero-cake.webp" width="560" height="560" alt="AI-designed celebration cake with flickering candle flames" fetchpriority="high" decoding="async" style="width:100%;max-width:560px;height:auto;border-radius:24px;box-shadow:0 20px 40px -12px rgba(236,72,153,0.25)" />
-        <h1 style="font-family:'Fraunces',Georgia,serif;font-size:clamp(28px,5vw,56px);font-weight:800;text-align:center;margin:24px 0 12px;letter-spacing:-0.02em;line-height:1.1;max-width:900px;color:hsl(315,60%,25%)">
-          The Best AI Cake Generator &amp; Designer for Personalized Birthday Cakes
-        </h1>
-        <p style="font-size:clamp(15px,2vw,18px);text-align:center;max-width:680px;color:hsl(315,30%,30%);margin:0">
-          Free AI cake generator. Design personalized AI birthday, anniversary &amp; wedding cakes in 30 seconds.
-        </p>
-      </main>
+      <!-- Minimal branded loading shell — replaced by React on hydration.
+           Intentionally subtle so users don't see a different "homepage" flash. -->
+      <div aria-hidden="true" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:hsl(35,50%,98%);font-family:'Inter',system-ui,-apple-system,sans-serif;color:hsl(35,15%,15%)">
+        <img src="/logo.png" width="56" height="56" alt="" style="width:56px;height:56px;border-radius:12px;box-shadow:0 8px 24px -8px rgba(236,72,153,0.35)" />
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:18px;letter-spacing:-0.01em;color:hsl(315,60%,30%)">Cake AI Artist</div>
+        <div style="width:36px;height:36px;border:3px solid hsl(315,88%,62%);border-top-color:transparent;border-radius:50%;animation:cakeai-spin 0.9s linear infinite"></div>
+        <style>@keyframes cakeai-spin{to{transform:rotate(360deg)}}</style>
+      </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
