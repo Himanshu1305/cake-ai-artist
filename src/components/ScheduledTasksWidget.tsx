@@ -239,30 +239,6 @@ export function ScheduledTasksWidget() {
     }
   };
 
-  const handleTestEngagementDrip = async (variant: 'day2_welcome' | 'day7_trends' | 'day14_final') => {
-    const key = `engagement-drip-test-${variant}`;
-    setRunningTask(key);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) {
-        toast.error('Could not get your email for test send');
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke('send-engagement-drip', {
-        body: { testEmail: user.email, variant },
-      });
-      if (error) throw error;
-      if (data?.success) {
-        toast.success(`Test ${variant} sent to ${user.email}`);
-      } else {
-        toast.error('Test failed', { description: data?.error || 'Unknown error' });
-      }
-    } catch (error: any) {
-      toast.error('Test failed', { description: error.message });
-    } finally {
-      setRunningTask(null);
-    }
-  };
 
   const getStatusBadge = (run: TaskRun | null) => {
     if (!run) {
