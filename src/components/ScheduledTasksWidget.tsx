@@ -432,7 +432,7 @@ export function ScheduledTasksWidget() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Next Run:</span>
-                  <p className="font-medium">{format(nextRun, "EEE, MMM d 'at' HH:mm")} UTC</p>
+                  <p className="font-medium">{nextRun ? `${format(nextRun, "EEE, MMM d 'at' HH:mm")} UTC` : '—'}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Last Run:</span>
