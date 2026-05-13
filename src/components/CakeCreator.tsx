@@ -959,23 +959,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
-  const saveGeneratedImage = async (selectedImageUrls: string[]) => {
+  const saveGeneratedImage = async (
+    selected: Array<{ index: number; url: string }>
+  ) => {
     if (!user) return;
 
     try {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
-      
+      const newIdMap: Record<number, string> = {};
+      let firstNewId: string | null = null;
+
       // Save all selected images
-      for (const imageUrl of selectedImageUrls) {
+      for (const { index, url: imageUrl } of selected) {
         // Save image to permanent storage
         console.log('Saving image to storage...');
         const { data: storageData, error: storageError } = await supabase.functions.invoke(
           'save-image-to-storage',
           {
-            body: { 
-              imageUrl, 
+            body: {
+              imageUrl,
               userId: user.id,
-              prompt 
+              prompt
             }
           }
         );
@@ -997,21 +1001,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             prompt: prompt,
             message: displayedMessage || null,
             message_type: useCustomMessage ? 'custom' : 'ai',
-            recipient_name: recipientName.trim() || name.trim(), // Smart fallback to main name
+            recipient_name: recipientName.trim() || name.trim(),
             occasion_type: occasion || null,
-            occasion_date: occasionDate || new Date().toISOString().split('T')[0], // Default to today for tracking
+            occasion_date: occasionDate || new Date().toISOString().split('T')[0],
           })
           .select()
           .single();
 
         if (imageError) throw imageError;
-        
-        // Store the first saved image ID for party pack generation
-        if (insertedImage && !savedCakeImageId) {
-          setSavedCakeImageId(insertedImage.id);
-          setAudioUrl(null);
-          setAudioDuration(null);
+
+        if (insertedImage) {
+          newIdMap[index] = insertedImage.id;
+          if (!firstNewId) firstNewId = insertedImage.id;
         }
+      }
+
+      // Track saved IDs by image index, and set the active share target
+      // to the first newly-saved image (user can switch via "Share this view")
+      setSavedImageIdByIndex((prev) => ({ ...prev, ...newIdMap }));
+      if (firstNewId && !savedCakeImageId) {
+        setSavedCakeImageId(firstNewId);
+        setAudioUrl(null);
+        setAudioDuration(null);
       }
 
       // Update generation tracking
