@@ -101,6 +101,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
   const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
+  // Map of generatedImages index -> saved DB row id (one entry per saved image)
+  const [savedImageIdByIndex, setSavedImageIdByIndex] = useState<Record<number, string>>({});
+  // Hardcoded brand domain so share links always point to production, regardless of preview env
+  const SHARE_BASE_URL = "https://cakeaiartist.com";
   const audioSectionRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (savedCakeImageId && audioSectionRef.current) {
