@@ -1,53 +1,43 @@
-## Remove all Character-Shaped / Sculpted cake code from the frontend
+## Restore audio recorder visibility + tighten form layout
 
-Hold the entire sculpted/character-shaped cake feature for a future Premium launch. Today it promises 4 images but only delivers 3, and the standalone "sculpted" mode adds complexity for no current revenue. After this change, the app generates exactly **3 decorated views** (Front, Side, Top-Down) every time. No sculpted-mode toggle, no character-shaped 4th image, no related UI or code paths.
+### 1. Audio recording — not removed, just hidden behind a gate
 
-Characters can still be selected as **decorations/toppers on the decorated cake** — only the sculpted full-cake output and sculpted-mode toggle are removed.
+The `AudioRecorder` component, state, and entire UI block are still present in `CakeCreator.tsx` (lines 2481–2569). It only renders when **all three** are true:
+- user is logged in
+- a cake has been saved to the gallery (`savedCakeImageId` is set)
+- the saved cake row exists with the user's id
 
-### Scope (frontend only)
+That's why it looks gone — most users won't have saved yet when they expect to see it. Two-part fix:
+
+**a) Add an always-visible teaser** right after the "Save to Gallery" button (before the gated block):
+- Small inline callout: "🎙️ Want to add a voice message? Save to gallery first — then record up to 30s for the recipient."
+- Only shown when `isLoggedIn && !savedCakeImageId && generatedImages.length > 0`.
+- For logged-out users, show: "🎙️ Sign in & save to add a voice message to your cake link."
+
+**b) Once saved, scroll the audio block into view** automatically (smooth scroll to its ref) so the user immediately sees the new voice-message option appear. Avoids the "did anything happen?" confusion.
+
+No backend changes — the existing flow (save first, then attach audio) stays intact since `audio_url` lives on the `generated_images` row.
+
+### 2. Compact form — put paired controls on the same line
 
 **File: `src/components/CakeCreator.tsx`**
 
-1. **Remove `cakeStyle` state and toggle entirely**
-   - Delete `const [cakeStyle, setCakeStyle] = useState<"decorated" | "sculpted">("decorated");` (line ~59).
-   - Remove the UI control that lets users pick decorated vs sculpted (search for `setCakeStyle` and the surrounding card/toggle JSX) and delete that block.
-   - Remove all `cakeStyle === "sculpted"` / `cakeStyle === "decorated"` conditionals — collapse to the decorated branch everywhere (e.g., lines ~185, 200–203, 223, 1971, 1987–1990, 2245 area, 2591).
+- **Generation Quality (lines ~1800–1853)**: change `grid-cols-1 gap-2` → `grid-cols-1 sm:grid-cols-2 gap-2`. Fast and High Quality cards sit side-by-side from the `sm` breakpoint up. Trim the High-Quality "Creates more detailed…" helper text into the inline label (or move to a tooltip) so both cards stay equal height.
 
-2. **Force 3-view generation** (line ~656)
-   - Replace `const viewCount = character ? 4 : (cakeStyle === 'sculpted' ? 2 : 3);` with `const viewCount = 3;`.
-   - Drop the `character ? 4` and sculpted-only branches in the same handler.
+- **Section padding tightening**: reduce vertical padding on the "Customize Your Cake" card from `space-y-3 md:space-y-4 p-3 md:p-4` to a slightly tighter rhythm (`space-y-3 p-3 md:p-4`) so the section header + quality toggle + 4-up grid feel like one block, not three.
 
-3. **Remove the "Both Cake Styles Included!" promo card** (lines ~1629–1673)
-   - Delete the entire `{character && (...)}` info block promising "4 images: 3 decorated + 1 character-shaped".
+- **Confirm existing pairs**: Cake Type/Layers/Theme/Colors are already in a `grid-cols-1 md:grid-cols-2` grid (line 1856) and Recipient Name / Occasion Date are already paired (line 1941) — no change needed; they already render side-by-side on `md+`.
 
-4. **Remove the Character-Shaped result tile section** (lines ~2420–2511)
-   - Delete the "Sculpted Style Section" that renders `generatedImages[3]`.
-   - Remove the parent split-view conditional (around line ~2513) and always render the standard 3-up grid.
+- **Mobile (current viewport 946px is `md`)**: all the above pairs already collapse on mobile; the change only adds horizontal pairing on wider screens, no mobile regressions.
 
-5. **Clean up labels, comments, and arrays referencing the 4th image / sculpted views**
-   - Lines ~180–198: regenerate-handler comments and the `if (character) { … viewIndex===3 sculpted }` branch.
-   - Line ~243: drop `'Character-Shaped'` from the labels array → keep `['Front (Decorated)', 'Side (Decorated)', 'Top-Down (Decorated)']` (or simpler `['Front', 'Side', 'Top-Down']`).
-   - Line ~2389, 2534, 2556, 2593: remove `"3/4 View"` / `"Main View"` / sculpted label fallbacks — only Front/Side/Top-Down remain.
-   - Line ~752: update the comment that mentions "decorated front/side/top OR sculpted main/angle/top".
-
-6. **Other references in the file** — grep within `CakeCreator.tsx` for `sculpted`, `Sculpted`, `Character-Shaped`, `character &&` (where it gates the 4-image flow specifically) and remove every remaining reference. Keep `character` (the CharacterPicker selection) intact for use as a decoration only.
-
-### Project-wide check
-- `rg -n "sculpted|Character-Shaped|cakeStyle" src/` to confirm no other component, page, or hook reads `cakeStyle` or expects a 4th image. If any are found (e.g., in `PartyPackGenerator`, share/preview components, or storage utils), remove those branches too.
-- Edge function `generate-complete-cake` — leave as-is (it accepts `viewStyle`/`viewCount` parameters; we just stop sending the sculpted ones). No backend changes.
-
-### What we are NOT touching
-- `CharacterPicker` component — characters remain selectable as cake-top decorations.
-- Edge functions, Supabase tables, pricing, copy elsewhere on the site.
-- The 3-view decorated generation pipeline itself.
+### Out of scope
+- No changes to backend, generation flow, or audio storage.
+- No changes to the CharacterPicker, photo upload, or "Save as Memory" sections (already paired).
+- AdSense `availableWidth=0` and Firefox extension errors in the console are unrelated to this request and not caused by app code.
 
 ### Verification
-- Cake creator shows no decorated/sculpted style toggle.
-- Selecting a character no longer shows the "Both Cake Styles Included" banner.
-- Every generation produces exactly 3 tiles labeled Front / Side / Top-Down.
-- No 4th tile, no sculpted-only 2-tile layout, no stuck spinners on a phantom 4th image.
-- Regenerate-view works on all 3 tiles.
-- `rg -i "sculpted|character-shaped" src/` returns zero matches (or only inside `CharacterPicker` itself, which is unrelated).
-
-### Future
-When ready to monetize, reintroduce sculpted character cakes as a Premium-gated add-on with a tuned prompt and clear paywall — built fresh, not revived from this dead code.
+- After a generation completes while logged out: teaser line appears under the gallery save area.
+- After a generation completes while logged in but unsaved: teaser appears prompting to save first.
+- After saving to gallery: teaser disappears, AudioRecorder block appears and the page smooth-scrolls to it.
+- On a ≥640px viewport: Fast and High-Quality buttons render side-by-side; on <640px they stack as before.
+- No layout overflow or text clipping in either Fast/High-Quality card after the side-by-side change.
