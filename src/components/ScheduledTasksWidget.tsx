@@ -68,12 +68,21 @@ const SCHEDULED_TASKS: Omit<ScheduledTask, 'lastRun'>[] = [
     functionName: 'send-weekly-upgrade-nudge',
   },
   {
-    name: 'engagement-drip',
-    displayName: 'Inactive User Engagement Drip',
-    icon: '🌱',
-    description: 'Day 2 / Day 7 / Day 14 onboarding emails to users who never created a cake',
-    schedule: '0 9 * * *', // Daily at 9 AM UTC
-    scheduleHuman: 'Every day at 09:00 UTC',
+    name: 'engagement-recent-visitors',
+    displayName: 'Recent Visitors – No Cake Yet',
+    icon: '👀',
+    description: 'Manual: emails users who visited in the last 7 days but never created a cake. One-time per user.',
+    schedule: 'manual',
+    scheduleHuman: 'Manual only — does not run automatically',
+    functionName: 'send-engagement-drip',
+  },
+  {
+    name: 'engagement-we-miss-you',
+    displayName: 'We Miss You (30+ days inactive)',
+    icon: '💛',
+    description: 'Manual: emails users whose last visit was 30+ days ago. Random variant per recipient. One-time per user.',
+    schedule: 'manual',
+    scheduleHuman: 'Manual only — does not run automatically',
     functionName: 'send-engagement-drip',
   },
 ];
