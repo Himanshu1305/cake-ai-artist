@@ -889,7 +889,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
         setOriginalImages(images); // Same as generated since no post-processing needed
-        setSelectedImages(new Set([0]));
+        // Auto-select only the first REAL (non-placeholder) image so users can
+        // never accidentally save a placeholder to their gallery.
+        const firstRealIndex = images.findIndex((u) => u && u !== '/placeholder.svg');
+        setSelectedImages(firstRealIndex >= 0 ? new Set([firstRealIndex]) : new Set());
         
         // Trigger celebration confetti after a brief delay
         setTimeout(() => triggerConfetti(), 400);
