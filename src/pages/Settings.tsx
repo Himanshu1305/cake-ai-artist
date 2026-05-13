@@ -57,6 +57,7 @@ export default function Settings() {
     email_reminders: true,
     birthday_reminders: true,
     marketing_emails: true,
+    reengagement_emails: true,
     anniversary_reminders: true,
     blog_digest_emails: true,
   });
