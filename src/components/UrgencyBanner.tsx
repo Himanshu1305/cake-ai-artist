@@ -33,6 +33,8 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
           <span className="hidden sm:inline"> — design birthday, wedding & anniversary cakes </span>
           <span className="sm:hidden"> · </span>
           <span className="font-semibold">Free</span>
+          <span className="hidden sm:inline"> · 🌍 Loved in 30+ countries</span>
+          <span className="sm:hidden"> · 🌍 30+ countries</span>
         </p>
       </div>
     </div>
