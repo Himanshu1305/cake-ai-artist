@@ -46,27 +46,45 @@ function emailLayout(inner: string, unsubscribeUrl: string): string {
 }
 
 function day2Email(firstName: string, unsubscribeUrl: string): string {
-  const inner = `
-    <tr><td style="padding:30px 30px 10px;">
-      <p style="margin:0 0 16px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"}! 👋</p>
-      <p style="margin:0 0 18px;color:#333;font-size:15px;line-height:1.6;">
-        Welcome to Cake AI Artist! We're so glad you joined. Your first beautiful cake design is literally a few seconds away — and we wanted to make sure you didn't miss it.
-      </p>
-      <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:20px;">Here's how it works:</h2>
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr><td style="padding:10px 0;font-size:15px;color:#333;"><strong style="color:#8B5CF6;">1.</strong> Tell us the occasion, name & vibe</td></tr>
-        <tr><td style="padding:10px 0;font-size:15px;color:#333;"><strong style="color:#D946EF;">2.</strong> Our AI designs your cake in seconds</td></tr>
-        <tr><td style="padding:10px 0;font-size:15px;color:#333;"><strong style="color:#F97316;">3.</strong> Download, share, or print it instantly</td></tr>
+  const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
+    <tr><td style="padding:0 0 14px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9f5;border-left:4px solid #F97316;border-radius:8px;">
+        <tr><td style="padding:16px 18px;">
+          <p style="margin:0 0 4px;color:#1a1a2e;font-size:16px;font-weight:700;">${emoji} ${title}</p>
+          <p style="margin:0 0 10px;color:#555;font-size:14px;line-height:1.5;">${desc}</p>
+          <a href="${href}" style="color:#2563EB;font-size:14px;font-weight:600;text-decoration:none;">${cta} →</a>
+        </td></tr>
       </table>
-      <p style="margin:18px 0 24px;color:#555;font-size:15px;line-height:1.6;">
-        No design skills needed. No credit card. Just your idea — we'll do the rest. 🎨
+    </td></tr>`;
+
+  const inner = `
+    <tr><td style="padding:30px 30px 8px;">
+      <p style="margin:0 0 14px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 👋</p>
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.6;">
+        Thanks again for joining Cake AI Artist — it really means a lot. 💛
+      </p>
+      <p style="margin:0 0 22px;color:#333;font-size:15px;line-height:1.6;">
+        We noticed you haven't had a chance to try anything out yet. No worries — life gets busy! Here's a quick peek at a few things you can explore whenever you're ready:
+      </p>
+      <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:18px;">Pick where to start ✨</h2>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${featureCard("🎂", "Design your first cake", "Type a name and an occasion — get a beautiful AI cake in under 30 seconds.", "https://cakeaiartist.com/free-cake-designer", "Open the designer")}
+        ${featureCard("🖼️", "Browse the community gallery", "See what other creators are making this week and grab some inspiration.", "https://cakeaiartist.com/gallery", "Explore the gallery")}
+        ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", "https://cakeaiartist.com/blog", "Read latest posts")}
+        ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", "https://cakeaiartist.com/party-planner", "Plan a party")}
+      </table>
+      <div style="margin:18px 0 22px;padding:14px 16px;background:#fff7ed;border-radius:8px;text-align:center;">
+        <p style="margin:0;color:#1a1a2e;font-size:14px;font-weight:600;">⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide</p>
+        <p style="margin:6px 0 0;font-size:13px;"><a href="https://cakeaiartist.com/gallery" style="color:#2563EB;text-decoration:underline;">See real reviews & creations →</a></p>
+      </div>
+      <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
+        Something not working, or stuck on what to make? Just hit reply — we read every email and we'd love to help. You can also browse our <a href="https://cakeaiartist.com/faq" style="color:#2563EB;">FAQ</a> or <a href="https://cakeaiartist.com/contact" style="color:#2563EB;">contact us</a>.
       </p>
     </td></tr>
-    <tr><td style="padding:0 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
-        🎂 Create My First Cake
+    <tr><td style="padding:8px 30px 30px;text-align:center;">
+      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.3);">
+        🎂 Start with a cake
       </a>
-      <p style="margin:18px 0 0;color:#888;font-size:13px;">Got questions? Check our <a href="https://cakeaiartist.com/faq" style="color:#2563EB;">FAQ</a>.</p>
     </td></tr>`;
   return emailLayout(inner, unsubscribeUrl);
 }
