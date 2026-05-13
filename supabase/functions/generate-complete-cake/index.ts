@@ -756,17 +756,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       throw error;
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        images: generatedImages,
-        imageLabels,
-        generateBothStyles,
-        failedViews,
-        greetingMessage,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // (Unreachable — progressive flow always returns inside the try block.)
 
   } catch (error) {
     console.error('Error in generate-complete-cake:', error);
