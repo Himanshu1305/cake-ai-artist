@@ -1,39 +1,65 @@
 ## Goal
-Fix two visual issues in the Day 2 engagement email so it matches the homepage brand (warm cream + gold, not purple) and the header banner feels balanced instead of empty.
+Make all links inside the engagement drip emails (Day 2, Day 7, Day 14) point to the user's country-specific landing page when one exists, so a US user lands on the US/global homepage, an Indian user on `/india`, a UK user on `/uk`, etc. — instead of everyone hitting `/` and being geo-redirected.
 
-## Issues
-1. **Header banner** — currently a tall purple/pink/orange gradient block with just a small logo + "Cake AI Artist" + tagline. Lots of dead space, looks incomplete.
-2. **Background / overall vibe** — body uses `#f8f5f2` cream (fine) but the header gradient (`#8B5CF6 → #D946EF → #F97316`) and the bottom CTA button (purple→pink gradient) make the email read as "purple". Homepage is warm cream + gold/amber + dark text, with pink only as a small accent.
+## Country → Landing Page Map
+Profiles store ISO codes (`IN`, `US`, `CA`, `AU`, `UK`, `PH`, etc.). Map them to existing routes:
 
-## Fixes (Day 2 only — `day2Email()` + `emailLayout()` shared header/footer used only here for now, OR introduce a Day 2-specific layout to avoid affecting Day 7/14)
+| Country code | Landing path |
+|---|---|
+| IN | `/india` |
+| UK / GB | `/uk` |
+| CA | `/canada` |
+| AU | `/australia` |
+| US / other / null | `/` (default homepage) |
 
-### Header banner redesign
-- Replace the tall purple gradient with a **warm cream → soft gold gradient** (e.g. `#fdf8f0 → #fcecc9`) with a thin gold bottom border (`#E5B547`).
-- Make it more compact (less vertical padding) and visually complete by adding:
-  - Logo on the left (slightly larger, 56px)
-  - Brand name "Cake AI Artist" in dark serif-style heading next to logo (left-aligned, not centered)
-  - Right side: a small gold pill/badge "🎂 AI Cake Studio" or "⭐ 4.9 · Loved in 30+ countries" so the right half isn't empty
-  - Remove the "AI-Powered Cake Design" subline (redundant once right badge is added)
-- Header text color switches from white to dark (`#1a1a2e`) since background is now light.
+## What Changes (Per-Link Strategy)
 
-### Color palette alignment with homepage
-- Body bg: keep `#f8f5f2` (already correct).
-- Card bg: keep white.
-- Accent: switch from purple/pink to **gold/amber** (`#E5B547` / `#F59E0B`) for borders, the feature card left-border, and the bottom CTA button gradient (`#F59E0B → #E5B547` instead of purple→pink).
-- Links: keep `#2563EB` blue (per project Core memory).
-- Reviews strip bg: change from `#fff7ed` to a very light gold `#fdf6e3`.
-- Feature card left border: change from `#F97316` orange to gold `#E5B547` to match homepage tone.
-- Footer link color: change unsubscribe link from purple `#8B5CF6` to blue `#2563EB`.
+The emails contain two kinds of links:
 
-### Scope
-- Edit only the Day 2 visual rendering in `supabase/functions/send-engagement-drip/index.ts`.
-- Since `emailLayout()` is shared with Day 7 and Day 14, introduce a **separate `day2Layout()`** wrapper (or pass a `theme` arg) so Day 7/14 stay untouched per earlier scope agreement.
-- Redeploy `send-engagement-drip` after edit.
+1. **Homepage / hero CTA links** (currently `https://cakeaiartist.com/`-style entry points)
+   → Replace with the localized landing path from the table above.
+   - In Day 2: the "Start with a cake" bottom CTA currently goes to `/free-cake-designer`. Keep the designer link as-is (no country variant exists), BUT also add a localized homepage anchor in the header/feature card "AI Cake Studio" badge so geo context is preserved.
+   - In Day 7 + Day 14: the bottom "Design My Cake / Try It Free" CTAs currently point to `/free-cake-designer`. Same — keep designer link, but ensure any "homepage"-style references become localized.
+
+2. **Universal feature pages** (`/free-cake-designer`, `/gallery`, `/blog`, `/party-planner`, `/faq`, `/contact`, `/settings`)
+   → These pages are global with no country-specific variants. Leave the path unchanged, but append a `?ref=email&country=<CODE>` query parameter so the page can render localized pricing/copy if it already supports geo (most already do via `GeoContext`).
+
+## Implementation
+
+In `supabase/functions/send-engagement-drip/index.ts`:
+
+1. Add a small helper:
+   ```ts
+   const LANDING_BY_COUNTRY: Record<string, string> = {
+     IN: "/india", UK: "/uk", GB: "/uk",
+     CA: "/canada", AU: "/australia",
+   };
+   function localizedHome(country?: string | null) {
+     const c = (country || "").toUpperCase();
+     return `https://cakeaiartist.com${LANDING_BY_COUNTRY[c] || "/"}`;
+   }
+   function localizedPath(path: string, country?: string | null) {
+     const c = (country || "").toUpperCase();
+     const sep = path.includes("?") ? "&" : "?";
+     return `https://cakeaiartist.com${path}${sep}ref=email${c ? `&country=${c}` : ""}`;
+   }
+   ```
+
+2. Pass `country` into `day2Email`, `day7Email`, `day14Email`, and `buildEmailHtml`. Source it from:
+   - **Test mode**: read `country` from the test recipient's profile (already querying `profiles` for `first_name` — extend to `first_name, country`).
+   - **Production mode**: already selecting profiles — just include `country` in the existing `select(...)` and pass it through the loop.
+
+3. Replace every hard-coded `https://cakeaiartist.com/...` URL in the three template functions with `localizedHome(country)` for any "go to homepage / start" CTA, and `localizedPath('/gallery', country)` (etc.) for feature-page links. Footer unsubscribe stays unchanged (still `/settings`).
+
+4. Redeploy `send-engagement-drip`.
 
 ## Out of Scope
-- Day 7 and Day 14 templates and their headers.
-- Logo asset changes, copy changes, link changes (copy stays as-is).
-- No DB / cron / admin widget changes.
+- No changes to `send-weekly-upgrade-nudge` (already country-aware for pricing; link localization can be a follow-up if needed).
+- No new landing pages, no changes to `GeoRedirectWrapper`, no DB migration.
+- No copy changes — only URL changes.
 
 ## Test
-Admin → Scheduled Tasks → "Test Day 2" → confirm header is balanced (logo left, badge right, light gold gradient) and overall email reads as cream/gold rather than purple.
+Admin → Scheduled Tasks → "Test Day 2 / 7 / 14". Verify:
+- An admin profile with `country = 'IN'` receives an email whose "Start with a cake" / homepage links resolve to `cakeaiartist.com/india` (or `?country=IN` on feature pages).
+- A profile with `country = 'US'` or null gets `cakeaiartist.com/`.
+- Day 7 + Day 14 buttons reflect the same.
