@@ -333,7 +333,7 @@ serve(async (req) => {
       if (sentMap.get(user.id)?.has(type)) { skipCount++; continue; }
 
       try {
-        const html = buildEmailHtml(type, user.first_name || "", "https://cakeaiartist.com/settings");
+        const html = buildEmailHtml(type, user.first_name || "", "https://cakeaiartist.com/settings", user.country);
         const result = await sendBrevo(user.email, user.first_name || "", SUBJECTS[type], html);
 
         if (result.ok) {
