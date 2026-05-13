@@ -28,12 +28,11 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
     >
       <div className="container mx-auto px-4 py-2 text-center">
         <p className="text-xs md:text-sm font-medium tracking-wide">
-          <span className="hidden sm:inline">Join </span>
-          <span className="font-bold text-gold">hundreds of</span>
-          <span className="hidden sm:inline"> creators designing AI cakes</span>
-          <span className="sm:hidden"> creators</span>
-          <span className="mx-2 opacity-70">·</span>
-          <span className="opacity-90">Start free, no signup needed</span>
+          <span className="hidden sm:inline">The </span>
+          <span className="font-bold text-gold">#1 AI Cake Generator</span>
+          <span className="hidden sm:inline"> — design birthday, wedding & anniversary cakes </span>
+          <span className="sm:hidden"> · </span>
+          <span className="font-semibold">Free</span>
         </p>
       </div>
     </div>
