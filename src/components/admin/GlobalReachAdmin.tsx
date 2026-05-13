@@ -28,6 +28,7 @@ const COUNTRY_META: Record<string, { name: string; flag: string }> = {
   DE: { name: "Germany", flag: "🇩🇪" },
   AU: { name: "Australia", flag: "🇦🇺" },
   IN: { name: "India", flag: "🇮🇳" },
+  PH: { name: "Philippines", flag: "🇵🇭" },
   FR: { name: "France", flag: "🇫🇷" },
   IT: { name: "Italy", flag: "🇮🇹" },
   ES: { name: "Spain", flag: "🇪🇸" },
@@ -138,13 +139,16 @@ export const GlobalReachAdmin = ({
           </Button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 rounded-lg border-2 border-party-pink/30 bg-party-pink/5 p-3">
           <Switch
             id="enabled"
             checked={stats.enabled}
             onCheckedChange={(v) => setStats({ ...stats, enabled: v })}
+            className="data-[state=checked]:bg-party-pink data-[state=unchecked]:bg-foreground/40"
           />
-          <Label htmlFor="enabled">Show widget on homepage</Label>
+          <Label htmlFor="enabled" className="font-semibold text-foreground cursor-pointer">
+            Show widget on homepage {stats.enabled ? "✅" : "❌ (hidden)"}
+          </Label>
         </div>
 
         <div className="space-y-2">
