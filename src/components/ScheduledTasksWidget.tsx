@@ -167,8 +167,11 @@ export function ScheduledTasksWidget() {
       const { data, error } = await supabase.functions.invoke(task.functionName, { body });
       if (error) throw error;
 
+      const sent = data?.sent ?? data?.records_processed;
+      const desc = data?.message
+        || (typeof sent === 'number' ? `Sent ${sent}${typeof data?.failed === 'number' ? `, failed ${data.failed}` : ''}${typeof data?.skipped === 'number' ? `, skipped ${data.skipped}` : ''}` : `Processed ${data?.records_processed || 0} records`);
       toast.success(`${task.displayName} completed successfully`, {
-        description: data?.message || `Processed ${data?.records_processed || 0} records`,
+        description: desc,
       });
 
       await loadTaskRuns();
