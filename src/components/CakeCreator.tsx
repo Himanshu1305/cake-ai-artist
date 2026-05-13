@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
   const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
+  const audioSectionRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (savedCakeImageId && audioSectionRef.current) {
+      audioSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [savedCakeImageId]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
