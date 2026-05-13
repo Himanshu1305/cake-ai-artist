@@ -599,36 +599,35 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       const wallStart = Date.now();
 
       // ============================================================
-      // HIGH QUALITY: stream views back progressively.
-      //   1. Generate hero view inline (~30s).
-      //   2. Generate the greeting message inline (cheap).
-      //   3. Insert a job row with the hero image + message.
-      //   4. EdgeRuntime.waitUntil(...) finishes the remaining views in
-      //      the background and updates the job row column-by-column.
-      //      Client subscribes via Supabase Realtime to pick them up.
+      // PROGRESSIVE HERO-FIRST FLOW (Fast + High Quality both).
+      //   1. Generate the HERO (first) view inline + greeting message.
+      //   2. Insert a cake_generation_jobs row with the hero filled.
+      //   3. Return immediately to the client with the hero image + jobId.
+      //   4. EdgeRuntime.waitUntil(...) generates the remaining views in
+      //      the background and updates the job row column-by-column so
+      //      the client picks them up via Realtime / polling.
+      //
+      // This is critical: the user always sees the first cake quickly,
+      // and the function never depends on every view succeeding to
+      // return success. Protects the main USP.
       // ============================================================
-      if (quality === 'high') {
-        // viewsToRun is already set to all 3 views above (hero + 2 background).
+      {
         const heroView = viewsToRun[0];
         const allViewNames = viewsToRun.map(v => v.name);
         const tStart = Date.now();
+        console.log(`[gen ${quality}] hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
 
-        // CRITICAL: fire ALL image promises at the same instant. They run truly
-        // in parallel inside the Lovable AI Gateway. We only AWAIT the hero
-        // here so we can return it ASAP; the others continue in the background.
-        const viewPromises = viewsToRun.map(v => generateView(v));
-        const messagePromise = generateMessageAsync();
-
-        // Await hero + message before responding (~15-20s).
+        // Hero + greeting message in parallel — both must finish before we respond.
         const [heroSettled, messageSettled] = await Promise.allSettled([
-          viewPromises[0],
-          messagePromise,
+          generateView(heroView),
+          generateMessageAsync(),
         ]);
 
         if (heroSettled.status === 'rejected') {
           const m = heroSettled.reason?.message || String(heroSettled.reason);
           if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
           if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
+          console.error(`[gen ${quality}] hero ${heroView.name} failed:`, m);
           throw new Error('Hero view generation failed. Please try again.');
         }
         const heroUrl = heroSettled.value as string;
@@ -637,87 +636,91 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           ? (messageSettled.value as string)
           : `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
 
-        console.log(`⏱ HQ hero ready in ${Date.now() - tStart}ms — responding now, ${viewPromises.length - 1} views still streaming`);
+        console.log(`⏱ [gen ${quality}] hero ready in ${Date.now() - tStart}ms — responding now, ${viewsToRun.length - 1} background views`);
 
-        // Insert job row with hero already filled.
-        const jobInsert: Record<string, unknown> = {
-          user_id: user.id,
-          status: 'in_progress',
-          cake_style: cakeStyle,
-          hero_view: heroView.name,
-          hero_url: heroUrl,
-          greeting_message: greetingMessage,
-          view_count: allViewNames.length,
-        };
-        const { data: jobRow, error: jobErr } = await supabase
-          .from('cake_generation_jobs')
-          .insert(jobInsert)
-          .select('id')
-          .single();
-        if (jobErr || !jobRow) {
-          console.error('Failed to create job row:', jobErr);
-          throw new Error('Failed to track generation job');
+        const backgroundViews = viewsToRun.slice(1);
+
+        // Insert job row with hero already filled (only when there are
+        // background views to track — single-view requests skip this).
+        let jobId: string | null = null;
+        if (backgroundViews.length > 0) {
+          const jobInsert: Record<string, unknown> = {
+            user_id: user.id,
+            status: 'in_progress',
+            cake_style: cakeStyle,
+            hero_view: heroView.name,
+            hero_url: heroUrl,
+            greeting_message: greetingMessage,
+            view_count: allViewNames.length,
+          };
+          const { data: jobRow, error: jobErr } = await supabase
+            .from('cake_generation_jobs')
+            .insert(jobInsert)
+            .select('id')
+            .single();
+          if (jobErr || !jobRow) {
+            console.error('[gen] Failed to create job row:', jobErr);
+          } else {
+            jobId = jobRow.id;
+            console.log(`[gen ${quality}] job row ${jobId} created`);
+          }
         }
-        const jobId = jobRow.id;
 
-        // Build response images aligned with viewsToRun; hero filled, others null.
-        const responseImages: (string | null)[] = viewsToRun.map((v, i) =>
-          i === 0 ? heroUrl : null
+        const responseImages: (string | null)[] = viewsToRun.map((_, i) =>
+          i === 0 ? heroUrl : null,
         );
-        const responseFailed: string[] = viewsToRun.slice(1).map(v => v.name);
+        const responseFailed: string[] = backgroundViews.map(v => v.name);
 
-        // Index-based slot mapping.
         const slotForIndex = (i: number): { url: string; err: string } => (
           i === 1 ? { url: 'side_url', err: 'side_error' } :
           i === 2 ? { url: 'top_url', err: 'top_error' } :
           { url: 'side_url', err: 'side_error' }
         );
 
-        // Background task: AWAIT the already-running promises and write each
-        // result into its slot the moment it lands.
-        const bgTask = (async () => {
-          const tBg = Date.now();
-          console.log(`[bg ${jobId}] awaiting ${viewPromises.length - 1} background views (already running in parallel)`);
-          await Promise.all(viewPromises.slice(1).map(async (p, j) => {
-            const i = j + 1;
-            const v = viewsToRun[i];
-            const slot = slotForIndex(i);
-            const tv = Date.now();
-            try {
-              const url = await p;
-              await supabase.from('cake_generation_jobs')
-                .update({ [slot.url]: url })
-                .eq('id', jobId);
-              console.log(`[bg ${jobId}] ${v.name} stored in ${slot.url} (wait ${Date.now() - tv}ms)`);
-            } catch (e: any) {
-              const errMsg = (e?.message || String(e)).slice(0, 200);
-              console.error(`[bg ${jobId}] ${v.name} failed:`, errMsg);
-              await supabase.from('cake_generation_jobs')
-                .update({ [slot.err]: errMsg })
-                .eq('id', jobId);
-            }
-          }));
-          // Honest final status — never silently mark "completed" when slots are missing.
-          const { data: finalRow } = await supabase
-            .from('cake_generation_jobs')
-            .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
-            .eq('id', jobId)
-            .single();
-          const expected = finalRow?.view_count ?? allViewNames.length;
-          const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
-          const status = filled >= expected ? 'completed' : 'partial_failed';
-          await supabase.from('cake_generation_jobs')
-            .update({ status, completed_at: new Date().toISOString() })
-            .eq('id', jobId);
-          console.log(`[bg ${jobId}] background done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
-        })();
+        if (jobId && backgroundViews.length > 0) {
+          const bgJobId = jobId;
+          const bgTask = (async () => {
+            const tBg = Date.now();
+            console.log(`[bg ${bgJobId}] starting ${backgroundViews.length} background views`);
+            await Promise.all(backgroundViews.map(async (v, j) => {
+              const i = j + 1;
+              const slot = slotForIndex(i);
+              const tv = Date.now();
+              try {
+                const url = await generateView(v);
+                await supabase.from('cake_generation_jobs')
+                  .update({ [slot.url]: url })
+                  .eq('id', bgJobId);
+                console.log(`[bg ${bgJobId}] ${v.name} ok in ${Date.now() - tv}ms`);
+              } catch (e: any) {
+                const errMsg = (e?.message || String(e)).slice(0, 200);
+                console.error(`[bg ${bgJobId}] ${v.name} failed in ${Date.now() - tv}ms:`, errMsg);
+                await supabase.from('cake_generation_jobs')
+                  .update({ [slot.err]: errMsg })
+                  .eq('id', bgJobId);
+              }
+            }));
+            const { data: finalRow } = await supabase
+              .from('cake_generation_jobs')
+              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
+              .eq('id', bgJobId)
+              .single();
+            const expected = finalRow?.view_count ?? allViewNames.length;
+            const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
+            const status = filled >= expected ? 'completed' : 'partial_failed';
+            await supabase.from('cake_generation_jobs')
+              .update({ status, completed_at: new Date().toISOString() })
+              .eq('id', bgJobId);
+            console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
+          })();
 
-        // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
-        if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
-          // @ts-ignore
-          EdgeRuntime.waitUntil(bgTask);
-        } else {
-          bgTask.catch(() => {});
+          // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
+          if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
+            // @ts-ignore
+            EdgeRuntime.waitUntil(bgTask);
+          } else {
+            bgTask.catch(() => {});
+          }
         }
 
         return new Response(
@@ -731,53 +734,10 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             jobId,
             viewOrder: allViewNames,
             heroView: heroView.name,
-            backgroundViews: viewsToRun.slice(1).map(v => v.name),
+            backgroundViews: backgroundViews.map(v => v.name),
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         );
-      }
-
-      // ============================================================
-      // STANDARD QUALITY: generate all views in parallel inline (unchanged).
-      // ============================================================
-      console.log(`Starting parallel generation of ${viewsToRun.length} views + message...`);
-
-      // allSettled for soft-failure on images; message is best-effort.
-      const [imageSettled, messageSettled] = await Promise.all([
-        Promise.allSettled(viewsToRun.map(v => generateView(v))),
-        Promise.allSettled([generateMessageAsync()]),
-      ]);
-
-      // Check for hard fails (rate-limit / credits) — bubble immediately.
-      for (const r of imageSettled) {
-        if (r.status === 'rejected') {
-          const m = r.reason?.message || String(r.reason);
-          if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
-          if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
-        }
-      }
-
-      generatedImages = imageSettled.map((r, i) => {
-        if (r.status === 'fulfilled') return r.value;
-        failedViews.push(viewsToRun[i].name);
-        console.error(`View ${viewsToRun[i].name} failed:`, r.reason?.message || r.reason);
-        return null;
-      });
-
-      const okCount = generatedImages.filter(Boolean).length;
-      console.log(`⏱ TOTAL ${Date.now() - wallStart}ms — ${okCount}/${viewsToRun.length} views ok, failed: [${failedViews.join(',') || 'none'}]`);
-
-      if (okCount === 0) {
-        throw new Error('All image generations failed. Please try again.');
-      }
-
-      // Message: fall back to default if it failed.
-      const msgRes = messageSettled[0];
-      if (msgRes.status === 'fulfilled') {
-        greetingMessage = msgRes.value;
-      } else {
-        console.error('Message generation failed, using default:', msgRes.reason?.message);
-        greetingMessage = `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
       }
     } catch (error) {
       const m = error instanceof Error ? error.message : String(error);
@@ -796,17 +756,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       throw error;
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        images: generatedImages,
-        imageLabels,
-        generateBothStyles,
-        failedViews,
-        greetingMessage,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // (Unreachable — progressive flow always returns inside the try block.)
 
   } catch (error) {
     console.error('Error in generate-complete-cake:', error);

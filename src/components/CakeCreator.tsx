@@ -690,23 +690,21 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         }
 
         // Soft-failure: surface partial success.
-        // For High Quality, the backend returns the hero view immediately
-        // and continues generating the remaining views in the background.
-        // We render placeholders for the missing slots and subscribe to
-        // Realtime updates on cake_generation_jobs to swap them in as
-        // they finish — no manual regenerate needed.
+        // Backend now returns the hero view immediately for BOTH Fast and
+        // High Quality, then continues generating the remaining views in
+        // the background. We render placeholders for missing slots and
+        // subscribe to Realtime + poll cake_generation_jobs to swap them
+        // in as they finish — no manual regenerate needed.
         const rawImages: (string | null)[] = data.images;
         const failedViews: string[] = data.failedViews || [];
         const jobId: string | undefined = data.jobId;
         const viewOrder: string[] | undefined = data.viewOrder;
         const heroView: string | undefined = data.heroView;
-        const images: string[] = generationQuality === 'high'
-          ? rawImages.map((u) => u || '/placeholder.svg')
-          : rawImages.filter((u): u is string => !!u);
+        // Always show placeholders for missing slots so the user gets the
+        // hero immediately and the remaining slots fill in progressively.
+        const images: string[] = rawImages.map((u) => u || '/placeholder.svg');
         const aiMessage = data.greetingMessage;
-        const okCount = generationQuality === 'high'
-          ? images.filter((u) => u !== '/placeholder.svg').length
-          : images.length;
+        const okCount = images.filter((u) => u !== '/placeholder.svg').length;
 
         console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage, jobId });
 
@@ -714,9 +712,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('No images were generated. Please try again.');
         }
 
-        // High Quality: subscribe to Realtime AND poll as a safety net so
-        // background views appear in their slots even if Realtime drops.
-        if (generationQuality === 'high' && jobId && viewOrder && heroView && failedViews.length > 0) {
+        // Subscribe to Realtime AND poll as a safety net so background views
+        // appear in their slots even if Realtime drops. Runs for both Fast
+        // and High Quality — any time the backend returned a jobId.
+        if (jobId && viewOrder && heroView && failedViews.length > 0) {
           // Backend writes results by SLOT INDEX, not by view name:
           //   index 0 -> hero_url   (already filled in initial response)
           //   index 1 -> side_url
@@ -890,7 +889,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
         setOriginalImages(images); // Same as generated since no post-processing needed
-        setSelectedImages(new Set([0]));
+        // Auto-select only the first REAL (non-placeholder) image so users can
+        // never accidentally save a placeholder to their gallery.
+        const firstRealIndex = images.findIndex((u) => u && u !== '/placeholder.svg');
+        setSelectedImages(firstRealIndex >= 0 ? new Set([firstRealIndex]) : new Set());
         
         // Trigger celebration confetti after a brief delay
         setTimeout(() => triggerConfetti(), 400);
@@ -2707,7 +2709,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         });
                         
                         try {
-                          const selectedUrls = Array.from(selectedImages).map(i => generatedImages[i]);
+                          const selectedUrls = Array.from(selectedImages)
+                            .map(i => generatedImages[i])
+                            .filter((u): u is string => !!u && u !== '/placeholder.svg');
+                          if (selectedUrls.length === 0) {
+                            toast({ title: "Still rendering", description: "Please wait until at least one cake view is ready before saving." });
+                            setIsSavingToGallery(false);
+                            return;
+                          }
                           await saveGeneratedImage(selectedUrls);
                           
                           haptic.success();
