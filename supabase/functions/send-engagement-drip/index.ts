@@ -367,12 +367,19 @@ serve(async (req) => {
 
     const ids = eligible.map((u: any) => u.id);
 
-    // opt-out
+    // opt-out: skip only if BOTH marketing_emails AND reengagement_emails are off.
+    // Re-engagement campaigns honor either consent flag (defaults: both true).
     let optedOut = new Set<string>();
     if (ids.length > 0) {
       const { data: settings } = await supabase
-        .from("user_settings").select("user_id, marketing_emails").in("user_id", ids);
-      optedOut = new Set((settings || []).filter((s: any) => s.marketing_emails === false).map((s: any) => s.user_id));
+        .from("user_settings")
+        .select("user_id, marketing_emails, reengagement_emails")
+        .in("user_id", ids);
+      optedOut = new Set(
+        (settings || [])
+          .filter((s: any) => s.marketing_emails === false && s.reengagement_emails === false)
+          .map((s: any) => s.user_id)
+      );
     }
 
     // already-sent dedupe
