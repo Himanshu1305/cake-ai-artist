@@ -2577,7 +2577,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           variant="secondary"
                           className="w-full bg-party-purple/10 hover:bg-party-purple/20 text-party-purple border border-party-purple/30"
                           onClick={async () => {
-                            const url = `${window.location.origin}/cake/${savedCakeImageId}`;
+                            const url = `${SHARE_BASE_URL}/cake/${savedCakeImageId}`;
                             try {
                               await navigator.clipboard.writeText(url);
                               toast({
