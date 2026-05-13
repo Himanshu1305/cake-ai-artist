@@ -83,7 +83,20 @@ function day2Layout(inner: string, unsubscribeUrl: string): string {
     </table></td></tr></table></body></html>`;
 }
 
-function day2Email(firstName: string, unsubscribeUrl: string): string {
+const LANDING_BY_COUNTRY: Record<string, string> = {
+  IN: "/india", UK: "/uk", GB: "/uk", CA: "/canada", AU: "/australia",
+};
+function localizedHome(country?: string | null): string {
+  const c = (country || "").toUpperCase();
+  return `https://cakeaiartist.com${LANDING_BY_COUNTRY[c] || "/"}`;
+}
+function localizedPath(path: string, country?: string | null): string {
+  const c = (country || "").toUpperCase();
+  const sep = path.includes("?") ? "&" : "?";
+  return `https://cakeaiartist.com${path}${sep}ref=email${c ? `&country=${c}` : ""}`;
+}
+
+function day2Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
   const featureCard = (emoji: string, title: string, desc: string, href: string, cta: string) => `
     <tr><td style="padding:0 0 14px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;border-left:4px solid #E5B547;border-radius:8px;">
@@ -106,28 +119,28 @@ function day2Email(firstName: string, unsubscribeUrl: string): string {
       </p>
       <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:18px;">Pick where to start ✨</h2>
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${featureCard("🎂", "Design your first cake", "Type a name and an occasion — get a beautiful AI cake in under 30 seconds.", "https://cakeaiartist.com/free-cake-designer", "Open the designer")}
-        ${featureCard("🖼️", "Browse the community gallery", "See what other creators are making this week and grab some inspiration.", "https://cakeaiartist.com/gallery", "Explore the gallery")}
-        ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", "https://cakeaiartist.com/blog", "Read latest posts")}
-        ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", "https://cakeaiartist.com/party-planner", "Plan a party")}
+        ${featureCard("🎂", "Design your first cake", "Type a name and an occasion — get a beautiful AI cake in under 30 seconds.", localizedPath("/free-cake-designer", country), "Open the designer")}
+        ${featureCard("🖼️", "Browse the community gallery", "See what other creators are making this week and grab some inspiration.", localizedPath("/gallery", country), "Explore the gallery")}
+        ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", localizedPath("/blog", country), "Read latest posts")}
+        ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", localizedPath("/party-planner", country), "Plan a party")}
       </table>
       <div style="margin:18px 0 22px;padding:14px 16px;background:#fdf6e3;border:1px solid #f0e3c4;border-radius:8px;text-align:center;">
         <p style="margin:0;color:#1a1a2e;font-size:14px;font-weight:600;">⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide</p>
-        <p style="margin:6px 0 0;font-size:13px;"><a href="https://cakeaiartist.com/gallery" style="color:#2563EB;text-decoration:underline;">See real reviews & creations →</a></p>
+        <p style="margin:6px 0 0;font-size:13px;"><a href="${localizedPath("/gallery", country)}" style="color:#2563EB;text-decoration:underline;">See real reviews & creations →</a></p>
       </div>
       <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
-        Something not working, or stuck on what to make? Just hit reply — we read every email and we'd love to help. You can also browse our <a href="https://cakeaiartist.com/faq" style="color:#2563EB;">FAQ</a> or <a href="https://cakeaiartist.com/contact" style="color:#2563EB;">contact us</a>.
+        Something not working, or stuck on what to make? Just hit reply — we read every email and we'd love to help. You can also browse our <a href="${localizedPath("/faq", country)}" style="color:#2563EB;">FAQ</a> or <a href="${localizedPath("/contact", country)}" style="color:#2563EB;">contact us</a>.
       </p>
     </td></tr>
     <tr><td style="padding:8px 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
         🎂 Start with a cake
       </a>
     </td></tr>`;
   return day2Layout(inner, unsubscribeUrl);
 }
 
-function day7Email(firstName: string, unsubscribeUrl: string): string {
+function day7Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
   const inner = `
     <tr><td style="padding:30px 30px 10px;">
       <p style="margin:0 0 16px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"}! ✨</p>
@@ -145,21 +158,21 @@ function day7Email(firstName: string, unsubscribeUrl: string): string {
         Browse hundreds of fresh designs from our community for ideas:
       </p>
       <p style="margin:0 0 18px;text-align:center;">
-        <a href="https://cakeaiartist.com/gallery" style="color:#2563EB;font-weight:600;text-decoration:underline;">→ Visit the Community Gallery</a>
+        <a href="${localizedPath("/gallery", country)}" style="color:#2563EB;font-weight:600;text-decoration:underline;">→ Visit the Community Gallery</a>
       </p>
       <p style="margin:0 0 8px;color:#555;font-size:14px;line-height:1.6;">
-        Want more cake ideas, tips, and trends? Our <a href="https://cakeaiartist.com/blog" style="color:#2563EB;">blog</a> is full of inspiration for every occasion.
+        Want more cake ideas, tips, and trends? Our <a href="${localizedPath("/blog", country)}" style="color:#2563EB;">blog</a> is full of inspiration for every occasion.
       </p>
     </td></tr>
     <tr><td style="padding:18px 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
+      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
         🎨 Design My Cake Now
       </a>
     </td></tr>`;
   return emailLayout(inner, unsubscribeUrl);
 }
 
-function day14Email(firstName: string, unsubscribeUrl: string): string {
+function day14Email(firstName: string, unsubscribeUrl: string, country?: string | null): string {
   const inner = `
     <tr><td style="padding:30px 30px 10px;">
       <p style="margin:0 0 16px;color:#2563EB;font-size:18px;font-weight:600;">Hey ${firstName || "there"} 💛</p>
@@ -180,19 +193,19 @@ function day14Email(firstName: string, unsubscribeUrl: string): string {
       </p>
     </td></tr>
     <tr><td style="padding:0 30px 30px;text-align:center;">
-      <a href="https://cakeaiartist.com/free-cake-designer" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
+      <a href="${localizedHome(country)}" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#D946EF 100%);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 4px 15px rgba(139,92,246,0.4);">
         ✨ Try It Free
       </a>
-      <p style="margin:18px 0 0;color:#888;font-size:13px;">Questions? Browse the <a href="https://cakeaiartist.com/faq" style="color:#2563EB;">FAQ</a>.</p>
+      <p style="margin:18px 0 0;color:#888;font-size:13px;">Questions? Browse the <a href="${localizedPath("/faq", country)}" style="color:#2563EB;">FAQ</a>.</p>
     </td></tr>`;
   return emailLayout(inner, unsubscribeUrl);
 }
 
-function buildEmailHtml(type: EmailType, firstName: string, unsubscribeUrl: string): string {
+function buildEmailHtml(type: EmailType, firstName: string, unsubscribeUrl: string, country?: string | null): string {
   switch (type) {
-    case "day2_welcome": return day2Email(firstName, unsubscribeUrl);
-    case "day7_trends": return day7Email(firstName, unsubscribeUrl);
-    case "day14_final": return day14Email(firstName, unsubscribeUrl);
+    case "day2_welcome": return day2Email(firstName, unsubscribeUrl, country);
+    case "day7_trends": return day7Email(firstName, unsubscribeUrl, country);
+    case "day14_final": return day14Email(firstName, unsubscribeUrl, country);
   }
 }
 
@@ -250,9 +263,10 @@ serve(async (req) => {
     // Test mode
     if (testEmail && testVariant) {
       const { data: profile } = await supabase.from("profiles")
-        .select("first_name").eq("email", testEmail).maybeSingle();
+        .select("first_name, country").eq("email", testEmail).maybeSingle();
       const firstName = profile?.first_name || "there";
-      const html = buildEmailHtml(testVariant, firstName, "https://cakeaiartist.com/settings");
+      const country = profile?.country || null;
+      const html = buildEmailHtml(testVariant, firstName, "https://cakeaiartist.com/settings", country);
       const result = await sendBrevo(testEmail, firstName, `[TEST] ${SUBJECTS[testVariant]}`, html);
 
       if (taskRun) {
@@ -278,7 +292,7 @@ serve(async (req) => {
 
     const { data: profiles, error: profilesErr } = await supabase
       .from("profiles")
-      .select("id, email, first_name, created_at, is_premium");
+      .select("id, email, first_name, created_at, is_premium, country");
     if (profilesErr) throw profilesErr;
 
     const candidates = (profiles || []).filter((p: any) =>
@@ -319,7 +333,7 @@ serve(async (req) => {
       if (sentMap.get(user.id)?.has(type)) { skipCount++; continue; }
 
       try {
-        const html = buildEmailHtml(type, user.first_name || "", "https://cakeaiartist.com/settings");
+        const html = buildEmailHtml(type, user.first_name || "", "https://cakeaiartist.com/settings", user.country);
         const result = await sendBrevo(user.email, user.first_name || "", SUBJECTS[type], html);
 
         if (result.ok) {
