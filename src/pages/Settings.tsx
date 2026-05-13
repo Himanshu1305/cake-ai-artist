@@ -100,6 +100,7 @@ export default function Settings() {
           email_reminders: data.email_reminders ?? true,
           birthday_reminders: data.birthday_reminders ?? true,
           marketing_emails: data.marketing_emails ?? true,
+          reengagement_emails: (data as any).reengagement_emails ?? true,
           anniversary_reminders: data.anniversary_reminders ?? true,
           blog_digest_emails: data.blog_digest_emails ?? true,
         });
