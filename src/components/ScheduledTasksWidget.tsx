@@ -168,9 +168,13 @@ export function ScheduledTasksWidget() {
   const handleRunNow = async (task: ScheduledTask) => {
     setRunningTask(task.name);
     try {
-      let body = {};
+      let body: Record<string, any> = {};
       if (task.functionName === 'generate-blog-post') {
         body = { generate_weekly_batch: true };
+      } else if (task.name === 'engagement-recent-visitors') {
+        body = { campaign: 'recent_visitors' };
+      } else if (task.name === 'engagement-we-miss-you') {
+        body = { campaign: 'we_miss_you' };
       }
 
       const { data, error } = await supabase.functions.invoke(task.functionName, { body });
