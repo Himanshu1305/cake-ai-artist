@@ -101,6 +101,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
   const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
+  // Map of generatedImages index -> saved DB row id (one entry per saved image)
+  const [savedImageIdByIndex, setSavedImageIdByIndex] = useState<Record<number, string>>({});
+  // Hardcoded brand domain so share links always point to production, regardless of preview env
+  const SHARE_BASE_URL = "https://cakeaiartist.com";
   const audioSectionRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (savedCakeImageId && audioSectionRef.current) {
@@ -109,6 +113,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   }, [savedCakeImageId]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  // When the active share target changes, fetch any existing audio attached to it
+  useEffect(() => {
+    if (!savedCakeImageId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("generated_images")
+        .select("audio_url, audio_duration_seconds")
+        .eq("id", savedCakeImageId)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setAudioUrl(data.audio_url ?? null);
+        setAudioDuration(data.audio_duration_seconds ?? null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [savedCakeImageId]);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
@@ -955,23 +976,27 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
   };
 
-  const saveGeneratedImage = async (selectedImageUrls: string[]) => {
+  const saveGeneratedImage = async (
+    selected: Array<{ index: number; url: string }>
+  ) => {
     if (!user) return;
 
     try {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
-      
+      const newIdMap: Record<number, string> = {};
+      let firstNewId: string | null = null;
+
       // Save all selected images
-      for (const imageUrl of selectedImageUrls) {
+      for (const { index, url: imageUrl } of selected) {
         // Save image to permanent storage
         console.log('Saving image to storage...');
         const { data: storageData, error: storageError } = await supabase.functions.invoke(
           'save-image-to-storage',
           {
-            body: { 
-              imageUrl, 
+            body: {
+              imageUrl,
               userId: user.id,
-              prompt 
+              prompt
             }
           }
         );
@@ -993,21 +1018,28 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             prompt: prompt,
             message: displayedMessage || null,
             message_type: useCustomMessage ? 'custom' : 'ai',
-            recipient_name: recipientName.trim() || name.trim(), // Smart fallback to main name
+            recipient_name: recipientName.trim() || name.trim(),
             occasion_type: occasion || null,
-            occasion_date: occasionDate || new Date().toISOString().split('T')[0], // Default to today for tracking
+            occasion_date: occasionDate || new Date().toISOString().split('T')[0],
           })
           .select()
           .single();
 
         if (imageError) throw imageError;
-        
-        // Store the first saved image ID for party pack generation
-        if (insertedImage && !savedCakeImageId) {
-          setSavedCakeImageId(insertedImage.id);
-          setAudioUrl(null);
-          setAudioDuration(null);
+
+        if (insertedImage) {
+          newIdMap[index] = insertedImage.id;
+          if (!firstNewId) firstNewId = insertedImage.id;
         }
+      }
+
+      // Track saved IDs by image index, and set the active share target
+      // to the first newly-saved image (user can switch via "Share this view")
+      setSavedImageIdByIndex((prev) => ({ ...prev, ...newIdMap }));
+      if (firstNewId && !savedCakeImageId) {
+        setSavedCakeImageId(firstNewId);
+        setAudioUrl(null);
+        setAudioDuration(null);
       }
 
       // Update generation tracking
@@ -2314,6 +2346,36 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                       {["Front View", "Side View", "Top-Down View"][index] || `View ${index + 1}`}
                     </div>
 
+                    {/* Share-target indicator / picker — only on saved images */}
+                    {savedImageIdByIndex[index] && (
+                      savedCakeImageId === savedImageIdByIndex[index] ? (
+                        <div className="absolute bottom-2 right-2 bg-gradient-to-r from-party-pink to-party-purple text-white px-2 py-1 rounded text-[11px] font-semibold shadow-lg flex items-center gap-1">
+                          <Share2 className="w-3 h-3" />
+                          Sharing this
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newId = savedImageIdByIndex[index];
+                            setSavedCakeImageId(newId);
+                            setAudioUrl(null);
+                            setAudioDuration(null);
+                            haptic.light();
+                            toast({
+                              title: "Share target updated",
+                              description: "Your share link now points to this view.",
+                            });
+                          }}
+                          className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-foreground px-2 py-1 rounded text-[11px] font-semibold shadow-lg flex items-center gap-1 transition-all"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          Share this
+                        </button>
+                      )
+                    )}
+
                     {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only */}
                     <Button
                       onClick={(e) => {
@@ -2451,15 +2513,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         });
                         
                         try {
-                          const selectedUrls = Array.from(selectedImages)
-                            .map(i => generatedImages[i])
-                            .filter((u): u is string => !!u && u !== '/placeholder.svg');
-                          if (selectedUrls.length === 0) {
+                          const selectedItems = Array.from(selectedImages)
+                            .map((index) => ({ index, url: generatedImages[index] }))
+                            .filter((it): it is { index: number; url: string } =>
+                              !!it.url && it.url !== '/placeholder.svg'
+                            );
+                          if (selectedItems.length === 0) {
                             toast({ title: "Still rendering", description: "Please wait until at least one cake view is ready before saving." });
                             setIsSavingToGallery(false);
                             return;
                           }
-                          await saveGeneratedImage(selectedUrls);
+                          await saveGeneratedImage(selectedItems);
                           
                           haptic.success();
                           
@@ -2560,7 +2624,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           variant="secondary"
                           className="w-full bg-party-purple/10 hover:bg-party-purple/20 text-party-purple border border-party-purple/30"
                           onClick={async () => {
-                            const url = `${window.location.origin}/cake/${savedCakeImageId}`;
+                            const url = `${SHARE_BASE_URL}/cake/${savedCakeImageId}`;
                             try {
                               await navigator.clipboard.writeText(url);
                               toast({

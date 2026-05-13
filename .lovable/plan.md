@@ -1,34 +1,53 @@
-## Make Message Options toggle clearly show both choices
+# Share Page Improvements
 
-**Problem:** The current control is a single `Switch` with a small dynamic label that flips between "AI Generated" and "Custom". Users can't see both options exist — it looks like a generic on/off toggle, and the inactive choice is invisible.
+## 1. Share URL on production
 
-**Fix:** Replace the switch with a segmented 2-button pill that always shows **both** "✨ AI Generated" and "✍️ Custom" side-by-side, with the active one highlighted in the party-purple/pink gradient and the inactive one muted-but-readable. This is a common, instantly-understood pattern (think iOS-style segmented control).
+The share link currently uses `window.location.origin`, so on preview it becomes `…lovableproject.com/cake/<id>`.
 
-### Scope (frontend only)
+**Fix:** Hardcode `https://cakeaiartist.com` as the base for share URLs (everywhere we copy a `/cake/:id` link). Every newly copied link will then always be `https://cakeaiartist.com/cake/<id>`, regardless of which environment generated it.
 
-**File: `src/components/CakeCreator.tsx`** — lines ~1983–1998
+## 2. Let the user choose which image is shared
 
-Replace the `flex items-center justify-between` header containing the `<Switch>` with:
-- Keep the "Message Options" label on the left (or move it above on narrow widths).
-- On the right, render a segmented control: a rounded container with two buttons:
-  - **AI Generated** — `setUseCustomMessage(false)`, active when `!useCustomMessage`
-  - **Custom** — `setUseCustomMessage(true)`, active when `useCustomMessage`
-- Active state: solid gradient background (party-purple → party-pink), white text, soft shadow.
-- Inactive state: transparent bg, foreground text, hover lightens.
-- Both buttons disabled while `isLoading`.
-- Uses semantic tokens (`bg-primary`, `text-primary-foreground`, `border-border`) — no raw colors.
-- Mobile (<640px): segmented control wraps below the label so neither truncates.
+Today only the first generated image is saved to `savedCakeImageId`, so the share link always points to image #1.
 
-No state shape changes — `useCustomMessage` boolean stays the same; only the input UI changes.
+Changes in `src/components/CakeCreator.tsx`:
+- Track `savedCakeImageIds: string[]` (one per saved image, parallel to `selectedImageUrls` / `generatedImages`).
+- When the user selects/clicks a thumbnail (the existing checkmark UI), set `savedCakeImageId` to the saved row id of that image.
+- "Copy share link" and the audio recorder both already key off `savedCakeImageId`, so they automatically follow the user's selection.
+- Visual cue: highlight the currently-shared image with a small "Sharing this one" badge.
 
-### Out of scope
-- The body content below the toggle (Textarea / "AI Magic Activated!" callout) stays as-is.
-- No backend, no copy changes elsewhere.
-- The two unrelated console errors (AdSense `availableWidth=0`, Firefox extension `features` undefined) are not caused by app code.
+## 3. Beautify the `/cake/:id` page (`SharedCake.tsx`)
 
-### Verification
-- Both "AI Generated" and "Custom" labels are visible at all times on the same row.
-- Clicking either switches the body content (textarea ↔ AI magic callout) instantly.
-- Active option is visually distinct (filled gradient + white text); inactive is clearly clickable.
-- Works at 946px viewport and at <640px (label + segmented control don't overlap).
-- Disabled appearance applies during generation.
+Rebuild the page into a celebratory landing experience using existing tokens (`party-pink`, `party-purple`, `party-cream`) — no new colors, no new deps:
+
+- Animated gradient background (party-pink → party-purple → party-blue).
+- Reuse `FloatingEmojis` + `ConfettiRain` for ambient celebration.
+- One-time confetti burst on load (reuse `canvas-confetti`, already used in `SuccessCelebration.tsx`).
+- Cake image: rounded card with soft glow ring, hover zoom, click → `ZoomableImage` modal.
+- `CandleRow` above the image with a "Blow out the candles 🎂" button that triggers blow-out animation + confetti burst.
+- Hero typography: large display script for the message, centered.
+- Voice message: replace the plain `<audio>` with a styled play pill (large circular play, animated waveform bars while playing, duration chip).
+- Sticky bottom CTA on mobile: "Make one for someone you love →" linking to `/`.
+- Reuse `SocialShareButtons` so the recipient can re-share (WhatsApp, Pinterest, FB, X, Copy).
+- Per-cake OG/meta tags (title = recipient name, image = cake image) for great WhatsApp/Twitter previews.
+- Footer: "Made with Cake AI Artist" with link + tiny logo.
+
+## 4. Replace the repetitive "For Von 🎂" heading
+
+The cake image already shows the recipient's name, so repeating it as a heading feels flat.
+
+Replace the heading block with:
+- **Kicker chip** above the message: **"🎁 Someone special made this for you"** (small pill, party-pink/purple gradient text).
+- The personal message becomes the hero text (large, script font, centered) — that carries the emotion.
+- Optional small date stamp ("Sent May 13, 2026") under the message.
+
+Net result: image carries the name visually, page copy carries the emotion.
+
+## Technical notes
+
+- Files touched:
+  - `src/components/CakeCreator.tsx` — multi-image saved-id tracking + use hardcoded `https://cakeaiartist.com` base for share URL.
+  - `src/pages/SharedCake.tsx` — visual rebuild, kicker chip, candles, confetti, styled voice player, OG meta tags, sticky CTA, social share buttons.
+- No DB schema changes — image rows already exist per generated image; we just stop hard-pinning to the first.
+- Reuses existing components: `ConfettiRain`, `FloatingEmojis`, `CandleRow`, `AnimatedFlame`, `ZoomableImage`, `SocialShareButtons`, `canvas-confetti`.
+- All colors via semantic tokens (`party-*`, `primary`, `muted-foreground`).
