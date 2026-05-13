@@ -75,33 +75,33 @@ export const GlobalReachWidget = () => {
   const conicGradient = `conic-gradient(${stops.join(", ")})`;
 
   return (
-    <section className="py-12 md:py-16 bg-gradient-to-b from-background to-cream/40">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <div className="relative bg-card/60 backdrop-blur-xl rounded-[40px] border border-party-pink/20 p-6 md:p-12 shadow-[0_32px_64px_-16px_hsl(var(--party-pink)/0.18)] overflow-hidden">
+    <section className="py-8 md:py-10 bg-gradient-to-b from-background to-cream/40">
+      <div className="container mx-auto px-4 max-w-3xl">
+        <div className="relative bg-card/60 backdrop-blur-xl rounded-3xl border border-party-pink/20 p-5 md:p-8 shadow-[0_24px_48px_-16px_hsl(var(--party-pink)/0.15)] overflow-hidden">
           {/* Decorative sprinkles */}
           <div className="absolute top-8 right-10 w-3 h-3 rounded-full bg-party-pink/30 blur-sm" aria-hidden />
           <div className="absolute bottom-16 left-8 w-5 h-1.5 rounded-full bg-party-purple/30 rotate-45 blur-sm" aria-hidden />
           <div className="absolute top-1/2 -right-3 w-8 h-8 rounded-full border-4 border-party-yellow/30" aria-hidden />
 
           {/* Header */}
-          <div className="text-center mb-10 md:mb-14 relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-party-pink/10 text-party-pink text-xs font-bold tracking-widest uppercase mb-5">
-              <span className="flex h-2 w-2 rounded-full bg-party-pink animate-pulse" />
+          <div className="text-center mb-6 md:mb-8 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-party-pink/10 text-party-pink text-[10px] font-bold tracking-widest uppercase mb-3">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-party-pink animate-pulse" />
               Global Community
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground leading-tight">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-foreground leading-tight">
               The world is{" "}
               <span className="text-party-pink italic">whisking</span> together
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              From home kitchens in Toronto to studios in Sydney, creators in {s.total_countries ?? 30}+ countries are decorating the future with Cake AI.
+            <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+              From home kitchens to pro studios, creators in {s.total_countries ?? 30}+ countries are decorating the future with Cake AI.
             </p>
           </div>
 
           {/* Chart + Legend */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10 md:gap-12 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
             {/* Donut */}
-            <div className="relative w-60 h-60 md:w-80 md:h-80 shrink-0 group">
+            <div className="relative w-44 h-44 md:w-56 md:h-56 shrink-0 group">
               <div
                 className="w-full h-full rounded-full shadow-2xl transition-all duration-500 group-hover:scale-[1.02]"
                 style={{
@@ -121,11 +121,11 @@ export const GlobalReachWidget = () => {
                   aria-hidden
                 />
                 {/* Inner hole */}
-                <div className="absolute inset-7 md:inset-9 bg-background rounded-full flex flex-col items-center justify-center shadow-inner z-10">
-                  <span className="text-4xl md:text-5xl font-bold text-foreground">
+                <div className="absolute inset-5 md:inset-7 bg-background rounded-full flex flex-col items-center justify-center shadow-inner z-10">
+                  <span className="text-2xl md:text-3xl font-bold text-foreground">
                     {s.total_countries ?? 30}+
                   </span>
-                  <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-1">
+                  <span className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-0.5">
                     Nations
                   </span>
                 </div>
@@ -138,36 +138,36 @@ export const GlobalReachWidget = () => {
             </div>
 
             {/* Legend */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 w-full md:w-auto md:min-w-[380px]">
+            <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 w-full md:w-auto md:min-w-[300px]">
               {s.top.map((c, i) => (
                 <div
                   key={c.code}
-                  className="flex items-center gap-3 px-2 py-1.5 rounded-lg transition-all duration-300 hover:bg-party-pink/5 hover:translate-x-0.5"
+                  className="flex items-center gap-2 px-1.5 py-1 rounded-md transition-all duration-300 hover:bg-party-pink/5"
                 >
                   <div
-                    className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
                     style={{ background: SEGMENT_COLORS[i % SEGMENT_COLORS.length] }}
                   />
-                  <span className="text-lg leading-none">{c.flag}</span>
-                  <span className="font-medium text-foreground text-sm md:text-base">
+                  <span className="text-base leading-none">{c.flag}</span>
+                  <span className="font-medium text-foreground text-xs md:text-sm truncate">
                     {c.name}
                   </span>
-                  <span className="ml-auto text-sm font-bold text-party-pink tabular-nums">
+                  <span className="ml-auto text-xs md:text-sm font-bold text-party-pink tabular-nums">
                     {c.pct}%
                   </span>
                 </div>
               ))}
               {othersPct > 0 && (
-                <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg sm:col-span-2 mt-1 pt-3 border-t border-dashed border-party-pink/20">
+                <div className="flex items-center gap-2 px-1.5 py-1 rounded-md col-span-2 mt-1 pt-2 border-t border-dashed border-party-pink/20">
                   <div
-                    className="w-3 h-3 rounded-full shrink-0"
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ background: OTHERS_COLOR }}
                   />
-                  <span className="text-lg leading-none">🌍</span>
-                  <span className="font-medium text-muted-foreground text-sm md:text-base">
+                  <span className="text-base leading-none">🌍</span>
+                  <span className="font-medium text-muted-foreground text-xs md:text-sm">
                     Other countries
                   </span>
-                  <span className="ml-auto text-sm font-bold text-muted-foreground tabular-nums">
+                  <span className="ml-auto text-xs md:text-sm font-bold text-muted-foreground tabular-nums">
                     {othersPct}%
                   </span>
                 </div>
@@ -176,7 +176,7 @@ export const GlobalReachWidget = () => {
           </div>
 
           {/* Bottom tagline */}
-          <p className="mt-10 text-center text-sm text-party-pink/70 font-medium tracking-wide relative z-10">
+          <p className="mt-6 text-center text-xs md:text-sm text-party-pink/70 font-medium tracking-wide relative z-10">
             Join the global celebration — one cake at a time.
           </p>
         </div>
