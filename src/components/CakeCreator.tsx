@@ -2473,6 +2473,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     <p className="text-xs text-center text-muted-foreground">
                       💡 Saved images can be starred ⭐ in your gallery to feature on our homepage!
                     </p>
+                  </div>
                 )}
 
                 {/* Voice Message Teaser - shown before save */}
