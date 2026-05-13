@@ -1,65 +1,36 @@
-## Goal
-Make all links inside the engagement drip emails (Day 2, Day 7, Day 14) point to the user's country-specific landing page when one exists, so a US user lands on the US/global homepage, an Indian user on `/india`, a UK user on `/uk`, etc. — instead of everyone hitting `/` and being geo-redirected.
+## Why "0 records"
 
-## Country → Landing Page Map
-Profiles store ISO codes (`IN`, `US`, `CA`, `AU`, `UK`, `PH`, etc.). Map them to existing routes:
+The last full run actually picked up **8 eligible inactive users**, but Brevo rejected 6 with `400 missing_parameter: name is missing in to`. Those 6 are users who signed up via Google OAuth (or otherwise) with no `first_name` saved on their profile — the function calls Brevo with `name: ""`, which Brevo refuses.
 
-| Country code | Landing path |
-|---|---|
-| IN | `/india` |
-| UK / GB | `/uk` |
-| CA | `/canada` |
-| AU | `/australia` |
-| US / other / null | `/` (default homepage) |
+The 2 that succeeded had a `first_name` and were logged in `engagement_email_logs`. So the next "Run Now" skips those 2 and re-tries only the 6 broken ones — all fail again → **Processed 0 records**.
 
-## What Changes (Per-Link Strategy)
+This is **not** a filter bug; the candidates are being found correctly.
 
-The emails contain two kinds of links:
-
-1. **Homepage / hero CTA links** (currently `https://cakeaiartist.com/`-style entry points)
-   → Replace with the localized landing path from the table above.
-   - In Day 2: the "Start with a cake" bottom CTA currently goes to `/free-cake-designer`. Keep the designer link as-is (no country variant exists), BUT also add a localized homepage anchor in the header/feature card "AI Cake Studio" badge so geo context is preserved.
-   - In Day 7 + Day 14: the bottom "Design My Cake / Try It Free" CTAs currently point to `/free-cake-designer`. Same — keep designer link, but ensure any "homepage"-style references become localized.
-
-2. **Universal feature pages** (`/free-cake-designer`, `/gallery`, `/blog`, `/party-planner`, `/faq`, `/contact`, `/settings`)
-   → These pages are global with no country-specific variants. Leave the path unchanged, but append a `?ref=email&country=<CODE>` query parameter so the page can render localized pricing/copy if it already supports geo (most already do via `GeoContext`).
-
-## Implementation
+## Fix
 
 In `supabase/functions/send-engagement-drip/index.ts`:
 
-1. Add a small helper:
-   ```ts
-   const LANDING_BY_COUNTRY: Record<string, string> = {
-     IN: "/india", UK: "/uk", GB: "/uk",
-     CA: "/canada", AU: "/australia",
-   };
-   function localizedHome(country?: string | null) {
-     const c = (country || "").toUpperCase();
-     return `https://cakeaiartist.com${LANDING_BY_COUNTRY[c] || "/"}`;
-   }
-   function localizedPath(path: string, country?: string | null) {
-     const c = (country || "").toUpperCase();
-     const sep = path.includes("?") ? "&" : "?";
-     return `https://cakeaiartist.com${path}${sep}ref=email${c ? `&country=${c}` : ""}`;
-   }
-   ```
+1. **Compute a safe fallback name** before calling Brevo:
+   - Use `first_name` if present and non-empty.
+   - Otherwise derive from the email local-part (e.g. `vamhall898@gmail.com` → `vamhall898`), title-cased.
+   - Final fallback: `"there"`.
 
-2. Pass `country` into `day2Email`, `day7Email`, `day14Email`, and `buildEmailHtml`. Source it from:
-   - **Test mode**: read `country` from the test recipient's profile (already querying `profiles` for `first_name` — extend to `first_name, country`).
-   - **Production mode**: already selecting profiles — just include `country` in the existing `select(...)` and pass it through the loop.
+2. **Apply this fallback in two places**:
+   - The production loop where `sendBrevo(user.email, user.first_name || "", ...)` is called.
+   - The test-mode branch where `sendBrevo(testEmail, firstName, ...)` is called.
 
-3. Replace every hard-coded `https://cakeaiartist.com/...` URL in the three template functions with `localizedHome(country)` for any "go to homepage / start" CTA, and `localizedPath('/gallery', country)` (etc.) for feature-page links. Footer unsubscribe stays unchanged (still `/settings`).
+3. Keep passing the original (possibly empty) `first_name` into `buildEmailHtml` so the in-body greeting still falls back to "there" as it does today — only the Brevo `to.name` field needs the safe value.
 
-4. Redeploy `send-engagement-drip`.
+4. Redeploy the `send-engagement-drip` edge function.
 
-## Out of Scope
-- No changes to `send-weekly-upgrade-nudge` (already country-aware for pricing; link localization can be a follow-up if needed).
-- No new landing pages, no changes to `GeoRedirectWrapper`, no DB migration.
-- No copy changes — only URL changes.
+## Verification
 
-## Test
-Admin → Scheduled Tasks → "Test Day 2 / 7 / 14". Verify:
-- An admin profile with `country = 'IN'` receives an email whose "Start with a cake" / homepage links resolve to `cakeaiartist.com/india` (or `?country=IN` on feature pages).
-- A profile with `country = 'US'` or null gets `cakeaiartist.com/`.
-- Day 7 + Day 14 buttons reflect the same.
+- Click **Run Now** again. Expect ~6 sends to succeed and `records_processed` to jump.
+- Confirm `engagement_email_logs` gains rows for the previously-failing addresses.
+- Confirm the `error_message` field on the latest `scheduled_task_runs` row is empty.
+
+## Out of scope
+
+- No DB schema changes.
+- No template/content changes (that work was already shipped).
+- No change to filter logic, age windows, opt-out, or country localization.

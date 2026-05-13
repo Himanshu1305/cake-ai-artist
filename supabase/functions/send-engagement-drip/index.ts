@@ -209,13 +209,22 @@ function buildEmailHtml(type: EmailType, firstName: string, unsubscribeUrl: stri
   }
 }
 
+function safeRecipientName(firstName: string | null | undefined, email: string): string {
+  const fn = (firstName || "").trim();
+  if (fn) return fn;
+  const local = (email.split("@")[0] || "there").replace(/[._-]+/g, " ").trim();
+  if (!local) return "there";
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
 async function sendBrevo(toEmail: string, toName: string, subject: string, html: string) {
+  const safeName = toName && toName.trim() ? toName.trim() : safeRecipientName(null, toEmail);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: { "api-key": BREVO_API_KEY!, "Content-Type": "application/json" },
     body: JSON.stringify({
       sender: { name: "Cake AI Artist", email: "welcome@cakeaiartist.com" },
-      to: [{ email: toEmail, name: toName }],
+      to: [{ email: toEmail, name: safeName }],
       subject,
       htmlContent: html,
     }),
