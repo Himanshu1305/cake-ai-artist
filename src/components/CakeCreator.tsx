@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
   const [bgViewLabels, setBgViewLabels] = useState<string[]>([]);
   const [savedCakeImageId, setSavedCakeImageId] = useState<string | null>(null);
+  const audioSectionRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (savedCakeImageId && audioSectionRef.current) {
+      audioSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [savedCakeImageId]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
@@ -1797,7 +1803,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <Sparkles className="w-4 h-4" />
                   Generation Quality
                 </Label>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setGenerationQuality('fast')}
@@ -1808,21 +1814,21 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         : "border-border hover:border-party-purple/50"
                     }`}
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                       generationQuality === 'fast' ? "border-party-purple" : "border-muted-foreground"
                     }`}>
                       {generationQuality === 'fast' && (
                         <div className="w-3 h-3 rounded-full bg-party-purple" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">⚡ Fast</span>
-                        <span className="text-xs text-muted-foreground">(~30 seconds)</span>
+                        <span className="text-xs text-muted-foreground">~30s</span>
                       </div>
                     </div>
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => setGenerationQuality('high')}
@@ -1833,21 +1839,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         : "border-border hover:border-party-purple/50"
                     }`}
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                       generationQuality === 'high' ? "border-party-purple" : "border-muted-foreground"
                     }`}>
                       {generationQuality === 'high' && (
                         <div className="w-3 h-3 rounded-full bg-party-purple" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">✨ High Quality</span>
-                        <span className="text-xs text-muted-foreground">(~2 minutes)</span>
+                        <span className="text-xs text-muted-foreground">~2 min</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Creates more detailed, refined cake images
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">More detailed & refined</p>
                     </div>
                   </button>
                 </div>
@@ -2478,9 +2482,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   </div>
                 )}
 
+                {/* Voice Message Teaser - shown before save */}
+                {generatedImages.length > 0 && !savedCakeImageId && (
+                  <div className="mt-4 p-3 rounded-lg border border-party-pink/30 bg-party-pink/5 text-sm text-center">
+                    🎙️ <strong>Want to add a voice message?</strong>{" "}
+                    {isLoggedIn
+                      ? "Save to gallery first — then record up to 30s for the recipient."
+                      : "Sign in & save your cake to record a 30s voice message for the recipient."}
+                  </div>
+                )}
+
                 {/* Voice Message - Show after saving to gallery */}
                 {isLoggedIn && savedCakeImageId && user?.id && (
-                  <div className="pt-4 border-t border-muted">
+                  <div ref={audioSectionRef} className="pt-4 border-t border-muted scroll-mt-24">
                     <div className="space-y-2 mb-4 text-center">
                       <h4 className="font-semibold text-foreground flex items-center justify-center gap-2">
                         🎙️ Add a Voice Message
