@@ -2466,15 +2466,17 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         });
                         
                         try {
-                          const selectedUrls = Array.from(selectedImages)
-                            .map(i => generatedImages[i])
-                            .filter((u): u is string => !!u && u !== '/placeholder.svg');
-                          if (selectedUrls.length === 0) {
+                          const selectedItems = Array.from(selectedImages)
+                            .map((index) => ({ index, url: generatedImages[index] }))
+                            .filter((it): it is { index: number; url: string } =>
+                              !!it.url && it.url !== '/placeholder.svg'
+                            );
+                          if (selectedItems.length === 0) {
                             toast({ title: "Still rendering", description: "Please wait until at least one cake view is ready before saving." });
                             setIsSavingToGallery(false);
                             return;
                           }
-                          await saveGeneratedImage(selectedUrls);
+                          await saveGeneratedImage(selectedItems);
                           
                           haptic.success();
                           
