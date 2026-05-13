@@ -1980,20 +1980,38 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
             {/* Custom Message Section */}
             <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Message Options
                 </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {useCustomMessage ? "Custom" : "AI Generated"}
-                  </span>
-                  <Switch
-                    checked={useCustomMessage}
-                    onCheckedChange={setUseCustomMessage}
+                <div className="inline-flex p-1 rounded-full border border-border bg-background self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomMessage(false)}
                     disabled={isLoading}
-                  />
+                    aria-pressed={!useCustomMessage}
+                    className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${
+                      !useCustomMessage
+                        ? "bg-gradient-to-r from-party-purple to-party-pink text-white shadow-md"
+                        : "text-muted-foreground hover:text-foreground"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    ✨ AI Generated
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomMessage(true)}
+                    disabled={isLoading}
+                    aria-pressed={useCustomMessage}
+                    className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${
+                      useCustomMessage
+                        ? "bg-gradient-to-r from-party-purple to-party-pink text-white shadow-md"
+                        : "text-muted-foreground hover:text-foreground"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    ✍️ Custom
+                  </button>
                 </div>
               </div>
               
