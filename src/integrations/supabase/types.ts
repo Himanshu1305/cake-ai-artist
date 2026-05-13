@@ -1201,6 +1201,7 @@ export type Database = {
           email_reminders: boolean | null
           id: string
           marketing_emails: boolean | null
+          reengagement_emails: boolean
           updated_at: string
           user_id: string
         }
@@ -1212,6 +1213,7 @@ export type Database = {
           email_reminders?: boolean | null
           id?: string
           marketing_emails?: boolean | null
+          reengagement_emails?: boolean
           updated_at?: string
           user_id: string
         }
@@ -1223,6 +1225,7 @@ export type Database = {
           email_reminders?: boolean | null
           id?: string
           marketing_emails?: boolean | null
+          reengagement_emails?: boolean
           updated_at?: string
           user_id?: string
         }

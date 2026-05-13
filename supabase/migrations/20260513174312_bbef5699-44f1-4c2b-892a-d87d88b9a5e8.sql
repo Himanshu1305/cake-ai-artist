@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ADD COLUMN IF NOT EXISTS reengagement_emails boolean NOT NULL DEFAULT true;
