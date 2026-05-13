@@ -498,6 +498,7 @@ CONTEXT:
 - Recipient: ${name} (${gender || 'unspecified'})
 - Relationship to sender: ${relation} (sender is the ${inverseRel})
 - Occasion: ${occasion || 'birthday'}
+${character ? `- Recipient is a fan of: ${character}` : ''}
 
 ${toneProfile}
 
@@ -511,8 +512,9 @@ HARD RULES — DO NOT BREAK:
 3. BAN these phrases (and anything similar): "on this special occasion", "may your day be filled with", "wishing you continued success", "heartfelt congratulations", "warmest wishes", "may all your dreams come true", "endless joy and prosperity".
 4. Use contractions naturally where the tone allows.
 5. Use the CORRECT greeting for the occasion (Merry Christmas, Happy New Year, Happy Birthday, Congratulations, etc.).
-6. Do NOT mention the cake, the character theme, or any visual element. Only the message.
-7. Return ONLY the message text. No quotes, no preface, no signature.
+6. Do NOT mention the cake or any visual element of it.
+${character ? `7. CHARACTER REFERENCE: If "${character}" is a well-known character (anime, movie, game, cartoon, sport, etc.) that you genuinely recognize, weave in ONE subtle, warm reference — a trait, catchphrase, power, or vibe — naturally in the message. Keep it short and human, NEVER forced or cringey, and never break the 2-sentence limit. If you do NOT clearly recognize "${character}", SKIP the reference entirely and write a normal warm message — do not invent or guess.` : ''}
+${character ? '8' : '7'}. Return ONLY the message text. No quotes, no preface, no signature.
 
 ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the right tone (do not copy verbatim):\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}`;
 
