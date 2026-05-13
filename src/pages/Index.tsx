@@ -312,39 +312,39 @@ const Index = () => {
             </Link>
             
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex gap-2 items-center">
-              <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
+            <div className="hidden md:flex gap-1 items-center">
+              <Link to="/how-it-works"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
               <Link to="/party-planner">
-                <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-purple/10 gap-1.5">
+                <Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-purple/10 gap-1.5">
                   Party Planner
                   <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">PREMIUM</span>
                 </Button>
               </Link>
               <Link to="/pricing">
-                <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
+                <Button variant="ghost" size="sm" className="relative px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
                   <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
                     🔥
                   </span>
                 </Button>
               </Link>
-              <Link to="/use-cases"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button></Link>
-              <Link to="/community"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button></Link>
-              <Link to="/blog"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Blog</Button></Link>
-              <Link to="/faq"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button></Link>
-              {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>}
-              {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>}
-              {isAdmin && <Button onClick={() => navigate("/admin")} variant="ghost" size="sm" className="text-party-gold hover:text-party-gold/80 hover:bg-party-gold/10">Admin</Button>}
+              <Link to="/use-cases" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button></Link>
+              <Link to="/community" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button></Link>
+              <Link to="/blog"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Blog</Button></Link>
+              <Link to="/faq" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button></Link>
+              {isLoggedIn && <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>}
+              {isLoggedIn && <Button onClick={() => navigate("/settings")} variant="ghost" size="sm" className="hidden lg:inline-flex px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>}
+              {isAdmin && <Button onClick={() => navigate("/admin")} variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-party-gold hover:text-party-gold/80 hover:bg-party-gold/10">Admin</Button>}
               {isLoggedIn ? (
-                <Button onClick={handleLogout} variant="outline" size="sm" className="border-party-pink/30 hover:bg-party-pink/10">Logout</Button>
+                <Button onClick={handleLogout} variant="outline" size="sm" className="px-2 text-xs lg:text-sm border-party-pink/30 hover:bg-party-pink/10">Logout</Button>
               ) : (
-                <Button onClick={() => navigate("/auth")} size="sm" className="bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
+                <Button onClick={() => navigate("/auth")} size="sm" className="px-3 text-xs lg:text-sm bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
               )}
             </div>
 
             {/* Mobile Hamburger Menu */}
             <Sheet>
-              <SheetTrigger asChild className="lg:hidden">
+              <SheetTrigger asChild className="md:hidden">
                 <Button variant="ghost" size="icon" className="text-foreground hover:bg-party-pink/10">
                   <Menu className="h-6 w-6" />
                 </Button>
@@ -429,8 +429,8 @@ const Index = () => {
           <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
         </div>
 
-        <div className="container relative mx-auto px-4 py-12 md:py-24">
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div className="container relative mx-auto px-4 py-6 md:py-12">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 md:items-start">
             {/* Left: copy */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -438,8 +438,6 @@ const Index = () => {
               transition={{ duration: 0.6 }}
               className="order-2 md:order-1 text-center md:text-left"
             >
-              
-
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-surface-elevated/60 backdrop-blur-sm mb-6">
                 <Star className="w-3.5 h-3.5 text-gold fill-gold" />
                 <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.18em] text-foreground/80">
