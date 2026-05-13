@@ -62,10 +62,19 @@ const SCHEDULED_TASKS: Omit<ScheduledTask, 'lastRun'>[] = [
     name: 'weekly-upgrade-nudge',
     displayName: 'Weekly Upgrade Nudge',
     icon: '💎',
-    description: 'Sends rotating upgrade emails to free users (4 template variants)',
+    description: 'Sends rotating upgrade emails to ENGAGED free users (have created ≥1 cake)',
     schedule: '0 10 * * 1', // Monday at 10 AM UTC
     scheduleHuman: 'Every Monday at 10:00 UTC',
     functionName: 'send-weekly-upgrade-nudge',
+  },
+  {
+    name: 'engagement-drip',
+    displayName: 'Inactive User Engagement Drip',
+    icon: '🌱',
+    description: 'Day 2 / Day 7 / Day 14 onboarding emails to users who never created a cake',
+    schedule: '0 9 * * *', // Daily at 9 AM UTC
+    scheduleHuman: 'Every day at 09:00 UTC',
+    functionName: 'send-engagement-drip',
   },
 ];
 
@@ -209,6 +218,31 @@ export function ScheduledTasksWidget() {
       });
     } catch (error: any) {
       toast.error('Test nudge failed', { description: error.message });
+    } finally {
+      setRunningTask(null);
+    }
+  };
+
+  const handleTestEngagementDrip = async (variant: 'day2_welcome' | 'day7_trends' | 'day14_final') => {
+    const key = `engagement-drip-test-${variant}`;
+    setRunningTask(key);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        toast.error('Could not get your email for test send');
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('send-engagement-drip', {
+        body: { testEmail: user.email, variant },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(`Test ${variant} sent to ${user.email}`);
+      } else {
+        toast.error('Test failed', { description: data?.error || 'Unknown error' });
+      }
+    } catch (error: any) {
+      toast.error('Test failed', { description: error.message });
     } finally {
       setRunningTask(null);
     }
@@ -376,6 +410,30 @@ export function ScheduledTasksWidget() {
                         </>
                       )}
                     </Button>
+                  )}
+                  {task.name === 'engagement-drip' && (
+                    <>
+                      {(['day2_welcome', 'day7_trends', 'day14_final'] as const).map((v) => {
+                        const label = v === 'day2_welcome' ? 'Day 2' : v === 'day7_trends' ? 'Day 7' : 'Day 14';
+                        const isThisRunning = runningTask === `engagement-drip-test-${v}`;
+                        return (
+                          <Button
+                            key={v}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleTestEngagementDrip(v)}
+                            disabled={!!runningTask}
+                          >
+                            {isThisRunning ? (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            ) : (
+                              <Send className="w-3 h-3 mr-1" />
+                            )}
+                            Test {label}
+                          </Button>
+                        );
+                      })}
+                    </>
                   )}
                   <Button
                     size="sm"

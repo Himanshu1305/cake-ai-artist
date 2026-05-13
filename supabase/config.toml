@@ -66,6 +66,9 @@ verify_jwt = false
 [functions.send-weekly-upgrade-nudge]
 verify_jwt = false
 
+[functions.send-engagement-drip]
+verify_jwt = false
+
 [functions.cancel-razorpay-subscription]
 verify_jwt = true
 

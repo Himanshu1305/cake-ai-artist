@@ -264,6 +264,30 @@ export type Database = {
         }
         Relationships: []
       }
+      engagement_email_logs: {
+        Row: {
+          created_at: string
+          email_type: string
+          id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          id?: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string | null
