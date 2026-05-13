@@ -345,7 +345,8 @@ export function ScheduledTasksWidget() {
       </CardHeader>
       <CardContent className="space-y-4">
         {tasks.map((task) => {
-          const nextRun = getNextRunTime(task.schedule);
+          const isManual = task.schedule === 'manual';
+          const nextRun = isManual ? null : getNextRunTime(task.schedule);
           const isRunning = runningTask === task.name;
           const isTestRunning = runningTask === 'anniversary-reminders-test';
 
