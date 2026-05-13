@@ -371,7 +371,10 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      success: true, sent: sentCount, failed: failCount, skipped: skipCount,
+      success: true,
+      sent: sentCount, failed: failCount, skipped: skipCount,
+      records_processed: sentCount,
+      message: `Sent ${sentCount}, failed ${failCount}, skipped ${skipCount}`,
       errors: errors.slice(0, 10),
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: any) {

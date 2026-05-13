@@ -1,36 +1,25 @@
-## Why "0 records"
+I checked the latest run data: the drip did send emails. The most recent `engagement-drip` run shows `Sent 6, failed 0, skipped 6`, and engagement logs now contain 8 drip emails total. The “0 records” you’re seeing is most likely a UI/reporting mismatch: the admin button expects `records_processed`, but the function currently returns `sent`, `failed`, and `skipped`.
 
-The last full run actually picked up **8 eligible inactive users**, but Brevo rejected 6 with `400 missing_parameter: name is missing in to`. Those 6 are users who signed up via Google OAuth (or otherwise) with no `first_name` saved on their profile — the function calls Brevo with `name: ""`, which Brevo refuses.
+Plan:
 
-The 2 that succeeded had a `first_name` and were logged in `engagement_email_logs`. So the next "Run Now" skips those 2 and re-tries only the 6 broken ones — all fail again → **Processed 0 records**.
+1. Update the engagement drip function response
+   - Return `records_processed: sentCount`.
+   - Return a clear `message`, e.g. `Sent 6, failed 0, skipped 6`.
+   - Keep the existing database task-run logging unchanged.
 
-This is **not** a filter bug; the candidates are being found correctly.
+2. Update the admin Run Now success toast
+   - For engagement drip, display the returned `message` or `sent` count instead of falling back to `Processed 0 records`.
+   - Keep other scheduled task behavior unchanged.
 
-## Fix
+3. Improve the admin “Last Run” display if needed
+   - Make sure skipped/failed counts from `result_message` remain visible even when records were sent.
+   - This will prevent confusion when all currently eligible users have already received their due drip email.
 
-In `supabase/functions/send-engagement-drip/index.ts`:
+4. Deploy and verify
+   - Redeploy the updated engagement drip function.
+   - Run the function once to confirm the admin UI shows the real result instead of `0`.
 
-1. **Compute a safe fallback name** before calling Brevo:
-   - Use `first_name` if present and non-empty.
-   - Otherwise derive from the email local-part (e.g. `vamhall898@gmail.com` → `vamhall898`), title-cased.
-   - Final fallback: `"there"`.
-
-2. **Apply this fallback in two places**:
-   - The production loop where `sendBrevo(user.email, user.first_name || "", ...)` is called.
-   - The test-mode branch where `sendBrevo(testEmail, firstName, ...)` is called.
-
-3. Keep passing the original (possibly empty) `first_name` into `buildEmailHtml` so the in-body greeting still falls back to "there" as it does today — only the Brevo `to.name` field needs the safe value.
-
-4. Redeploy the `send-engagement-drip` edge function.
-
-## Verification
-
-- Click **Run Now** again. Expect ~6 sends to succeed and `records_processed` to jump.
-- Confirm `engagement_email_logs` gains rows for the previously-failing addresses.
-- Confirm the `error_message` field on the latest `scheduled_task_runs` row is empty.
-
-## Out of scope
-
-- No DB schema changes.
-- No template/content changes (that work was already shipped).
-- No change to filter logic, age windows, opt-out, or country localization.
+Technical details:
+- No database schema changes are needed.
+- The current eligibility query shows `unsent_due_now = 0`, meaning all users currently due for Day 2/7/14 have already been sent their current drip stage.
+- One inactive user is too new for Day 2, so they will become eligible later.
