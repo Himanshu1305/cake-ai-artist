@@ -198,6 +198,25 @@ export function ScheduledTasksWidget() {
     }
   };
 
+  const handleTestEngagement = async (task: ScheduledTask) => {
+    const testKey = `${task.name}-test`;
+    setRunningTask(testKey);
+    try {
+      const campaign = task.name === 'engagement-recent-visitors' ? 'recent_visitors' : 'we_miss_you';
+      const { data, error } = await supabase.functions.invoke('send-engagement-drip', {
+        body: { campaign, testEmail: 'himanshu1305@gmail.com' },
+      });
+      if (error) throw error;
+      toast.success(`Test email sent`, {
+        description: data?.message || `Sent ${task.displayName} preview to himanshu1305@gmail.com`,
+      });
+    } catch (error: any) {
+      toast.error('Test email failed', { description: error.message });
+    } finally {
+      setRunningTask(null);
+    }
+  };
+
   const handleSendTestReminder = async () => {
     setRunningTask('anniversary-reminders-test');
     try {
