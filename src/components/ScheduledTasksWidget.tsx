@@ -423,6 +423,26 @@ export function ScheduledTasksWidget() {
                       )}
                     </Button>
                   )}
+                  {(task.name === 'engagement-recent-visitors' || task.name === 'engagement-we-miss-you') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleTestEngagement(task)}
+                      disabled={runningTask === `${task.name}-test` || !!runningTask}
+                    >
+                      {runningTask === `${task.name}-test` ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3 mr-1" />
+                          Test Email
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
