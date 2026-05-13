@@ -1,58 +1,39 @@
 ## Goal
-Rewrite the Day 2 engagement email so it stops sounding like a welcome email and instead reads as a friendly "we noticed you haven't tried anything yet" nudge with multiple engagement entry points.
+Fix two visual issues in the Day 2 engagement email so it matches the homepage brand (warm cream + gold, not purple) and the header banner feels balanced instead of empty.
 
-## Tone & Framing
-- Acknowledge they already signed up (no "welcome")
-- Thank them for joining / exploring
-- Gently observe: "we noticed you haven't created your first cake yet, browsed the gallery, or read the blog"
-- Position as helpful, not salesy — give them choices, not one CTA
+## Issues
+1. **Header banner** — currently a tall purple/pink/orange gradient block with just a small logo + "Cake AI Artist" + tagline. Lots of dead space, looks incomplete.
+2. **Background / overall vibe** — body uses `#f8f5f2` cream (fine) but the header gradient (`#8B5CF6 → #D946EF → #F97316`) and the bottom CTA button (purple→pink gradient) make the email read as "purple". Homepage is warm cream + gold/amber + dark text, with pink only as a small accent.
 
-## New Day 2 Email Structure
+## Fixes (Day 2 only — `day2Email()` + `emailLayout()` shared header/footer used only here for now, OR introduce a Day 2-specific layout to avoid affecting Day 7/14)
 
-**Subject:** "Did something stop you? Here's what you're missing 🎂"
-(Alt option: "Your Cake AI Artist account is waiting ✨")
+### Header banner redesign
+- Replace the tall purple gradient with a **warm cream → soft gold gradient** (e.g. `#fdf8f0 → #fcecc9`) with a thin gold bottom border (`#E5B547`).
+- Make it more compact (less vertical padding) and visually complete by adding:
+  - Logo on the left (slightly larger, 56px)
+  - Brand name "Cake AI Artist" in dark serif-style heading next to logo (left-aligned, not centered)
+  - Right side: a small gold pill/badge "🎂 AI Cake Studio" or "⭐ 4.9 · Loved in 30+ countries" so the right half isn't empty
+  - Remove the "AI-Powered Cake Design" subline (redundant once right badge is added)
+- Header text color switches from white to dark (`#1a1a2e`) since background is now light.
 
-**Header:** Same brand gradient + logo (unchanged)
+### Color palette alignment with homepage
+- Body bg: keep `#f8f5f2` (already correct).
+- Card bg: keep white.
+- Accent: switch from purple/pink to **gold/amber** (`#E5B547` / `#F59E0B`) for borders, the feature card left-border, and the bottom CTA button gradient (`#F59E0B → #E5B547` instead of purple→pink).
+- Links: keep `#2563EB` blue (per project Core memory).
+- Reviews strip bg: change from `#fff7ed` to a very light gold `#fdf6e3`.
+- Feature card left border: change from `#F97316` orange to gold `#E5B547` to match homepage tone.
+- Footer link color: change unsubscribe link from purple `#8B5CF6` to blue `#2563EB`.
 
-**Body sections:**
-
-1. **Greeting + acknowledgement** (2 lines)
-   - "Hey {firstName}, thanks again for joining Cake AI Artist!"
-   - "We noticed you haven't had a chance to try things out yet — totally fine, life gets busy. Here's a quick tour of what's waiting for you."
-
-2. **"Pick where to start" — 3 feature cards** (the core change)
-   Each card = icon emoji + short title + 1-line description + link button:
-   - 🎂 **Design your first cake** → `/free-cake-designer` — "Type a name and occasion, get a cake in 30 seconds"
-   - 🖼️ **Browse the community gallery** → `/gallery` — "See what others are creating right now"
-   - 📖 **Read the blog** → `/blog` — "Cake trends, ideas & tips for every occasion"
-   - 🎁 **Try the Party Pack generator** → `/party-planner` — "Matching invites, thank-you cards & more"
-
-3. **Social proof / reviews strip**
-   - "⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide"
-   - Link → `/gallery` (where ratings/comments live) or testimonial section on homepage
-
-4. **Feedback nudge**
-   - "Something not working? Hit reply — we read every email."
-   - Optional link to `/contact` or FAQ
-
-5. **Footer** (unchanged: unsubscribe + copyright)
-
-## Visual Style
-- Keep existing brand: warm cream `#f8f5f2` body bg, white card, party gradient header, blue `#2563EB` for links/headings
-- Feature cards: light bordered boxes (`#fef9f5` bg, party-orange left border like Day 14) stacked vertically — mobile-safe
-- Each card has its own small button/link in brand blue, not the big purple gradient (so we offer choices, not one dominant CTA)
-- One smaller secondary "Start with a cake →" gradient button at the bottom for users who just want one click
-
-## Files to Change
-- `supabase/functions/send-engagement-drip/index.ts` — rewrite `day2Email()` only
-- Subject in `SUBJECTS.day2_welcome` updated
-- Internal type key `day2_welcome` stays the same (no DB migration needed; it's just an identifier)
-- Redeploy edge function after edit
+### Scope
+- Edit only the Day 2 visual rendering in `supabase/functions/send-engagement-drip/index.ts`.
+- Since `emailLayout()` is shared with Day 7 and Day 14, introduce a **separate `day2Layout()`** wrapper (or pass a `theme` arg) so Day 7/14 stay untouched per earlier scope agreement.
+- Redeploy `send-engagement-drip` after edit.
 
 ## Out of Scope
-- Day 7 and Day 14 templates (leave as-is for now — we'll review them separately after you test Day 2)
-- No DB schema changes
-- No cron / admin widget changes
+- Day 7 and Day 14 templates and their headers.
+- Logo asset changes, copy changes, link changes (copy stays as-is).
+- No DB / cron / admin widget changes.
 
-## Test Flow
-After change: Admin → Scheduled Tasks → "Test Day 2" → review in inbox → iterate copy if needed.
+## Test
+Admin → Scheduled Tasks → "Test Day 2" → confirm header is balanced (logo left, badge right, light gold gradient) and overall email reads as cream/gold rather than purple.
