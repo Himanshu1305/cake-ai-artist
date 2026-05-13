@@ -1487,6 +1487,8 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
+
+            <GlobalReachAdmin liveCountryStats={userCountryStats} />
           </TabsContent>
 
           <UserActivityPanel
