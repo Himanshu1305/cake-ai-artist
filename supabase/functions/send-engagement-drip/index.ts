@@ -292,7 +292,7 @@ serve(async (req) => {
 
     const { data: profiles, error: profilesErr } = await supabase
       .from("profiles")
-      .select("id, email, first_name, created_at, is_premium");
+      .select("id, email, first_name, created_at, is_premium, country");
     if (profilesErr) throw profilesErr;
 
     const candidates = (profiles || []).filter((p: any) =>
