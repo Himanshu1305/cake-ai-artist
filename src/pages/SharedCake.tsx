@@ -89,7 +89,7 @@ export default function SharedCake() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-party-cream to-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-muted to-background">
         <Loader2 className="h-10 w-10 animate-spin text-party-purple" />
       </div>
     );
@@ -97,7 +97,7 @@ export default function SharedCake() {
 
   if (notFound || !cake) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-party-cream to-background p-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-muted to-background p-6 text-center">
         <h1 className="text-2xl font-bold mb-2">Cake not found 🎂</h1>
         <p className="text-muted-foreground mb-6">This share link may have expired.</p>
         <Link to="/">
@@ -124,7 +124,7 @@ export default function SharedCake() {
         <link rel="canonical" href={shareUrl} />
       </Helmet>
 
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-party-pink/30 via-party-purple/20 to-party-blue/30 py-8 px-4">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-party-pink/30 via-party-purple/20 to-party-mint/30 py-8 px-4">
         {/* Ambient celebration */}
         <ConfettiRain count={18} />
 
@@ -132,7 +132,7 @@ export default function SharedCake() {
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-party-pink/30 blur-3xl animate-pulse" />
           <div className="absolute top-1/3 -right-24 w-96 h-96 rounded-full bg-party-purple/30 blur-3xl animate-pulse [animation-delay:1.5s]" />
-          <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-party-blue/30 blur-3xl animate-pulse [animation-delay:3s]" />
+          <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-party-mint/30 blur-3xl animate-pulse [animation-delay:3s]" />
         </div>
 
         <div className="relative z-10 max-w-lg mx-auto">
@@ -154,7 +154,7 @@ export default function SharedCake() {
           {/* Cake image card */}
           <Card className="relative overflow-hidden border-2 border-party-purple/30 shadow-2xl rounded-2xl">
             {/* Glow ring */}
-            <div aria-hidden className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-party-pink via-party-purple to-party-blue opacity-40 blur-xl -z-10" />
+            <div aria-hidden className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-party-pink via-party-purple to-party-mint opacity-40 blur-xl -z-10" />
 
             <div className="relative group">
               <img
@@ -165,7 +165,7 @@ export default function SharedCake() {
               />
             </div>
 
-            <div className="p-6 space-y-5 text-center bg-gradient-to-b from-white via-party-cream/40 to-white">
+            <div className="p-6 space-y-5 text-center bg-gradient-to-b from-white via-muted/40 to-white">
               {cake.message && (
                 <p className="text-xl md:text-2xl font-display italic leading-snug text-foreground/90 whitespace-pre-line">
                   "{cake.message}"
