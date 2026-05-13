@@ -304,12 +304,20 @@ serve(async (req) => {
     }
 
     // Production: get all free users with country
-    const { data: profiles, error: profilesError } = await supabaseAdmin
+    const { data: allProfiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
       .select("id, email, first_name, country")
       .or("is_premium.is.null,is_premium.eq.false");
 
     if (profilesError) throw profilesError;
+
+    // Only target users who have actually generated at least one cake (engaged free users).
+    // Inactive users get the engagement-drip series instead.
+    const { data: activeRows } = await supabaseAdmin
+      .from("generated_images")
+      .select("user_id");
+    const activeIds = new Set((activeRows || []).map((r: any) => r.user_id));
+    const profiles = (allProfiles || []).filter((p: any) => activeIds.has(p.id));
     if (!profiles || profiles.length === 0) {
       if (taskRun) {
         await supabaseAdmin.from("scheduled_task_runs").update({
