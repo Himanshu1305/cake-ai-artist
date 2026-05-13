@@ -14,7 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 type EmailType = "day2_welcome" | "day7_trends" | "day14_final";
 
 const SUBJECTS: Record<EmailType, string> = {
-  day2_welcome: "Your first AI cake is 30 seconds away 🎂",
+  day2_welcome: "Did something stop you? Here's what you're missing 🎂",
   day7_trends: "See what's trending on Cake AI Artist this week ✨",
   day14_final: "A free design idea, just for you 🎁",
 };

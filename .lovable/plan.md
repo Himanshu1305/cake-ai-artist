@@ -1,134 +1,58 @@
-# Plan: Inactive-User Engagement Drip + Smarter Upgrade Nudge
-
 ## Goal
-Re-engage the 89% of registered users who never created a cake, while making the existing Weekly Upgrade Nudge target only users who actually engaged.
+Rewrite the Day 2 engagement email so it stops sounding like a welcome email and instead reads as a friendly "we noticed you haven't tried anything yet" nudge with multiple engagement entry points.
 
----
+## Tone & Framing
+- Acknowledge they already signed up (no "welcome")
+- Thank them for joining / exploring
+- Gently observe: "we noticed you haven't created your first cake yet, browsed the gallery, or read the blog"
+- Position as helpful, not salesy — give them choices, not one CTA
 
-## 1. Database
+## New Day 2 Email Structure
 
-New table `engagement_email_logs`:
-- `user_id` (uuid)
-- `email_type` (text: `day2_welcome`, `day7_trends`, `day14_final`)
-- `sent_at` (timestamptz)
-- Unique on `(user_id, email_type)` so each user gets each email at most once
-- RLS: admin-read only; edge function uses service role
+**Subject:** "Did something stop you? Here's what you're missing 🎂"
+(Alt option: "Your Cake AI Artist account is waiting ✨")
 
-No other schema changes.
+**Header:** Same brand gradient + logo (unchanged)
 
----
+**Body sections:**
 
-## 2. New Edge Function: `send-engagement-drip`
+1. **Greeting + acknowledgement** (2 lines)
+   - "Hey {firstName}, thanks again for joining Cake AI Artist!"
+   - "We noticed you haven't had a chance to try things out yet — totally fine, life gets busy. Here's a quick tour of what's waiting for you."
 
-Runs daily at 09:00 UTC. Logic:
+2. **"Pick where to start" — 3 feature cards** (the core change)
+   Each card = icon emoji + short title + 1-line description + link button:
+   - 🎂 **Design your first cake** → `/free-cake-designer` — "Type a name and occasion, get a cake in 30 seconds"
+   - 🖼️ **Browse the community gallery** → `/gallery` — "See what others are creating right now"
+   - 📖 **Read the blog** → `/blog` — "Cake trends, ideas & tips for every occasion"
+   - 🎁 **Try the Party Pack generator** → `/party-planner` — "Matching invites, thank-you cards & more"
 
-1. Pull all profiles where:
-   - User has **never** generated an image (`NOT EXISTS` against `generated_images`)
-   - User has `marketing_emails != false` in `user_settings`
-   - User is not premium
+3. **Social proof / reviews strip**
+   - "⭐⭐⭐⭐⭐ Loved by thousands of creators worldwide"
+   - Link → `/gallery` (where ratings/comments live) or testimonial section on homepage
 
-2. For each user, compute days since signup and pick the right email:
-   - **Day 2–6** → `day2_welcome` (if not already sent)
-   - **Day 7–13** → `day7_trends` (if not already sent)
-   - **Day 14+** → `day14_final` (if not already sent)
+4. **Feedback nudge**
+   - "Something not working? Hit reply — we read every email."
+   - Optional link to `/contact` or FAQ
 
-3. Skip if log row already exists. Send via Brevo. Insert log row on success.
+5. **Footer** (unchanged: unsubscribe + copyright)
 
-4. Auto-stop logic is implicit: as soon as user creates a cake, they're filtered out — even mid-drip.
+## Visual Style
+- Keep existing brand: warm cream `#f8f5f2` body bg, white card, party gradient header, blue `#2563EB` for links/headings
+- Feature cards: light bordered boxes (`#fef9f5` bg, party-orange left border like Day 14) stacked vertically — mobile-safe
+- Each card has its own small button/link in brand blue, not the big purple gradient (so we offer choices, not one dominant CTA)
+- One smaller secondary "Start with a cake →" gradient button at the bottom for users who just want one click
 
-5. Detailed per-user error logging (capture Brevo response body) so we can diagnose the bounce-rate problem.
+## Files to Change
+- `supabase/functions/send-engagement-drip/index.ts` — rewrite `day2Email()` only
+- Subject in `SUBJECTS.day2_welcome` updated
+- Internal type key `day2_welcome` stays the same (no DB migration needed; it's just an identifier)
+- Redeploy edge function after edit
 
-6. Logs run summary to `scheduled_task_runs` with `task_name = 'engagement-drip'`.
+## Out of Scope
+- Day 7 and Day 14 templates (leave as-is for now — we'll review them separately after you test Day 2)
+- No DB schema changes
+- No cron / admin widget changes
 
-7. Supports `testEmail` body param + variant param for admin "Test Email" button.
-
----
-
-## 3. Three Email Templates (finalize content together after build)
-
-All match brand: warm cream bg, blue text default, party gradient header, real Cake AI Artist logo. Initial drafts:
-
-### Day 2 — "Your first AI cake is 30 seconds away 🎂"
-- Warm welcome by first name
-- 3-step "How it works" (describe → AI generates → download/share)
-- One sample cake image
-- Big CTA → `/free-cake-designer`
-- Small footer link to FAQ
-
-### Day 7 — "See what's trending this week ✨"
-- "We noticed you haven't made your first cake yet — here's some inspiration"
-- 3 trending cakes pulled from `gallery_image_stats` (top by likes this week)
-- Latest blog post (from `blog_posts` table)
-- CTA → designer
-- Localized country reference if available
-
-### Day 14 — "A free design idea for you 🎁"
-- Final, soft, no-pressure
-- One personalized occasion suggestion based on country/season
-- "Reply if anything's blocking you" (humanizes)
-- FAQ link + designer CTA
-- No more emails after this in the drip
-
-**These are placeholder drafts — we'll iterate on copy together after the function is built and you can preview each variant via Test Email.**
-
----
-
-## 4. Modify `send-weekly-upgrade-nudge`
-
-Single change to the eligibility query:
-- Add `EXISTS (SELECT 1 FROM generated_images WHERE user_id = profiles.id)` filter
-- Result: only free users who have generated ≥1 cake get the upgrade pitch
-
-This eliminates overlap with the engagement drip and raises conversion relevance.
-
----
-
-## 5. Cron Schedule (via supabase insert tool)
-
-```sql
-SELECT cron.schedule(
-  'send-engagement-drip',
-  '0 9 * * *',
-  $$ SELECT net.http_post(
-       url := '...send-engagement-drip',
-       headers := '...CRON_SECRET...'
-     ); $$
-);
-```
-
-Daily at 09:00 UTC.
-
----
-
-## 6. Admin UI — Scheduled Tasks Widget
-
-Add `engagement-drip` to `SCHEDULED_TASKS` array in `ScheduledTasksWidget.tsx` with:
-- "Run Now" button
-- "Test Email" dropdown (Day 2 / Day 7 / Day 14 variants → sends to logged-in admin)
-- Standard last-run/next-run/status display
-
----
-
-## 7. Files
-
-**New:**
-- `supabase/functions/send-engagement-drip/index.ts`
-- DB migration for `engagement_email_logs` table
-
-**Modified:**
-- `supabase/functions/send-weekly-upgrade-nudge/index.ts` (add active-user filter)
-- `src/components/ScheduledTasksWidget.tsx` (add new task entry + 3-variant test button)
-- `supabase/config.toml` (register new function)
-
----
-
-## 8. Build Order
-
-1. Migration: `engagement_email_logs` table
-2. New edge function with 3 template drafts
-3. Cron job
-4. Admin widget update
-5. Modify upgrade nudge query
-6. **Pause for content review** — you preview each of the 3 drip emails via Test Email and we finalize copy/visuals together before going live
-
-Once you approve, I'll execute steps 1–5 in one pass.
+## Test Flow
+After change: Admin → Scheduled Tasks → "Test Day 2" → review in inbox → iterate copy if needed.
