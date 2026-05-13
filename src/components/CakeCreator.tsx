@@ -113,6 +113,23 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   }, [savedCakeImageId]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  // When the active share target changes, fetch any existing audio attached to it
+  useEffect(() => {
+    if (!savedCakeImageId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("generated_images")
+        .select("audio_url, audio_duration_seconds")
+        .eq("id", savedCakeImageId)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setAudioUrl(data.audio_url ?? null);
+        setAudioDuration(data.audio_duration_seconds ?? null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [savedCakeImageId]);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const isMobile = useIsMobile();
   const haptic = useHapticFeedback();
