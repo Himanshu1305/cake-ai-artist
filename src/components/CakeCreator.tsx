@@ -712,9 +712,38 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('No images were generated. Please try again.');
         }
 
+        // Map view name -> friendly label, used by both flows below.
+        const viewLabelMap: Record<string, string> = {
+          front: 'Front View',
+          side: 'Side View',
+          top: 'Top-Down View',
+          main: 'Main View',
+          angle: 'Angle View',
+        };
+
+        // FAST mode (no jobId): partial failures are surfaced inline via
+        // bgFailed so the user gets a per-slot Regenerate button. No realtime
+        // subscription is needed because nothing is being generated in the
+        // background — Fast returns all views together.
+        if (!jobId && viewOrder && failedViews.length > 0) {
+          const failedSet = new Set<number>();
+          for (const vn of failedViews) {
+            const idx = viewOrder.indexOf(vn);
+            if (idx >= 0) failedSet.add(idx);
+          }
+          setBgPending(new Set());
+          setBgFailed(failedSet);
+          setBgViewLabels(viewOrder.map((vn) => viewLabelMap[vn] || vn));
+        } else if (!jobId) {
+          // Clean slate for successful Fast generation.
+          setBgPending(new Set());
+          setBgFailed(new Set());
+          setBgViewLabels([]);
+        }
+
         // Subscribe to Realtime AND poll as a safety net so background views
-        // appear in their slots even if Realtime drops. Runs for both Fast
-        // and High Quality — any time the backend returned a jobId.
+        // appear in their slots even if Realtime drops. HIGH QUALITY only —
+        // Fast does not create a job row.
         if (jobId && viewOrder && heroView && failedViews.length > 0) {
           // Backend writes results by SLOT INDEX, not by view name:
           //   index 0 -> hero_url   (already filled in initial response)
