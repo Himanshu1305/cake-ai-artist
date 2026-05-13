@@ -439,6 +439,22 @@ export default function Settings() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
+                <Label htmlFor="reengagement_emails">Re-engagement Emails</Label>
+                <p className="text-sm text-muted-foreground">
+                  Occasional emails when you haven't visited in a while or started a design but didn't finish. Separate from promotional emails.
+                </p>
+              </div>
+              <Switch
+                id="reengagement_emails"
+                checked={settings.reengagement_emails}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, reengagement_emails: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
                 <Label htmlFor="blog_digest_emails">Weekly Blog Digest</Label>
                 <p className="text-sm text-muted-foreground">
                   Receive weekly cake inspiration tips and articles
