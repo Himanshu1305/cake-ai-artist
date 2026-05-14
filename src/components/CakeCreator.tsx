@@ -31,7 +31,8 @@ import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
 import { z } from "zod";
 import { PartyPackGenerator } from "@/components/PartyPackGenerator";
 import { AudioRecorder } from "@/components/AudioRecorder";
-import { Mic, Volume2, Link2, Trash2 } from "lucide-react";
+import { Mic, Volume2, Link2, Trash2, Rotate3D } from "lucide-react";
+import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
 
 // Input validation schema
 const cakeFormSchema = z.object({
@@ -2294,6 +2295,21 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                           e.currentTarget.src = '/placeholder.svg';
                         }}
                       />
+                      {imageUrl && imageUrl !== '/placeholder.svg' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            haptic.light();
+                            setSpinImageUrl(imageUrl);
+                          }}
+                          className="absolute bottom-2 right-2 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-bold text-party-purple shadow-md hover:bg-white"
+                          title="View 360° spin"
+                        >
+                          <Rotate3D className="w-3.5 h-3.5" />
+                          360°
+                        </button>
+                      )}
                       {imageUrl === '/placeholder.svg' && (
                         <div className={`absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm rounded-lg ${
                           bgFailed.has(index)
@@ -2844,6 +2860,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               initialIndex={previewImageIndex}
               onClose={() => setPreviewImageIndex(null)}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 360° Spin Showcase Modal */}
+      <Dialog open={!!spinImageUrl} onOpenChange={(open) => !open && setSpinImageUrl(null)}>
+        <DialogContent className="max-w-lg w-full bg-gradient-to-b from-cream via-white to-party-pink/5">
+          {spinImageUrl && (
+            <div className="py-4">
+              <h3 className="text-center text-lg font-bold text-party-purple mb-1">360° Spin View</h3>
+              <p className="text-center text-xs text-muted-foreground mb-5">Hover or tap to pause</p>
+              <CakeSpinShowcase src={spinImageUrl} duration={9} />
+            </div>
           )}
         </DialogContent>
       </Dialog>
