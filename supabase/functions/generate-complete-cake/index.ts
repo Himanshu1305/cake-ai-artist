@@ -603,88 +603,41 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       const wallStart = Date.now();
 
       // ============================================================
-      // Two flows by quality:
-      //   FAST  -> generate ALL views in parallel inline; return them
-      //            together. Fast must always feel "complete in one shot".
-      //   HIGH  -> hero-first; return hero + jobId, finish remaining
-      //            views in EdgeRuntime.waitUntil so the function never
-      //            stalls waiting on the slowest premium model.
-      // ============================================================
-
-      // ============================================================
-      // UNIFIED HERO-FIRST FLOW (both Fast and High Quality).
-      // Returns the hero view + jobId immediately, then fills the
-      // remaining views in EdgeRuntime.waitUntil. The browser never
-      // waits on more than one image, so a stalled side/top view can
-      // never leave the UI stuck at "98%".
+      // DURABLE JOB-FIRST FLOW (both Fast and High Quality).
+      // Create a job row and respond immediately. Every image, including
+      // the main/hero view, is generated in EdgeRuntime.waitUntil and
+      // written back to the job row. The browser never waits on image AI,
+      // so it cannot sit forever at "Finishing the main view".
       // ============================================================
       {
         const heroView = viewsToRun[0];
         const allViewNames = viewsToRun.map(v => v.name);
         const tStart = Date.now();
-        console.log(`[gen high] hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
-
-        // Hero + greeting message in parallel — both must finish before we respond.
-        const [heroSettled, messageSettled] = await Promise.allSettled([
-          generateView(heroView),
-          generateMessageAsync(),
-        ]);
-
-        if (heroSettled.status === 'rejected') {
-          const m = heroSettled.reason?.message || String(heroSettled.reason);
-          if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
-          if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
-          console.error(`[gen high] hero ${heroView.name} failed:`, m);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              recoverable: true,
-              error: 'Hero view generation failed. Please try again.',
-              errorCode: 'HERO_VIEW_GENERATION_FAILED',
-              failedViews: [heroView.name],
-              viewOrder: allViewNames,
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-          );
-        }
-        const heroUrl = heroSettled.value as string;
-
-        greetingMessage = messageSettled.status === 'fulfilled'
-          ? (messageSettled.value as string)
-          : `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
-
-        console.log(`⏱ [gen high] hero ready in ${Date.now() - tStart}ms — responding now, ${viewsToRun.length - 1} background views`);
-
-        const backgroundViews = viewsToRun.slice(1);
+        console.log(`[gen job] queued hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
 
         let jobId: string | null = null;
-        if (backgroundViews.length > 0) {
-          const jobInsert: Record<string, unknown> = {
-            user_id: user.id,
-            status: 'in_progress',
-            cake_style: cakeStyle,
-            hero_view: heroView.name,
-            hero_url: heroUrl,
-            greeting_message: greetingMessage,
-            view_count: allViewNames.length,
-          };
-          const { data: jobRow, error: jobErr } = await supabase
-            .from('cake_generation_jobs')
-            .insert(jobInsert)
-            .select('id')
-            .single();
-          if (jobErr || !jobRow) {
-            console.error('[gen high] Failed to create job row:', jobErr);
-          } else {
-            jobId = jobRow.id;
-            console.log(`[gen high] job row ${jobId} created`);
-          }
+        const jobInsert: Record<string, unknown> = {
+          user_id: user.id,
+          status: 'in_progress',
+          cake_style: cakeStyle,
+          hero_view: heroView.name,
+          greeting_message: `Happy ${occasion || 'Birthday'}, ${name}!`,
+          view_count: allViewNames.length,
+        };
+        const { data: jobRow, error: jobErr } = await supabase
+          .from('cake_generation_jobs')
+          .insert(jobInsert)
+          .select('id')
+          .single();
+        if (jobErr || !jobRow) {
+          console.error('[gen job] Failed to create job row:', jobErr);
+          throw new Error('Could not start cake generation job');
         }
+        jobId = jobRow.id;
+        console.log(`[gen job] job row ${jobId} created in ${Date.now() - tStart}ms — responding now`);
 
-        const responseImages: (string | null)[] = viewsToRun.map((_, i) =>
-          i === 0 ? heroUrl : null,
-        );
-        const responseFailed: string[] = backgroundViews.map(v => v.name);
+        const responseImages: (string | null)[] = viewsToRun.map(() => null);
+        const responseFailed: string[] = allViewNames;
 
         const slotForIndex = (i: number): { url: string; err: string } => (
           i === 1 ? { url: 'side_url', err: 'side_error' } :
