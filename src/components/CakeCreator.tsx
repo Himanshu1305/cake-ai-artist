@@ -797,8 +797,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             }
 
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
-            const pct = Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
+            const pct = filledCount === 0
+              ? 20
+              : Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
             setGenerationProgress((cur) => (cur >= pct ? cur : pct));
+            if (filledCount > 0 && !allFilled) setGenerationStep("✨ Remaining views rendering...");
             if (allFilled) setGenerationStep("🎉 All views ready!");
 
             // Only declare "finished" when EITHER all slots are filled, OR a
