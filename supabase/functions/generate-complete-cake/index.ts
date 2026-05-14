@@ -640,18 +640,20 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         const responseFailed: string[] = allViewNames;
 
         const slotForIndex = (i: number): { url: string; err: string } => (
+          i === 0 ? { url: 'hero_url', err: 'hero_error' } :
           i === 1 ? { url: 'side_url', err: 'side_error' } :
-          i === 2 ? { url: 'top_url', err: 'top_error' } :
-          { url: 'side_url', err: 'side_error' }
+          { url: 'top_url', err: 'top_error' }
         );
 
-        if (jobId && backgroundViews.length > 0) {
+        if (jobId && viewsToRun.length > 0) {
           const bgJobId = jobId;
           const bgTask = (async () => {
             const tBg = Date.now();
-            console.log(`[bg ${bgJobId}] starting ${backgroundViews.length} background views`);
-            await Promise.all(backgroundViews.map(async (v, j) => {
-              const i = j + 1;
+            console.log(`[bg ${bgJobId}] starting ${viewsToRun.length} queued views`);
+            const messageTask = generateMessageAsync()
+              .then((msg) => supabase.from('cake_generation_jobs').update({ greeting_message: msg }).eq('id', bgJobId))
+              .catch((e) => console.warn(`[bg ${bgJobId}] greeting message fallback used:`, e?.message || String(e)));
+            await Promise.all([messageTask, ...viewsToRun.map(async (v, i) => {
               const slot = slotForIndex(i);
               const tv = Date.now();
               try {
@@ -667,7 +669,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
                   .update({ [slot.err]: errMsg })
                   .eq('id', bgJobId);
               }
-            }));
+            })]);
             const { data: finalRow } = await supabase
               .from('cake_generation_jobs')
               .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
