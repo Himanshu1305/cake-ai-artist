@@ -799,6 +799,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             }
 
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
+            if (filledCount > 0) {
+              setSelectedImages((prev) => prev.size > 0 ? prev : new Set([latestImages.findIndex((u) => u && u !== '/placeholder.svg')]));
+            }
             const pct = filledCount === 0
               ? 20
               : Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
