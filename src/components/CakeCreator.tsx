@@ -676,13 +676,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
         console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage, jobId });
 
-        if (okCount === 0) {
-          throw new Error('No images were generated. Please try again.');
-        }
-
-        // Real progress signal: hero has arrived.
-        setGenerationProgress(80);
-        setGenerationStep("✨ Side & top views rendering...");
+        // Real progress signal. New job-first backend may return before the
+        // hero image is ready; render placeholders and poll the job instead
+        // of keeping the main loading panel stuck at 60%.
+        setGenerationProgress(okCount > 0 ? 80 : 12);
+        setGenerationStep(okCount > 0 ? "✨ Side & top views rendering..." : "🎂 Cake job queued...");
 
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
@@ -793,6 +791,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
 
             // Real progress: each filled slot bumps the bar.
+            if (row.greeting_message) {
+              setGeneratedMessage(row.greeting_message);
+              setDisplayedMessage(row.greeting_message);
+            }
+
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
             const pct = Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
             setGenerationProgress((cur) => (cur >= pct ? cur : pct));
@@ -839,7 +842,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (finished) return;
             const { data: row } = await supabase
               .from('cake_generation_jobs')
-              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count')
+              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count, greeting_message')
               .eq('id', jobId)
               .maybeSingle();
             if (row) applyRow(row);
