@@ -1,63 +1,51 @@
-# You are right to be frustrated
 
-This should not keep getting a different patch every day.
+# Cake generation reliability — full audit
 
-The reason it keeps happening is that the earlier fixes improved symptoms around the same fragile flow, but did not fully remove the fragile flow:
+I traced the entire flow end-to-end (edge function → DB job row → realtime → polling → UI). Here is what I confirmed and the (small) residual risks.
 
-```text
-Browser waits for AI image generation request
-progress timer reaches 98%
-backend/API is slow, interrupted, rate-limited, or returns no image
-UI looks stuck
-```
+## What is now correct
 
-So the real issue is not the number 98. The issue is that cake creation still depends too much on a long AI request finishing perfectly.
+**1. The browser no longer waits on AI image generation.**
+`generate-complete-cake` inserts a row into `cake_generation_jobs`, returns within ~1s with `jobId + null image slots + failedViews=[all view names]`, then runs every view (including hero) inside `EdgeRuntime.waitUntil`. The old "stuck at 60% / 98%" path is structurally removed — the browser cannot get stuck on a request that already returned.
 
-# Final direction — no more bandaids
+**2. DB schema, RLS, and realtime are aligned with the code.**
+- Table has all columns the edge function writes (`hero_url/side_url/top_url`, matching `*_error`, `status`, `view_count`, `greeting_message`).
+- RLS: owner-only SELECT — required for realtime.
+- Table is in `supabase_realtime` publication — UPDATE events will fire.
+- Edge function uses the service role key to write, so RLS does not block background updates.
 
-I will treat this as one root-cause reliability fix, not another UI tweak.
+**3. Realtime miss is covered by polling.**
+Even if the row finishes BEFORE the client subscribes (very common — bg can finish in 9s while the response itself returns in ~1s), the client immediately calls `fetchOnce()`, again at 1s and 3s, then every 5s, plus a 4-minute watchdog that converts any still-pending slots into a "Regenerate" prompt. There is no path where the UI can sit forever.
 
-## What will change
+**4. Per-view failures are isolated.**
+Each view writes to its own slot. If hero succeeds but side fails, the user keeps the hero and gets a Regenerate button on side — no whole-batch failure.
 
-### 1. Stop relying on a long browser request
-Cake creation will become job-based.
+**5. Gateway error handling is correct.**
+Primary model has a per-view abort timeout; on AbortError / 503 / "No image returned" / 5xx → falls back to a second model. 429 → `RATE_LIMIT`, 402 → `CREDITS_EXHAUSTED`, surfaced as proper HTTP statuses with user-readable messages.
 
-The user clicks generate, the app creates a generation job immediately, and the UI tracks that job until images are ready.
+**6. Frontend success/error gating is sane.**
+`data.success === false` short-circuits with a real error toast (no blank screen). The polling block is correctly gated on `jobId && viewOrder && heroView && failedViews.length > 0`, which is always true under the new flow because the backend marks every slot as initially "pending" via `failedViews = allViewNames`.
 
-### 2. Keep completed images even if one view fails
-If front view succeeds but side/top fails, the user still gets the successful cake image.
+## Residual risks (small, worth fixing)
 
-Only the failed slot gets a retry button.
+**A. TDZ-safe but fragile ordering in CakeCreator.tsx (~lines 850–893).**
+`fetchOnce()` is invoked at line 863 and its `applyRow` callback references `cleanup`, which is declared as `const` at line 887. Today this works because `fetchOnce` is async and `cleanup` is defined before the awaited query resolves. If anyone later makes `fetchOnce` synchronous or moves code, this becomes a TDZ ReferenceError. Move the `const cleanup = …` declaration ABOVE the first `fetchOnce()` call.
 
-### 3. Make every failure visible
-No silent 98% state.
+**B. The "all 3 views in parallel + fallback" worst case is ~43s.**
+Per view: 28s primary + 15s fallback. Three in parallel = ~43s background time. Comfortably inside the edge function's `waitUntil` budget (~150s), so no action required, but worth noting if we ever add a 4th view or the gateway gets slower — we should reduce parallel fan-out or shrink the per-view fallback window.
 
-The UI will show one of these clear states:
+**C. Unrelated noise in console: repeated `NetworkError when attempting to fetch resource` from `ads_enabled` etc.**
+Not part of cake generation. Mentioning so we don't confuse them with generation failures during future debugging.
 
-- Queued
-- Creating main cake
-- Creating side view
-- Creating top view
-- Ready
-- Needs retry
-- Credits/rate limit issue
-- Network interrupted
+## Verdict
 
-### 4. Use the supported Lovable AI Gateway pattern
-The current function manually calls the AI gateway. I will move it to the recommended server-side Lovable AI Gateway SDK pattern so errors and routing are more reliable.
+The cake generation flow is now correct by construction:
+- Browser request never waits on AI.
+- Job row is the single source of truth.
+- Realtime + polling + watchdog cover every drop scenario.
+- Per-slot failures degrade to Regenerate buttons instead of blocking the whole cake.
+- Real errors (rate limit, credits, hero failure) surface as readable toasts, not blank screens.
 
-### 5. Add durable recovery
-If the page reloads, the browser disconnects, or the preview refreshes, the app will fetch the latest active job and resume instead of losing the generation.
+The only change I'd recommend before declaring it bulletproof is the small ordering fix in (A). After that I am confident this will not regress to the old "stuck at X%" symptom.
 
-# What I will not do
-
-- I will not keep changing the fake progress percentage as the main fix.
-- I will not add another cosmetic loading workaround.
-- I will not change blog, recipe, SEO, or cake spin features as part of this fix.
-- I will not discard successful generated images just because one image slot failed.
-
-# Result
-
-AI providers can still occasionally fail because of rate limits, credits, or upstream outages, but the app will no longer leave users stuck at 98% with no explanation.
-
-The app will either show the cake, show partial results with retry, or show the exact reason it cannot continue.
+If you want, I can switch to build mode and apply fix (A).
