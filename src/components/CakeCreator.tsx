@@ -676,13 +676,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
         console.log('Native generation complete:', { imageCount: okCount, failed: failedViews, hasMessage: !!aiMessage, jobId });
 
-        if (okCount === 0) {
-          throw new Error('No images were generated. Please try again.');
-        }
-
-        // Real progress signal: hero has arrived.
-        setGenerationProgress(80);
-        setGenerationStep("✨ Side & top views rendering...");
+        // Real progress signal. New job-first backend may return before the
+        // hero image is ready; render placeholders and poll the job instead
+        // of keeping the main loading panel stuck at 60%.
+        setGenerationProgress(okCount > 0 ? 80 : 12);
+        setGenerationStep(okCount > 0 ? "✨ Side & top views rendering..." : "🎂 Cake job queued...");
 
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
@@ -752,11 +750,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           const applyRow = (row: any) => {
             // Swap any URL columns into their slot indices.
             const swap = (prev: string[]) => {
-              const next = [...prev];
+              const next = prev.length >= viewOrder.length
+                ? [...prev]
+                : viewOrder.map((_, i) => prev[i] || '/placeholder.svg');
               for (const [col, idx] of Object.entries(colToIndex)) {
                 const url = row[col];
                 if (!url) continue;
-                if (idx < next.length && (next[idx] === '/placeholder.svg' || !next[idx])) {
+                if (next[idx] === '/placeholder.svg' || !next[idx]) {
                   next[idx] = url;
                   latestImages[idx] = url;
                 }
@@ -793,23 +793,37 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
 
             // Real progress: each filled slot bumps the bar.
+            if (row.greeting_message) {
+              setGeneratedMessage(row.greeting_message);
+              setDisplayedMessage(row.greeting_message);
+            }
+
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
-            const pct = Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
+            if (filledCount > 0) {
+              setSelectedImages((prev) => prev.size > 0 ? prev : new Set([latestImages.findIndex((u) => u && u !== '/placeholder.svg')]));
+            }
+            const pct = filledCount === 0
+              ? 20
+              : Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
             setGenerationProgress((cur) => (cur >= pct ? cur : pct));
+            if (filledCount > 0 && !allFilled) setGenerationStep("✨ Remaining views rendering...");
             if (allFilled) setGenerationStep("🎉 All views ready!");
 
             // Only declare "finished" when EITHER all slots are filled, OR a
             // real backend error was recorded. A premature 'completed' status
             // event with URLs not-yet-merged should NOT trigger the failure toast.
-            if ((isTerminal && allFilled) || hasRealError) {
+            if (allFilled || (isTerminal && hasRealError)) {
               if (finished) return;
               finished = true;
               cleanup();
               if (allFilled) {
+                triggerConfetti();
+                haptic.success();
                 toast({
                   title: `All ${viewOrder.length} views ready!`,
                   description: 'Your cake is fully rendered.',
                 });
+                if (isLoggedIn) setShowRatingPrompt(true);
               } else {
                 const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
                 toast({
@@ -839,7 +853,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (finished) return;
             const { data: row } = await supabase
               .from('cake_generation_jobs')
-              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count')
+              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count, greeting_message')
               .eq('id', jobId)
               .maybeSingle();
             if (row) applyRow(row);
@@ -895,19 +909,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const firstRealIndex = images.findIndex((u) => u && u !== '/placeholder.svg');
         setSelectedImages(firstRealIndex >= 0 ? new Set([firstRealIndex]) : new Set());
         
-        // Trigger celebration confetti after a brief delay
-        setTimeout(() => triggerConfetti(), 400);
-        
-        haptic.success();
-        toast({
-          title: "Cake created successfully!",
-          description: isLoggedIn
-            ? `Your personalized cake for ${name} is ready! Click "Save to Gallery" to save it.` 
-            : `Your personalized cake for ${name} is ready! Login to save it.`,
-        });
+        if (okCount > 0) {
+          setTimeout(() => triggerConfetti(), 400);
+          haptic.success();
+          toast({
+            title: "Cake created successfully!",
+            description: isLoggedIn
+              ? `Your personalized cake for ${name} is ready! Click "Save to Gallery" to save it.` 
+              : `Your personalized cake for ${name} is ready! Login to save it.`,
+          });
+        } else {
+          toast({
+            title: "Cake generation started",
+            description: "The main view is rendering in the background now.",
+          });
+        }
 
-        // Show post-generation rating prompt if logged in
-        if (isLoggedIn) {
+        // Show post-generation rating prompt only after at least one real image exists.
+        if (isLoggedIn && okCount > 0) {
           setShowRatingPrompt(true);
         }
       } catch (error) {
@@ -2251,7 +2270,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <div className="text-sm text-foreground">
                     {bgPending.size > 0 ? (
                       <>
-                        <strong>✨ Hero view ready!</strong> Rendering{" "}
+                        <strong>{generatedImages.some((u) => u && u !== '/placeholder.svg') ? "✨ First view ready!" : "🎂 Cake job started!"}</strong> Rendering{" "}
                         {Array.from(bgPending).map((i) => bgViewLabels[i] || `View ${i + 1}`).join(" & ")}{" "}
                         in the background — usually 30–60 seconds.
                       </>
