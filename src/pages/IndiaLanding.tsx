@@ -681,6 +681,7 @@ const IndiaLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="IN" countryName="India" />
       <Footer />
     </div>
   );

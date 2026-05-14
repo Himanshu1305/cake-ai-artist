@@ -680,6 +680,7 @@ const UKLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="UK" countryName="the UK" />
       <Footer />
     </div>
   );

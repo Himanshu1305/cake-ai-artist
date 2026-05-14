@@ -482,6 +482,7 @@ const AustraliaLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="AU" countryName="Australia" />
       <Footer />
     </div>
   );

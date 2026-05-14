@@ -482,6 +482,7 @@ const CanadaLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="CA" countryName="Canada" />
       <Footer />
     </div>
   );
