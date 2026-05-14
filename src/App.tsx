@@ -47,6 +47,8 @@ const PartyPlanner = lazy(() => import("./pages/PartyPlanner"));
 const PartyPlannerDetail = lazy(() => import("./pages/PartyPlannerDetail"));
 const PartyRSVP = lazy(() => import("./pages/PartyRSVP"));
 const SharedCake = lazy(() => import("./pages/SharedCake"));
+const Recipes = lazy(() => import("./pages/Recipes"));
+const RecipeDetail = lazy(() => import("./pages/RecipeDetail"));
 
 const queryClient = new QueryClient();
 
@@ -102,6 +104,8 @@ const App = () => {
                   <Route path="/party-planner/:id" element={<PartyPlannerDetail />} />
                   <Route path="/rsvp/:token" element={<PartyRSVP />} />
                   <Route path="/cake/:id" element={<SharedCake />} />
+                  <Route path="/recipes" element={<Recipes />} />
+                  <Route path="/recipes/:slug" element={<RecipeDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
