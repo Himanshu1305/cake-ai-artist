@@ -858,17 +858,31 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               .maybeSingle();
             if (row) applyRow(row);
           };
+          // Declare timers + cleanup BEFORE first fetch so applyRow→cleanup
+          // can never hit a TDZ ReferenceError if the row is already terminal.
+          let fastPoll1: ReturnType<typeof setTimeout> | undefined;
+          let fastPoll2: ReturnType<typeof setTimeout> | undefined;
+          let pollTimer: ReturnType<typeof setInterval> | undefined;
+          let watchdog: ReturnType<typeof setTimeout> | undefined;
+          const cleanup = () => {
+            try { supabase.removeChannel(channel); } catch {}
+            if (pollTimer) clearInterval(pollTimer);
+            if (fastPoll1) clearTimeout(fastPoll1);
+            if (fastPoll2) clearTimeout(fastPoll2);
+            if (watchdog) clearTimeout(watchdog);
+          };
+
           // Fire immediately, then again at 1s and 3s to catch races where
           // the bg task is in flight at hero-response time.
           fetchOnce();
-          const fastPoll1 = setTimeout(fetchOnce, 1000);
-          const fastPoll2 = setTimeout(fetchOnce, 3000);
+          fastPoll1 = setTimeout(fetchOnce, 1000);
+          fastPoll2 = setTimeout(fetchOnce, 3000);
 
           // Polling fallback every 5s — covers dropped Realtime connections.
-          const pollTimer = setInterval(fetchOnce, 5000);
+          pollTimer = setInterval(fetchOnce, 5000);
 
           // Watchdog: 4-min hard ceiling.
-          const watchdog = setTimeout(() => {
+          watchdog = setTimeout(() => {
             if (!finished) {
               finished = true;
               cleanup();
@@ -883,14 +897,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               });
             }
           }, 4 * 60 * 1000);
-
-          const cleanup = () => {
-            try { supabase.removeChannel(channel); } catch {}
-            clearInterval(pollTimer);
-            clearTimeout(fastPoll1);
-            clearTimeout(fastPoll2);
-            clearTimeout(watchdog);
-          };
         }
 
         // Set message — always populate something so the card always renders.
