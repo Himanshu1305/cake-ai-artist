@@ -1,56 +1,63 @@
-Three focused changes. Each is independent and can ship on its own.
+# You are right to be frustrated
 
-## 1. Cake "rotation GIF" — CSS 3D spin showcase
+This should not keep getting a different patch every day.
 
-Earlier I recommended a **CSS-driven 3D spin** instead of generating a real GIF, because:
-- Real cake GIFs would need multi-angle AI generation per cake (slow, expensive, often inconsistent).
-- A CSS spin works on every existing image, costs nothing, and looks premium.
+The reason it keeps happening is that the earlier fixes improved symptoms around the same fragile flow, but did not fully remove the fragile flow:
 
-What I'll build:
-- New `CakeSpinShowcase` component: takes the user's generated cake image and renders it on a rotating 3D "turntable" (perspective + `transform: rotateY` keyframe, ~8s loop), with a soft shadow that rotates underneath and a subtle floor reflection.
-- Hover → pause + slight zoom; tap on mobile → pause.
-- Drop-in on: the `CakeCreator` result view (right after generation), the `SharedCake` page, and as the hero tile on `Index` (replacing the static hero cake — keeps the animated flames on top).
-- A "Download spinning preview" button that records ~3 seconds of the canvas to a WebM via `MediaRecorder` so users can share an actual moving file. (No server cost.)
+```text
+Browser waits for AI image generation request
+progress timer reaches 98%
+backend/API is slow, interrupted, rate-limited, or returns no image
+UI looks stuck
+```
 
-## 2. Weekly country blog — fix delivery, preview, length, SEO, humanization
+So the real issue is not the number 98. The issue is that cake creation still depends too much on a long AI request finishing perfectly.
 
-Current state I verified:
-- `generate-blog-post` runs weekly and stamps `target_country` (IN/UK/AU/CA) or null for universal.
-- Posts land in `blog_posts` with `is_published = false` (admin must approve before they appear).
-- Country landing pages (`IndiaLanding`, `UKLanding`, etc.) **do not display blog posts at all** — that's why nothing shows up per country.
-- `Blog.tsx` lists everything; there's no per-country filter or per-country feed.
-- Preview not opening = posts are unpublished, and `BlogPost.tsx` only fetches `is_published = true`.
+# Final direction — no more bandaids
 
-Fixes:
-- **Per-country feed on each landing page**: add a "From our [Country] kitchen" section showing the latest 3 posts where `target_country = 'IN' | 'UK' | 'AU' | 'CA'` plus universal. Link to a filtered `/blog?country=IN` view.
-- **Auto-publish toggle**: add `auto_publish_ai_posts` flag in `site_settings`. When on, the edge function inserts with `is_published = true` so previews work immediately. Admin can still unpublish.
-- **Admin preview for drafts**: in `BlogPost.tsx`, if the viewer is admin, fetch unpublished too and show a "DRAFT" banner. Fixes the "preview not opening" issue.
-- **Shorter articles** (~400–550 words, 3–4 min read): rewrite the system prompt in `generate-blog-post` to enforce: hook (40 words) → 3 H2 sections (~120 words each) → quick-tip list → 1-line CTA. Hard cap, and reject if word count > 600.
-- **Humanization pass**: add a second AI call ("humanize" pass) that rewrites the draft with contractions, varied sentence length, one personal aside, removes AI-tells ("In conclusion", "Moreover", "delve", "tapestry", "leverage"). Score it with a quick checklist; reject and retry once if any banned phrase appears.
-- **SEO compliance per article**: ensure each post has unique `<title>` (≤60 chars), `meta_description` (≤160), canonical URL `https://cakeaiartist.com/blog/{slug}`, OG tags, JSON-LD `Article` schema with author/date/image, single H1, alt text on featured image. Add `BreadcrumbList` schema. Already partially in `BlogPost.tsx` — I'll audit and complete.
-- **Sitemap**: regenerate `public/sitemap.xml` to include all published posts (one entry per slug) so Google indexes them.
+I will treat this as one root-cause reliability fix, not another UI tweak.
 
-## 3. Country-specific cake recipes hub — yes, strongly agree
+## What will change
 
-Why it's a good SEO bet:
-- "[Country] birthday cake recipe", "traditional [country] cake" are evergreen high-intent queries with much steadier volume than trend posts.
-- Pairs naturally with the AI cake designer ("design it, then bake it") — increases time on site and gives a clear secondary CTA.
-- Builds topical authority; Google rewards depth on a niche.
+### 1. Stop relying on a long browser request
+Cake creation will become job-based.
 
-What I'll build:
-- New table `cake_recipes` (slug, title, country, hero_image, ingredients jsonb, steps jsonb, prep_time, cook_time, servings, difficulty, story, related_cake_design_prompt, is_published, created_at). RLS: public read for published, admin write.
-- New routes:
-  - `/recipes` — all recipes, filterable by country.
-  - `/recipes/{country}` — e.g. `/recipes/india` (Tres Leches, Mysore Pak cake, eggless chocolate, etc.), `/recipes/uk` (Victoria sponge, Battenberg, Christmas cake), `/recipes/canada` (Nanaimo bars, butter tart cake), `/recipes/australia` (Lamington, Pavlova).
-  - `/recipes/{slug}` — full recipe page with `Recipe` JSON-LD schema (rich result eligible — shows star ratings/cook time in Google).
-- Seed 5 recipes per country (20 total) to launch. Use `generate-blog-post`-style edge function `generate-recipe` to expand the library weekly (1 new recipe per country per week, admin-approved).
-- Cross-link: each recipe page has a "Design a cake for this recipe" CTA → opens `CakeCreator` with the `related_cake_design_prompt` prefilled. Each country landing page gets a "Famous [Country] cakes you can bake" strip.
-- Sitemap entries + breadcrumb schema.
+The user clicks generate, the app creates a generation job immediately, and the UI tracks that job until images are ready.
 
-## Order of work
+### 2. Keep completed images even if one view fails
+If front view succeeds but side/top fails, the user still gets the successful cake image.
 
-1. Cake spin showcase (frontend only, fast).
-2. Blog fixes: admin-draft preview + auto-publish flag + per-country feed on landing pages + shorter/humanized prompt + sitemap.
-3. Recipes hub: migration → seed data → list/detail pages → schema + sitemap → weekly generator.
+Only the failed slot gets a retry button.
 
-Ship 1 and 2 together, then 3 as a follow-up so I don't dump too much in one batch.
+### 3. Make every failure visible
+No silent 98% state.
+
+The UI will show one of these clear states:
+
+- Queued
+- Creating main cake
+- Creating side view
+- Creating top view
+- Ready
+- Needs retry
+- Credits/rate limit issue
+- Network interrupted
+
+### 4. Use the supported Lovable AI Gateway pattern
+The current function manually calls the AI gateway. I will move it to the recommended server-side Lovable AI Gateway SDK pattern so errors and routing are more reliable.
+
+### 5. Add durable recovery
+If the page reloads, the browser disconnects, or the preview refreshes, the app will fetch the latest active job and resume instead of losing the generation.
+
+# What I will not do
+
+- I will not keep changing the fake progress percentage as the main fix.
+- I will not add another cosmetic loading workaround.
+- I will not change blog, recipe, SEO, or cake spin features as part of this fix.
+- I will not discard successful generated images just because one image slot failed.
+
+# Result
+
+AI providers can still occasionally fail because of rate limits, credits, or upstream outages, but the app will no longer leave users stuck at 98% with no explanation.
+
+The app will either show the cake, show partial results with retry, or show the exact reason it cannot continue.
