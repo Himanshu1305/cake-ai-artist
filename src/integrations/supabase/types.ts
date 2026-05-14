@@ -264,6 +264,72 @@ export type Database = {
         }
         Relationships: []
       }
+      cake_recipes: {
+        Row: {
+          cook_time: string | null
+          country: string
+          created_at: string
+          difficulty: string | null
+          excerpt: string | null
+          hero_image: string | null
+          id: string
+          ingredients: Json
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          prep_time: string | null
+          related_cake_design_prompt: string | null
+          servings: string | null
+          slug: string
+          steps: Json
+          story: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cook_time?: string | null
+          country: string
+          created_at?: string
+          difficulty?: string | null
+          excerpt?: string | null
+          hero_image?: string | null
+          id?: string
+          ingredients?: Json
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          prep_time?: string | null
+          related_cake_design_prompt?: string | null
+          servings?: string | null
+          slug: string
+          steps?: Json
+          story?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cook_time?: string | null
+          country?: string
+          created_at?: string
+          difficulty?: string | null
+          excerpt?: string | null
+          hero_image?: string | null
+          id?: string
+          ingredients?: Json
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          prep_time?: string | null
+          related_cake_design_prompt?: string | null
+          servings?: string | null
+          slug?: string
+          steps?: Json
+          story?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       engagement_email_logs: {
         Row: {
           created_at: string
