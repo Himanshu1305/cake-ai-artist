@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { CountryBlogFeed } from "@/components/CountryBlogFeed";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
@@ -482,6 +483,7 @@ const AustraliaLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="AU" countryName="Australia" />
       <Footer />
     </div>
   );

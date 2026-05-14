@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Snowflake, CheckCircle2, Sparkles, Menu, Download, Leaf, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { CountryBlogFeed } from "@/components/CountryBlogFeed";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { FloatingEmojis } from "@/components/FloatingEmojis";
@@ -482,6 +483,7 @@ const CanadaLanding = () => {
 
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
+      <CountryBlogFeed countryCode="CA" countryName="Canada" />
       <Footer />
     </div>
   );

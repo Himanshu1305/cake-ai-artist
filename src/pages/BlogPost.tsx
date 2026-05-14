@@ -2042,6 +2042,8 @@ const BlogPost = () => {
   const { id } = useParams();
   const [dbPost, setDbPost] = useState<DatabaseBlogPost | null>(null);
   const [loadingDbPost, setLoadingDbPost] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isDraft, setIsDraft] = useState(false);
   
   // Track blog post view
   useBlogViewTracking(id);
@@ -2052,12 +2054,40 @@ const BlogPost = () => {
       if (!id) return;
       
       try {
-        const { data, error } = await supabase
+        // Check admin status so we can preview unpublished drafts
+        const { data: { user } } = await supabase.auth.getUser();
+        let admin = false;
+        if (user) {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          admin = !!roleData;
+          setIsAdmin(admin);
+        }
+
+        // Try published first
+        let { data, error } = await supabase
           .from('blog_posts')
           .select('*')
           .eq('slug', id)
           .eq('is_published', true)
           .maybeSingle();
+
+        // Admin fallback: load draft if no published version
+        if (!data && admin) {
+          const draft = await supabase
+            .from('blog_posts')
+            .select('*')
+            .eq('slug', id)
+            .maybeSingle();
+          if (draft.data) {
+            data = draft.data;
+            setIsDraft(true);
+          }
+        }
         
         if (error) {
           console.error('Error fetching blog post:', error);
@@ -2179,6 +2209,12 @@ const BlogPost = () => {
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 max-w-4xl">
+            {isDraft && (
+              <div className="mb-4 px-4 py-3 rounded-lg bg-amber-100 border-2 border-amber-400 text-amber-900 font-semibold text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                DRAFT preview — visible only to admins. Publish from /admin to make this live.
+              </div>
+            )}
             <article className="bg-card/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
               {/* Hero Image */}
               {heroImage && (

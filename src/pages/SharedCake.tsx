@@ -9,6 +9,7 @@ import { Loader2, Volume2, Sparkles, Gift, Play, Pause } from "lucide-react";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
+import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
 
 interface PublicCake {
   id: string;
@@ -156,12 +157,11 @@ export default function SharedCake() {
             {/* Glow ring */}
             <div aria-hidden className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-party-pink via-party-purple to-party-mint opacity-40 blur-xl -z-10" />
 
-            <div className="relative group">
-              <img
+            <div className="relative group p-6 bg-gradient-to-b from-white via-muted/30 to-white">
+              <CakeSpinShowcase
                 src={cake.image_url}
                 alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
-                className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                loading="eager"
+                duration={10}
               />
             </div>
 
