@@ -522,7 +522,8 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Lovable-API-Key': LOVABLE_API_KEY,
+          'X-Lovable-AIG-SDK': 'vercel-ai-sdk',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -634,7 +635,17 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
           if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
           console.error(`[gen high] hero ${heroView.name} failed:`, m);
-          throw new Error('Hero view generation failed. Please try again.');
+          return new Response(
+            JSON.stringify({
+              success: false,
+              recoverable: true,
+              error: 'Hero view generation failed. Please try again.',
+              errorCode: 'HERO_VIEW_GENERATION_FAILED',
+              failedViews: [heroView.name],
+              viewOrder: allViewNames,
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          );
         }
         const heroUrl = heroSettled.value as string;
 
