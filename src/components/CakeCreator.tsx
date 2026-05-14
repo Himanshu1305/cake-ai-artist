@@ -809,7 +809,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             // Only declare "finished" when EITHER all slots are filled, OR a
             // real backend error was recorded. A premature 'completed' status
             // event with URLs not-yet-merged should NOT trigger the failure toast.
-            if ((isTerminal && allFilled) || hasRealError) {
+            if (allFilled || (isTerminal && hasRealError)) {
               if (finished) return;
               finished = true;
               cleanup();
