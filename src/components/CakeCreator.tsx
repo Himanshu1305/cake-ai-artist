@@ -901,19 +901,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         const firstRealIndex = images.findIndex((u) => u && u !== '/placeholder.svg');
         setSelectedImages(firstRealIndex >= 0 ? new Set([firstRealIndex]) : new Set());
         
-        // Trigger celebration confetti after a brief delay
-        setTimeout(() => triggerConfetti(), 400);
-        
-        haptic.success();
-        toast({
-          title: "Cake created successfully!",
-          description: isLoggedIn
-            ? `Your personalized cake for ${name} is ready! Click "Save to Gallery" to save it.` 
-            : `Your personalized cake for ${name} is ready! Login to save it.`,
-        });
+        if (okCount > 0) {
+          setTimeout(() => triggerConfetti(), 400);
+          haptic.success();
+          toast({
+            title: "Cake created successfully!",
+            description: isLoggedIn
+              ? `Your personalized cake for ${name} is ready! Click "Save to Gallery" to save it.` 
+              : `Your personalized cake for ${name} is ready! Login to save it.`,
+          });
+        } else {
+          toast({
+            title: "Cake generation started",
+            description: "The main view is rendering in the background now.",
+          });
+        }
 
-        // Show post-generation rating prompt if logged in
-        if (isLoggedIn) {
+        // Show post-generation rating prompt only after at least one real image exists.
+        if (isLoggedIn && okCount > 0) {
           setShowRatingPrompt(true);
         }
       } catch (error) {
