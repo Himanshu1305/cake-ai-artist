@@ -298,15 +298,70 @@ Respond in this exact JSON format:
     throw new Error("Failed to parse AI response as JSON");
   }
 
+  // ===== Humanization + length guard =====
+  const stripHtml = (s: string) => s.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  let plain = stripHtml(parsed.content);
+  let words = plain.split(/\s+/).filter(Boolean);
+
+  const findTells = () => AI_TELLS.filter(t => plain.toLowerCase().includes(t));
+  const needsRewrite = () => words.length > 600 || findTells().length > 0;
+
+  if (needsRewrite()) {
+    console.log(`Rewriting: ${words.length} words, AI-tells: ${findTells().join(', ') || 'none'}`);
+    const fixPrompt = `Rewrite this HTML article so it:
+- is between 400 and 550 words total
+- removes ALL of these phrases: ${AI_TELLS.join(', ')}
+- sounds like a real human wrote it (contractions, varied sentence length, one personal aside)
+- keeps the same 3 H2 sections and the <ul> tip list
+- stays valid HTML using <p>, <h2>, <ul>, <li>, <strong>
+
+Return ONLY the new HTML body. No JSON, no markdown fences.
+
+ORIGINAL:
+${parsed.content}`;
+
+    const fixRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: fixPrompt }
+        ],
+      }),
+    });
+    if (fixRes.ok) {
+      const fixData = await fixRes.json();
+      const fixed = (fixData.choices?.[0]?.message?.content || '').replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+      if (fixed && fixed.length > 200) {
+        parsed.content = fixed;
+        plain = stripHtml(parsed.content);
+        words = plain.split(/\s+/).filter(Boolean);
+        console.log(`After rewrite: ${words.length} words`);
+      }
+    }
+  }
+
   // Generate slug from title
   const slug = generateSlug(parsed.title);
 
-  // Calculate read time (roughly 200 words per minute)
-  const wordCount = parsed.content.replace(/<[^>]*>/g, ' ').split(/\s+/).length;
-  const readTime = `${Math.max(3, Math.ceil(wordCount / 200))} min read`;
+  // Read time from final word count
+  const readTime = `${Math.max(2, Math.ceil(words.length / 220))} min read`;
 
   // Determine category based on topic
   const category = determineCategory(topic, country);
+
+  // Auto-publish flag from site_settings
+  let autoPublish = false;
+  try {
+    const { data: setting } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "auto_publish_ai_posts")
+      .maybeSingle();
+    autoPublish = (setting?.value as any)?.enabled === true;
+  } catch (_) { /* ignore */ }
 
   // Insert into database
   const { error: insertError } = await supabase
@@ -321,7 +376,8 @@ Respond in this exact JSON format:
       read_time: readTime,
       category,
       meta_description: parsed.excerpt,
-      is_published: false, // Requires admin review
+      is_published: autoPublish,
+      published_at: autoPublish ? new Date().toISOString() : null,
       is_ai_generated: true,
       featured_image: getDefaultImage(category),
     });
@@ -331,12 +387,12 @@ Respond in this exact JSON format:
     throw new Error(`Failed to save article: ${insertError.message}`);
   }
 
-  console.log(`Article saved: ${slug}`);
+  console.log(`Article saved: ${slug} (published=${autoPublish})`);
 
   return {
     slug,
     title: parsed.title,
-    status: "pending_review"
+    status: autoPublish ? "published" : "pending_review"
   };
 }
 
