@@ -671,6 +671,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('No images were generated. Please try again.');
         }
 
+        // Real progress signal: hero has arrived.
+        setGenerationProgress(80);
+        setGenerationStep("✨ Side & top views rendering...");
+
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
           front: 'Front View',
