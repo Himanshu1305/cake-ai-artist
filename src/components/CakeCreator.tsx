@@ -750,11 +750,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           const applyRow = (row: any) => {
             // Swap any URL columns into their slot indices.
             const swap = (prev: string[]) => {
-              const next = [...prev];
+              const next = prev.length >= viewOrder.length
+                ? [...prev]
+                : viewOrder.map((_, i) => prev[i] || '/placeholder.svg');
               for (const [col, idx] of Object.entries(colToIndex)) {
                 const url = row[col];
                 if (!url) continue;
-                if (idx < next.length && (next[idx] === '/placeholder.svg' || !next[idx])) {
+                if (next[idx] === '/placeholder.svg' || !next[idx]) {
                   next[idx] = url;
                   latestImages[idx] = url;
                 }
