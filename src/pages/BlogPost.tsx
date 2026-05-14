@@ -2209,6 +2209,12 @@ const BlogPost = () => {
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 max-w-4xl">
+            {isDraft && (
+              <div className="mb-4 px-4 py-3 rounded-lg bg-amber-100 border-2 border-amber-400 text-amber-900 font-semibold text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                DRAFT preview — visible only to admins. Publish from /admin to make this live.
+              </div>
+            )}
             <article className="bg-card/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
               {/* Hero Image */}
               {heroImage && (
