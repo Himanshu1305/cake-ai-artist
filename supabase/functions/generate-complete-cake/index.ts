@@ -616,12 +616,14 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         console.log(`[gen job] queued hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
 
         let jobId: string | null = null;
+        greetingMessage = `Happy ${occasion || 'Birthday'}, ${name}!`;
+        const backgroundViews = viewsToRun.slice(1);
         const jobInsert: Record<string, unknown> = {
           user_id: user.id,
           status: 'in_progress',
           cake_style: cakeStyle,
           hero_view: heroView.name,
-          greeting_message: `Happy ${occasion || 'Birthday'}, ${name}!`,
+          greeting_message: greetingMessage,
           view_count: allViewNames.length,
         };
         const { data: jobRow, error: jobErr } = await supabase
