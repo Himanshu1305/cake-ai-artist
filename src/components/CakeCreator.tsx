@@ -644,7 +644,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error(error.message || 'Failed to generate cake images');
         }
 
-        if (!data?.success || !data?.images) {
+        if (data?.success === false) {
+          const message = data.error || 'The cake generator could not create the main view. Please try again.';
+          if (data.recoverable || data.errorCode === 'HERO_VIEW_GENERATION_FAILED') {
+            setGenerationProgress(0);
+            setGenerationStep('');
+          }
+          throw new Error(message);
+        }
+
+        if (!data?.images) {
           throw new Error('Invalid response from cake generation service');
         }
 

@@ -235,7 +235,8 @@ COMPOSITION RULES:
         const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Lovable-API-Key': LOVABLE_API_KEY,
+            'X-Lovable-AIG-SDK': 'vercel-ai-sdk',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ model, messages, modalities: ['image', 'text'] }),
@@ -333,12 +334,12 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
         const msg = err?.message || String(err);
         if (msg === 'RATE_LIMIT' || msg === 'CREDITS_EXHAUSTED') throw err;
         const isTimeout = err?.name === 'AbortError' || msg.includes('aborted');
-        const is503 = msg === 'UPSTREAM_503';
-        if (!isTimeout && !is503) {
+        const isFallbackable = isTimeout || msg === 'UPSTREAM_503' || msg === 'No image returned' || msg.startsWith('Image generation failed: 5');
+        if (!isFallbackable) {
           console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
           throw err;
         }
-        console.log(`⏱ ${view.name} primary ${isTimeout ? 'timeout' : '503'} after ${Date.now() - t0}ms — falling back to ${FALLBACK_MODEL}`);
+        console.log(`⏱ ${view.name} primary failed after ${Date.now() - t0}ms (${msg}) — falling back to ${FALLBACK_MODEL}`);
         const tFb = Date.now();
         try {
           const url = await callImageModel(messages, FALLBACK_MODEL, FALLBACK_TIMEOUT_MS, `${view.name}/fallback`);
@@ -521,7 +522,8 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Lovable-API-Key': LOVABLE_API_KEY,
+          'X-Lovable-AIG-SDK': 'vercel-ai-sdk',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -633,7 +635,17 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
           if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
           console.error(`[gen high] hero ${heroView.name} failed:`, m);
-          throw new Error('Hero view generation failed. Please try again.');
+          return new Response(
+            JSON.stringify({
+              success: false,
+              recoverable: true,
+              error: 'Hero view generation failed. Please try again.',
+              errorCode: 'HERO_VIEW_GENERATION_FAILED',
+              failedViews: [heroView.name],
+              viewOrder: allViewNames,
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          );
         }
         const heroUrl = heroSettled.value as string;
 
