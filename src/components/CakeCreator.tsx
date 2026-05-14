@@ -812,10 +812,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               finished = true;
               cleanup();
               if (allFilled) {
+                triggerConfetti();
+                haptic.success();
                 toast({
                   title: `All ${viewOrder.length} views ready!`,
                   description: 'Your cake is fully rendered.',
                 });
+                if (isLoggedIn) setShowRatingPrompt(true);
               } else {
                 const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
                 toast({
