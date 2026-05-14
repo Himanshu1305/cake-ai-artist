@@ -151,7 +151,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Simulated progress during generation - adapts based on quality mode
+  // Honest progress: simulated bar caps at 60% until real events advance it.
+  // Hero received -> 80%. All views filled -> 100%. (Driven from handleSubmit.)
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -159,44 +160,20 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       return;
     }
 
-    // Fast mode: ~30 seconds | High quality mode: ~2 minutes
-    const fastSteps = [
+    const steps = [
       { progress: 8, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 20, step: "✨ Adding magical decorations...", delay: 3000 },
-      { progress: 35, step: "🌈 Mixing the perfect colors...", delay: 6000 },
-      { progress: 50, step: "🎀 Shaping the perfect tiers...", delay: 10000 },
-      { progress: 65, step: "💖 Sprinkling some magic...", delay: 15000 },
-      { progress: 78, step: "🌟 Creating beautiful details...", delay: 20000 },
-      { progress: 88, step: "✨ Adding final sparkles...", delay: 25000 },
-      { progress: 95, step: "🎉 Almost ready to celebrate...", delay: 30000 },
-      { progress: 97, step: "💫 Just a moment more...", delay: 40000 },
-      { progress: 98, step: "🎂 Finishing up...", delay: 50000 },
+      { progress: 20, step: "✨ Mixing colors and frosting...", delay: 4000 },
+      { progress: 35, step: "🎀 Sculpting the tiers...", delay: 9000 },
+      { progress: 50, step: "💖 Adding decorations...", delay: 16000 },
+      { progress: 60, step: "🌟 Finishing the main view...", delay: 24000 },
     ];
-
-    const highQualitySteps = [
-      { progress: 5, step: "🎂 Crafting your masterpiece...", delay: 500 },
-      { progress: 12, step: "✨ Adding intricate decorations...", delay: 8000 },
-      { progress: 20, step: "🌈 Mixing the perfect colors...", delay: 15000 },
-      { progress: 30, step: "🎀 Sculpting beautiful tiers...", delay: 25000 },
-      { progress: 40, step: "💖 Adding fine details...", delay: 35000 },
-      { progress: 50, step: "🌟 Creating textures...", delay: 50000 },
-      { progress: 60, step: "🎨 Refining the artistry...", delay: 65000 },
-      { progress: 70, step: "✨ Perfecting every detail...", delay: 80000 },
-      { progress: 80, step: "🍰 Adding finishing touches...", delay: 95000 },
-      { progress: 88, step: "🎁 Nearly there...", delay: 110000 },
-      { progress: 95, step: "🎉 Almost ready...", delay: 125000 },
-      { progress: 97, step: "💫 Final moments...", delay: 140000 },
-      { progress: 98, step: "🎂 Finishing up...", delay: 160000 },
-    ];
-
-    const steps = generationQuality === 'high' ? highQualitySteps : fastSteps;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
-    
     steps.forEach(({ progress, step, delay }) => {
       const timer = setTimeout(() => {
-        setGenerationProgress(progress);
-        setGenerationStep(step);
+        // Don't overwrite a higher progress already set by a real event.
+        setGenerationProgress((cur) => (cur >= progress ? cur : progress));
+        setGenerationStep((cur) => (cur && (cur.startsWith("🎉") || cur.startsWith("✨ Side"))) ? cur : step);
       }, delay);
       timers.push(timer);
     });
@@ -694,6 +671,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           throw new Error('No images were generated. Please try again.');
         }
 
+        // Real progress signal: hero has arrived.
+        setGenerationProgress(80);
+        setGenerationStep("✨ Side & top views rendering...");
+
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
           front: 'Front View',
@@ -801,6 +782,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
             const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
+
+            // Real progress: each filled slot bumps the bar.
+            const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
+            const pct = Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
+            setGenerationProgress((cur) => (cur >= pct ? cur : pct));
+            if (allFilled) setGenerationStep("🎉 All views ready!");
 
             // Only declare "finished" when EITHER all slots are filled, OR a
             // real backend error was recorded. A premature 'completed' status

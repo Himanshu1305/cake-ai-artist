@@ -609,65 +609,12 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       //            stalls waiting on the slowest premium model.
       // ============================================================
 
-      if (quality === 'fast') {
-        const allViewNames = viewsToRun.map(v => v.name);
-        const tStart = Date.now();
-        console.log(`[gen fast] views=[${allViewNames.join(',')}] (parallel, sync)`);
-
-        // Run all views + greeting message in parallel.
-        const [imageResults, messageSettled] = await Promise.all([
-          Promise.allSettled(viewsToRun.map(v => generateView(v))),
-          generateMessageAsync().then(
-            (m) => ({ ok: true as const, m }),
-            () => ({ ok: false as const, m: `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!` }),
-          ),
-        ]);
-
-        // Surface auth-style failures fast (rate limit / credits exhausted).
-        for (const r of imageResults) {
-          if (r.status === 'rejected') {
-            const m = r.reason?.message || String(r.reason);
-            if (m === 'RATE_LIMIT') throw new Error('RATE_LIMIT');
-            if (m === 'CREDITS_EXHAUSTED') throw new Error('CREDITS_EXHAUSTED');
-          }
-        }
-
-        const responseImages: (string | null)[] = imageResults.map(
-          (r) => (r.status === 'fulfilled' ? (r.value as string) : null),
-        );
-        const responseFailed: string[] = imageResults
-          .map((r, i) => (r.status === 'rejected' ? viewsToRun[i].name : null))
-          .filter((x): x is string => !!x);
-        greetingMessage = (messageSettled as any).m;
-
-        const okCount = responseImages.filter(Boolean).length;
-        console.log(`⏱ [gen fast] done in ${Date.now() - tStart}ms — ok=${okCount}/${viewsToRun.length}, failed=[${responseFailed.join(',')}]`);
-
-        if (okCount === 0) {
-          throw new Error('Hero view generation failed. Please try again.');
-        }
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            images: responseImages,
-            imageLabels,
-            generateBothStyles,
-            failedViews: responseFailed,
-            greetingMessage,
-            // No jobId for Fast — frontend skips realtime/polling and
-            // shows a Regenerate prompt only if a slot failed.
-            jobId: null,
-            viewOrder: allViewNames,
-            heroView: viewsToRun[0].name,
-            backgroundViews: [],
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-        );
-      }
-
       // ============================================================
-      // HIGH QUALITY — progressive hero-first flow.
+      // UNIFIED HERO-FIRST FLOW (both Fast and High Quality).
+      // Returns the hero view + jobId immediately, then fills the
+      // remaining views in EdgeRuntime.waitUntil. The browser never
+      // waits on more than one image, so a stalled side/top view can
+      // never leave the UI stuck at "98%".
       // ============================================================
       {
         const heroView = viewsToRun[0];
