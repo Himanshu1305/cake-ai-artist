@@ -89,6 +89,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+  const [spinImageUrl, setSpinImageUrl] = useState<string | null>(null);
   const [userPhotoForCake, setUserPhotoForCake] = useState<File | null>(null);
   const [userPhotoPreview, setUserPhotoPreview] = useState<string | null>(null);
   const [editingPhotoOnCakeIndex, setEditingPhotoOnCakeIndex] = useState<number | null>(null);
