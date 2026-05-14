@@ -2265,7 +2265,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <div className="text-sm text-foreground">
                     {bgPending.size > 0 ? (
                       <>
-                        <strong>✨ Hero view ready!</strong> Rendering{" "}
+                        <strong>{generatedImages.some((u) => u && u !== '/placeholder.svg') ? "✨ First view ready!" : "🎂 Cake job started!"}</strong> Rendering{" "}
                         {Array.from(bgPending).map((i) => bgViewLabels[i] || `View ${i + 1}`).join(" & ")}{" "}
                         in the background — usually 30–60 seconds.
                       </>
