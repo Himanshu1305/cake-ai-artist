@@ -9,6 +9,7 @@ import { Loader2, Volume2, Sparkles, Gift, Play, Pause } from "lucide-react";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
+import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
 
 interface PublicCake {
   id: string;
