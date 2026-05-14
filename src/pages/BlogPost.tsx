@@ -2042,6 +2042,8 @@ const BlogPost = () => {
   const { id } = useParams();
   const [dbPost, setDbPost] = useState<DatabaseBlogPost | null>(null);
   const [loadingDbPost, setLoadingDbPost] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isDraft, setIsDraft] = useState(false);
   
   // Track blog post view
   useBlogViewTracking(id);
@@ -2052,12 +2054,40 @@ const BlogPost = () => {
       if (!id) return;
       
       try {
-        const { data, error } = await supabase
+        // Check admin status so we can preview unpublished drafts
+        const { data: { user } } = await supabase.auth.getUser();
+        let admin = false;
+        if (user) {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          admin = !!roleData;
+          setIsAdmin(admin);
+        }
+
+        // Try published first
+        let { data, error } = await supabase
           .from('blog_posts')
           .select('*')
           .eq('slug', id)
           .eq('is_published', true)
           .maybeSingle();
+
+        // Admin fallback: load draft if no published version
+        if (!data && admin) {
+          const draft = await supabase
+            .from('blog_posts')
+            .select('*')
+            .eq('slug', id)
+            .maybeSingle();
+          if (draft.data) {
+            data = draft.data;
+            setIsDraft(true);
+          }
+        }
         
         if (error) {
           console.error('Error fetching blog post:', error);
