@@ -783,6 +783,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
 
+            // Real progress: each filled slot bumps the bar.
+            const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
+            const pct = Math.min(100, 80 + Math.round((filledCount / viewOrder.length) * 20));
+            setGenerationProgress((cur) => (cur >= pct ? cur : pct));
+            if (allFilled) setGenerationStep("🎉 All views ready!");
+
             // Only declare "finished" when EITHER all slots are filled, OR a
             // real backend error was recorded. A premature 'completed' status
             // event with URLs not-yet-merged should NOT trigger the failure toast.
