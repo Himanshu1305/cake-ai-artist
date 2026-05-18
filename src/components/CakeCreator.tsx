@@ -181,11 +181,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     return () => timers.forEach(clearTimeout);
   }, [isLoading, generationQuality]);
 
-  // Regenerate specific view (style-aware: decorated=front/side/top, sculpted=main/angle/top)
+  // Regenerate specific view (decorated cakes only: 0=front, 1=side, 2=top)
   const handleRegenerateView = async (viewIndex: number) => {
-    const viewNames = cakeStyle === 'sculpted'
-      ? ['main', 'angle', 'top']
-      : ['front', 'side', 'top'];
+    const viewNames = ['front', 'side', 'top'];
     const viewName = viewNames[viewIndex];
 
     setRegeneratingView(viewIndex);
@@ -199,7 +197,6 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           occasion,
           relation,
           gender,
-          cakeStyle,
           cakeType,
           layers,
           theme,
