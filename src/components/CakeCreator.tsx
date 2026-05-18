@@ -181,10 +181,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     return () => timers.forEach(clearTimeout);
   }, [isLoading, generationQuality]);
 
-  // Regenerate specific view (decorated only: 0=front, 1=side, 2=top)
+  // Regenerate specific view (decorated cakes only: 0=front, 1=side, 2=top)
   const handleRegenerateView = async (viewIndex: number) => {
-    const decoratedViewNames = ['front', 'side', 'top'];
-    const viewName = decoratedViewNames[viewIndex];
+    const viewNames = ['front', 'side', 'top'];
+    const viewName = viewNames[viewIndex];
 
     setRegeneratingView(viewIndex);
     haptic.medium();
@@ -201,6 +201,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           layers,
           theme,
           colors,
+          quality: generationQuality,
           userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
           specificView: viewName
         }

@@ -1,51 +1,54 @@
+## What's actually wrong
 
-# Cake generation reliability — full audit
+Database confirms the symptom: the latest job has `hero_url` filled and `side_error = top_error = "No image returned"`. So during the initial **high-quality** generation, the primary image model (`gemini-3.1-flash-image-preview`) silently returned no image for the side & top views, and those views were marked failed.
 
-I traced the entire flow end-to-end (edge function → DB job row → realtime → polling → UI). Here is what I confirmed and the (small) residual risks.
+Three real bugs, in order of impact:
 
-## What is now correct
+### Bug 1 — Bulk generation has NO fallback model
+`generate-complete-cake/index.ts` line 102:
+```ts
+const FALLBACK_MODEL = (quality === 'high' && specificView)
+  ? 'google/gemini-3-pro-image-preview'
+  : 'google/gemini-2.5-flash-image';
+```
+The strong fallback only runs on **manual single-view regenerate**. For the initial 3-view fan-out, when the flash model returns `"No image returned"` (a known intermittent failure), that view is dropped and the user only gets the hero. That is exactly what happened.
 
-**1. The browser no longer waits on AI image generation.**
-`generate-complete-cake` inserts a row into `cake_generation_jobs`, returns within ~1s with `jobId + null image slots + failedViews=[all view names]`, then runs every view (including hero) inside `EdgeRuntime.waitUntil`. The old "stuck at 60% / 98%" path is structurally removed — the browser cannot get stuck on a request that already returned.
+### Bug 2 — Regenerate handler drops `quality` and `cakeStyle`
+`CakeCreator.tsx` lines 192–207: the regenerate body sends `cakeType, layers, theme, colors` but **not** `quality` or `cakeStyle`. So:
+- `quality` defaults to `'fast'` → the regenerate runs on the fast model with the WEAK fallback (`gemini-2.5-flash-image`) instead of the strong `gemini-3-pro-image-preview`.
+- `cakeStyle` defaults to `'decorated'` → for sculpted cakes the regenerate uses the wrong view set entirely (would 500 on view 'side').
 
-**2. DB schema, RLS, and realtime are aligned with the code.**
-- Table has all columns the edge function writes (`hero_url/side_url/top_url`, matching `*_error`, `status`, `view_count`, `greeting_message`).
-- RLS: owner-only SELECT — required for realtime.
-- Table is in `supabase_realtime` publication — UPDATE events will fire.
-- Edge function uses the service role key to write, so RLS does not block background updates.
+So when the user clicks Regenerate on the 3rd (top) view in high-quality mode, they're not actually getting high-quality retry — they get the same weak chain that already failed.
 
-**3. Realtime miss is covered by polling.**
-Even if the row finishes BEFORE the client subscribes (very common — bg can finish in 9s while the response itself returns in ~1s), the client immediately calls `fetchOnce()`, again at 1s and 3s, then every 5s, plus a 4-minute watchdog that converts any still-pending slots into a "Regenerate" prompt. There is no path where the UI can sit forever.
+### Bug 3 — Hardcoded view names in regenerate
+`CakeCreator.tsx` line 186: `const decoratedViewNames = ['front', 'side', 'top'];`. For a **sculpted** cake (which uses names `main`, `angle`, `top`), regenerating view index 1 would send `'side'`, and the edge function throws `Invalid view name`. Currently latent because the user is on a decorated cake, but it's the same code path.
 
-**4. Per-view failures are isolated.**
-Each view writes to its own slot. If hero succeeds but side fails, the user keeps the hero and gets a Regenerate button on side — no whole-batch failure.
+## Fix
 
-**5. Gateway error handling is correct.**
-Primary model has a per-view abort timeout; on AbortError / 503 / "No image returned" / 5xx → falls back to a second model. 429 → `RATE_LIMIT`, 402 → `CREDITS_EXHAUSTED`, surfaced as proper HTTP statuses with user-readable messages.
+### `supabase/functions/generate-complete-cake/index.ts`
+1. Make the strong fallback available in bulk too. Change line 102 to always pick the strong fallback when `quality === 'high'` (regardless of `specificView`):
+   ```ts
+   const FALLBACK_MODEL = quality === 'high'
+     ? 'google/gemini-3-pro-image-preview'
+     : 'google/gemini-2.5-flash-image';
+   ```
+   `FALLBACK_TIMEOUT_MS` is already 50s for high quality, fine inside `EdgeRuntime.waitUntil` (~150s budget).
 
-**6. Frontend success/error gating is sane.**
-`data.success === false` short-circuits with a real error toast (no blank screen). The polling block is correctly gated on `jobId && viewOrder && heroView && failedViews.length > 0`, which is always true under the new flow because the backend marks every slot as initially "pending" via `failedViews = allViewNames`.
+2. (Optional small hardening) If `generateView` fails with `"No image returned"` from the primary, retry once on the same primary before falling back — the flash image model has a high rate of empty responses that succeed on a second try. Low risk, contained to `generateView`.
 
-## Residual risks (small, worth fixing)
+### `src/components/CakeCreator.tsx`
+1. In `handleRegenerateView` (lines 192–207), include the current `quality` (the user's `generationQuality` state) and `cakeStyle` in the request body so the edge function knows to use the strong fallback and the right view set.
 
-**A. TDZ-safe but fragile ordering in CakeCreator.tsx (~lines 850–893).**
-`fetchOnce()` is invoked at line 863 and its `applyRow` callback references `cleanup`, which is declared as `const` at line 887. Today this works because `fetchOnce` is async and `cleanup` is defined before the awaited query resolves. If anyone later makes `fetchOnce` synchronous or moves code, this becomes a TDZ ReferenceError. Move the `const cleanup = …` declaration ABOVE the first `fetchOnce()` call.
+2. Replace the hardcoded `decoratedViewNames` with a style-aware view name array:
+   ```ts
+   const viewNames = cakeStyle === 'sculpted'
+     ? ['main', 'angle', 'top']
+     : ['front', 'side', 'top'];
+   const viewName = viewNames[viewIndex];
+   ```
 
-**B. The "all 3 views in parallel + fallback" worst case is ~43s.**
-Per view: 28s primary + 15s fallback. Three in parallel = ~43s background time. Comfortably inside the edge function's `waitUntil` budget (~150s), so no action required, but worth noting if we ever add a 4th view or the gateway gets slower — we should reduce parallel fan-out or shrink the per-view fallback window.
+## Why this resolves the user's symptom
+- Initial high-quality run: when the flash model returns no image for side/top, the pro fallback now runs and almost always succeeds → all 3 images appear on the first try.
+- Regenerate on the 3rd view: now actually runs `quality: 'high'`, so the pro fallback fires after the flash model fails → the top view comes back instead of silently failing again.
 
-**C. Unrelated noise in console: repeated `NetworkError when attempting to fetch resource` from `ads_enabled` etc.**
-Not part of cake generation. Mentioning so we don't confuse them with generation failures during future debugging.
-
-## Verdict
-
-The cake generation flow is now correct by construction:
-- Browser request never waits on AI.
-- Job row is the single source of truth.
-- Realtime + polling + watchdog cover every drop scenario.
-- Per-slot failures degrade to Regenerate buttons instead of blocking the whole cake.
-- Real errors (rate limit, credits, hero failure) surface as readable toasts, not blank screens.
-
-The only change I'd recommend before declaring it bulletproof is the small ordering fix in (A). After that I am confident this will not regress to the old "stuck at X%" symptom.
-
-If you want, I can switch to build mode and apply fix (A).
+No DB schema or UI structure changes. Frontend change is limited to the regenerate handler. Edge function change is one constant and (optionally) one tiny retry in `generateView`.
