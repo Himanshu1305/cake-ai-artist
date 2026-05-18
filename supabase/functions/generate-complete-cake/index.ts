@@ -99,7 +99,7 @@ serve(async (req) => {
     // (c) reserving the slowest premium model strictly for manual single-view
     // regeneration (specificView) — never as automatic fallback in bulk.
     const imageModel = 'google/gemini-3.1-flash-image-preview';
-    const FALLBACK_MODEL = (quality === 'high' && specificView)
+    const FALLBACK_MODEL = quality === 'high'
       ? 'google/gemini-3-pro-image-preview'
       : 'google/gemini-2.5-flash-image';
     const PRIMARY_TIMEOUT_MS = quality === 'high' ? 55000 : 28000;
