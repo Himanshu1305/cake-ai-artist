@@ -86,6 +86,16 @@ const RecipeDetail = () => {
     })),
     author: { "@type": "Organization", name: "Cake AI Artist" },
   };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://cakeaiartist.com/" },
+      { "@type": "ListItem", position: 2, name: "Recipes", item: "https://cakeaiartist.com/recipes" },
+      { "@type": "ListItem", position: 3, name: COUNTRY_LABELS[recipe.country], item: `https://cakeaiartist.com/recipes?country=${recipe.country}` },
+      { "@type": "ListItem", position: 4, name: recipe.title, item: `https://cakeaiartist.com/recipes/${recipe.slug}` },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,8 +105,11 @@ const RecipeDetail = () => {
         <link rel="canonical" href={`https://cakeaiartist.com/recipes/${recipe.slug}`} />
         <meta property="og:title" content={recipe.title} />
         <meta property="og:description" content={recipe.excerpt || ""} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://cakeaiartist.com/recipes/${recipe.slug}`} />
         {recipe.hero_image && <meta property="og:image" content={recipe.hero_image} />}
         <script type="application/ld+json">{JSON.stringify(recipeSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
       <article className="max-w-3xl mx-auto px-4 py-8">

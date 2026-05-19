@@ -59,12 +59,43 @@ const Recipes = () => {
     ? `Traditional and modern cake recipes from ${COUNTRY_LABELS[country] || country}. Step-by-step instructions, prep times and design ideas.`
     : "Traditional cake recipes from India, UK, Canada and Australia. Step-by-step bakes with prep time, ingredients and matching cake design ideas.";
 
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    description: desc,
+    url: `https://cakeaiartist.com/recipes${country ? `?country=${country}` : ""}`,
+    hasPart: recipes.map((r) => ({
+      "@type": "Recipe",
+      name: r.title,
+      url: `https://cakeaiartist.com/recipes/${r.slug}`,
+      image: r.hero_image || undefined,
+      recipeCuisine: COUNTRY_LABELS[r.country],
+    })),
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://cakeaiartist.com/" },
+      { "@type": "ListItem", position: 2, name: "Recipes", item: "https://cakeaiartist.com/recipes" },
+      ...(country
+        ? [{ "@type": "ListItem", position: 3, name: COUNTRY_LABELS[country] || country, item: `https://cakeaiartist.com/recipes?country=${country}` }]
+        : []),
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={desc} />
         <link rel="canonical" href={`https://cakeaiartist.com/recipes${country ? `?country=${country}` : ""}`} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={desc} />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">{JSON.stringify(collectionSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
       <section className="px-4 pt-12 pb-6 text-center max-w-3xl mx-auto">

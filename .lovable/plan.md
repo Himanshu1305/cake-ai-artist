@@ -1,54 +1,34 @@
-## What's actually wrong
+## Goal
+Make the existing cake recipes discoverable. Recipes already live at `/recipes` (hub) and `/recipes/:slug` (12 published recipes across IN/UK/CA/AU), but nothing links to them. Add a "Recipes" entry in the main nav with a dropdown of all recipes grouped by country, surface them on each country landing page, and make the pages SEO-compliant.
 
-Database confirms the symptom: the latest job has `hero_url` filled and `side_error = top_error = "No image returned"`. So during the initial **high-quality** generation, the primary image model (`gemini-3.1-flash-image-preview`) silently returned no image for the side & top views, and those views were marked failed.
+## Changes
 
-Three real bugs, in order of impact:
+### 1. Add "Recipes" to the main navigation (`src/pages/Index.tsx`)
+- **Desktop nav (around line 332–335):** Add a `Recipes` dropdown between `Examples` and `Community`. Hover/click opens a panel listing all 12 recipes grouped by country flag + name, each linking to `/recipes/:slug`. Footer of the panel: "Browse all recipes →" linking to `/recipes`.
+- **Mobile sheet menu (around line 374–382):** Add a collapsible "Recipes" section with the same grouped list, plus a "View all recipes" link.
+- Fetch the list once via `supabase.from('cake_recipes').select('slug,title,country').eq('is_published', true).order('country')`, cache with React Query (already in app).
 
-### Bug 1 — Bulk generation has NO fallback model
-`generate-complete-cake/index.ts` line 102:
-```ts
-const FALLBACK_MODEL = (quality === 'high' && specificView)
-  ? 'google/gemini-3-pro-image-preview'
-  : 'google/gemini-2.5-flash-image';
-```
-The strong fallback only runs on **manual single-view regenerate**. For the initial 3-view fan-out, when the flash model returns `"No image returned"` (a known intermittent failure), that view is dropped and the user only gets the hero. That is exactly what happened.
+### 2. Add a "Famous local cakes" section to each country landing page
+Files: `src/pages/UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx`.
+- New section near the bottom (before Footer) titled e.g. "Famous British cakes you can bake at home" / "Classic Indian cakes to bake" etc.
+- Renders 3 cards (the country's recipes) with hero image, title, prep time, "Read recipe →" → `/recipes/:slug`.
+- Anchor link `#recipes` and a "Browse all UK recipes" CTA → `/recipes?country=UK` (already supported by `Recipes.tsx`).
 
-### Bug 2 — Regenerate handler drops `quality` and `cakeStyle`
-`CakeCreator.tsx` lines 192–207: the regenerate body sends `cakeType, layers, theme, colors` but **not** `quality` or `cakeStyle`. So:
-- `quality` defaults to `'fast'` → the regenerate runs on the fast model with the WEAK fallback (`gemini-2.5-flash-image`) instead of the strong `gemini-3-pro-image-preview`.
-- `cakeStyle` defaults to `'decorated'` → for sculpted cakes the regenerate uses the wrong view set entirely (would 500 on view 'side').
+### 3. SEO compliance
+- **Sitemap (`public/sitemap.xml`):** Add `/recipes`, `/recipes?country=IN|UK|CA|AU`, and one `<url>` entry per published recipe slug with `lastmod`, `changefreq=monthly`, `priority=0.7`.
+- **`Recipes.tsx` hub:** already has `<Helmet>` title/description/canonical. Add JSON-LD `CollectionPage` + `BreadcrumbList` (Home → Recipes [→ Country]).
+- **`RecipeDetail.tsx`:** already has Recipe JSON-LD. Add `BreadcrumbList` JSON-LD (Home → Recipes → {Country} → {Title}), `og:type=article`, visible breadcrumb above the H1.
+- **Country landing pages:** add a `BreadcrumbList` snippet and an internal-link block to recipes (helps both UX and SEO via internal linking).
 
-So when the user clicks Regenerate on the 3rd (top) view in high-quality mode, they're not actually getting high-quality retry — they get the same weak chain that already failed.
+### 4. Sitemap maintenance
+The current `public/sitemap.xml` is hand-edited. Append the recipe URLs once now; note in a code comment that new recipe slugs need to be added when published. (No script migration unless you'd like one.)
 
-### Bug 3 — Hardcoded view names in regenerate
-`CakeCreator.tsx` line 186: `const decoratedViewNames = ['front', 'side', 'top'];`. For a **sculpted** cake (which uses names `main`, `angle`, `top`), regenerating view index 1 would send `'side'`, and the edge function throws `Invalid view name`. Currently latent because the user is on a decorated cake, but it's the same code path.
+## Files touched
+- `src/pages/Index.tsx` — add Recipes dropdown (desktop + mobile)
+- `src/pages/UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx` — add recipes section + breadcrumb schema
+- `src/pages/Recipes.tsx` — add CollectionPage + Breadcrumb JSON-LD
+- `src/pages/RecipeDetail.tsx` — add Breadcrumb JSON-LD + visible breadcrumb, `og:type=article`
+- `public/sitemap.xml` — add 12 recipe URLs + 4 country-filtered hub URLs + `/recipes`
 
-## Fix
-
-### `supabase/functions/generate-complete-cake/index.ts`
-1. Make the strong fallback available in bulk too. Change line 102 to always pick the strong fallback when `quality === 'high'` (regardless of `specificView`):
-   ```ts
-   const FALLBACK_MODEL = quality === 'high'
-     ? 'google/gemini-3-pro-image-preview'
-     : 'google/gemini-2.5-flash-image';
-   ```
-   `FALLBACK_TIMEOUT_MS` is already 50s for high quality, fine inside `EdgeRuntime.waitUntil` (~150s budget).
-
-2. (Optional small hardening) If `generateView` fails with `"No image returned"` from the primary, retry once on the same primary before falling back — the flash image model has a high rate of empty responses that succeed on a second try. Low risk, contained to `generateView`.
-
-### `src/components/CakeCreator.tsx`
-1. In `handleRegenerateView` (lines 192–207), include the current `quality` (the user's `generationQuality` state) and `cakeStyle` in the request body so the edge function knows to use the strong fallback and the right view set.
-
-2. Replace the hardcoded `decoratedViewNames` with a style-aware view name array:
-   ```ts
-   const viewNames = cakeStyle === 'sculpted'
-     ? ['main', 'angle', 'top']
-     : ['front', 'side', 'top'];
-   const viewName = viewNames[viewIndex];
-   ```
-
-## Why this resolves the user's symptom
-- Initial high-quality run: when the flash model returns no image for side/top, the pro fallback now runs and almost always succeeds → all 3 images appear on the first try.
-- Regenerate on the 3rd view: now actually runs `quality: 'high'`, so the pro fallback fires after the flash model fails → the top view comes back instead of silently failing again.
-
-No DB schema or UI structure changes. Frontend change is limited to the regenerate handler. Edge function change is one constant and (optionally) one tiny retry in `generateView`.
+## Open question
+Do you want me to **auto-generate** the sitemap from the database (via a `predev`/`prebuild` script) so future recipes appear automatically, or is hand-editing fine for now?

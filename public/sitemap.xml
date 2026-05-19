@@ -164,4 +164,25 @@
   <url><loc>https://cakeaiartist.com/privacy</loc><lastmod>2026-05-02</lastmod><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://cakeaiartist.com/terms</loc><lastmod>2026-05-02</lastmod><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://cakeaiartist.com/advertising</loc><lastmod>2026-05-02</lastmod><priority>0.3</priority><changefreq>yearly</changefreq></url>
+
+  <!-- Recipes Hub -->
+  <url><loc>https://cakeaiartist.com/recipes</loc><lastmod>2026-05-19</lastmod><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes?country=IN</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes?country=UK</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes?country=CA</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes?country=AU</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>weekly</changefreq></url>
+
+  <!-- Cake Recipes -->
+  <url><loc>https://cakeaiartist.com/recipes/hummingbird-cake-aussie</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/classic-pavlova</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/lamington-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/butter-tart-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/canadian-maple-walnut-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/nanaimo-bar-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/eggless-chocolate-truffle-cake-india</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/mawa-cake-mumbai-irani</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/rasmalai-cake-fusion</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/battenberg-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/classic-victoria-sponge</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://cakeaiartist.com/recipes/traditional-christmas-cake</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority><changefreq>monthly</changefreq></url>
 </urlset>

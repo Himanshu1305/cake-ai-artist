@@ -44,6 +44,7 @@ import { GlobalReachWidget } from "@/components/GlobalReachWidget";
 import { CakeWall } from "@/components/CakeWall";
 import { HomepageFAQ, HOMEPAGE_FAQS } from "@/components/HomepageFAQ";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { RecipesNavDropdown, RecipesMobileMenu } from "@/components/RecipesNavDropdown";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
 
@@ -330,6 +331,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/use-cases" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button></Link>
+              <div className="hidden md:inline-flex"><RecipesNavDropdown /></div>
               <Link to="/community" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button></Link>
               <Link to="/blog"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Blog</Button></Link>
               <Link to="/faq" className="hidden lg:inline-flex"><Button variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button></Link>
@@ -374,6 +376,7 @@ const Index = () => {
                   <Link to="/use-cases">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Examples</Button>
                   </Link>
+                  <RecipesMobileMenu />
                   <Link to="/community">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Community</Button>
                   </Link>

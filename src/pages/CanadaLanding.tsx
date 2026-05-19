@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Snowflake, CheckCircle2, Sparkles, Menu, Download, Leaf, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
@@ -481,6 +482,7 @@ const CanadaLanding = () => {
         </div>
       </section>
 
+      <CountryRecipesSection countryCode="CA" countryName="Canada" adjective="Canadian" />
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="CA" countryName="Canada" />
