@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-const RAZORPAY_KEY_ID = "rzp_live_Rp0dR29v14TRpM";
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string;
 
 export const useRazorpayPayment = (country: string = "US") => {
   const navigate = useNavigate();

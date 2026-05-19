@@ -57,8 +57,41 @@ serve(async (req) => {
 
     console.log('Authenticated user:', user.id);
 
-    // Parse and validate input
+    // Parse body early (can only call req.json() once)
     const rawInput = await req.json();
+
+    // Server-side generation limit check (skip for single-view regenerations)
+    const isRegenerating = !!rawInput?.specificView;
+    if (!isRegenerating) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile?.is_premium) {
+        const FREE_TOTAL_LIMIT = 5;
+        const { data: trackingRows } = await supabase
+          .from('generation_tracking')
+          .select('count')
+          .eq('user_id', user.id);
+
+        const totalGenerations = (trackingRows ?? []).reduce(
+          (sum: number, row: { count: number | null }) => sum + (row.count ?? 0),
+          0
+        );
+
+        if (totalGenerations >= FREE_TOTAL_LIMIT) {
+          console.log(`Generation limit reached for user ${user.id}: ${totalGenerations}/${FREE_TOTAL_LIMIT}`);
+          return new Response(
+            JSON.stringify({ error: 'generation_limit_reached' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    }
+
+    // Parse and validate input
     const validationResult = cakeRequestSchema.safeParse(rawInput);
 
     if (!validationResult.success) {

@@ -471,7 +471,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
     try {
       const result = await supabase.functions.invoke(functionName, { body });
-      if (result.error) throw result.error;
+      if (result.error) return { data: result.data, error: result.error };
       return { data: result.data, error: null };
     } catch (err) {
       console.log('Generation attempt failed:', err);
@@ -641,8 +641,19 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         });
 
         if (error) {
+          if (data?.error === 'generation_limit_reached') {
+            setGenerationProgress(0);
+            setGenerationStep('');
+            toast({
+              title: "Free generations used up",
+              description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
+              variant: "destructive",
+            });
+            navigate('/pricing');
+            return;
+          }
           console.error('Native generation error:', error);
-          throw new Error(error.message || 'Failed to generate cake images');
+          throw new Error((error as any).message || 'Failed to generate cake images');
         }
 
         if (data?.success === false) {
