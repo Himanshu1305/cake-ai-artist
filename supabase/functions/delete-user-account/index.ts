@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://cakeaiartist.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -37,6 +37,46 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Cancel any active Razorpay subscription before deleting the user
+    const { data: subscription } = await supabaseAdmin
+      .from("subscriptions")
+      .select("razorpay_subscription_id, status")
+      .eq("user_id", userId)
+      .in("status", ["active", "created", "authenticated"])
+      .maybeSingle();
+
+    if (subscription?.razorpay_subscription_id) {
+      const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID");
+      const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
+
+      if (razorpayKeyId && razorpayKeySecret) {
+        const credentials = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
+        try {
+          const cancelResp = await fetch(
+            `https://api.razorpay.com/v1/subscriptions/${subscription.razorpay_subscription_id}/cancel`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": `Basic ${credentials}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ cancel_at_cycle_end: 0 }),
+            }
+          );
+          if (!cancelResp.ok) {
+            const errText = await cancelResp.text();
+            console.error(`Razorpay subscription cancellation failed (${cancelResp.status}):`, errText);
+          } else {
+            console.log(`Cancelled Razorpay subscription: ${subscription.razorpay_subscription_id}`);
+          }
+        } catch (cancelErr) {
+          console.error("Error cancelling Razorpay subscription:", cancelErr);
+        }
+      } else {
+        console.warn("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set; skipping subscription cancellation");
+      }
+    }
 
     // Delete from auth.users - this cascades to profiles table
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
