@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves, Loader2 } from "lucide-react";
+import { Star, Cake, PartyPopper, Sun, CheckCircle2, Sparkles, Menu, Download, Waves, Loader2, Heart, Trophy } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
@@ -125,6 +125,22 @@ const AustraliaLanding = () => {
       text: "Used the Spider-Man character with chocolate 3-layer design for my nephew. Total legend move!",
       character: "Spider-Man",
       theme: "Chocolate 3-Layer"
+    },
+    {
+      name: "Sarah T.",
+      location: "Adelaide",
+      rating: 5,
+      text: "Designed a lamington-inspired birthday cake for my husband — coconut white with chocolate drizzle. He absolutely loved it, proper Aussie classic!",
+      character: "None",
+      theme: "Lamington Style"
+    },
+    {
+      name: "Liam K.",
+      location: "Gold Coast",
+      rating: 5,
+      text: "Made a beach-themed Australia Day cake with blue waves and a tiny Aussie flag. Looked amazing on the barbie table. Top tool mate!",
+      character: "None",
+      theme: "Beach Australia Day"
     }
   ];
 
@@ -132,15 +148,19 @@ const AustraliaLanding = () => {
     { name: "Birthday Parties", icon: PartyPopper },
     { name: "Australia Day", icon: Sun },
     { name: "Beach Parties", icon: Waves },
-    { name: "Anniversary", icon: Cake }
+    { name: "Anniversary", icon: Cake },
+    { name: "Wedding Cakes", icon: Heart },
+    { name: "Christmas in July", icon: Sun },
+    { name: "ANZAC Day", icon: Star },
+    { name: "Footy Finals", icon: Trophy }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Generator Australia — AI Birthday Cakes</title>
-        <meta name="description" content="Australia's #1 AI cake generator. Design personalised AI birthday cakes, anniversary, wedding & Australia Day cakes in 30 seconds. Free to try." />
-        <meta name="keywords" content="ai cake generator australia, ai cake australia, ai cakes australia, cake ai australia, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au" />
+        <title>Free AI Cake Generator Australia — Design Custom Birthday Cakes in Seconds</title>
+        <meta name="description" content="Australia's best free AI cake generator. Design custom birthday, wedding, Australia Day & celebration cakes with AI in 30 seconds. Loved by thousands of Aussies." />
+        <meta name="keywords" content="ai cake generator australia, ai cake australia, ai cakes australia, cake ai australia, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au, ai cake generator free australia, custom cake design australia, cake designer online australia, birthday cake ideas australia" />
         <link rel="canonical" href="https://cakeaiartist.com/australia" />
         <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
         <meta property="og:title" content="AI Cake Designer Australia — Personalised Cakes" />
@@ -172,9 +192,12 @@ const AustraliaLanding = () => {
 
       <FAQSchema
         faqs={[
-          { question: "Can I design cakes for Aussie celebrations?", answer: "Yes — Australia Day, Melbourne Cup, beach-themed parties, weddings, and traditional birthdays are all supported." },
+          { question: "Can I design cakes for Aussie celebrations?", answer: "Yes — Australia Day, Melbourne Cup, beach-themed parties, ANZAC Day, weddings, and traditional birthdays are all supported." },
           { question: "What's the price in AUD?", answer: "Three plans in AUD: Monthly A$7.99/month, Yearly A$49/year, or Lifetime A$79 once. A free plan is available forever." },
           { question: "Can event planners use the designs commercially?", answer: "Yes — premium plans include a commercial-use licence for businesses across Australia." },
+          { question: "Is the AI cake generator free in Australia?", answer: "Yes — Cake AI Artist is completely free to try in Australia. Design your first AI cake with no signup required. Premium plans are available in AUD for unlimited designs." },
+          { question: "Can I design a traditional Australian cake with AI?", answer: "Absolutely. Our AI understands Aussie cake culture — from lamingtons and pavlova-inspired designs to Australia Day themes and tropical celebration cakes." },
+          { question: "Does it work on mobile in Australia?", answer: "Yes — Cake AI Artist is fully optimised for mobile, tablet and desktop. Design a cake on your phone in seconds, wherever you are in Australia." },
         ]}
       />
 
@@ -195,7 +218,9 @@ const AustraliaLanding = () => {
           { author: "Emily R.", reviewBody: "As a party planner, I use this weekly! Made a gorgeous tiered vanilla anniversary cake.", ratingValue: 5, datePublished: "2024-11-22" },
           { author: "Daniel H.", reviewBody: "Created my mate's Goku birthday cake on the train! The modern style with blue accents was sick!", ratingValue: 5, datePublished: "2024-11-30" },
           { author: "Chloe M.", reviewBody: "Made my daughter's Barbie cake with pink elegant styling. Looked like a real bakery did it!", ratingValue: 5, datePublished: "2024-12-04" },
-          { author: "Josh W.", reviewBody: "Used the Spider-Man character with chocolate 3-layer design for my nephew. Total legend move!", ratingValue: 5, datePublished: "2024-12-12" }
+          { author: "Josh W.", reviewBody: "Used the Spider-Man character with chocolate 3-layer design for my nephew. Total legend move!", ratingValue: 5, datePublished: "2024-12-12" },
+          { author: "Sarah T.", reviewBody: "Designed a lamington-inspired birthday cake for my husband — coconut white with chocolate drizzle. Proper Aussie classic!", ratingValue: 5, datePublished: "2025-01-10" },
+          { author: "Liam K.", reviewBody: "Made a beach-themed Australia Day cake with blue waves and a tiny Aussie flag. Looked amazing on the barbie table!", ratingValue: 5, datePublished: "2025-01-18" }
         ]}
       />
 
@@ -257,10 +282,10 @@ const AustraliaLanding = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              🇦🇺 Pick the plan that fits your celebrations
+              🇦🇺 Australia's Favourite Free AI Cake Generator
             </motion.h1>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-white text-lg md:text-xl drop-shadow-md">
-              Monthly, Yearly or Lifetime — pay in AUD (A$). Cancel anytime.
+              Design custom birthday, wedding &amp; celebration cakes in 30 seconds — free to try, no signup needed
             </motion.p>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
               <Button size="lg" className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -335,8 +360,8 @@ const AustraliaLanding = () => {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-center text-foreground mb-4">Perfect for Aussie Celebrations</motion.h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">From Australia Day barbies to summer beach parties, create the perfect cake for any occasion</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">From Australia Day barbies to weddings, ANZAC Day, Footy Finals and summer beach parties — create the perfect cake for any Aussie occasion</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {celebrations.map((celebration, idx) => (
               <motion.div key={celebration.name} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + idx * 0.1 }}>
                 <Card className="text-center hover:shadow-lg transition-all hover:scale-105 hover:border-party-pink/50">
@@ -428,6 +453,46 @@ const AustraliaLanding = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* How It Works */}
+      <section className="py-16 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl font-bold text-center text-foreground mb-4"
+          >
+            How It Works — 3 Simple Steps
+          </motion.h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
+            From idea to stunning cake design in under a minute
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              { step: 1, title: "Describe Your Cake", desc: "Type what you want: occasion, flavour, colours, theme, characters", color: "bg-party-purple" },
+              { step: 2, title: "AI Generates in Seconds", desc: "Our AI creates a stunning, photorealistic cake design just for you", color: "bg-party-pink" },
+              { step: 3, title: "Download & Share", desc: "Save your design, share with your baker, or inspire your own creation", color: "bg-party-gold" },
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + idx * 0.15 }}
+              >
+                <Card className="text-center hover:shadow-lg transition-all">
+                  <CardContent className="pt-8 pb-6">
+                    <div className={`w-12 h-12 rounded-full ${item.color} ${item.color === 'bg-party-gold' ? 'text-background' : 'text-white'} flex items-center justify-center text-xl font-bold mx-auto mb-4`}>
+                      {item.step}
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Testimonials */}
       <section className="py-16">

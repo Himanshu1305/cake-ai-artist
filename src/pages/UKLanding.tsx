@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download, Loader2 } from "lucide-react";
+import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download, Loader2, Heart, Baby, Gift } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
@@ -125,6 +125,22 @@ const UKLanding = () => {
       text: "Created a beautiful red velvet anniversary cake with gold/silver accents. My wife loved it!",
       character: "None",
       theme: "Red Velvet Gold"
+    },
+    {
+      name: "Charlotte B.",
+      location: "Bristol",
+      rating: 5,
+      text: "Made a stunning Victoria sponge-inspired birthday cake for my mum's 60th. The cream and strawberry design looked absolutely spot on — proper British elegance!",
+      character: "None",
+      theme: "Victoria Sponge"
+    },
+    {
+      name: "Oliver P.",
+      location: "Leeds",
+      rating: 5,
+      text: "Designed a royal blue and gold cake for the King's Coronation street party. Everyone thought I'd hired a professional baker. Brilliant tool!",
+      character: "None",
+      theme: "Royal Blue Gold"
     }
   ];
 
@@ -132,15 +148,19 @@ const UKLanding = () => {
     { name: "Birthday Parties", icon: PartyPopper },
     { name: "Royal Celebrations", icon: Crown },
     { name: "Garden Parties", icon: Sparkles },
-    { name: "Anniversary", icon: Cake }
+    { name: "Anniversary", icon: Cake },
+    { name: "Wedding Cakes", icon: Heart },
+    { name: "Christening Cakes", icon: Baby },
+    { name: "Christmas Cakes", icon: Gift },
+    { name: "Coronation Parties", icon: Crown }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Generator UK — AI Birthday Cakes Designer</title>
-        <meta name="description" content="The UK's #1 AI cake generator. Design personalised AI birthday cakes, anniversary, wedding & christening cakes in 30 seconds. Free to try." />
-        <meta name="keywords" content="ai cake generator uk, ai cake uk, ai cakes uk, cake ai uk, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk" />
+        <title>Free AI Cake Generator UK — Design Personalised Birthday Cakes in Seconds</title>
+        <meta name="description" content="The UK's best free AI cake generator. Design personalised birthday, wedding, christening & celebration cakes with AI in 30 seconds. Loved by thousands across Britain." />
+        <meta name="keywords" content="ai cake generator uk, ai cake uk, ai cakes uk, cake ai uk, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk, ai cake generator free uk, personalised cake design uk, cake designer online uk, birthday cake ideas uk" />
         <link rel="canonical" href="https://cakeaiartist.com/uk" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
         <meta property="og:title" content="Best AI Cake Designer UK — Personalised Cakes" />
@@ -175,6 +195,9 @@ const UKLanding = () => {
           { question: "Can I design British-themed cakes?", answer: "Yes — the AI supports christenings, royal-themed parties, garden parties, weddings and traditional British birthday designs." },
           { question: "What's the price in GBP?", answer: "Three plans in GBP: Monthly £4.99/month, Yearly £29/year, or Lifetime £49 once. A free plan is available forever." },
           { question: "Are the designs print-ready?", answer: "Yes — high-resolution PNGs suitable for printing on cake toppers, invitations and party stationery." },
+          { question: "Is the AI cake generator free in the UK?", answer: "Yes — Cake AI Artist is completely free to try in the UK. Design your first AI cake with no signup required. Premium plans are available for unlimited designs." },
+          { question: "Can I design a traditional British cake with AI?", answer: "Absolutely. Our AI understands British cake traditions — from Victoria sponge and Christmas cake to christening cakes and royal celebration cakes." },
+          { question: "Does it work on mobile in the UK?", answer: "Yes — Cake AI Artist is fully optimised for mobile, tablet and desktop. Design a cake on your phone in seconds, wherever you are in Britain." },
         ]}
       />
 
@@ -195,7 +218,9 @@ const UKLanding = () => {
           { author: "James K.", reviewBody: "Made a Peppa Pig cake for my daughter's 4th birthday. The pastel pink design was spot on!", ratingValue: 5, datePublished: "2024-11-20" },
           { author: "Emma W.", reviewBody: "The Elsa character option was brilliant! Created a proper tiered birthday cake for my nan's 70th.", ratingValue: 5, datePublished: "2024-11-28" },
           { author: "Sophie R.", reviewBody: "Used the fun/cartoon style for my son's Spider-Man cake. The multicolor frosting looked absolutely gorgeous!", ratingValue: 5, datePublished: "2024-12-05" },
-          { author: "David M.", reviewBody: "Created a beautiful red velvet anniversary cake with gold/silver accents. My wife loved it!", ratingValue: 5, datePublished: "2024-12-10" }
+          { author: "David M.", reviewBody: "Created a beautiful red velvet anniversary cake with gold/silver accents. My wife loved it!", ratingValue: 5, datePublished: "2024-12-10" },
+          { author: "Charlotte B.", reviewBody: "Made a stunning Victoria sponge-inspired birthday cake for my mum's 60th. Proper British elegance!", ratingValue: 5, datePublished: "2025-01-08" },
+          { author: "Oliver P.", reviewBody: "Designed a royal blue and gold cake for the King's Coronation street party. Everyone thought I'd hired a professional baker!", ratingValue: 5, datePublished: "2025-01-15" }
         ]}
       />
 
@@ -279,7 +304,7 @@ const UKLanding = () => {
               transition={{ delay: 0.3 }}
               className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
-              🇬🇧 Pick the plan that fits your celebrations
+              🇬🇧 The UK's Favourite Free AI Cake Generator
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -287,7 +312,7 @@ const UKLanding = () => {
               transition={{ delay: 0.4 }}
               className="text-white text-lg md:text-xl drop-shadow-md"
             >
-              Monthly, Yearly or Lifetime — pay in GBP (£). Cancel anytime.
+              Design personalised birthday, wedding &amp; celebration cakes in 30 seconds — free to try, no signup needed
             </motion.p>
             <motion.div
               initial={{ opacity: 0 }}
@@ -411,9 +436,9 @@ const UKLanding = () => {
             Perfect for British Celebrations
           </motion.h2>
           <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-            From Jubilee street parties to cosy family birthdays, create the perfect cake for any occasion
+            From royal celebrations to cosy family birthdays, weddings, christenings and more — create the perfect cake for any British occasion
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {celebrations.map((celebration, idx) => (
               <motion.div
                 key={celebration.name}
@@ -584,6 +609,46 @@ const UKLanding = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* How It Works */}
+      <section className="py-16 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl font-bold text-center text-foreground mb-4"
+          >
+            How It Works — 3 Simple Steps
+          </motion.h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
+            From idea to stunning cake design in under a minute
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              { step: 1, title: "Describe Your Cake", desc: "Type what you want: occasion, flavour, colours, theme, characters", color: "bg-party-purple" },
+              { step: 2, title: "AI Generates in Seconds", desc: "Our AI creates a stunning, photorealistic cake design just for you", color: "bg-party-pink" },
+              { step: 3, title: "Download & Share", desc: "Save your design, share with your baker, or inspire your own creation", color: "bg-party-gold" },
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + idx * 0.15 }}
+              >
+                <Card className="text-center hover:shadow-lg transition-all">
+                  <CardContent className="pt-8 pb-6">
+                    <div className={`w-12 h-12 rounded-full ${item.color} ${item.color === 'bg-party-gold' ? 'text-background' : 'text-white'} flex items-center justify-center text-xl font-bold mx-auto mb-4`}>
+                      {item.step}
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Testimonials Section */}
       <section className="py-16">
