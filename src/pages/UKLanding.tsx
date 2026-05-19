@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Crown, CheckCircle2, Sparkles, Menu, Download, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
@@ -679,6 +680,7 @@ const UKLanding = () => {
         </div>
       </section>
 
+      <CountryRecipesSection countryCode="UK" countryName="UK" adjective="British" />
       <ExitIntentModal isLoggedIn={false} isPremium={false} />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="UK" countryName="the UK" />
