@@ -298,6 +298,7 @@ export default function Settings() {
         <meta name="description" content="Manage your Cake AI Artist account settings. Configure email reminders, notification preferences, and personalize your virtual cake designer experience." />
         <meta name="keywords" content="account settings, cake designer preferences, email notifications, user settings" />
         <link rel="canonical" href="https://cakeaiartist.com/settings" />
+        <meta name="robots" content="noindex,nofollow" />
       </Helmet>
       
       <nav className="container mx-auto px-4 py-6 backdrop-blur-sm bg-background/80 sticky top-0 z-40 border-b border-border/30">
@@ -369,7 +370,7 @@ export default function Settings() {
           <CardHeader>
             <CardTitle>Notification Preferences</CardTitle>
             <CardDescription>
-              Manage how you'd like to receive updates from CakeWish
+              Manage how you'd like to receive updates from Cake AI Artist
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

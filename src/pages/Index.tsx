@@ -38,7 +38,7 @@ import { motion } from "framer-motion";
 import { Star, Download, Menu, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, WebSiteSchema, ProductReviewSchema, SoftwareApplicationSchema, HowToSchema, FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
+import { ProductReviewSchema, SoftwareApplicationSchema, HowToSchema, FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { PopularCakesSection } from "@/components/PopularCakesSection";
 import { GlobalReachWidget } from "@/components/GlobalReachWidget";
 import { CakeWall } from "@/components/CakeWall";
@@ -223,17 +223,6 @@ const Index = () => {
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta name="twitter:image:alt" content="AI cake generator result — personalized birthday cake by Cake AI Artist" />
       </Helmet>
-      
-      <OrganizationSchema 
-        name="Cake AI Artist"
-        url="https://cakeaiartist.com"
-        description="Best AI cake designer for personalized birthday, anniversary and celebration cakes. Design custom cakes in 30 seconds."
-      />
-      
-      <WebSiteSchema 
-        name="Cake AI Artist"
-        url="https://cakeaiartist.com"
-      />
       
       <SoftwareApplicationSchema />
 
@@ -564,7 +553,7 @@ const Index = () => {
 
       {/* Why Choose Section */}
       <div className="container mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">Why People Call Us the Best AI Cake Generator & Cake AI Tool</h2>
+        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">The Best Free AI Cake Generator — Design Any Cake in 30 Seconds</h2>
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {[
             {
@@ -841,7 +830,7 @@ const Index = () => {
       {/* Real Testimonials - Carousel */}
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
-          Why People Call Us the Best AI Cake Generator & AI Cake Designer
+          Loved by Thousands — The Free AI Cake Designer That Gets It Right
         </h2>
         <Carousel 
           className="w-full max-w-5xl mx-auto mb-12"

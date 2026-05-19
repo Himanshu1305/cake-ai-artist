@@ -71,7 +71,11 @@ const App = () => {
               <ScrollToTop />
               <CookieConsent />
               <GeoRedirectWrapper />
-              <Suspense fallback={null}>
+              <Suspense fallback={
+                <div className="fixed inset-0 flex items-center justify-center bg-background">
+                  <div className="w-8 h-8 border-4 border-party-pink border-t-transparent rounded-full animate-spin" />
+                </div>
+              }>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
