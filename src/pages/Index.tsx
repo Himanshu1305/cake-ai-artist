@@ -201,8 +201,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>AI Cake Generator — Free AI Cake Designer & Birthday Cakes</title>
-        <meta name="description" content="Free AI cake generator. Design personalized AI birthday cakes, anniversary & wedding cakes in 30 seconds. The best AI cake designer online." />
+        <title>Free AI Cake Generator — Design Custom Cakes with AI in Seconds</title>
+        <meta name="description" content="The best free AI cake generator. Create stunning birthday, wedding and celebration cakes with AI. Used by cake lovers in 100+ countries." />
         <meta name="keywords" content="cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake designer, ai cake design, best ai cake designer, personalized birthday cake, custom cake design, anniversary cake design, wedding cake ai, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta name="theme-color" content="#ec4899" />

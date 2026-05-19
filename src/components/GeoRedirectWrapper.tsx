@@ -11,9 +11,10 @@ const ASIA_COUNTRIES = ['JP', 'KR', 'CN', 'SG', 'MY', 'TH', 'VN', 'PH', 'ID', 'B
 const EUROPE_COUNTRIES = ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'PT', 'SE', 'NO', 'DK', 'FI', 'PL', 'AT', 'CH', 'IE', 'GR', 'CZ', 'HU', 'RO', 'UA', 'RU'];
 const MENA_COUNTRIES = ['AE', 'SA', 'EG', 'ZA', 'NG', 'KE', 'IL', 'TR', 'DZ'];
 
-const REDIRECTABLE_ROUTES = ['/pricing'];
+const REDIRECTABLE_ROUTES = ['/', '/pricing'];
 
 const getTargetRoute = (countryCode: string): string | null => {
+  if (countryCode === 'US') return '/usa';
   if (countryCode === 'IN') return '/india';
   if (countryCode === 'GB' || countryCode === 'UK') return '/uk';
   if (countryCode === 'CA') return '/canada';

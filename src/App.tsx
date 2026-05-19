@@ -36,6 +36,7 @@ const UKLanding = lazy(() => import("./pages/UKLanding"));
 const CanadaLanding = lazy(() => import("./pages/CanadaLanding"));
 const AustraliaLanding = lazy(() => import("./pages/AustraliaLanding"));
 const IndiaLanding = lazy(() => import("./pages/IndiaLanding"));
+const USALanding = lazy(() => import("./pages/USALanding"));
 const FreeCakeDesigner = lazy(() => import("./pages/FreeCakeDesigner"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 const BlogUnsubscribe = lazy(() => import("./pages/BlogUnsubscribe"));
@@ -100,6 +101,7 @@ const App = () => {
                   <Route path="/canada" element={<CanadaLanding />} />
                   <Route path="/australia" element={<AustraliaLanding />} />
                   <Route path="/india" element={<IndiaLanding />} />
+                  <Route path="/usa" element={<USALanding />} />
                   <Route path="/free-ai-cake-designer" element={<FreeCakeDesigner />} />
                   <Route path="/complete-profile" element={<CompleteProfile />} />
                   <Route path="/blog/unsubscribe" element={<BlogUnsubscribe />} />
