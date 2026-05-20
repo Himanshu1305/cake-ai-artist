@@ -13,7 +13,7 @@ interface Post {
 }
 
 interface Props {
-  countryCode: "IN" | "UK" | "AU" | "CA";
+  countryCode: "IN" | "UK" | "AU" | "CA" | "US";
   countryName: string;
 }
 
