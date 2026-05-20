@@ -100,7 +100,7 @@ function recentVisitorEmail(firstName: string, unsubscribeUrl: string, country?:
       </p>
       <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:18px;">Pick where to start ✨</h2>
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${featureCard("🎂", "Design your first cake", "Type a name and an occasion — get a beautiful AI cake in under 30 seconds.", localizedPath("/free-cake-designer", country), "Open the designer")}
+        ${featureCard("🎂", "Design your first cake", "Type a name and an occasion — get a beautiful AI cake in under 30 seconds.", localizedPath("/free-ai-cake-designer", country), "Open the designer")}
         ${featureCard("🖼️", "Browse the community gallery", "See what other creators are making this week and grab some inspiration.", localizedPath("/gallery", country), "Explore the gallery")}
         ${featureCard("📖", "Read the blog", "Cake trends, ideas, and tips for every kind of celebration.", localizedPath("/blog", country), "Read latest posts")}
         ${featureCard("🎁", "Try the Party Pack generator", "Matching invites, thank-you cards & printables — all from one design.", localizedPath("/party-planner", country), "Plan a party")}
@@ -149,7 +149,7 @@ function weMissYouVariant1(firstName: string, country?: string | null): { subjec
       </p>
       <h2 style="margin:0 0 14px;color:#1a1a2e;font-size:18px;">What's new and worth a peek ✨</h2>
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${featureCard("🎂", "Free Cake Designer", "Type a name and an occasion — and watch a beautiful AI cake appear in seconds.", localizedPath("/free-cake-designer", country), "Try a fresh design")}
+        ${featureCard("🎂", "Free Cake Designer", "Type a name and an occasion — and watch a beautiful AI cake appear in seconds.", localizedPath("/free-ai-cake-designer", country), "Try a fresh design")}
         ${featureCard("🖼️", "Community Gallery", "Hundreds of brand-new creations from people all over the world this month.", localizedPath("/gallery", country), "Get inspired")}
         ${featureCard("🎁", "Party Pack Generator", "Turn a single cake design into matching invites, thank-you cards & printables.", localizedPath("/party-planner", country), "Plan a party")}
         ${featureCard("📖", "Blog & Trends", "Fresh ideas for birthdays, anniversaries, baby showers and more.", localizedPath("/blog", country), "Read what's new")}
@@ -188,7 +188,7 @@ function weMissYouVariant2(firstName: string, country?: string | null): { subjec
       </p>
     </td></tr>
     <tr><td style="padding:8px 30px 30px;text-align:center;">
-      <a href="${localizedPath("/free-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+      <a href="${localizedPath("/free-ai-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
         🎂 Design a cake now
       </a>
     </td></tr>`;
@@ -217,7 +217,7 @@ function weMissYouVariant3(firstName: string, country?: string | null): { subjec
       </p>
     </td></tr>
     <tr><td style="padding:8px 30px 30px;text-align:center;">
-      <a href="${localizedPath("/free-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
+      <a href="${localizedPath("/free-ai-cake-designer", country)}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#E5B547 100%);color:#1a1a2e;text-decoration:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:700;box-shadow:0 4px 15px rgba(229,181,71,0.35);">
         🎁 Claim my free design
       </a>
     </td></tr>`;

@@ -239,7 +239,7 @@ const handler = async (req: Request): Promise<Response> => {
         const firstName = subscriber.first_name || "there";
         
         // Build secure unsubscribe link using token
-        const unsubscribeUrl = `https://cake-ai-artist.lovable.app/blog/unsubscribe?token=${subscriber.unsubscribe_token}`;
+        const unsubscribeUrl = `https://cakeaiartist.com/blog/unsubscribe?token=${subscriber.unsubscribe_token}`;
 
         const emailHtml = getWeeklyDigestEmail(firstName, postsToSend, hasNewAIContent)
           .replace('UNSUBSCRIBE_PLACEHOLDER', unsubscribeUrl);

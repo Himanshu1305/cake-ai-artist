@@ -224,7 +224,7 @@ const Auth = () => {
           }
         }
         
-        // Add contact to Brevo for welcome email automation
+        // Adds to Brevo marketing list (List #3) for re-engagement campaigns. Welcome email is sent separately via send-welcome-email edge function using Resend.
         await addContactToBrevo(email, firstName.trim(), lastName.trim());
         
         toast.success("Account created successfully! You can now log in.");

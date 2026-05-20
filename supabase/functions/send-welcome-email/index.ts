@@ -131,7 +131,7 @@ const getFreeWelcomeEmail = (firstName: string) => `
         <div style="margin: 16px 0;">
           <p style="margin: 12px 0; color: #333;">
             <strong>🍰 Create AI-Designed Cakes</strong><br>
-            <span style="color: #666; font-size: 14px;">5 free cake generations per day to explore your creativity.</span>
+            <span style="color: #666; font-size: 14px;">5 free cake generations to get you started — no credit card needed.</span>
           </p>
         </div>
         
