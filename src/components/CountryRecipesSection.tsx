@@ -14,7 +14,7 @@ interface Recipe {
 }
 
 interface Props {
-  countryCode: "IN" | "UK" | "CA" | "AU";
+  countryCode: "IN" | "UK" | "CA" | "AU" | "US";
   countryName: string;
   adjective: string; // e.g. "British", "Indian"
 }
