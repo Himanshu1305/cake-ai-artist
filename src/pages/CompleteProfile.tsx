@@ -46,8 +46,7 @@ const CompleteProfile = () => {
         .single();
       
       if (profile?.country) {
-        // Country already set, redirect to gallery
-        navigate("/gallery");
+        navigate("/free-ai-cake-designer");
         return;
       }
       
@@ -80,7 +79,7 @@ const CompleteProfile = () => {
       if (error) throw error;
       
       toast.success("Profile completed!");
-      navigate("/gallery");
+      navigate("/free-ai-cake-designer?welcome=true");
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast.error("Failed to save profile. Please try again.");
@@ -143,7 +142,7 @@ const CompleteProfile = () => {
                 fullWidth
               />
               <p className="text-xs text-muted-foreground">
-                This determines your pricing. Cannot be changed later.
+                Used to personalise your experience. Email support@cakeaiartist.com to change.
               </p>
             </div>
 

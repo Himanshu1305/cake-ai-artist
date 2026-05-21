@@ -1,17 +1,72 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
-import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette } from "lucide-react";
+import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X } from "lucide-react";
 import { motion } from "framer-motion";
+import WelcomeModal from "@/components/WelcomeModal";
 
 const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
 
 const FreeCakeDesigner = () => {
   const navigate = useNavigate();
+
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeName, setWelcomeName] = useState("");
+  const [welcomeOccasion, setWelcomeOccasion] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showStartBanner, setShowStartBanner] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id ?? null;
+      setCurrentUserId(userId);
+
+      if (userId) {
+        const bannerKey = `start_banner_dismissed_${userId}`;
+        if (!localStorage.getItem(bannerKey)) {
+          setShowStartBanner(true);
+        }
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('welcome') === 'true') {
+        const welcomeKey = userId ? `welcome_shown_${userId}` : 'welcome_shown_guest';
+        if (!localStorage.getItem(welcomeKey)) {
+          localStorage.setItem(welcomeKey, 'true');
+          setShowWelcome(true);
+        }
+        // Strip ?welcome=true from URL without adding a history entry
+        navigate('/free-ai-cake-designer', { replace: true });
+      }
+    };
+
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleWelcomeStart = (occasion: string, name: string) => {
+    setWelcomeOccasion(occasion);
+    setWelcomeName(name);
+    setShowWelcome(false);
+    document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleWelcomeSkip = () => {
+    setShowWelcome(false);
+  };
+
+  const handleDismissBanner = () => {
+    if (currentUserId) {
+      localStorage.setItem(`start_banner_dismissed_${currentUserId}`, 'true');
+    }
+    setShowStartBanner(false);
+  };
 
   const features = [
     { icon: Zap, title: "30-Second Generation", description: "Get beautiful cake designs in just 30 seconds" },
@@ -19,11 +74,19 @@ const FreeCakeDesigner = () => {
     { icon: Heart, title: "AI-Written Messages", description: "Personalized messages that sound like you" },
     { icon: Download, title: "High-Res Downloads", description: "Download print-ready images instantly" },
     { icon: Share2, title: "Easy Sharing", description: "Share directly to WhatsApp, Instagram & more" },
-    { icon: Star, title: "3 Free Designs Daily", description: "No credit card required, use forever" },
+    { icon: Star, title: "5 Free Designs", description: "No credit card required, use forever" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-celebration">
+      {showWelcome && (
+        <WelcomeModal
+          userId={currentUserId}
+          onStart={handleWelcomeStart}
+          onSkip={handleWelcomeSkip}
+        />
+      )}
+
       <Helmet>
         <title>Free AI Cake Generator — AI Cake Designer Online</title>
         <meta name="description" content="Free AI cake generator. Design AI birthday cakes & personalized cake designs in 30 seconds. The #1 free cake generator and AI cake designer online." />
@@ -93,7 +156,7 @@ const FreeCakeDesigner = () => {
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="w-4 h-4 text-party-mint" />
-                <span>3 free designs per day</span>
+                <span>5 free designs to get started</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="w-4 h-4 text-party-mint" />
@@ -109,6 +172,20 @@ const FreeCakeDesigner = () => {
 
         {/* Cake Creator */}
         <div id="creator" className="mb-16">
+          {showStartBanner && (
+            <div className="max-w-4xl mx-auto mb-4 bg-party-pink/10 border border-party-pink/30 rounded-xl px-5 py-3 flex items-center justify-between gap-4">
+              <p className="text-sm text-foreground">
+                👋 <strong>First time here?</strong> You have 5 free cake designs. Fill in the name and occasion below to get started!
+              </p>
+              <button
+                onClick={handleDismissBanner}
+                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Dismiss banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <Suspense fallback={
             <Card className="max-w-4xl mx-auto p-8 text-center">
               <Sparkles className="w-8 h-8 mx-auto mb-4 text-party-pink animate-pulse" />
@@ -151,7 +228,7 @@ const FreeCakeDesigner = () => {
           </div>
           <p className="text-xl text-foreground mb-2">Rated 4.9/5 by 2,800+ users</p>
           <p className="text-muted-foreground">
-            "I couldn't believe how easy it was. Typed my daughter's name, picked birthday, 
+            "I couldn't believe how easy it was. Typed my daughter's name, picked birthday,
             and got the most beautiful cake design in seconds!" - Sarah M.
           </p>
         </div>
@@ -167,7 +244,7 @@ const FreeCakeDesigner = () => {
             Start Designing for Free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
-            No signup required to try • Upgrade anytime for unlimited designs
+            Sign up free — no credit card required • Upgrade anytime for unlimited designs
           </p>
         </div>
       </section>

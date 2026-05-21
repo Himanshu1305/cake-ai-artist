@@ -115,7 +115,7 @@ const Auth = () => {
               // OAuth user without country - redirect to complete profile
               navigate("/complete-profile");
             } else {
-              navigate("/gallery");
+              navigate("/free-ai-cake-designer");
             }
           }, 0);
         }
@@ -135,7 +135,7 @@ const Auth = () => {
         if (!profile?.country) {
           navigate("/complete-profile");
         } else {
-          navigate("/gallery");
+          navigate("/free-ai-cake-designer");
         }
       }
     });
@@ -226,15 +226,9 @@ const Auth = () => {
         
         // Adds to Brevo marketing list (List #3) for re-engagement campaigns. Welcome email is sent separately via send-welcome-email edge function using Resend.
         await addContactToBrevo(email, firstName.trim(), lastName.trim());
-        
-        toast.success("Account created successfully! You can now log in.");
-        setIsLogin(true);
-        // Clear signup fields
-        setFirstName("");
-        setLastName("");
-        setCountry("");
-        setPassword("");
-        setAgeConfirmed(false);
+
+        toast.success("Welcome! Let's design your first cake.");
+        navigate("/free-ai-cake-designer?welcome=true");
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -385,7 +379,7 @@ const Auth = () => {
                         fullWidth
                       />
                       <p className="text-xs text-muted-foreground">
-                        This determines your pricing. Cannot be changed later.
+                        Used to personalise your experience. Email support@cakeaiartist.com to change.
                       </p>
                     </div>
                   </>
