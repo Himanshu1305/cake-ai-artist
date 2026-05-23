@@ -209,8 +209,19 @@ async function handlePaymentCaptured(payment: any, supabase: any): Promise<{ suc
       });
 
     if (insertError) {
-      console.error("Failed to insert founding member:", insertError);
-      return { success: false, message: "Database error" };
+      if ((insertError as any).code === '23505') {
+        // Concurrent insert — re-fetch the actual member number
+        const { data: existingMember } = await supabase
+          .from("founding_members")
+          .select("member_number")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existingMember?.member_number) memberNumber = existingMember.member_number;
+        console.log("Founding member already exists (concurrent insert):", memberNumber);
+      } else {
+        console.error("Failed to insert founding member:", insertError);
+        return { success: false, message: "Database error" };
+      }
     }
   }
 
@@ -316,7 +327,11 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
       });
 
     if (insertError) {
-      console.error("Failed to insert founding member for subscription:", insertError);
+      if ((insertError as any).code === '23505') {
+        console.log("Founding member already exists (concurrent insert)");
+      } else {
+        console.error("Failed to insert founding member for subscription:", insertError);
+      }
     }
 
     // Update profile with member number
@@ -340,13 +355,18 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
     razorpay_order_id: subscriptionId,
   });
 
+  // Use Razorpay's authoritative billing end date; fall back to +30 days if missing
+  const activatedPeriodEnd = subscription.current_end
+    ? new Date(subscription.current_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   // Update subscription record
   const { error: subError } = await supabase
     .from("subscriptions")
     .update({
       status: "active",
       current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
+      current_period_end: activatedPeriodEnd,
       updated_at: new Date().toISOString(),
     })
     .eq("razorpay_subscription_id", subscriptionId);
@@ -362,7 +382,7 @@ async function handleSubscriptionActivated(subscription: any, supabase: any): Pr
       is_premium: true,
       subscription_id: subscriptionId,
       subscription_status: "active",
-      premium_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      premium_until: activatedPeriodEnd,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId);
@@ -394,8 +414,13 @@ async function handleSubscriptionCharged(payment: any, subscription: any, supaba
     return { success: false, message: "Missing user_id" };
   }
 
-  // Extend subscription period
-  const newPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  // Use Razorpay's authoritative billing end date; fall back to +30 days if missing
+  if (!subscription.current_end) {
+    console.warn("subscription.current_end missing in charged event, falling back to +30 days");
+  }
+  const newPeriodEnd = subscription.current_end
+    ? new Date(subscription.current_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const { error: subError } = await supabase
     .from("subscriptions")

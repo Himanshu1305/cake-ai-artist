@@ -149,11 +149,16 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     if (insertError) {
-      console.error("Failed to insert founding member:", insertError);
-      return new Response(JSON.stringify({ error: "Failed to activate membership" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if ((insertError as any).code === '23505') {
+        // Unique constraint violation — concurrent request already inserted this row; treat as success
+        console.log("Founding member already exists (concurrent insert), proceeding");
+      } else {
+        console.error("Failed to insert founding member:", insertError);
+        return new Response(JSON.stringify({ error: "Failed to activate membership" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Update profile to premium

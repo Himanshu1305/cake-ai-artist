@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,19 @@ const Auth = () => {
   const [country, setCountry] = useState("");
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    // Check URL for ?mode=reset on mount (e.g. page refresh after reset email click)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'reset' || sessionStorage.getItem('password_reset_in_progress')) {
+      setIsResetMode(true);
+    }
+    return () => { mountedRef.current = false; };
+  }, []);
 
   // Set default country from geo-detection
   useEffect(() => {
@@ -59,7 +72,7 @@ const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+        redirectTo: `${window.location.origin}/auth?mode=reset`,
       });
 
       if (error) throw error;
@@ -74,13 +87,27 @@ const Auth = () => {
   };
 
   useEffect(() => {
-    // Set up auth state listener for OAuth signups
+    const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+
+    // Set up auth state listener for OAuth signups and password reset
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          // User clicked password reset email link — store flag and show reset form
+          sessionStorage.setItem('password_reset_in_progress', 'true');
+          setIsResetMode(true);
+          return;
+        }
+
         if (event === 'SIGNED_IN' && session?.user) {
+          // This SIGNED_IN fires after PASSWORD_RECOVERY — skip navigation, stay on reset form
+          if (sessionStorage.getItem('password_reset_in_progress')) {
+            return;
+          }
+
           const user = session.user;
           const isOAuthUser = user.app_metadata?.provider === 'google';
-          
+
           if (isOAuthUser) {
             // Check if welcome email was already sent (use localStorage flag)
             const welcomeSentKey = `welcome_sent_${user.id}`;
@@ -90,40 +117,48 @@ const Auth = () => {
               const nameParts = fullName.split(' ');
               const firstName = nameParts[0] || '';
               const lastName = nameParts.slice(1).join(' ') || '';
-              
+
               // Send welcome email via Brevo (deferred)
-              setTimeout(async () => {
+              timeoutIds.push(setTimeout(async () => {
+                if (!mountedRef.current) return;
                 try {
                   await addContactToBrevo(user.email || '', firstName, lastName);
                   localStorage.setItem(welcomeSentKey, 'true');
                 } catch (err) {
                   console.error('Failed to send OAuth welcome email:', err);
                 }
-              }, 0);
+              }, 0));
             }
           }
-          
+
           // Check if user has country set (deferred to avoid deadlock)
-          setTimeout(async () => {
+          timeoutIds.push(setTimeout(async () => {
+            if (!mountedRef.current) return;
             const { data: profile } = await supabase
               .from('profiles')
               .select('country')
               .eq('id', user.id)
               .single();
-            
+
             if (!profile?.country) {
               // OAuth user without country - redirect to complete profile
               navigate("/complete-profile");
             } else {
               navigate("/free-ai-cake-designer");
             }
-          }, 0);
+          }, 0));
         }
       }
     );
 
     // Check if user is already logged in
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mountedRef.current) return;
+      // Don't redirect away if we're in password reset mode
+      if (sessionStorage.getItem('password_reset_in_progress')) return;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'reset') return;
+
       if (session) {
         // Check if country is set
         const { data: profile } = await supabase
@@ -131,7 +166,7 @@ const Auth = () => {
           .select('country')
           .eq('id', session.user.id)
           .single();
-        
+
         if (!profile?.country) {
           navigate("/complete-profile");
         } else {
@@ -140,8 +175,40 @@ const Auth = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      timeoutIds.forEach(clearTimeout);
+    };
   }, [navigate]);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+
+      sessionStorage.removeItem('password_reset_in_progress');
+      toast.success("Password updated successfully!");
+      setIsResetMode(false);
+      navigate("/free-ai-cake-designer");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addContactToBrevo = async (userEmail: string, userFirstName: string, userLastName: string) => {
     try {
@@ -207,7 +274,14 @@ const Auth = () => {
         });
 
         if (error) throw error;
-        
+
+        // Supabase returns {user: null, session: null} with no error for already-registered emails (when email confirmation is on)
+        if (!data.user && !data.session) {
+          toast.info("If this email is registered, you'll receive a confirmation email. Try logging in instead.");
+          setIsLogin(true);
+          return;
+        }
+
         // Link anonymous page visits to the new user
         if (data.user) {
           try {
@@ -241,8 +315,8 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration flex flex-col">
       <Helmet>
-        <title>{isForgotPassword ? "Reset Password" : isLogin ? "Sign In" : "Sign Up"} — Cake AI Artist</title>
-        <meta name="description" content={`${isForgotPassword ? "Reset your password for" : isLogin ? "Sign in to" : "Create an account for"} Cake AI Artist, the best AI cake designer for personalized celebration cakes.`} />
+        <title>{isResetMode ? "Set New Password" : isForgotPassword ? "Reset Password" : isLogin ? "Sign In" : "Sign Up"} — Cake AI Artist</title>
+        <meta name="description" content={`${isResetMode ? "Set a new password for" : isForgotPassword ? "Reset your password for" : isLogin ? "Sign in to" : "Create an account for"} Cake AI Artist, the best AI cake designer for personalized celebration cakes.`} />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://cakeaiartist.com/auth" />
       </Helmet>
@@ -259,15 +333,55 @@ const Auth = () => {
         <Card className="w-full max-w-md p-8 bg-surface-elevated/90 backdrop-blur-sm border-2 border-party-pink/30">
           <div className="text-center mb-8">
             <p className="text-foreground/70">
-              {isForgotPassword 
-                ? "Reset your password" 
-                : isLogin 
-                  ? "Welcome back!" 
-                  : "Create your account"}
+              {isResetMode
+                ? "Set your new password"
+                : isForgotPassword
+                  ? "Reset your password"
+                  : isLogin
+                    ? "Welcome back!"
+                    : "Create your account"}
             </p>
           </div>
 
-          {isForgotPassword ? (
+          {isResetMode ? (
+            /* Set New Password Form */
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Enter your new password. Must be at least 6 characters.
+              </p>
+              <Button
+                type="submit"
+                className="w-full bg-party-pink hover:bg-party-pink/90"
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "Set New Password"}
+              </Button>
+            </form>
+          ) : isForgotPassword ? (
             /* Forgot Password Form */
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div className="space-y-2">

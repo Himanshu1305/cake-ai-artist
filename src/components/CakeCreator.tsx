@@ -108,6 +108,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   // Hardcoded brand domain so share links always point to production, regardless of preview env
   const SHARE_BASE_URL = "https://cakeaiartist.com";
   const audioSectionRef = useRef<HTMLDivElement | null>(null);
+  const isMountedRef = useRef(true);
   useEffect(() => {
     if (savedCakeImageId && audioSectionRef.current) {
       audioSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -315,7 +316,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       }
     });
     
-    return () => subscription.unsubscribe();
+    return () => {
+      isMountedRef.current = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkUser = async () => {
@@ -352,6 +356,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
       console.log("Profile data:", profile, "Error:", profileError);
 
+      if (!isMountedRef.current) return;
+
       if (profile) {
         setIsPremium(profile.is_premium || false);
         console.log("Premium status set to:", profile.is_premium);
@@ -360,7 +366,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       // Check if user is admin using has_role function
       const { data: adminCheck } = await supabase
         .rpc('has_role', { _user_id: userId, _role: 'admin' });
-      
+
+      if (!isMountedRef.current) return;
       setIsAdmin(adminCheck === true);
       console.log("Admin status:", adminCheck);
 

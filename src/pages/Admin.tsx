@@ -115,6 +115,8 @@ export default function Admin() {
     totalSubscribers: 0,
   });
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [profileLoadLimit, setProfileLoadLimit] = useState(100);
+  const [totalProfileCount, setTotalProfileCount] = useState(0);
   const { adsEnabled, loading: adsLoading } = useAdsEnabled();
   const updateAdsEnabled = useUpdateAdsEnabled();
   useEffect(() => {
@@ -229,11 +231,18 @@ export default function Admin() {
     setSubscribers(data || []);
   };
 
-  const loadProfiles = async () => {
+  const loadProfiles = async (limit?: number) => {
+    const effectiveLimit = limit ?? profileLoadLimit;
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, email, is_premium, is_founding_member, created_at, founding_member_number, country')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(effectiveLimit);
+
+    const { count: profileCount } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    setTotalProfileCount(profileCount || 0);
 
     if (profilesError) {
       console.error('Error loading profiles:', profilesError);
@@ -244,7 +253,8 @@ export default function Admin() {
     const { data: pageVisitsData, error: pageVisitsError } = await supabase
       .from('page_visits')
       .select('user_id, country_code')
-      .not('user_id', 'is', null);
+      .not('user_id', 'is', null)
+      .limit(500);
 
     if (pageVisitsError) {
       console.error('Error loading page visits for countries:', pageVisitsError);
@@ -284,7 +294,7 @@ export default function Admin() {
     const [imagesAgg, partiesAgg, lastSeenAgg] = await Promise.all([
       supabase.from('generated_images').select('user_id'),
       supabase.from('parties').select('user_id'),
-      supabase.from('page_visits').select('user_id, visited_at').not('user_id', 'is', null).order('visited_at', { ascending: false }).limit(5000),
+      supabase.from('page_visits').select('user_id, visited_at').not('user_id', 'is', null).order('visited_at', { ascending: false }).limit(100),
     ]);
 
     const cakeCounts: Record<string, number> = {};
@@ -363,9 +373,9 @@ export default function Admin() {
 
   const loadAnalytics = async () => {
     try {
-      const { data: profilesData } = await supabase.from('profiles').select('*');
-      const { data: imagesData } = await supabase.from('generated_images').select('*');
-      const { data: subscribersData } = await supabase.from('blog_subscribers').select('*');
+      const { data: profilesData } = await supabase.from('profiles').select('*').limit(500).order('created_at', { ascending: false });
+      const { data: imagesData } = await supabase.from('generated_images').select('*').limit(500).order('created_at', { ascending: false });
+      const { data: subscribersData } = await supabase.from('blog_subscribers').select('*').limit(500).order('subscribed_at', { ascending: false });
 
       const totalUsers = profilesData?.length || 0;
       const premiumUsers = profilesData?.filter(p => p.is_premium).length || 0;
@@ -1488,6 +1498,21 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
+
+            {totalProfileCount > profiles.length && (
+              <div className="flex items-center justify-center gap-3 py-2">
+                <span className="text-sm text-muted-foreground">
+                  Showing {profiles.length} of {totalProfileCount} users
+                </span>
+                <Button variant="outline" size="sm" onClick={async () => {
+                  const newLimit = profileLoadLimit + 100;
+                  setProfileLoadLimit(newLimit);
+                  await loadProfiles(newLimit);
+                }}>
+                  Load more
+                </Button>
+              </div>
+            )}
 
             <GlobalReachAdmin liveCountryStats={userCountryStats} />
           </TabsContent>
