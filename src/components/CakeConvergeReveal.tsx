@@ -107,15 +107,16 @@ export const CakeConvergeReveal = ({
                 x: phase >= 1 ? target.x : (i === 0 ? 0 : i === 1 ? -260 : 260),
                 y: phase >= 1 ? target.y : (i === 0 ? -260 : 80),
                 rotate: phase >= 1 ? target.rot : (i === 1 ? -25 : i === 2 ? 25 : -8),
-                scale: phase >= 2 ? 0.6 : 1,
-                opacity: phase >= 2 && i !== 0 ? 0 : 1,
+                scale: phase >= 1 ? target.scale : 1,
+                opacity: 1,
               };
               if (phase >= 2) {
-                // converge to center, primary scales up & stays
+                // converge to center; siblings fade out, primary scales up
                 fanState.x = 0;
                 fanState.y = 0;
                 fanState.rotate = 0;
-                if (i === 0) fanState.scale = 1;
+                fanState.scale = i === 0 ? 1 : 0.55;
+                fanState.opacity = i === 0 ? 1 : 0;
               }
               return (
                 <motion.img
@@ -123,7 +124,8 @@ export const CakeConvergeReveal = ({
                   src={src}
                   alt={`${alt} view ${i + 1}`}
                   draggable={false}
-                  className="absolute top-1/2 left-1/2 w-[78%] aspect-square object-cover rounded-3xl shadow-[0_20px_50px_-15px_hsl(var(--party-purple)/0.55)] ring-1 ring-white/50"
+                  loading="eager"
+                  className="absolute top-1/2 left-1/2 w-[72%] aspect-square object-cover rounded-3xl shadow-[0_20px_50px_-15px_hsl(var(--party-purple)/0.55)] ring-2 ring-white/70"
                   style={{ translateX: "-50%", translateY: "-50%", zIndex: target.z }}
                   initial={{ x: i === 0 ? 0 : i === 1 ? -260 : 260, y: i === 0 ? -260 : 80, rotate: i === 1 ? -25 : i === 2 ? 25 : -8, scale: 0.85, opacity: 0 }}
                   animate={{
@@ -137,7 +139,7 @@ export const CakeConvergeReveal = ({
                     type: "spring",
                     stiffness: 140,
                     damping: 22,
-                    delay: phase === 0 ? i * 0.25 : 0,
+                    delay: phase === 0 ? i * 0.35 : 0,
                   }}
                 />
               );
