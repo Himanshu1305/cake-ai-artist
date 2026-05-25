@@ -22,32 +22,44 @@ export const AnimatedFlame = ({ size = "md", delay = 0, className = "", blown = 
     return (
       <div
         className={`relative inline-block ${className}`}
-        style={{ width: w, height: h }}
+        style={{ width: w, height: h, overflow: "visible" }}
         aria-hidden="true"
       >
-        {/* Rising smoke wisp */}
+        {/* Rising smoke wisps — larger & darker so they're clearly visible */}
         <span
           className="absolute rounded-full smoke-wisp"
           style={{
-            width: w * 0.7,
-            height: w * 0.7,
+            width: w * 1.4,
+            height: w * 1.4,
             left: "50%",
-            bottom: 2,
+            bottom: 0,
             transform: "translateX(-50%)",
-            background: "radial-gradient(circle, hsl(0 0% 70% / 0.55) 0%, hsl(0 0% 80% / 0.25) 60%, transparent 80%)",
+            background: "radial-gradient(circle, hsl(0 0% 35% / 0.85) 0%, hsl(0 0% 55% / 0.5) 50%, transparent 78%)",
             animationDelay: `${Math.abs(delay) * 0.3}s`,
           }}
         />
         <span
           className="absolute rounded-full smoke-wisp"
           style={{
-            width: w * 0.5,
-            height: w * 0.5,
+            width: w * 1.1,
+            height: w * 1.1,
+            left: "50%",
+            bottom: 4,
+            transform: "translateX(-50%)",
+            background: "radial-gradient(circle, hsl(0 0% 45% / 0.75) 0%, transparent 75%)",
+            animationDelay: `${Math.abs(delay) * 0.3 + 0.5}s`,
+          }}
+        />
+        <span
+          className="absolute rounded-full smoke-wisp"
+          style={{
+            width: w * 0.9,
+            height: w * 0.9,
             left: "50%",
             bottom: 8,
             transform: "translateX(-50%)",
-            background: "radial-gradient(circle, hsl(0 0% 75% / 0.5) 0%, transparent 75%)",
-            animationDelay: `${Math.abs(delay) * 0.3 + 0.4}s`,
+            background: "radial-gradient(circle, hsl(0 0% 50% / 0.7) 0%, transparent 70%)",
+            animationDelay: `${Math.abs(delay) * 0.3 + 1.1}s`,
           }}
         />
       </div>
