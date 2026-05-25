@@ -434,14 +434,40 @@ export default function SharedCake() {
                     <audio
                       ref={audioRef}
                       src={cake.audio_url}
-                      preload="metadata"
-                      onEnded={() => setIsPlaying(false)}
-                      onPause={() => setIsPlaying(false)}
+                      preload="auto"
+                      playsInline
+                      onEnded={() => {
+                        setIsPlaying(false);
+                        // Restore jingle volume after voice ends
+                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                      }}
+                      onPause={() => {
+                        setIsPlaying(false);
+                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                      }}
                       onPlay={() => setIsPlaying(true)}
-                      className="hidden"
+                      onError={() => {
+                        toast({
+                          title: "Voice message failed to load",
+                          description: "Try the player controls below.",
+                          variant: "destructive",
+                        });
+                      }}
                     />
+                    {/* Native fallback so iOS/Safari users always have a working control */}
+                    <details className="mt-2 text-xs text-muted-foreground">
+                      <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
+                      <audio
+                        src={cake.audio_url}
+                        controls
+                        playsInline
+                        preload="auto"
+                        className="w-full mt-2"
+                      />
+                    </details>
                   </div>
                 )}
+
 
                 {/* Re-share */}
                 <div className="pt-2 border-t border-party-purple/10">
