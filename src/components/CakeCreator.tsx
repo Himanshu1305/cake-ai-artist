@@ -1061,17 +1061,31 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     try {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
       const newIdMap: Record<number, string> = {};
-      let firstNewId: string | null = null;
       // One share_group_id per save batch — used by the share page to fan out all 3 views.
       const shareGroupId =
         (typeof crypto !== "undefined" && "randomUUID" in crypto)
           ? crypto.randomUUID()
           : `sg_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-      // Save all selected images
-      for (const { index, url: imageUrl } of selected) {
-        // Save image to permanent storage
-        console.log('Saving image to storage...');
+      // Build the full set of items to persist: user-selected items + every other
+      // REAL sibling view from the current generation. This guarantees the shared
+      // cake page can play the converge animation with all available views, even
+      // if the user only ticked one image, and that the voice message can be
+      // attached to every sibling row (Issue 4 fix).
+      const selectedIdxSet = new Set(selected.map((s) => s.index));
+      const siblingsToPersist: Array<{ index: number; url: string }> = [];
+      for (let i = 0; i < generatedImages.length; i++) {
+        const u = generatedImages[i];
+        if (!u || u === '/placeholder.svg') continue;
+        if (selectedIdxSet.has(i)) continue;
+        siblingsToPersist.push({ index: i, url: u });
+      }
+      const allItems = [...selected, ...siblingsToPersist];
+
+      // Save every image (selected first, then siblings). Each gets the same
+      // share_group_id so they're linked on the public share page.
+      for (const { index, url: imageUrl } of allItems) {
+        console.log('Saving image to storage...', { index });
         const { data: storageData, error: storageError } = await supabase.functions.invoke(
           'save-image-to-storage',
           {
@@ -1085,13 +1099,13 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
         if (storageError) {
           console.error('Storage error:', storageError);
+          // For siblings (extras), don't fail the whole save — just skip.
+          if (!selectedIdxSet.has(index)) continue;
           throw storageError;
         }
 
         const permanentUrl = storageData?.publicUrl || imageUrl;
-        console.log('Permanent URL:', permanentUrl);
 
-        // Save image with permanent URL and message
         const { data: insertedImage, error: imageError } = await supabase
           .from("generated_images")
           .insert({
@@ -1108,19 +1122,26 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           .select()
           .single();
 
-        if (imageError) throw imageError;
+        if (imageError) {
+          if (!selectedIdxSet.has(index)) continue;
+          throw imageError;
+        }
 
         if (insertedImage) {
           newIdMap[index] = insertedImage.id;
-          if (!firstNewId) firstNewId = insertedImage.id;
         }
       }
 
-      // Track saved IDs by image index, and set the active share target
-      // to the first newly-saved image (user can switch via "Share this view")
+      // Track saved IDs by image index. Default share target prefers the HERO
+      // (front/index 0) when available, else the lowest-index selected image.
       setSavedImageIdByIndex((prev) => ({ ...prev, ...newIdMap }));
-      if (firstNewId && !savedCakeImageId) {
-        setSavedCakeImageId(firstNewId);
+      const heroSavedId = newIdMap[0];
+      const fallbackSavedId = selected
+        .map((s) => newIdMap[s.index])
+        .find((id) => !!id) ?? null;
+      const newShareId = heroSavedId ?? fallbackSavedId;
+      if (newShareId && !savedCakeImageId) {
+        setSavedCakeImageId(newShareId);
         setAudioUrl(null);
         setAudioDuration(null);
       }
