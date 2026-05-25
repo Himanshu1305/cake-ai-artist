@@ -704,9 +704,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
         // Real progress signal. New job-first backend may return before the
         // hero image is ready; render placeholders and poll the job instead
-        // of keeping the main loading panel stuck at 60%.
-        setGenerationProgress(okCount > 0 ? 80 : 12);
-        setGenerationStep(okCount > 0 ? "✨ Side & top views rendering..." : "🎂 Cake job queued...");
+        // of keeping the main loading panel stuck.
+        console.info('[cake] job started', { jobId, viewOrder, heroView, okCount });
+        if (okCount > 0) {
+          setGenerationProgress((cur) => Math.max(cur, 80));
+          setGenerationStep("✨ Side & top views rendering...");
+        } else if (jobId) {
+          // Queued via job — never lower the simulator's progress.
+          setGenerationProgress((cur) => Math.max(cur, 45));
+          setGenerationStep("🎂 Queued — rendering your views...");
+        }
 
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
