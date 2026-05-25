@@ -1357,6 +1357,8 @@ export type Database = {
           occasion_type: string
           recipient_name: string
           sender_name: string
+          share_group_id: string
+          sibling_image_urls: string[]
         }[]
       }
       get_user_role: {
