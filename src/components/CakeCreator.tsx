@@ -152,8 +152,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Honest progress: simulated bar caps at 60% until real events advance it.
-  // Hero received -> 80%. All views filled -> 100%. (Driven from handleSubmit.)
+  // Honest progress: simulated bar creeps to 75% over ~36s so the user never
+  // sees it freeze. Real job events push it to 80–100% via applyRow().
+  // Functional setters guarantee we never lower an already-higher value.
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -162,19 +163,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
 
     const steps = [
-      { progress: 8, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 20, step: "✨ Mixing colors and frosting...", delay: 4000 },
-      { progress: 35, step: "🎀 Sculpting the tiers...", delay: 9000 },
-      { progress: 50, step: "💖 Adding decorations...", delay: 16000 },
-      { progress: 60, step: "🌟 Finishing the main view...", delay: 24000 },
+      { progress: 8,  step: "🎂 Baking something special...", delay: 400 },
+      { progress: 18, step: "✨ Mixing colors and frosting...", delay: 2500 },
+      { progress: 28, step: "🎀 Sculpting the tiers...", delay: 6000 },
+      { progress: 40, step: "💖 Adding decorations...", delay: 10000 },
+      { progress: 52, step: "🎨 Painting frosting & layers...", delay: 15000 },
+      { progress: 62, step: "🌟 Rendering the main view...", delay: 21000 },
+      { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
+      { progress: 75, step: "🪄 Final polish...", delay: 36000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
     steps.forEach(({ progress, step, delay }) => {
       const timer = setTimeout(() => {
-        // Don't overwrite a higher progress already set by a real event.
         setGenerationProgress((cur) => (cur >= progress ? cur : progress));
-        setGenerationStep((cur) => (cur && (cur.startsWith("🎉") || cur.startsWith("✨ Side"))) ? cur : step);
+        setGenerationStep((cur) =>
+          (cur && (cur.startsWith("🎉") || cur.startsWith("✨ Side") || cur.startsWith("✨ Remaining") || cur.startsWith("🎂 Queued")))
+            ? cur
+            : step
+        );
       }, delay);
       timers.push(timer);
     });
@@ -697,9 +704,16 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
         // Real progress signal. New job-first backend may return before the
         // hero image is ready; render placeholders and poll the job instead
-        // of keeping the main loading panel stuck at 60%.
-        setGenerationProgress(okCount > 0 ? 80 : 12);
-        setGenerationStep(okCount > 0 ? "✨ Side & top views rendering..." : "🎂 Cake job queued...");
+        // of keeping the main loading panel stuck.
+        console.info('[cake] job started', { jobId, viewOrder, heroView, okCount });
+        if (okCount > 0) {
+          setGenerationProgress((cur) => Math.max(cur, 80));
+          setGenerationStep("✨ Side & top views rendering...");
+        } else if (jobId) {
+          // Queued via job — never lower the simulator's progress.
+          setGenerationProgress((cur) => Math.max(cur, 45));
+          setGenerationStep("🎂 Queued — rendering your views...");
+        }
 
         // Map view name -> friendly label, used by both flows below.
         const viewLabelMap: Record<string, string> = {
@@ -879,23 +893,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           };
           // Declare timers + cleanup BEFORE first fetch so applyRow→cleanup
           // can never hit a TDZ ReferenceError if the row is already terminal.
-          let fastPoll1: ReturnType<typeof setTimeout> | undefined;
-          let fastPoll2: ReturnType<typeof setTimeout> | undefined;
+          const fastPollTimers: ReturnType<typeof setTimeout>[] = [];
           let pollTimer: ReturnType<typeof setInterval> | undefined;
           let watchdog: ReturnType<typeof setTimeout> | undefined;
           const cleanup = () => {
             try { supabase.removeChannel(channel); } catch {}
             if (pollTimer) clearInterval(pollTimer);
-            if (fastPoll1) clearTimeout(fastPoll1);
-            if (fastPoll2) clearTimeout(fastPoll2);
+            fastPollTimers.forEach((t) => clearTimeout(t));
             if (watchdog) clearTimeout(watchdog);
           };
 
-          // Fire immediately, then again at 1s and 3s to catch races where
-          // the bg task is in flight at hero-response time.
+          // Fire immediately, then again rapidly to catch races where the bg
+          // task finishes before the client subscribes to realtime.
           fetchOnce();
-          fastPoll1 = setTimeout(fetchOnce, 1000);
-          fastPoll2 = setTimeout(fetchOnce, 3000);
+          [800, 2000, 4000, 8000, 12000].forEach((ms) => {
+            fastPollTimers.push(setTimeout(fetchOnce, ms));
+          });
 
           // Polling fallback every 5s — covers dropped Realtime connections.
           pollTimer = setInterval(fetchOnce, 5000);
