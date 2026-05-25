@@ -75,7 +75,7 @@ export default function SharedCake() {
     }
   }, [id]);
 
-  // Staged reveal — starts after cake data is ready
+  // Staged reveal — kicker + card appear quickly so the inner 3-image reveal is visible
   useEffect(() => {
     if (!cake || !id) return;
     const seenKey = `reveal_seen_${id}`;
@@ -84,10 +84,11 @@ export default function SharedCake() {
       return;
     }
     sessionStorage.setItem(seenKey, "1");
-    const t1 = setTimeout(() => setRevealStage(1), 500);
-    const t2 = setTimeout(() => setRevealStage(2), 1500);
-    const t3 = setTimeout(() => setRevealStage(3), 2500);
-    const t4 = setTimeout(() => setRevealStage(4), 3500);
+    const t1 = setTimeout(() => setRevealStage(1), 300);
+    const t2 = setTimeout(() => setRevealStage(2), 700);
+    // Hold message + CTA until after the 3-image reveal (~6s) completes
+    const t3 = setTimeout(() => setRevealStage(3), 6800);
+    const t4 = setTimeout(() => setRevealStage(4), 7400);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [cake, id]);
 
