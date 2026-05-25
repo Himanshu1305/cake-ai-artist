@@ -7,11 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Volume2, Sparkles, Gift, Play, Pause } from "lucide-react";
+import { Loader2, Volume2, Sparkles, Gift, Play, Pause, RotateCcw, Music, VolumeX } from "lucide-react";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { CakeConvergeReveal } from "@/components/CakeConvergeReveal";
+import { BirthdayJingle } from "@/utils/birthdayJingle";
+import { toast } from "@/hooks/use-toast";
+
 
 interface PublicCake {
   id: string;
