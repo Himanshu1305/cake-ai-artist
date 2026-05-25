@@ -449,12 +449,10 @@ export default function SharedCake() {
 
                     <audio
                       ref={audioRef}
-                      src={cake.audio_url}
                       preload="auto"
                       playsInline
                       onEnded={() => {
                         setIsPlaying(false);
-                        // Restore jingle volume after voice ends
                         if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
                       }}
                       onPause={() => {
@@ -469,17 +467,22 @@ export default function SharedCake() {
                           variant: "destructive",
                         });
                       }}
-                    />
+                    >
+                      <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
+                      <source src={cake.audio_url} />
+                    </audio>
                     {/* Native fallback so iOS/Safari users always have a working control */}
-                    <details className="mt-2 text-xs text-muted-foreground">
+                    <details className="mt-2 text-xs text-muted-foreground" open>
                       <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
                       <audio
-                        src={cake.audio_url}
                         controls
                         playsInline
                         preload="auto"
                         className="w-full mt-2"
-                      />
+                      >
+                        <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
+                        <source src={cake.audio_url} />
+                      </audio>
                     </details>
                   </div>
                 )}
