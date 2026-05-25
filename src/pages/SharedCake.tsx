@@ -254,10 +254,11 @@ export default function SharedCake() {
               <div className="relative group p-6 bg-gradient-to-b from-white via-muted/30 to-white">
                 {/* Image with watermark overlay (Task 5) */}
                 <div className="relative">
-                  <CakeSpinShowcase
-                    src={cake.image_url}
+                  <CakeConvergeReveal
+                    images={cake.sibling_image_urls ?? [cake.image_url]}
+                    primary={cake.image_url}
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
-                    duration={10}
+                    cacheKey={cake.id}
                   />
                   <div className="absolute bottom-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded pointer-events-none select-none">
                     🎂 cakeaiartist.com
