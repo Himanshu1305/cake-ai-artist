@@ -40,11 +40,12 @@ export const CakeConvergeReveal = ({
     }
     if (skipKey) sessionStorage.setItem(skipKey, "1");
 
-    const t1 = setTimeout(() => setPhase(1), 350);   // cards fan in
-    const t2 = setTimeout(() => setPhase(2), 2200);  // start converging
-    const t3 = setTimeout(() => setPhase(3), 3300);  // cross-fade to final
-    const t4 = setTimeout(() => setPhase(4), 4400);  // idle float
+    const t1 = setTimeout(() => setPhase(1), 500);   // cards fan in
+    const t2 = setTimeout(() => setPhase(2), 4500);  // start converging (hold fanned ~3s)
+    const t3 = setTimeout(() => setPhase(3), 5800);  // cross-fade to final
+    const t4 = setTimeout(() => setPhase(4), 6700);  // idle float
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+
   }, [hasTrio, skipKey]);
 
   const handleSkip = () => setPhase(4);
