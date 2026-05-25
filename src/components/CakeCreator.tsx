@@ -168,9 +168,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       { progress: 28, step: "🎀 Sculpting the tiers...", delay: 6000 },
       { progress: 40, step: "💖 Adding decorations...", delay: 10000 },
       { progress: 52, step: "🎨 Painting frosting & layers...", delay: 15000 },
-      { progress: 62, step: "🌟 Rendering the main view...", delay: 21000 },
+      { progress: 62, step: "🌟 Rendering your cake views...", delay: 21000 },
       { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
-      { progress: 75, step: "🪄 Final polish...", delay: 36000 },
+      { progress: 75, step: "🪄 Still rendering — this can take a little longer...", delay: 36000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -711,8 +711,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           setGenerationStep("✨ Side & top views rendering...");
         } else if (jobId) {
           // Queued via job — never lower the simulator's progress.
-          setGenerationProgress((cur) => Math.max(cur, 45));
-          setGenerationStep("🎂 Queued — rendering your views...");
+          setGenerationProgress((cur) => Math.max(cur, 76));
+          setGenerationStep("🎂 Rendering your cake views...");
         }
 
         // Map view name -> friendly label, used by both flows below.
@@ -747,7 +747,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Subscribe to Realtime AND poll as a safety net so background views
         // appear in their slots even if Realtime drops. HIGH QUALITY only —
         // Fast does not create a job row.
-        if (jobId && viewOrder && heroView && failedViews.length > 0) {
+        if (jobId && viewOrder && heroView) {
           // Backend writes results by SLOT INDEX, not by view name:
           //   index 0 -> hero_url   (already filled in initial response)
           //   index 1 -> side_url
@@ -767,7 +767,10 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
           // Seed pending state from initial response (failedViews = pending background slots).
           const initialPending = new Set<number>();
-          for (const vn of failedViews) {
+          const pendingViewNames = failedViews.length > 0
+            ? failedViews
+            : viewOrder.filter((_, i) => !rawImages[i]);
+          for (const vn of pendingViewNames) {
             const idx = viewOrder.indexOf(vn);
             if (idx >= 0) initialPending.add(idx);
           }
