@@ -18,6 +18,15 @@ const HAPPY_BIRTHDAY: Note[] = [
   { freq: F5, dur: 0.75 }, { freq: F5, dur: 0.25 }, { freq: D5, dur: 1 }, { freq: AS4, dur: 1 }, { freq: C5, dur: 1 }, { freq: AS4, dur: 2 },
 ];
 
+// Generic celebration: cheerful fanfare in C major (Ode-to-Joy inspired)
+const CELEBRATION: Note[] = [
+  { freq: C5, dur: 1 }, { freq: C5, dur: 1 }, { freq: D5, dur: 1 }, { freq: E5, dur: 1 },
+  { freq: E5, dur: 1 }, { freq: D5, dur: 1 }, { freq: C5, dur: 1 }, { freq: G4, dur: 1 },
+  { freq: A4, dur: 1 }, { freq: A4, dur: 1 }, { freq: C5, dur: 1 }, { freq: C5, dur: 1 },
+  { freq: G4, dur: 1.5 }, { freq: G4, dur: 0.5 }, { freq: 0, dur: 0.5 },
+  { freq: G5, dur: 1 }, { freq: E5, dur: 1 }, { freq: C5, dur: 1 }, { freq: G4, dur: 2 },
+];
+
 const BPM = 130;
 const SECONDS_PER_BEAT = 60 / BPM;
 
@@ -56,12 +65,15 @@ export class BirthdayJingle {
     }
   }
 
-  async play({ loop = false, volume = 0.18 }: { loop?: boolean; volume?: number } = {}) {
+  private _melody: Note[] = HAPPY_BIRTHDAY;
+
+  async play({ loop = false, volume = 0.18, variant = "birthday" }: { loop?: boolean; volume?: number; variant?: "birthday" | "celebration" } = {}) {
     const ctx = this.ensureCtx();
     if (!ctx) return;
     if (ctx.state === "suspended") await ctx.resume();
     this.stop();
     this._volume = volume;
+    this._melody = variant === "celebration" ? CELEBRATION : HAPPY_BIRTHDAY;
     if (this.master) this.master.gain.value = this._muted ? 0 : volume;
     this._isPlaying = true;
     this.scheduleMelody(ctx.currentTime, loop);
@@ -70,7 +82,7 @@ export class BirthdayJingle {
   private scheduleMelody(startAt: number, loop: boolean) {
     if (!this.ctx || !this.master) return;
     let t = startAt;
-    for (const note of MELODY) {
+    for (const note of this._melody) {
       const dur = note.dur * SECONDS_PER_BEAT;
       if (note.freq > 0) {
         const osc = this.ctx.createOscillator();
