@@ -160,28 +160,34 @@ export default function SharedCake() {
     });
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) {
-      // Duck the jingle while voice plays
-      jingleRef.current?.setVolume(0.04);
-      const p = a.play();
-      if (p && typeof p.catch === "function") {
-        p.then(() => setIsPlaying(true)).catch((err) => {
-          console.error("Audio play failed:", err);
-          toast({
-            title: "Couldn't play voice message",
-            description: "Try the controls below, or open this link in another browser.",
-            variant: "destructive",
-          });
-          setIsPlaying(false);
-        });
-      } else {
-        setIsPlaying(true);
-      }
-    } else {
+    if (!a.paused) {
       a.pause();
+      setIsPlaying(false);
+      return;
+    }
+    try {
+      // Stop background music completely while voice plays
+      jingleRef.current?.stop();
+      setJinglePlaying(false);
+
+      // Force a fresh load — some browsers (esp. iOS Safari) need this on
+      // first play after the element mounted with <source> children.
+      if (a.readyState < 2) {
+        try { a.load(); } catch {}
+      }
+      a.currentTime = 0;
+      await a.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Audio play failed:", err);
+      toast({
+        title: "Couldn't play voice message",
+        description: "Try the controls below, or open this link in another browser.",
+        variant: "destructive",
+      });
       setIsPlaying(false);
     }
   };
@@ -191,11 +197,11 @@ export default function SharedCake() {
     setRevealStage(0);
     setRevealKey((k) => k + 1);
     setCandlesBlown(false);
-    // Restart staged reveal
-    setTimeout(() => setRevealStage(1), 500);
-    setTimeout(() => setRevealStage(2), 1800);
-    setTimeout(() => setRevealStage(3), 3200);
-    setTimeout(() => setRevealStage(4), 4400);
+    // Restart staged reveal — same timing as initial
+    setTimeout(() => setRevealStage(1), 300);
+    setTimeout(() => setRevealStage(2), 700);
+    setTimeout(() => setRevealStage(3), 6800);
+    setTimeout(() => setRevealStage(4), 7400);
   };
 
   const handleEmailCapture = async (e: React.FormEvent) => {
