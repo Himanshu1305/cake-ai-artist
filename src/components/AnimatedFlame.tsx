@@ -2,6 +2,7 @@ interface AnimatedFlameProps {
   size?: "sm" | "md" | "lg";
   delay?: number; // seconds
   className?: string;
+  blown?: boolean;
 }
 
 const sizeMap = {
@@ -12,13 +13,46 @@ const sizeMap = {
 
 /**
  * Pure CSS/SVG animated candle flame.
- * - Outer orange flame: slow flicker
- * - Inner yellow core: faster flicker + sway
- * - Warm halo: gentle pulse
- * Each instance accepts a `delay` so a row of candles flickers out of sync.
+ * When `blown` is true, the flame is replaced with a rising smoke wisp.
  */
-export const AnimatedFlame = ({ size = "md", delay = 0, className = "" }: AnimatedFlameProps) => {
+export const AnimatedFlame = ({ size = "md", delay = 0, className = "", blown = false }: AnimatedFlameProps) => {
   const { w, h } = sizeMap[size];
+
+  if (blown) {
+    return (
+      <div
+        className={`relative inline-block ${className}`}
+        style={{ width: w, height: h }}
+        aria-hidden="true"
+      >
+        {/* Rising smoke wisp */}
+        <span
+          className="absolute rounded-full smoke-wisp"
+          style={{
+            width: w * 0.7,
+            height: w * 0.7,
+            left: "50%",
+            bottom: 2,
+            transform: "translateX(-50%)",
+            background: "radial-gradient(circle, hsl(0 0% 70% / 0.55) 0%, hsl(0 0% 80% / 0.25) 60%, transparent 80%)",
+            animationDelay: `${Math.abs(delay) * 0.3}s`,
+          }}
+        />
+        <span
+          className="absolute rounded-full smoke-wisp"
+          style={{
+            width: w * 0.5,
+            height: w * 0.5,
+            left: "50%",
+            bottom: 8,
+            transform: "translateX(-50%)",
+            background: "radial-gradient(circle, hsl(0 0% 75% / 0.5) 0%, transparent 75%)",
+            animationDelay: `${Math.abs(delay) * 0.3 + 0.4}s`,
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
