@@ -161,7 +161,17 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
     if (isPlaying) {
       el.pause();
     } else {
-      el.play();
+      const p = el.play();
+      if (p && typeof p.catch === "function") {
+        p.catch((err) => {
+          console.error("Preview playback failed:", err);
+          toast({
+            title: "Couldn't play preview",
+            description: "Try a different browser (Chrome / Safari latest).",
+            variant: "destructive",
+          });
+        });
+      }
     }
   };
 
@@ -208,13 +218,13 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       if (groupId) {
         const { error: groupUpdErr } = await supabase
           .from("generated_images")
-          .update({ audio_url: publicUrl, audio_duration_seconds: seconds })
+          .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
           .eq("share_group_id", groupId);
         if (groupUpdErr) throw groupUpdErr;
       } else {
         const { error: updErr } = await supabase
           .from("generated_images")
-          .update({ audio_url: publicUrl, audio_duration_seconds: seconds })
+          .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
           .eq("id", cakeImageId);
         if (updErr) throw updErr;
       }
@@ -296,7 +306,9 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onEnded={() => setIsPlaying(false)}
-                className="hidden"
+                controls
+                playsInline
+                className="w-full"
               />
               <Button
                 onClick={togglePlayback}
