@@ -826,7 +826,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
             const isTerminal = row.status === 'completed' || row.status === 'partial_failed';
             const allFilled = viewOrder.every((_, i) => latestImages[i] && latestImages[i] !== '/placeholder.svg');
-            const hasRealError = !!(row.hero_error || row.side_error || row.top_error);
+            const hasRealError = !!(row.hero_error || row.side_error || row.top_error || row.error_message || row.status === 'partial_failed');
 
             // Real progress: each filled slot bumps the bar.
             if (row.greeting_message) {
@@ -836,6 +836,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
             if (filledCount > 0) {
+              setIsLoading(false);
               setSelectedImages((prev) => prev.size > 0 ? prev : new Set([latestImages.findIndex((u) => u && u !== '/placeholder.svg')]));
             }
             const pct = filledCount === 0
@@ -852,6 +853,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
               if (finished) return;
               finished = true;
               cleanup();
+              setIsLoading(false);
               if (allFilled) {
                 triggerConfetti();
                 haptic.success();
@@ -861,6 +863,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                 });
                 if (isLoggedIn) setShowRatingPrompt(true);
               } else {
+                setGenerationStep("Some views need a retry.");
                 const missing = viewOrder.filter((_, i) => !latestImages[i] || latestImages[i] === '/placeholder.svg').length;
                 toast({
                   title: `${missing} view${missing > 1 ? 's' : ''} need a retry`,
@@ -889,7 +892,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (finished) return;
             const { data: row } = await supabase
               .from('cake_generation_jobs')
-              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, status, view_count, greeting_message')
+                .select('hero_url, side_url, top_url, hero_error, side_error, top_error, error_message, status, view_count, greeting_message, updated_at')
               .eq('id', jobId)
               .maybeSingle();
             if (row) applyRow(row);
