@@ -842,7 +842,14 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             const filledCount = latestImages.filter((u) => u && u !== '/placeholder.svg').length;
             if (filledCount > 0) {
               setIsLoading(false);
-              setSelectedImages((prev) => prev.size > 0 ? prev : new Set([latestImages.findIndex((u) => u && u !== '/placeholder.svg')]));
+              // Default selection prefers the HERO/front view (index 0), not whichever
+              // image arrived first. Only falls back to first-real if hero isn't ready.
+              setSelectedImages((prev) => {
+                if (prev.size > 0) return prev;
+                const heroReady = latestImages[0] && latestImages[0] !== '/placeholder.svg';
+                const idx = heroReady ? 0 : latestImages.findIndex((u) => u && u !== '/placeholder.svg');
+                return idx >= 0 ? new Set([idx]) : new Set();
+              });
             }
             const pct = filledCount === 0
               ? 20
@@ -955,10 +962,12 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
         setOriginalImages(images); // Same as generated since no post-processing needed
-        // Auto-select only the first REAL (non-placeholder) image so users can
-        // never accidentally save a placeholder to their gallery.
-        const firstRealIndex = images.findIndex((u) => u && u !== '/placeholder.svg');
-        setSelectedImages(firstRealIndex >= 0 ? new Set([firstRealIndex]) : new Set());
+        // Auto-select the HERO/front view (index 0) when ready; otherwise the
+        // first real image. This guarantees the shared cake defaults to the
+        // intended front view instead of whichever image arrived first.
+        const heroReady = images[0] && images[0] !== '/placeholder.svg';
+        const defaultIdx = heroReady ? 0 : images.findIndex((u) => u && u !== '/placeholder.svg');
+        setSelectedImages(defaultIdx >= 0 ? new Set([defaultIdx]) : new Set());
         
         if (okCount > 0) {
           setTimeout(() => triggerConfetti(), 400);

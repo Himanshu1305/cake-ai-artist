@@ -70,7 +70,7 @@ const App = () => {
               />
               <WebSiteSchema name="Cake AI Artist" url="https://cakeaiartist.com" />
               <ScrollToTop />
-              <CookieConsent />
+              {!/^\/cake\//.test(window.location.pathname) && <CookieConsent />}
               <GeoRedirectWrapper />
               <Suspense fallback={
                 <div className="fixed inset-0 flex items-center justify-center bg-background">
