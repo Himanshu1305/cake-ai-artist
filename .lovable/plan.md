@@ -1,58 +1,49 @@
-# Combined fix plan — reveal + audio + jingle + candles + share-page copy
+I’ll fix all six shared-card issues in one build, focused on the public cake page, reveal animation, recorder upload metadata, and the public cake data function.
 
-All changes batched into one build so nothing reoccurs.
+## What I’ll change
 
-## 1. Slower reveal + Replay button (`CakeConvergeReveal.tsx`, `SharedCake.tsx`)
+1. **Make all three cake images visible during reveal**
+   - Update the reveal animation so the side images are larger, less hidden behind the main image, and held on screen longer.
+   - Preload sibling images before starting the fan animation so they don’t appear blank/late.
+   - Keep the final selected cake crisp and centered after the reveal.
 
-- Stretch reveal timings: fan-in ~2.0s, hold fanned ~2.0s, converge ~1.2s, final ~0.8s (total ~6–6.5s vs current 4.4s).
-- Keep existing "Skip →" button.
-- Add a **🔄 Replay** button on `SharedCake.tsx` next to the cake. On click: clear the `sessionStorage` "seen" flag, bump a React `key` to remount `CakeConvergeReveal`, restart from phase 0.
+2. **Fix voice message playback more reliably**
+   - Store the recorded audio MIME type with the audio URL.
+   - Return that MIME type from the public cake function.
+   - Use explicit `<source type="...">` on the shared page so Safari/iOS and other browsers decode the file correctly.
+   - Improve the recorder preview by not using a hidden audio element for preview playback and by surfacing playback errors.
+   - Keep native audio controls visible as a reliable fallback.
 
-## 2. Fix voice playback (no sound) (`SharedCake.tsx`, `AudioRecorder.tsx`)
+3. **Use birthday tune only for birthday cakes**
+   - Detect birthday occasions from `occasion_type`.
+   - Use the current Happy Birthday melody only for birthday cakes.
+   - Add a separate generic celebration melody for anniversary/other occasions.
+   - Keep the same start/stop/ducking behavior with voice playback.
 
-- Wrap `audio.play()` in `.catch()` and surface a toast/inline error when autoplay or decode fails.
-- Replace `display:none` audio element with a visible `<audio controls>` fallback (sr-only wrapper hidden visually but interactive), so iOS users always have a working native control as backup.
-- On `MediaRecorder.stop()`, call `recorder.requestData()` first to flush the final chunk (prevents 0-byte / unplayable files on some browsers).
-- Recorder MIME priority already favors `audio/mp4` (m4a/AAC) — keep, but also store `audio_mime_type` so the share page can set `<source type=...>` explicitly for Safari decoding.
+4. **Make smoke clearly visible after candles are blown**
+   - Increase smoke size, contrast, duration, and vertical travel.
+   - Add multiple wisps per candle with clearer placement above the candle tips.
+   - Ensure container overflow does not clip the smoke.
 
-## 3. Birthday jingle background music (`SharedCake.tsx`, new asset)
+5. **Mute background music option**
+   - Keep/add a persistent music mute toggle.
+   - Make it clearer and ensure it controls both birthday and generic celebration background music.
 
-- Add a short royalty-free instrumental loop at `src/assets/jingle/birthday-jingle.mp3` (~15–25s, soft).
-- Start playback on first user interaction (tap anywhere / Replay / Blow candles) to bypass autoplay rules.
-- Behavior:
-  - If a voice message exists → jingle plays at low volume; pauses when voice plays; resumes (low vol) on voice `pause`/`ended`.
-  - If no voice message → jingle plays once (no loop) and stops.
-- Add a small **🔊/🔇 mute** toggle in the corner. Always stop on unmount.
+6. **Show creator name instead of generic message**
+   - Strengthen the sender-name lookup in the public cake function by using profile first name, full profile name, and auth metadata fallback where available.
+   - On the page, only show the generic “Someone special...” fallback if no creator name exists at all.
+   - Update the bottom attribution to use the same resolved creator name.
 
-## 4. Actually extinguish candles on "Blow out candles" (`CandleRow.tsx`, `AnimatedFlame.tsx`)
+## Technical scope
 
-- Add `blown?: boolean` prop to `CandleRow` and `AnimatedFlame`.
-- When `blown` is true: hide the flame + halo; render a CSS-only rising smoke wisp (translucent gray, scale up + drift up + fade) above each candle stick. Slightly desaturate sticks.
-- In `SharedCake.tsx`, when `handleBlowCandles` fires, pass `blown={candlesBlown}` to the visible `CandleRow`. State already exists.
+- Frontend: `SharedCake.tsx`, `CakeConvergeReveal.tsx`, `AudioRecorder.tsx`, `CandleRow.tsx`, `AnimatedFlame.tsx`, `birthdayJingle.ts`, `index.css`.
+- Backend migration: add `audio_mime_type` to `generated_images` and update `get_public_cake` to return `audio_mime_type` plus a stronger `sender_name`.
+- No changes to cake generation prompts or core image creation flow.
 
-## 5. Share page copy fixes (`SharedCake.tsx`)
+## Validation
 
-**a) Generic bottom CTA**
-- Replace occasion-aware "🎂 Make a Birthday cake for someone →" with a single generic line for both desktop and sticky mobile CTAs:
-  - **"🎂 Make a cake for someone you love →"**
-- `ctaHref` → `/free-ai-cake-designer?ref=shared_cake` (drop `occasion=` param). Remove unused `occasionLabel` / `ctaText` branching.
-
-**b) Personalize the top kicker chip with sender's name**
-- `cake.sender_name` already comes from the `get_public_cake` RPC.
-- If non-empty: chip reads **"{sender_name} made this just for you 💝"** (e.g. "Priya made this just for you 💝").
-- Fallback when missing: keep existing **"Someone special made this for you"**.
-- Styling, icon, layout unchanged.
-
-## Out of scope
-
-- No backend / RPC / migration changes.
-- No changes to generation, default-selection, or save logic (those landed in the previous build).
-
-## Files touched
-
-- `src/pages/SharedCake.tsx`
-- `src/components/CakeConvergeReveal.tsx`
-- `src/components/AudioRecorder.tsx`
-- `src/components/CandleRow.tsx`
-- `src/components/AnimatedFlame.tsx`
-- New: `src/assets/jingle/birthday-jingle.mp3`
+- Verify the reveal uses 2–3 images and the side images are visible before convergence.
+- Verify the shared page audio element uses the stored MIME type and native fallback remains available.
+- Verify birthday vs non-birthday music routing.
+- Verify candle smoke is visually obvious after clicking “Blow out the candles”.
+- Verify sender chip uses the resolved creator name when available.

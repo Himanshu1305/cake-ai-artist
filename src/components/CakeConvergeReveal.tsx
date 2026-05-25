@@ -40,21 +40,24 @@ export const CakeConvergeReveal = ({
     }
     if (skipKey) sessionStorage.setItem(skipKey, "1");
 
-    const t1 = setTimeout(() => setPhase(1), 500);   // cards fan in
-    const t2 = setTimeout(() => setPhase(2), 4500);  // start converging (hold fanned ~3s)
-    const t3 = setTimeout(() => setPhase(3), 5800);  // cross-fade to final
-    const t4 = setTimeout(() => setPhase(4), 6700);  // idle float
+    // Preload sibling images so they actually render during the fan-in
+    uniq.forEach((src) => { const img = new Image(); img.src = src; });
+
+    const t1 = setTimeout(() => setPhase(1), 400);    // fan in
+    const t2 = setTimeout(() => setPhase(2), 5200);   // start converging (hold fanned ~4.8s)
+    const t3 = setTimeout(() => setPhase(3), 6600);   // cross-fade to final
+    const t4 = setTimeout(() => setPhase(4), 7600);   // idle float
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
 
   }, [hasTrio, skipKey]);
 
   const handleSkip = () => setPhase(4);
 
-  // Fanned positions for the 3 cards (relative to center)
+  // Fanned positions for up to 3 cards — primary stays slightly back; side cards clearly visible
   const fanned = [
-    { x: 0,    y: -10,  rot: 0,   z: 3 }, // center (primary)
-    { x: -90,  y: 20,   rot: -10, z: 2 }, // left
-    { x: 90,   y: 20,   rot: 10,  z: 1 }, // right
+    { x: 0,    y: 0,    rot: 0,   z: 3, scale: 0.78 }, // center (primary), smaller so siblings show
+    { x: -110, y: 30,   rot: -12, z: 2, scale: 0.7 },  // left sibling
+    { x: 110,  y: 30,   rot: 12,  z: 1, scale: 0.7 },  // right sibling
   ];
 
   return (
@@ -104,15 +107,16 @@ export const CakeConvergeReveal = ({
                 x: phase >= 1 ? target.x : (i === 0 ? 0 : i === 1 ? -260 : 260),
                 y: phase >= 1 ? target.y : (i === 0 ? -260 : 80),
                 rotate: phase >= 1 ? target.rot : (i === 1 ? -25 : i === 2 ? 25 : -8),
-                scale: phase >= 2 ? 0.6 : 1,
-                opacity: phase >= 2 && i !== 0 ? 0 : 1,
+                scale: phase >= 1 ? target.scale : 1,
+                opacity: 1,
               };
               if (phase >= 2) {
-                // converge to center, primary scales up & stays
+                // converge to center; siblings fade out, primary scales up
                 fanState.x = 0;
                 fanState.y = 0;
                 fanState.rotate = 0;
-                if (i === 0) fanState.scale = 1;
+                fanState.scale = i === 0 ? 1 : 0.55;
+                fanState.opacity = i === 0 ? 1 : 0;
               }
               return (
                 <motion.img
@@ -120,7 +124,8 @@ export const CakeConvergeReveal = ({
                   src={src}
                   alt={`${alt} view ${i + 1}`}
                   draggable={false}
-                  className="absolute top-1/2 left-1/2 w-[78%] aspect-square object-cover rounded-3xl shadow-[0_20px_50px_-15px_hsl(var(--party-purple)/0.55)] ring-1 ring-white/50"
+                  loading="eager"
+                  className="absolute top-1/2 left-1/2 w-[72%] aspect-square object-cover rounded-3xl shadow-[0_20px_50px_-15px_hsl(var(--party-purple)/0.55)] ring-2 ring-white/70"
                   style={{ translateX: "-50%", translateY: "-50%", zIndex: target.z }}
                   initial={{ x: i === 0 ? 0 : i === 1 ? -260 : 260, y: i === 0 ? -260 : 80, rotate: i === 1 ? -25 : i === 2 ? 25 : -8, scale: 0.85, opacity: 0 }}
                   animate={{
@@ -134,7 +139,7 @@ export const CakeConvergeReveal = ({
                     type: "spring",
                     stiffness: 140,
                     damping: 22,
-                    delay: phase === 0 ? i * 0.25 : 0,
+                    delay: phase === 0 ? i * 0.35 : 0,
                   }}
                 />
               );

@@ -24,6 +24,7 @@ interface PublicCake {
   occasion_type: string | null;
   audio_url: string | null;
   audio_duration_seconds: number | null;
+  audio_mime_type?: string | null;
   created_at: string;
   sender_name?: string | null;
   share_group_id?: string | null;
@@ -113,8 +114,11 @@ export default function SharedCake() {
   const startJingleIfNeeded = () => {
     if (!jingleRef.current || jinglePlaying) return;
     const hasVoice = !!cake?.audio_url;
+    const occ = (cake?.occasion_type || "").toLowerCase();
+    const isBirthday = occ.includes("birth") || occ === "bday" || occ === "";
+    const variant: "birthday" | "celebration" = isBirthday ? "birthday" : "celebration";
     // Loop softly if there's a voice message (so it can duck under voice); otherwise play once.
-    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18 }).then(() => {
+    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18, variant }).then(() => {
       setJinglePlaying(true);
     }).catch(() => {});
   };
@@ -445,12 +449,10 @@ export default function SharedCake() {
 
                     <audio
                       ref={audioRef}
-                      src={cake.audio_url}
                       preload="auto"
                       playsInline
                       onEnded={() => {
                         setIsPlaying(false);
-                        // Restore jingle volume after voice ends
                         if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
                       }}
                       onPause={() => {
@@ -465,17 +467,22 @@ export default function SharedCake() {
                           variant: "destructive",
                         });
                       }}
-                    />
+                    >
+                      <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
+                      <source src={cake.audio_url} />
+                    </audio>
                     {/* Native fallback so iOS/Safari users always have a working control */}
-                    <details className="mt-2 text-xs text-muted-foreground">
+                    <details className="mt-2 text-xs text-muted-foreground" open>
                       <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
                       <audio
-                        src={cake.audio_url}
                         controls
                         playsInline
                         preload="auto"
                         className="w-full mt-2"
-                      />
+                      >
+                        <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
+                        <source src={cake.audio_url} />
+                      </audio>
                     </details>
                   </div>
                 )}

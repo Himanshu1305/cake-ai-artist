@@ -501,6 +501,7 @@ export type Database = {
       generated_images: {
         Row: {
           audio_duration_seconds: number | null
+          audio_mime_type: string | null
           audio_url: string | null
           created_at: string | null
           featured: boolean | null
@@ -517,6 +518,7 @@ export type Database = {
         }
         Insert: {
           audio_duration_seconds?: number | null
+          audio_mime_type?: string | null
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
@@ -533,6 +535,7 @@ export type Database = {
         }
         Update: {
           audio_duration_seconds?: number | null
+          audio_mime_type?: string | null
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
@@ -1349,6 +1352,7 @@ export type Database = {
         Args: { p_id: string }
         Returns: {
           audio_duration_seconds: number
+          audio_mime_type: string
           audio_url: string
           created_at: string
           id: string
