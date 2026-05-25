@@ -315,9 +315,10 @@ export default function SharedCake() {
             animate={{ opacity: revealStage >= 1 ? 1 : 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className={`transition-all duration-500 ${candlesBlown ? "opacity-30 scale-95" : ""}`}>
-              <CandleRow count={5} size="sm" className="mb-2" />
+            <div className="transition-all duration-500">
+              <CandleRow count={5} size="sm" className="mb-2" blown={candlesBlown} />
             </div>
+
           </motion.div>
 
           {/* Cake card — slides up from below at stage 2 */}
