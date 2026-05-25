@@ -24,6 +24,7 @@ interface PublicCake {
   occasion_type: string | null;
   audio_url: string | null;
   audio_duration_seconds: number | null;
+  audio_mime_type?: string | null;
   created_at: string;
   sender_name?: string | null;
   share_group_id?: string | null;
@@ -113,8 +114,11 @@ export default function SharedCake() {
   const startJingleIfNeeded = () => {
     if (!jingleRef.current || jinglePlaying) return;
     const hasVoice = !!cake?.audio_url;
+    const occ = (cake?.occasion_type || "").toLowerCase();
+    const isBirthday = occ.includes("birth") || occ === "bday" || occ === "";
+    const variant: "birthday" | "celebration" = isBirthday ? "birthday" : "celebration";
     // Loop softly if there's a voice message (so it can duck under voice); otherwise play once.
-    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18 }).then(() => {
+    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18, variant }).then(() => {
       setJinglePlaying(true);
     }).catch(() => {});
   };
