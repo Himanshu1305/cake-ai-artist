@@ -75,7 +75,7 @@ export default function SharedCake() {
     }
   }, [id]);
 
-  // Staged reveal — starts after cake data is ready
+  // Staged reveal — kicker + card appear quickly so the inner 3-image reveal is visible
   useEffect(() => {
     if (!cake || !id) return;
     const seenKey = `reveal_seen_${id}`;
@@ -84,10 +84,11 @@ export default function SharedCake() {
       return;
     }
     sessionStorage.setItem(seenKey, "1");
-    const t1 = setTimeout(() => setRevealStage(1), 500);
-    const t2 = setTimeout(() => setRevealStage(2), 1500);
-    const t3 = setTimeout(() => setRevealStage(3), 2500);
-    const t4 = setTimeout(() => setRevealStage(4), 3500);
+    const t1 = setTimeout(() => setRevealStage(1), 300);
+    const t2 = setTimeout(() => setRevealStage(2), 700);
+    // Hold message + CTA until after the 3-image reveal (~6s) completes
+    const t3 = setTimeout(() => setRevealStage(3), 6800);
+    const t4 = setTimeout(() => setRevealStage(4), 7400);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [cake, id]);
 
@@ -159,28 +160,34 @@ export default function SharedCake() {
     });
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) {
-      // Duck the jingle while voice plays
-      jingleRef.current?.setVolume(0.04);
-      const p = a.play();
-      if (p && typeof p.catch === "function") {
-        p.then(() => setIsPlaying(true)).catch((err) => {
-          console.error("Audio play failed:", err);
-          toast({
-            title: "Couldn't play voice message",
-            description: "Try the controls below, or open this link in another browser.",
-            variant: "destructive",
-          });
-          setIsPlaying(false);
-        });
-      } else {
-        setIsPlaying(true);
-      }
-    } else {
+    if (!a.paused) {
       a.pause();
+      setIsPlaying(false);
+      return;
+    }
+    try {
+      // Stop background music completely while voice plays
+      jingleRef.current?.stop();
+      setJinglePlaying(false);
+
+      // Force a fresh load — some browsers (esp. iOS Safari) need this on
+      // first play after the element mounted with <source> children.
+      if (a.readyState < 2) {
+        try { a.load(); } catch {}
+      }
+      a.currentTime = 0;
+      await a.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Audio play failed:", err);
+      toast({
+        title: "Couldn't play voice message",
+        description: "Try the controls below, or open this link in another browser.",
+        variant: "destructive",
+      });
       setIsPlaying(false);
     }
   };
@@ -190,11 +197,11 @@ export default function SharedCake() {
     setRevealStage(0);
     setRevealKey((k) => k + 1);
     setCandlesBlown(false);
-    // Restart staged reveal
-    setTimeout(() => setRevealStage(1), 500);
-    setTimeout(() => setRevealStage(2), 1800);
-    setTimeout(() => setRevealStage(3), 3200);
-    setTimeout(() => setRevealStage(4), 4400);
+    // Restart staged reveal — same timing as initial
+    setTimeout(() => setRevealStage(1), 300);
+    setTimeout(() => setRevealStage(2), 700);
+    setTimeout(() => setRevealStage(3), 6800);
+    setTimeout(() => setRevealStage(4), 7400);
   };
 
   const handleEmailCapture = async (e: React.FormEvent) => {
@@ -453,11 +460,11 @@ export default function SharedCake() {
                       playsInline
                       onEnded={() => {
                         setIsPlaying(false);
-                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                        // Resume background music if user hasn't muted it
+                        if (!jingleMuted && interactedRef.current) startJingleIfNeeded();
                       }}
                       onPause={() => {
                         setIsPlaying(false);
-                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
                       }}
                       onPlay={() => setIsPlaying(true)}
                       onError={() => {
@@ -471,14 +478,31 @@ export default function SharedCake() {
                       <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
                       <source src={cake.audio_url} />
                     </audio>
+
+                    {/* Music mute toggle — visible in the card */}
+                    <div className="flex items-center justify-center mt-3">
+                      <button
+                        type="button"
+                        onClick={toggleJingleMute}
+                        className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-white/80 border border-party-purple/30 hover:bg-white shadow-sm text-foreground/80"
+                      >
+                        {jingleMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
+                        {jingleMuted ? "Music muted" : "Mute background music"}
+                      </button>
+                    </div>
+
                     {/* Native fallback so iOS/Safari users always have a working control */}
-                    <details className="mt-2 text-xs text-muted-foreground" open>
+                    <details className="mt-2 text-xs text-muted-foreground">
                       <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
                       <audio
                         controls
                         playsInline
                         preload="auto"
                         className="w-full mt-2"
+                        onPlay={() => {
+                          jingleRef.current?.stop();
+                          setJinglePlaying(false);
+                        }}
                       >
                         <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
                         <source src={cake.audio_url} />

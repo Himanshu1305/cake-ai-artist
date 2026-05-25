@@ -1,49 +1,42 @@
-I’ll fix all six shared-card issues in one build, focused on the public cake page, reveal animation, recorder upload metadata, and the public cake data function.
+## Plan
 
-## What I’ll change
+1. **Replace the current fan reveal with a clear 3-step image reveal**
+   - Show image 1 clearly for 2 seconds.
+   - Show image 2 clearly for 2 seconds.
+   - Show image 3 clearly for 2 seconds.
+   - Then merge/converge into the final selected cake image.
+   - Preload all reveal images before starting so side/alternate images do not appear blank.
+   - Update replay to rerun the same full sequence instead of the shorter old timing.
 
-1. **Make all three cake images visible during reveal**
-   - Update the reveal animation so the side images are larger, less hidden behind the main image, and held on screen longer.
-   - Preload sibling images before starting the fan animation so they don’t appear blank/late.
-   - Keep the final selected cake crisp and centered after the reveal.
+2. **Fix the voice message play button**
+   - Make the visible voice play button trigger the same native audio element that currently works in the fallback player.
+   - Remove the fragile hidden-source setup that is causing the first button to fail while the fallback works.
+   - Load/reset the audio directly on click, then call `play()` from that user gesture.
+   - Keep the native controls as a fallback, but avoid showing an error if only the custom button had a recoverable issue.
 
-2. **Fix voice message playback more reliably**
-   - Store the recorded audio MIME type with the audio URL.
-   - Return that MIME type from the public cake function.
-   - Use explicit `<source type="...">` on the shared page so Safari/iOS and other browsers decode the file correctly.
-   - Improve the recorder preview by not using a hidden audio element for preview playback and by surfacing playback errors.
-   - Keep native audio controls visible as a reliable fallback.
+3. **Pause background music while voice audio plays**
+   - On voice play: explicitly stop/pause the background jingle, not just lower volume.
+   - On voice end/pause: resume background music only if it is not muted and if the user has already interacted with the page.
 
-3. **Use birthday tune only for birthday cakes**
-   - Detect birthday occasions from `occasion_type`.
-   - Use the current Happy Birthday melody only for birthday cakes.
-   - Add a separate generic celebration melody for anniversary/other occasions.
-   - Keep the same start/stop/ducking behavior with voice playback.
+4. **Add a visible mute/unmute option where users can see it**
+   - Keep the floating mute button, but make it more obvious with text like “Mute music” / “Music muted”.
+   - Place it in the visible shared-card area near the voice/cake controls so it is not missed at the top-right edge.
+   - Ensure it controls both birthday music and generic celebration music.
 
-4. **Make smoke clearly visible after candles are blown**
-   - Increase smoke size, contrast, duration, and vertical travel.
-   - Add multiple wisps per candle with clearer placement above the candle tips.
-   - Ensure container overflow does not clip the smoke.
+5. **Tighten state and timing conflicts**
+   - Remove the duplicate shared-page reveal stage timers from `SharedCake.tsx` that conflict with `CakeConvergeReveal` timing.
+   - Let `CakeConvergeReveal` own the image animation timing.
+   - Keep the outer card/message reveal simple and delayed enough that the 3-image sequence is visible.
 
-5. **Mute background music option**
-   - Keep/add a persistent music mute toggle.
-   - Make it clearer and ensure it controls both birthday and generic celebration background music.
+## Files to update
 
-6. **Show creator name instead of generic message**
-   - Strengthen the sender-name lookup in the public cake function by using profile first name, full profile name, and auth metadata fallback where available.
-   - On the page, only show the generic “Someone special...” fallback if no creator name exists at all.
-   - Update the bottom attribution to use the same resolved creator name.
-
-## Technical scope
-
-- Frontend: `SharedCake.tsx`, `CakeConvergeReveal.tsx`, `AudioRecorder.tsx`, `CandleRow.tsx`, `AnimatedFlame.tsx`, `birthdayJingle.ts`, `index.css`.
-- Backend migration: add `audio_mime_type` to `generated_images` and update `get_public_cake` to return `audio_mime_type` plus a stronger `sender_name`.
-- No changes to cake generation prompts or core image creation flow.
+- `src/components/CakeConvergeReveal.tsx`
+- `src/pages/SharedCake.tsx`
+- Potentially `src/utils/birthdayJingle.ts` only if the current class needs a clearer pause/resume helper
 
 ## Validation
 
-- Verify the reveal uses 2–3 images and the side images are visible before convergence.
-- Verify the shared page audio element uses the stored MIME type and native fallback remains available.
-- Verify birthday vs non-birthday music routing.
-- Verify candle smoke is visually obvious after clicking “Blow out the candles”.
-- Verify sender chip uses the resolved creator name when available.
+- Replay shows each of the 3 images for about 2 seconds before merging.
+- The custom voice play button plays the same audio that works in the fallback player.
+- Background music stops while voice audio is playing and only resumes afterward if unmuted.
+- The mute option is visible in the card area and controls the music state.
