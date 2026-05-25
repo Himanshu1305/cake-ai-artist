@@ -17,11 +17,14 @@ interface AudioRecorderProps {
 }
 
 function pickMimeType(): string {
+  // Prefer formats playable on iOS/Safari/WhatsApp first.
+  // Safari + iOS can record/play audio/mp4 (m4a/AAC). WebM/Opus often fails on iOS.
   const candidates = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
+    "audio/mp4;codecs=mp4a.40.2",
     "audio/mp4",
     "audio/mpeg",
+    "audio/webm;codecs=opus",
+    "audio/webm",
   ];
   for (const t of candidates) {
     if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported?.(t)) {
@@ -188,11 +191,30 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       // Cache-bust so the new audio plays even after re-record
       const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
 
-      const { error: updErr } = await supabase
+      // Look up share_group_id so we can attach this audio to ALL sibling
+      // images saved in the same batch — recipients hear the voice message
+      // no matter which view's link was shared.
+      const { data: currentRow } = await supabase
         .from("generated_images")
-        .update({ audio_url: publicUrl, audio_duration_seconds: seconds })
-        .eq("id", cakeImageId);
-      if (updErr) throw updErr;
+        .select("share_group_id")
+        .eq("id", cakeImageId)
+        .maybeSingle();
+
+      const groupId = currentRow?.share_group_id ?? null;
+
+      if (groupId) {
+        const { error: groupUpdErr } = await supabase
+          .from("generated_images")
+          .update({ audio_url: publicUrl, audio_duration_seconds: seconds })
+          .eq("share_group_id", groupId);
+        if (groupUpdErr) throw groupUpdErr;
+      } else {
+        const { error: updErr } = await supabase
+          .from("generated_images")
+          .update({ audio_url: publicUrl, audio_duration_seconds: seconds })
+          .eq("id", cakeImageId);
+        if (updErr) throw updErr;
+      }
 
       toast({ title: "🎙️ Voice message saved!", description: "It will play on the cake's share link." });
       onSaved(publicUrl, seconds);
