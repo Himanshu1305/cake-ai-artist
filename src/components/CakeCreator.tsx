@@ -1040,6 +1040,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
       const prompt = `${name} - ${occasion} cake for ${relation} (${gender})${character ? ` with ${character}` : ''}`;
       const newIdMap: Record<number, string> = {};
       let firstNewId: string | null = null;
+      // One share_group_id per save batch — used by the share page to fan out all 3 views.
+      const shareGroupId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto)
+          ? crypto.randomUUID()
+          : `sg_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
       // Save all selected images
       for (const { index, url: imageUrl } of selected) {
@@ -1076,6 +1081,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             recipient_name: recipientName.trim() || name.trim(),
             occasion_type: occasion || null,
             occasion_date: occasionDate || new Date().toISOString().split('T')[0],
+            share_group_id: shareGroupId,
           })
           .select()
           .single();

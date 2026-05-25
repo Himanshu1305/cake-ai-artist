@@ -11,7 +11,7 @@ import { Loader2, Volume2, Sparkles, Gift, Play, Pause } from "lucide-react";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
-import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
+import { CakeConvergeReveal } from "@/components/CakeConvergeReveal";
 
 interface PublicCake {
   id: string;
@@ -22,8 +22,9 @@ interface PublicCake {
   audio_url: string | null;
   audio_duration_seconds: number | null;
   created_at: string;
-  // TODO: add sender_name to get_public_cake RPC in Supabase (currently not returned by the function)
   sender_name?: string | null;
+  share_group_id?: string | null;
+  sibling_image_urls?: string[] | null;
 }
 
 const SHARE_BASE_URL = "https://cakeaiartist.com";
@@ -253,10 +254,11 @@ export default function SharedCake() {
               <div className="relative group p-6 bg-gradient-to-b from-white via-muted/30 to-white">
                 {/* Image with watermark overlay (Task 5) */}
                 <div className="relative">
-                  <CakeSpinShowcase
-                    src={cake.image_url}
+                  <CakeConvergeReveal
+                    images={cake.sibling_image_urls ?? [cake.image_url]}
+                    primary={cake.image_url}
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
-                    duration={10}
+                    cacheKey={cake.id}
                   />
                   <div className="absolute bottom-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded pointer-events-none select-none">
                     🎂 cakeaiartist.com
