@@ -460,11 +460,11 @@ export default function SharedCake() {
                       playsInline
                       onEnded={() => {
                         setIsPlaying(false);
-                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                        // Resume background music if user hasn't muted it
+                        if (!jingleMuted && interactedRef.current) startJingleIfNeeded();
                       }}
                       onPause={() => {
                         setIsPlaying(false);
-                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
                       }}
                       onPlay={() => setIsPlaying(true)}
                       onError={() => {
@@ -478,14 +478,31 @@ export default function SharedCake() {
                       <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
                       <source src={cake.audio_url} />
                     </audio>
+
+                    {/* Music mute toggle — visible in the card */}
+                    <div className="flex items-center justify-center mt-3">
+                      <button
+                        type="button"
+                        onClick={toggleJingleMute}
+                        className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-white/80 border border-party-purple/30 hover:bg-white shadow-sm text-foreground/80"
+                      >
+                        {jingleMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Music className="h-3.5 w-3.5" />}
+                        {jingleMuted ? "Music muted" : "Mute background music"}
+                      </button>
+                    </div>
+
                     {/* Native fallback so iOS/Safari users always have a working control */}
-                    <details className="mt-2 text-xs text-muted-foreground" open>
+                    <details className="mt-2 text-xs text-muted-foreground">
                       <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
                       <audio
                         controls
                         playsInline
                         preload="auto"
                         className="w-full mt-2"
+                        onPlay={() => {
+                          jingleRef.current?.stop();
+                          setJinglePlaying(false);
+                        }}
                       >
                         <source src={cake.audio_url} type={cake.audio_mime_type || "audio/mp4"} />
                         <source src={cake.audio_url} />
