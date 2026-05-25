@@ -338,15 +338,27 @@ export default function SharedCake() {
                 {/* Image with watermark overlay (Task 5) */}
                 <div className="relative">
                   <CakeConvergeReveal
+                    key={revealKey}
                     images={cake.sibling_image_urls ?? [cake.image_url]}
                     primary={cake.image_url}
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
-                    cacheKey={cake.id}
+                    cacheKey={`${cake.id}_${revealKey}`}
                   />
                   <div className="absolute bottom-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded pointer-events-none select-none">
                     🎂 cakeaiartist.com
                   </div>
+                  {/* Replay button */}
+                  <button
+                    type="button"
+                    onClick={handleReplay}
+                    className="absolute top-2 left-2 z-30 inline-flex items-center gap-1 bg-white/85 hover:bg-white backdrop-blur text-xs px-2.5 py-1 rounded-full shadow text-foreground/80"
+                    aria-label="Replay the cake reveal"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Replay
+                  </button>
                 </div>
+
               </div>
 
               <div className="p-6 space-y-5 text-center bg-gradient-to-b from-white via-muted/40 to-white">
