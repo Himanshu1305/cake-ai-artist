@@ -893,23 +893,22 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
           };
           // Declare timers + cleanup BEFORE first fetch so applyRow→cleanup
           // can never hit a TDZ ReferenceError if the row is already terminal.
-          let fastPoll1: ReturnType<typeof setTimeout> | undefined;
-          let fastPoll2: ReturnType<typeof setTimeout> | undefined;
+          const fastPollTimers: ReturnType<typeof setTimeout>[] = [];
           let pollTimer: ReturnType<typeof setInterval> | undefined;
           let watchdog: ReturnType<typeof setTimeout> | undefined;
           const cleanup = () => {
             try { supabase.removeChannel(channel); } catch {}
             if (pollTimer) clearInterval(pollTimer);
-            if (fastPoll1) clearTimeout(fastPoll1);
-            if (fastPoll2) clearTimeout(fastPoll2);
+            fastPollTimers.forEach((t) => clearTimeout(t));
             if (watchdog) clearTimeout(watchdog);
           };
 
-          // Fire immediately, then again at 1s and 3s to catch races where
-          // the bg task is in flight at hero-response time.
+          // Fire immediately, then again rapidly to catch races where the bg
+          // task finishes before the client subscribes to realtime.
           fetchOnce();
-          fastPoll1 = setTimeout(fetchOnce, 1000);
-          fastPoll2 = setTimeout(fetchOnce, 3000);
+          [800, 2000, 4000, 8000, 12000].forEach((ms) => {
+            fastPollTimers.push(setTimeout(fetchOnce, ms));
+          });
 
           // Polling fallback every 5s — covers dropped Realtime connections.
           pollTimer = setInterval(fetchOnce, 5000);
