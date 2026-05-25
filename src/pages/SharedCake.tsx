@@ -285,6 +285,18 @@ export default function SharedCake() {
         {/* Ambient celebration */}
         <ConfettiRain count={18} />
 
+        {/* Jingle mute toggle */}
+        <button
+          type="button"
+          onClick={toggleJingleMute}
+          className="fixed top-3 right-3 z-40 h-10 w-10 rounded-full bg-white/85 hover:bg-white backdrop-blur shadow-md flex items-center justify-center text-foreground/80"
+          aria-label={jingleMuted ? "Unmute music" : "Mute music"}
+          title={jingleMuted ? "Unmute music" : "Mute music"}
+        >
+          {jingleMuted ? <VolumeX className="h-4 w-4" /> : <Music className="h-4 w-4" />}
+        </button>
+
+
         {/* Soft animated blobs */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-party-pink/30 blur-3xl animate-pulse" />
