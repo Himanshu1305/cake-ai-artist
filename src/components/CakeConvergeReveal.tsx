@@ -40,21 +40,24 @@ export const CakeConvergeReveal = ({
     }
     if (skipKey) sessionStorage.setItem(skipKey, "1");
 
-    const t1 = setTimeout(() => setPhase(1), 500);   // cards fan in
-    const t2 = setTimeout(() => setPhase(2), 4500);  // start converging (hold fanned ~3s)
-    const t3 = setTimeout(() => setPhase(3), 5800);  // cross-fade to final
-    const t4 = setTimeout(() => setPhase(4), 6700);  // idle float
+    // Preload sibling images so they actually render during the fan-in
+    uniq.forEach((src) => { const img = new Image(); img.src = src; });
+
+    const t1 = setTimeout(() => setPhase(1), 400);    // fan in
+    const t2 = setTimeout(() => setPhase(2), 5200);   // start converging (hold fanned ~4.8s)
+    const t3 = setTimeout(() => setPhase(3), 6600);   // cross-fade to final
+    const t4 = setTimeout(() => setPhase(4), 7600);   // idle float
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
 
   }, [hasTrio, skipKey]);
 
   const handleSkip = () => setPhase(4);
 
-  // Fanned positions for the 3 cards (relative to center)
+  // Fanned positions for up to 3 cards — primary stays slightly back; side cards clearly visible
   const fanned = [
-    { x: 0,    y: -10,  rot: 0,   z: 3 }, // center (primary)
-    { x: -90,  y: 20,   rot: -10, z: 2 }, // left
-    { x: 90,   y: 20,   rot: 10,  z: 1 }, // right
+    { x: 0,    y: 0,    rot: 0,   z: 3, scale: 0.78 }, // center (primary), smaller so siblings show
+    { x: -110, y: 30,   rot: -12, z: 2, scale: 0.7 },  // left sibling
+    { x: 110,  y: 30,   rot: 12,  z: 1, scale: 0.7 },  // right sibling
   ];
 
   return (
