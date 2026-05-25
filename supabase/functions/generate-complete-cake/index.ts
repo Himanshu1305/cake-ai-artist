@@ -682,7 +682,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
 
         if (jobId && viewsToRun.length > 0) {
           const bgJobId = jobId;
-          const bgTask = (async () => {
+          const bgTask = Promise.resolve().then(async () => {
             const tBg = Date.now();
             console.log(`[bg ${bgJobId}] starting ${viewsToRun.length} queued views`);
             const messageTask = generateMessageAsync()
@@ -726,7 +726,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
               })
               .eq('id', bgJobId);
             console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
-          })();
+          });
 
           // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
           if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
@@ -750,7 +750,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             heroView: heroView.name,
             backgroundViews: backgroundViews.map(v => v.name),
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 202 },
         );
       }
     } catch (error) {
