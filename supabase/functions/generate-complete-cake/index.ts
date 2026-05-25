@@ -688,7 +688,9 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             const messageTask = generateMessageAsync()
               .then((msg) => supabase.from('cake_generation_jobs').update({ greeting_message: msg }).eq('id', bgJobId))
               .catch((e) => console.warn(`[bg ${bgJobId}] greeting message fallback used:`, e?.message || String(e)));
-            await Promise.all([messageTask, ...viewsToRun.map(async (v, i) => {
+            // Do not let greeting-message generation hold the image job open.
+            messageTask.catch(() => {});
+            await Promise.all(viewsToRun.map(async (v, i) => {
               const slot = slotForIndex(i);
               const tv = Date.now();
               try {
@@ -704,7 +706,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
                   .update({ [slot.err]: errMsg })
                   .eq('id', bgJobId);
               }
-            })]);
+            }));
             const { data: finalRow } = await supabase
               .from('cake_generation_jobs')
               .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
@@ -712,9 +714,16 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
               .single();
             const expected = finalRow?.view_count ?? allViewNames.length;
             const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
+            const errors = [finalRow?.hero_error, finalRow?.side_error, finalRow?.top_error].filter(Boolean);
             const status = filled >= expected ? 'completed' : 'partial_failed';
             await supabase.from('cake_generation_jobs')
-              .update({ status, completed_at: new Date().toISOString() })
+              .update({
+                status,
+                completed_at: new Date().toISOString(),
+                error_message: status === 'completed'
+                  ? null
+                  : (errors.length > 0 ? errors.join('; ').slice(0, 500) : 'Some cake views did not finish in time'),
+              })
               .eq('id', bgJobId);
             console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
           })();
