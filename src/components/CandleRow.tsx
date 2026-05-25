@@ -16,6 +16,7 @@ export const CandleRow = ({ count = 7, size = "md", className = "", blown = fals
   return (
     <div
       className={`flex items-end justify-center gap-3 md:gap-4 ${className}`}
+      style={{ overflow: "visible", paddingTop: blown ? 60 : 0 }}
       aria-hidden="true"
     >
       {candles.map((_, i) => {
