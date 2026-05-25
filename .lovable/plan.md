@@ -1,34 +1,43 @@
-## Goal
-Make the existing cake recipes discoverable. Recipes already live at `/recipes` (hub) and `/recipes/:slug` (12 published recipes across IN/UK/CA/AU), but nothing links to them. Add a "Recipes" entry in the main nav with a dropdown of all recipes grouped by country, surface them on each country landing page, and make the pages SEO-compliant.
+## What's actually happening
 
-## Changes
+The edge function `generate-complete-cake` was refactored to a **job-first** flow: it inserts a row in `cake_generation_jobs`, kicks the 3 image generations into `EdgeRuntime.waitUntil`, and **returns immediately** with `images: [null, null, null]` and the `jobId`. The browser is supposed to advance the progress bar via Realtime + polling on that job row.
 
-### 1. Add "Recipes" to the main navigation (`src/pages/Index.tsx`)
-- **Desktop nav (around line 332–335):** Add a `Recipes` dropdown between `Examples` and `Community`. Hover/click opens a panel listing all 12 recipes grouped by country flag + name, each linking to `/recipes/:slug`. Footer of the panel: "Browse all recipes →" linking to `/recipes`.
-- **Mobile sheet menu (around line 374–382):** Add a collapsible "Recipes" section with the same grouped list, plus a "View all recipes" link.
-- Fetch the list once via `supabase.from('cake_recipes').select('slug,title,country').eq('is_published', true).order('country')`, cache with React Query (already in app).
+The UI bug is in `src/components/CakeCreator.tsx`:
 
-### 2. Add a "Famous local cakes" section to each country landing page
-Files: `src/pages/UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx`.
-- New section near the bottom (before Footer) titled e.g. "Famous British cakes you can bake at home" / "Classic Indian cakes to bake" etc.
-- Renders 3 cards (the country's recipes) with hero image, title, prep time, "Read recipe →" → `/recipes/:slug`.
-- Anchor link `#recipes` and a "Browse all UK recipes" CTA → `/recipes?country=UK` (already supported by `Recipes.tsx`).
+1. A timer-based simulator caps the bar at **60%** ("🌟 Finishing the main view...") and only releases when *the response sets progress ≥ 80*.
+2. The new edge response now returns with `okCount === 0` (hero is no longer baked into the response). The client then runs `setGenerationProgress(12)`, which is overwritten back to 60 by the simulator.
+3. From that point only the Realtime/poll handler (`applyRow`) can push past 60 — but in practice (race with subscribe, transient RLS/Realtime drop, message-only update arriving first, or the row update bumping `pct` to 80 *after* the user has already perceived a freeze) the bar visibly sticks at 60% with "Finishing the main view…" for the full ~30–40s the background task takes.
 
-### 3. SEO compliance
-- **Sitemap (`public/sitemap.xml`):** Add `/recipes`, `/recipes?country=IN|UK|CA|AU`, and one `<url>` entry per published recipe slug with `lastmod`, `changefreq=monthly`, `priority=0.7`.
-- **`Recipes.tsx` hub:** already has `<Helmet>` title/description/canonical. Add JSON-LD `CollectionPage` + `BreadcrumbList` (Home → Recipes [→ Country]).
-- **`RecipeDetail.tsx`:** already has Recipe JSON-LD. Add `BreadcrumbList` JSON-LD (Home → Recipes → {Country} → {Title}), `og:type=article`, visible breadcrumb above the H1.
-- **Country landing pages:** add a `BreadcrumbList` snippet and an internal-link block to recipes (helps both UX and SEO via internal linking).
+Recent DB rows confirm jobs *do* finish in ~30–50s; the images render eventually, but the user only sees "60% / Finishing the main view" the entire time.
 
-### 4. Sitemap maintenance
-The current `public/sitemap.xml` is hand-edited. Append the recipe URLs once now; note in a code comment that new recipe slugs need to be added when published. (No script migration unless you'd like one.)
+## Fix (frontend only — no backend or schema changes)
 
-## Files touched
-- `src/pages/Index.tsx` — add Recipes dropdown (desktop + mobile)
-- `src/pages/UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx` — add recipes section + breadcrumb schema
-- `src/pages/Recipes.tsx` — add CollectionPage + Breadcrumb JSON-LD
-- `src/pages/RecipeDetail.tsx` — add Breadcrumb JSON-LD + visible breadcrumb, `og:type=article`
-- `public/sitemap.xml` — add 12 recipe URLs + 4 country-filtered hub URLs + `/recipes`
+### 1. Replace the capped simulator with a job-aware progress driver
+In `src/components/CakeCreator.tsx`:
+- Keep the early ramp (0 → 35%) for the "before we have a jobId" window only.
+- The moment the edge response returns with `jobId`, jump the bar to **45%** and switch the step to "🎂 Queued — rendering your views…". Stop the simulator (clear its timers) so it can never push back to 60.
+- While the job is in flight with zero filled slots, run a slow continuous creep from 45% → 75% over ~25s (synthetic but always advancing). This guarantees the bar is never frozen.
+- When `applyRow` reports filled slots, jump to `80 + (filled/total)*20` as today. When all filled, 100%.
+- Step copy ladder: "🎂 Queued…" → "🎨 Painting frosting & layers…" → "✨ First view almost ready…" → "🎉 All views ready!".
 
-## Open question
-Do you want me to **auto-generate** the sitemap from the database (via a `predev`/`prebuild` script) so future recipes appear automatically, or is hand-editing fine for now?
+### 2. Make the "queued" state visible even when `okCount === 0`
+Remove the `setGenerationProgress(okCount > 0 ? 80 : 12)` line — replace with a single `setGenerationProgress((c) => Math.max(c, 45))` when we have a `jobId`. Never set a value *lower* than current.
+
+### 3. Tighten the realtime/poll race
+- Trigger the initial `fetchOnce` *before* awaiting realtime subscribe (already done) but also run a quick poll burst at 0s, 800ms, 2s, 4s, 8s, then fall back to the existing 5s interval. This reduces the window where the bar appears stuck before the first filled slot arrives.
+- If after 12s the row still has zero filled URLs, force-update step text to "✨ Still rendering — final touches…" so the user gets a visible state change.
+
+### 4. Tiny safety nets
+- If `supabase.functions.invoke` rejects or times out *after* a jobId was already received (we won't have one then — but if the response is slow), keep the simulator advancing instead of freezing.
+- Log `console.info('[cake] job started', { jobId, viewOrder })` so future debugging is trivial.
+
+### 5. Verify
+After the edit, generate a cake on `/free-ai-cake-designer` (logged-in) and confirm:
+- Bar never sits at 60% for more than ~1 second.
+- Step text changes at least every ~6 seconds.
+- Bar reaches 100% when the job row's status becomes `completed`.
+
+## Out of scope
+- No edge-function changes (the job-first backend is working correctly — proven by recent `cake_generation_jobs` rows completing in 30–50s).
+- No DB / RLS / Realtime config changes.
+- No new dependencies.
