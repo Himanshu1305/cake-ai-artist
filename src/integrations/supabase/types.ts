@@ -1353,6 +1353,7 @@ export type Database = {
           message: string
           occasion_type: string
           recipient_name: string
+          sender_name: string
         }[]
       }
       get_user_role: {
