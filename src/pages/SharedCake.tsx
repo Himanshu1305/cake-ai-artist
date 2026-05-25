@@ -303,8 +303,9 @@ export default function SharedCake() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-party-purple/30 shadow-sm">
               <Gift className="h-4 w-4 text-party-pink" />
               <span className="text-sm font-semibold bg-gradient-to-r from-party-pink to-party-purple bg-clip-text text-transparent">
-                Someone special made this for you
+                {kickerText}
               </span>
+
             </div>
           </motion.div>
 
