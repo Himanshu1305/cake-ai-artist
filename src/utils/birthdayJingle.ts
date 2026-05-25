@@ -1,13 +1,12 @@
-// Tiny Web Audio synthesizer for a soft "Happy Birthday" jingle.
-// Public domain melody (since 2016). No external asset needed.
+// Tiny Web Audio synthesizer for soft celebration jingles.
+// Public domain melodies. No external assets needed.
 
 type Note = { freq: number; dur: number }; // dur in beats
 
-// Happy Birthday in F major (gentle, recognizable)
-// Beats: quarter = 1, dotted-quarter = 1.5, eighth = 0.5, half = 2
-const F4 = 349.23, G4 = 392.0, A4 = 440.0, AS4 = 466.16, C5 = 523.25, D5 = 587.33, F5 = 698.46;
+// Happy Birthday in F major
+const F4 = 349.23, G4 = 392.0, A4 = 440.0, AS4 = 466.16, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
 
-const MELODY: Note[] = [
+const HAPPY_BIRTHDAY: Note[] = [
   // Happy birth-day to you
   { freq: F4, dur: 0.75 }, { freq: F4, dur: 0.25 }, { freq: G4, dur: 1 }, { freq: F4, dur: 1 }, { freq: AS4, dur: 1 }, { freq: A4, dur: 2 },
   // Happy birth-day to you
