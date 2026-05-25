@@ -821,6 +821,11 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   console.warn(`Slot ${idx} (${viewOrder[idx]}) failed in background:`, row[errCol]);
                 }
               }
+              if (row.status === 'partial_failed') {
+                viewOrder.forEach((_, idx) => {
+                  if (!latestImages[idx] || latestImages[idx] === '/placeholder.svg') next.add(idx);
+                });
+              }
               return next;
             });
 
@@ -924,6 +929,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
             if (!finished) {
               finished = true;
               cleanup();
+                setIsLoading(false);
+                setGenerationStep("Some views need a retry.");
               // Mark any still-pending slots as failed so the user sees a clear Regenerate prompt.
               setBgPending((prev) => {
                 setBgFailed((f) => {
