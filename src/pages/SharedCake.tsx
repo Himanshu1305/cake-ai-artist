@@ -101,9 +101,51 @@ export default function SharedCake() {
     });
   }, [revealStage]);
 
+  // Jingle: lazy-init + autoplay rule — start on first user interaction
+  useEffect(() => {
+    jingleRef.current = new BirthdayJingle();
+    return () => {
+      jingleRef.current?.dispose();
+      jingleRef.current = null;
+    };
+  }, []);
+
+  const startJingleIfNeeded = () => {
+    if (!jingleRef.current || jinglePlaying) return;
+    const hasVoice = !!cake?.audio_url;
+    // Loop softly if there's a voice message (so it can duck under voice); otherwise play once.
+    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18 }).then(() => {
+      setJinglePlaying(true);
+    }).catch(() => {});
+  };
+
+  // Auto-start jingle on first interaction anywhere on the page
+  useEffect(() => {
+    if (!cake) return;
+    const onFirstInteract = () => {
+      if (interactedRef.current) return;
+      interactedRef.current = true;
+      startJingleIfNeeded();
+    };
+    window.addEventListener("pointerdown", onFirstInteract, { once: true });
+    window.addEventListener("keydown", onFirstInteract, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", onFirstInteract);
+      window.removeEventListener("keydown", onFirstInteract);
+    };
+  }, [cake]);
+
+  const toggleJingleMute = () => {
+    const next = !jingleMuted;
+    setJingleMuted(next);
+    jingleRef.current?.setMuted(next);
+    if (!next && !jinglePlaying) startJingleIfNeeded();
+  };
+
   const handleBlowCandles = () => {
     if (candlesBlown) return;
     setCandlesBlown(true);
+    startJingleIfNeeded();
     confetti({
       particleCount: 200,
       spread: 100,
@@ -116,8 +158,39 @@ export default function SharedCake() {
   const togglePlay = () => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) { a.play(); setIsPlaying(true); }
-    else { a.pause(); setIsPlaying(false); }
+    if (a.paused) {
+      // Duck the jingle while voice plays
+      jingleRef.current?.setVolume(0.04);
+      const p = a.play();
+      if (p && typeof p.catch === "function") {
+        p.then(() => setIsPlaying(true)).catch((err) => {
+          console.error("Audio play failed:", err);
+          toast({
+            title: "Couldn't play voice message",
+            description: "Try the controls below, or open this link in another browser.",
+            variant: "destructive",
+          });
+          setIsPlaying(false);
+        });
+      } else {
+        setIsPlaying(true);
+      }
+    } else {
+      a.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleReplay = () => {
+    if (id) sessionStorage.removeItem(`cake_reveal_seen_${id}`);
+    setRevealStage(0);
+    setRevealKey((k) => k + 1);
+    setCandlesBlown(false);
+    // Restart staged reveal
+    setTimeout(() => setRevealStage(1), 500);
+    setTimeout(() => setRevealStage(2), 1800);
+    setTimeout(() => setRevealStage(3), 3200);
+    setTimeout(() => setRevealStage(4), 4400);
   };
 
   const handleEmailCapture = async (e: React.FormEvent) => {
@@ -145,16 +218,15 @@ export default function SharedCake() {
     ? `"${cake.message.slice(0, 140)}"`
     : "Open your personalized cake from Cake AI Artist.";
 
-  // Occasion-aware CTA (Task 4)
-  const occasionLabel = cake?.occasion_type
-    ? cake.occasion_type.charAt(0).toUpperCase() + cake.occasion_type.slice(1)
-    : null;
-  const ctaHref = cake?.occasion_type
-    ? `/free-ai-cake-designer?occasion=${encodeURIComponent(cake.occasion_type)}&ref=shared_cake`
-    : "/";
-  const ctaText = occasionLabel
-    ? `🎂 Make a ${occasionLabel} cake for someone →`
-    : "Make one for someone you love";
+  // Generic CTA — recipient may want to create a cake for any occasion
+  const ctaHref = "/free-ai-cake-designer?ref=shared_cake";
+  const ctaText = "🎂 Make a cake for someone you love →";
+
+  // Personalized chip — use sender's name if we have it
+  const kickerText = cake?.sender_name && cake.sender_name.trim().length > 0
+    ? `${cake.sender_name.trim()} made this just for you 💝`
+    : "Someone special made this for you";
+
 
   if (loading) {
     return (
