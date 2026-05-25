@@ -512,6 +512,7 @@ export type Database = {
           occasion_type: string | null
           prompt: string
           recipient_name: string | null
+          share_group_id: string | null
           user_id: string
         }
         Insert: {
@@ -527,6 +528,7 @@ export type Database = {
           occasion_type?: string | null
           prompt: string
           recipient_name?: string | null
+          share_group_id?: string | null
           user_id: string
         }
         Update: {
@@ -542,6 +544,7 @@ export type Database = {
           occasion_type?: string | null
           prompt?: string
           recipient_name?: string | null
+          share_group_id?: string | null
           user_id?: string
         }
         Relationships: [
