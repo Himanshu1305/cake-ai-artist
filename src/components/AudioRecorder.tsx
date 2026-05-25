@@ -139,9 +139,12 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       timerRef.current = null;
     }
     try {
+      // Flush any pending audio data before stopping (prevents 0-byte / unplayable files on some browsers)
+      try { recorderRef.current?.requestData?.(); } catch {}
       recorderRef.current?.stop();
     } catch {}
   };
+
 
   const discardPreview = () => {
     if (previewUrl) {

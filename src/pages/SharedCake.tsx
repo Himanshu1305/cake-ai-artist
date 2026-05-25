@@ -7,11 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Volume2, Sparkles, Gift, Play, Pause } from "lucide-react";
+import { Loader2, Volume2, Sparkles, Gift, Play, Pause, RotateCcw, Music, VolumeX } from "lucide-react";
 import { ConfettiRain } from "@/components/ConfettiRain";
 import { CandleRow } from "@/components/CandleRow";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { CakeConvergeReveal } from "@/components/CakeConvergeReveal";
+import { BirthdayJingle } from "@/utils/birthdayJingle";
+import { toast } from "@/hooks/use-toast";
+
 
 interface PublicCake {
   id: string;
@@ -41,7 +44,13 @@ export default function SharedCake() {
   const [emailSubmitting, setEmailSubmitting] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [revealKey, setRevealKey] = useState(0);
+  const [jinglePlaying, setJinglePlaying] = useState(false);
+  const [jingleMuted, setJingleMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const jingleRef = useRef<BirthdayJingle | null>(null);
+  const interactedRef = useRef(false);
+
 
   useEffect(() => {
     if (!id) return;
@@ -92,9 +101,51 @@ export default function SharedCake() {
     });
   }, [revealStage]);
 
+  // Jingle: lazy-init + autoplay rule — start on first user interaction
+  useEffect(() => {
+    jingleRef.current = new BirthdayJingle();
+    return () => {
+      jingleRef.current?.dispose();
+      jingleRef.current = null;
+    };
+  }, []);
+
+  const startJingleIfNeeded = () => {
+    if (!jingleRef.current || jinglePlaying) return;
+    const hasVoice = !!cake?.audio_url;
+    // Loop softly if there's a voice message (so it can duck under voice); otherwise play once.
+    jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18 }).then(() => {
+      setJinglePlaying(true);
+    }).catch(() => {});
+  };
+
+  // Auto-start jingle on first interaction anywhere on the page
+  useEffect(() => {
+    if (!cake) return;
+    const onFirstInteract = () => {
+      if (interactedRef.current) return;
+      interactedRef.current = true;
+      startJingleIfNeeded();
+    };
+    window.addEventListener("pointerdown", onFirstInteract, { once: true });
+    window.addEventListener("keydown", onFirstInteract, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", onFirstInteract);
+      window.removeEventListener("keydown", onFirstInteract);
+    };
+  }, [cake]);
+
+  const toggleJingleMute = () => {
+    const next = !jingleMuted;
+    setJingleMuted(next);
+    jingleRef.current?.setMuted(next);
+    if (!next && !jinglePlaying) startJingleIfNeeded();
+  };
+
   const handleBlowCandles = () => {
     if (candlesBlown) return;
     setCandlesBlown(true);
+    startJingleIfNeeded();
     confetti({
       particleCount: 200,
       spread: 100,
@@ -107,8 +158,39 @@ export default function SharedCake() {
   const togglePlay = () => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) { a.play(); setIsPlaying(true); }
-    else { a.pause(); setIsPlaying(false); }
+    if (a.paused) {
+      // Duck the jingle while voice plays
+      jingleRef.current?.setVolume(0.04);
+      const p = a.play();
+      if (p && typeof p.catch === "function") {
+        p.then(() => setIsPlaying(true)).catch((err) => {
+          console.error("Audio play failed:", err);
+          toast({
+            title: "Couldn't play voice message",
+            description: "Try the controls below, or open this link in another browser.",
+            variant: "destructive",
+          });
+          setIsPlaying(false);
+        });
+      } else {
+        setIsPlaying(true);
+      }
+    } else {
+      a.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleReplay = () => {
+    if (id) sessionStorage.removeItem(`cake_reveal_seen_${id}`);
+    setRevealStage(0);
+    setRevealKey((k) => k + 1);
+    setCandlesBlown(false);
+    // Restart staged reveal
+    setTimeout(() => setRevealStage(1), 500);
+    setTimeout(() => setRevealStage(2), 1800);
+    setTimeout(() => setRevealStage(3), 3200);
+    setTimeout(() => setRevealStage(4), 4400);
   };
 
   const handleEmailCapture = async (e: React.FormEvent) => {
@@ -136,16 +218,15 @@ export default function SharedCake() {
     ? `"${cake.message.slice(0, 140)}"`
     : "Open your personalized cake from Cake AI Artist.";
 
-  // Occasion-aware CTA (Task 4)
-  const occasionLabel = cake?.occasion_type
-    ? cake.occasion_type.charAt(0).toUpperCase() + cake.occasion_type.slice(1)
-    : null;
-  const ctaHref = cake?.occasion_type
-    ? `/free-ai-cake-designer?occasion=${encodeURIComponent(cake.occasion_type)}&ref=shared_cake`
-    : "/";
-  const ctaText = occasionLabel
-    ? `🎂 Make a ${occasionLabel} cake for someone →`
-    : "Make one for someone you love";
+  // Generic CTA — recipient may want to create a cake for any occasion
+  const ctaHref = "/free-ai-cake-designer?ref=shared_cake";
+  const ctaText = "🎂 Make a cake for someone you love →";
+
+  // Personalized chip — use sender's name if we have it
+  const kickerText = cake?.sender_name && cake.sender_name.trim().length > 0
+    ? `${cake.sender_name.trim()} made this just for you 💝`
+    : "Someone special made this for you";
+
 
   if (loading) {
     return (
@@ -204,6 +285,18 @@ export default function SharedCake() {
         {/* Ambient celebration */}
         <ConfettiRain count={18} />
 
+        {/* Jingle mute toggle */}
+        <button
+          type="button"
+          onClick={toggleJingleMute}
+          className="fixed top-3 right-3 z-40 h-10 w-10 rounded-full bg-white/85 hover:bg-white backdrop-blur shadow-md flex items-center justify-center text-foreground/80"
+          aria-label={jingleMuted ? "Unmute music" : "Mute music"}
+          title={jingleMuted ? "Unmute music" : "Mute music"}
+        >
+          {jingleMuted ? <VolumeX className="h-4 w-4" /> : <Music className="h-4 w-4" />}
+        </button>
+
+
         {/* Soft animated blobs */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-party-pink/30 blur-3xl animate-pulse" />
@@ -222,8 +315,9 @@ export default function SharedCake() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-party-purple/30 shadow-sm">
               <Gift className="h-4 w-4 text-party-pink" />
               <span className="text-sm font-semibold bg-gradient-to-r from-party-pink to-party-purple bg-clip-text text-transparent">
-                Someone special made this for you
+                {kickerText}
               </span>
+
             </div>
           </motion.div>
 
@@ -233,9 +327,10 @@ export default function SharedCake() {
             animate={{ opacity: revealStage >= 1 ? 1 : 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className={`transition-all duration-500 ${candlesBlown ? "opacity-30 scale-95" : ""}`}>
-              <CandleRow count={5} size="sm" className="mb-2" />
+            <div className="transition-all duration-500">
+              <CandleRow count={5} size="sm" className="mb-2" blown={candlesBlown} />
             </div>
+
           </motion.div>
 
           {/* Cake card — slides up from below at stage 2 */}
@@ -255,15 +350,27 @@ export default function SharedCake() {
                 {/* Image with watermark overlay (Task 5) */}
                 <div className="relative">
                   <CakeConvergeReveal
+                    key={revealKey}
                     images={cake.sibling_image_urls ?? [cake.image_url]}
                     primary={cake.image_url}
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
-                    cacheKey={cake.id}
+                    cacheKey={`${cake.id}_${revealKey}`}
                   />
                   <div className="absolute bottom-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded pointer-events-none select-none">
                     🎂 cakeaiartist.com
                   </div>
+                  {/* Replay button */}
+                  <button
+                    type="button"
+                    onClick={handleReplay}
+                    className="absolute top-2 left-2 z-30 inline-flex items-center gap-1 bg-white/85 hover:bg-white backdrop-blur text-xs px-2.5 py-1 rounded-full shadow text-foreground/80"
+                    aria-label="Replay the cake reveal"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Replay
+                  </button>
                 </div>
+
               </div>
 
               <div className="p-6 space-y-5 text-center bg-gradient-to-b from-white via-muted/40 to-white">
@@ -339,14 +446,40 @@ export default function SharedCake() {
                     <audio
                       ref={audioRef}
                       src={cake.audio_url}
-                      preload="metadata"
-                      onEnded={() => setIsPlaying(false)}
-                      onPause={() => setIsPlaying(false)}
+                      preload="auto"
+                      playsInline
+                      onEnded={() => {
+                        setIsPlaying(false);
+                        // Restore jingle volume after voice ends
+                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                      }}
+                      onPause={() => {
+                        setIsPlaying(false);
+                        if (jinglePlaying && !jingleMuted) jingleRef.current?.setVolume(0.1);
+                      }}
                       onPlay={() => setIsPlaying(true)}
-                      className="hidden"
+                      onError={() => {
+                        toast({
+                          title: "Voice message failed to load",
+                          description: "Try the player controls below.",
+                          variant: "destructive",
+                        });
+                      }}
                     />
+                    {/* Native fallback so iOS/Safari users always have a working control */}
+                    <details className="mt-2 text-xs text-muted-foreground">
+                      <summary className="cursor-pointer hover:text-foreground">No sound? Use this player</summary>
+                      <audio
+                        src={cake.audio_url}
+                        controls
+                        playsInline
+                        preload="auto"
+                        className="w-full mt-2"
+                      />
+                    </details>
                   </div>
                 )}
+
 
                 {/* Re-share */}
                 <div className="pt-2 border-t border-party-purple/10">
