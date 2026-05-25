@@ -152,8 +152,9 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
   const PREMIUM_GENERATION_LIMIT = 150;  // For regular premium users (per year)
   const ADMIN_GENERATION_LIMIT = 500;    // For admins only (per year)
 
-  // Honest progress: simulated bar caps at 60% until real events advance it.
-  // Hero received -> 80%. All views filled -> 100%. (Driven from handleSubmit.)
+  // Honest progress: simulated bar creeps to 75% over ~36s so the user never
+  // sees it freeze. Real job events push it to 80–100% via applyRow().
+  // Functional setters guarantee we never lower an already-higher value.
   useEffect(() => {
     if (!isLoading) {
       setGenerationProgress(0);
@@ -162,19 +163,25 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
     }
 
     const steps = [
-      { progress: 8, step: "🎂 Baking something special...", delay: 500 },
-      { progress: 20, step: "✨ Mixing colors and frosting...", delay: 4000 },
-      { progress: 35, step: "🎀 Sculpting the tiers...", delay: 9000 },
-      { progress: 50, step: "💖 Adding decorations...", delay: 16000 },
-      { progress: 60, step: "🌟 Finishing the main view...", delay: 24000 },
+      { progress: 8,  step: "🎂 Baking something special...", delay: 400 },
+      { progress: 18, step: "✨ Mixing colors and frosting...", delay: 2500 },
+      { progress: 28, step: "🎀 Sculpting the tiers...", delay: 6000 },
+      { progress: 40, step: "💖 Adding decorations...", delay: 10000 },
+      { progress: 52, step: "🎨 Painting frosting & layers...", delay: 15000 },
+      { progress: 62, step: "🌟 Rendering the main view...", delay: 21000 },
+      { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
+      { progress: 75, step: "🪄 Final polish...", delay: 36000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
     steps.forEach(({ progress, step, delay }) => {
       const timer = setTimeout(() => {
-        // Don't overwrite a higher progress already set by a real event.
         setGenerationProgress((cur) => (cur >= progress ? cur : progress));
-        setGenerationStep((cur) => (cur && (cur.startsWith("🎉") || cur.startsWith("✨ Side"))) ? cur : step);
+        setGenerationStep((cur) =>
+          (cur && (cur.startsWith("🎉") || cur.startsWith("✨ Side") || cur.startsWith("✨ Remaining") || cur.startsWith("🎂 Queued")))
+            ? cur
+            : step
+        );
       }, delay);
       timers.push(timer);
     });
