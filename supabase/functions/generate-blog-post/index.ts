@@ -446,6 +446,7 @@ function determineCategory(topic: string, country: string | null): string {
 }
 
 const IMAGE_POOL = [
+  // original 45
   "1535254973040-607b474cb50d","1578985545062-69928b1d9587","1558301211-0d8c8ddee6ec",
   "1605810230434-7631ac76ec81","1606890737304-57a1ca8a5b62","1558636508-e0db3814bd1d",
   "1554080353-a576cf803bda","1522767131822-6b8c5a53c0e4","1481391319762-47dff72954d9",
@@ -461,19 +462,36 @@ const IMAGE_POOL = [
   "1551404973-761c5cf12fc2","1581974944026-5d6ed762f617","1572878613530-2b6ea1c14f3a",
   "1517248135467-4c7edcad34c4","1611293388250-580b08c4a145","1565299543923-37dd37887442",
   "1606755456206-b25206cde27e","1542144612-1b3641ec3459","1606312619070-d48b4c652a52",
+  // added 35 for visual diversity (white tiered, floral, naked, fruit, themed, kids, minimal)
+  "1562777717-dc6984f65a63","1519915028121-7d3463d20b13","1574085733277-851d9d856a3a",
+  "1604413191066-4dd20bedf486","1621303837174-89787a7d4729","1551024601-bec78aea704b",
+  "1558007323-92aea968c0e1","1626803775151-61d756612f97","1623428187969-5da2dcea5ebf",
+  "1557925923-cd4648e211a0","1623428454614-abaf00244e52","1559620192-032c4bc4674e",
+  "1565181917979-65b7f96f7c84","1602351447937-745cb720612f","1621939514649-280e2ee25f60",
+  "1535920527002-b35e96722eb9","1525151498231-bc059cfafa2b","1564631027894-5bdb17618445",
+  "1612809075042-c1ea5a4d4f4f","1632213940894-2ecfd5f0a8b1","1571877227200-a0d98ea607e9",
+  "1599785209707-a456fc1337bc","1606755956379-50e2b7a3c45b","1593005510509-d05b264f1c9c",
+  "1612203985729-70726954388d","1565958011703-44f9829ba188","1571115177098-24ec42ed204e",
+  "1623428187969-5da2dcea5ebf","1606312619070-d48b4c652a53","1559620192-032c4bc4674c",
+  "1542144612-1b3641ec345a","1576618148400-f54bed99fcfd","1626804475297-41608ea09aeb",
+  "1620207418302-439b387441b0","1488477181946-6428a0291778",
 ];
 
 async function pickFeaturedImage(supabase: any): Promise<string> {
-  let recent: string[] = [];
+  let used: string[] = [];
   try {
     const { data } = await supabase
       .from("blog_posts")
-      .select("featured_image")
-      .order("created_at", { ascending: false })
-      .limit(12);
-    recent = (data || []).map((r: any) => r.featured_image).filter(Boolean);
+      .select("featured_image");
+    used = (data || []).map((r: any) => r.featured_image).filter(Boolean);
   } catch (_) { /* ignore */ }
-  const candidates = IMAGE_POOL.filter((id) => !recent.some((r) => r.includes(id)));
+  // First pass: any image not used anywhere in the table
+  let candidates = IMAGE_POOL.filter((id) => !used.some((u) => u.includes(id)));
+  // Fallback: avoid last 12 only
+  if (!candidates.length) {
+    const recent = used.slice(0, 12);
+    candidates = IMAGE_POOL.filter((id) => !recent.some((r) => r.includes(id)));
+  }
   const pick = (candidates.length ? candidates : IMAGE_POOL)[
     Math.floor(Math.random() * (candidates.length || IMAGE_POOL.length))
   ];
