@@ -2107,7 +2107,7 @@ const BlogPost = () => {
   
   // Check hardcoded posts as fallback
   const hardcodedPost = id ? blogPostsContent[id] : null;
-  const heroImage = id ? (hardcodedPost?.featuredImage || featuredImages[id]) : null;
+  const heroImage = dbPost?.featured_image || (id ? (hardcodedPost?.featuredImage || featuredImages[id]) : null);
   const postUrl = `https://cakeaiartist.com/blog/${id}`;
   
   // Determine which post to show (database or hardcoded)
