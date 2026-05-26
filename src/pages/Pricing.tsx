@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { PricingPlans } from "@/components/PricingPlans";
-import { BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { BreadcrumbSchema, ProductReviewSchema, FAQSchema } from "@/components/SEOSchema";
 import { useGeoContext } from "@/contexts/GeoContext";
 import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveRegion, SupportedRegion } from "@/utils/countryRouting";
+import { ShieldCheck, Star, Lock, RefreshCw } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
