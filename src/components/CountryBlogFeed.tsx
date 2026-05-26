@@ -78,7 +78,7 @@ export const CountryBlogFeed = ({ countryCode, countryName }: Props) => {
                 <div className="aspect-[16/10] overflow-hidden bg-muted">
                   <img
                     src={p.featured_image}
-                    alt={p.title}
+                    alt={p.image_alt || p.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
