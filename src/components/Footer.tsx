@@ -151,7 +151,7 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/pricing" className="hover:underline opacity-90">
+                <Link to={pricingHref} className="hover:underline opacity-90">
                   Pricing
                 </Link>
               </li>
