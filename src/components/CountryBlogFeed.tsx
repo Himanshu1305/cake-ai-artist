@@ -10,6 +10,7 @@ interface Post {
   category: string;
   read_time: string | null;
   featured_image: string | null;
+  image_alt: string | null;
 }
 
 interface Props {
@@ -30,7 +31,7 @@ export const CountryBlogFeed = ({ countryCode, countryName }: Props) => {
       try {
         const { data } = await supabase
           .from("blog_posts")
-          .select("slug, title, excerpt, category, read_time, featured_image")
+          .select("slug, title, excerpt, category, read_time, featured_image, image_alt")
           .eq("is_published", true)
           .or(`target_country.eq.${countryCode},target_country.is.null`)
           .order("published_at", { ascending: false, nullsFirst: false })
@@ -77,7 +78,7 @@ export const CountryBlogFeed = ({ countryCode, countryName }: Props) => {
                 <div className="aspect-[16/10] overflow-hidden bg-muted">
                   <img
                     src={p.featured_image}
-                    alt={p.title}
+                    alt={p.image_alt || p.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

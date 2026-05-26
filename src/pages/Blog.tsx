@@ -21,6 +21,7 @@ interface DatabaseBlogPost {
   category: string;
   read_time: string;
   featured_image: string | null;
+  image_alt?: string | null;
   published_at: string | null;
   is_ai_generated: boolean;
 }
@@ -38,7 +39,7 @@ const Blog = () => {
       try {
         const { data, error } = await supabase
           .from('blog_posts')
-          .select('id, slug, title, excerpt, category, read_time, featured_image, published_at, is_ai_generated')
+          .select('id, slug, title, excerpt, category, read_time, featured_image, image_alt, published_at, is_ai_generated')
           .eq('is_published', true)
           .order('published_at', { ascending: false });
         
@@ -401,11 +402,13 @@ const Blog = () => {
       readTime: post.read_time || '5 min read',
       category: post.category,
       featuredImage: post.featured_image || 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop',
+      imageAlt: post.image_alt || post.title,
       isAiGenerated: post.is_ai_generated,
     })),
     // Hardcoded posts (legacy)
     ...blogPosts.map(post => ({
       ...post,
+      imageAlt: (post as any).imageAlt || post.title,
       isAiGenerated: false,
     })),
   ];
@@ -473,7 +476,7 @@ const Blog = () => {
                   <div className="aspect-video relative overflow-hidden">
                     <img 
                       src={post.featuredImage} 
-                      alt={post.title}
+                      alt={post.imageAlt || post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
@@ -517,7 +520,7 @@ const Blog = () => {
                   <div className="aspect-video relative overflow-hidden">
                     <img 
                       src={post.featuredImage} 
-                      alt={post.title}
+                      alt={post.imageAlt || post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />

@@ -244,12 +244,14 @@ Generate:
 2. A compelling excerpt/meta description (max 160 characters)
 3. 5 relevant SEO keywords (comma-separated)
 4. The full article content in HTML format
+5. A descriptive image alt text (10-15 words) describing a celebration cake that matches this article's topic — be specific (colors, decorations, style)
 
 Respond in this exact JSON format:
 {
   "title": "Your Article Title Here",
   "excerpt": "A compelling 1-2 sentence excerpt that makes readers want to click.",
   "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "image_alt": "Descriptive alt text of a cake matching this article topic",
   "content": "<p>Your HTML content here...</p>"
 }`;
 
@@ -363,7 +365,14 @@ ${parsed.content}`;
     autoPublish = (setting?.value as any)?.enabled === true;
   } catch (_) { /* ignore */ }
 
-  // Insert into database
+  // Randomize publish time slightly so dates don't all collide
+  const publishedAt = autoPublish
+    ? new Date(Date.now() - Math.floor(Math.random() * 6 * 3600 * 1000)).toISOString()
+    : null;
+
+  // Pick a unique-ish image, avoiding the last 10 used
+  const featuredImage = await pickFeaturedImage(supabase);
+
   const { error: insertError } = await supabase
     .from("blog_posts")
     .insert({
@@ -377,9 +386,10 @@ ${parsed.content}`;
       category,
       meta_description: parsed.excerpt,
       is_published: autoPublish,
-      published_at: autoPublish ? new Date().toISOString() : null,
+      published_at: publishedAt,
       is_ai_generated: true,
-      featured_image: getDefaultImage(category),
+      featured_image: featuredImage,
+      image_alt: parsed.image_alt || parsed.title,
     });
 
   if (insertError) {
@@ -435,17 +445,37 @@ function determineCategory(topic: string, country: string | null): string {
   return "Ideas & Inspiration";
 }
 
-function getDefaultImage(category: string): string {
-  const images: Record<string, string> = {
-    "Indian Celebrations": "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&h=600&fit=crop",
-    "British Celebrations": "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=1200&h=600&fit=crop",
-    "Australian Celebrations": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=600&fit=crop",
-    "Canadian Celebrations": "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=1200&h=600&fit=crop",
-    "Christmas Celebrations": "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=1200&h=600&fit=crop",
-    "New Year Celebrations": "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=1200&h=600&fit=crop",
-    "Weddings": "https://images.unsplash.com/photo-1522767131822-6b8c5a53c0e4?w=1200&h=600&fit=crop",
-    "Birthday Ideas": "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=1200&h=600&fit=crop",
-    "Trends": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1200&h=600&fit=crop",
-  };
-  return images[category] || "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=1200&h=600&fit=crop";
+const IMAGE_POOL = [
+  "1535254973040-607b474cb50d","1578985545062-69928b1d9587","1558301211-0d8c8ddee6ec",
+  "1605810230434-7631ac76ec81","1606890737304-57a1ca8a5b62","1558636508-e0db3814bd1d",
+  "1554080353-a576cf803bda","1522767131822-6b8c5a53c0e4","1481391319762-47dff72954d9",
+  "1482517967863-00e15c9b44be","1565958011703-44f9829ba187","1571115177098-24ec42ed204d",
+  "1562440499-64c9a111f713","1535141192574-5d4897c12636","1519869325930-281384150729",
+  "1542826438-bd32f43d626f","1464195244916-405fa0a82545","1486427944299-d1955d23e34d",
+  "1599785209707-a456fc1337bb","1567014729440-6e0db35d2a4e","1602351447937-745cb720612f",
+  "1614707267537-b85aaf00c4b7","1577805947697-89e18249d767","1607478900766-efe13248b125",
+  "1488477181946-6428a0291777","1546069901-ba9599a7e63c","1591985666643-1ecc67616216",
+  "1543396550-b30bd8c1ce21","1601979031925-424e53b6caaa","1607522370275-f14206abe5d3",
+  "1612203985729-70726954388c","1568571780765-9276ac8b75a2","1607920591413-4ec007e70023",
+  "1571115332106-83a3f4f15c8b","1505976212391-1ee6b9d6deb9","1588195538326-c5b1e9f80a1b",
+  "1551404973-761c5cf12fc2","1581974944026-5d6ed762f617","1572878613530-2b6ea1c14f3a",
+  "1517248135467-4c7edcad34c4","1611293388250-580b08c4a145","1565299543923-37dd37887442",
+  "1606755456206-b25206cde27e","1542144612-1b3641ec3459","1606312619070-d48b4c652a52",
+];
+
+async function pickFeaturedImage(supabase: any): Promise<string> {
+  let recent: string[] = [];
+  try {
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("featured_image")
+      .order("created_at", { ascending: false })
+      .limit(12);
+    recent = (data || []).map((r: any) => r.featured_image).filter(Boolean);
+  } catch (_) { /* ignore */ }
+  const candidates = IMAGE_POOL.filter((id) => !recent.some((r) => r.includes(id)));
+  const pick = (candidates.length ? candidates : IMAGE_POOL)[
+    Math.floor(Math.random() * (candidates.length || IMAGE_POOL.length))
+  ];
+  return `https://images.unsplash.com/photo-${pick}?w=1200&h=630&fit=crop&q=80`;
 }

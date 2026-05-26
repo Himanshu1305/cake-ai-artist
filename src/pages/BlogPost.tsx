@@ -27,6 +27,7 @@ interface DatabaseBlogPost {
   category: string;
   read_time: string;
   featured_image: string | null;
+  image_alt: string | null;
   published_at: string | null;
   is_ai_generated: boolean;
   ai_disclosure: string | null;
@@ -2121,11 +2122,13 @@ const BlogPost = () => {
     keywords: dbPost.keywords?.join(', ') || '',
     content: dbPost.content,
     featuredImage: dbPost.featured_image,
+    imageAlt: dbPost.image_alt || dbPost.title,
     relatedPosts: [] as { id: string; title: string; readTime: string }[],
     isAiGenerated: dbPost.is_ai_generated,
     aiDisclosure: dbPost.ai_disclosure || 'This article was written with AI assistance and reviewed by our editorial team.',
   } : hardcodedPost ? {
     ...hardcodedPost,
+    imageAlt: hardcodedPost.title,
     isAiGenerated: false,
     aiDisclosure: '',
   } : null;
@@ -2221,7 +2224,7 @@ const BlogPost = () => {
                 <div className="relative h-64 md:h-80 lg:h-96">
                   <img loading="lazy" decoding="async" 
                     src={heroImage} 
-                    alt={post.title}
+                    alt={(post as any).imageAlt || post.title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
