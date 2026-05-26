@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSche
 import { useGeoContext } from "@/contexts/GeoContext";
 import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveRegion, SupportedRegion } from "@/utils/countryRouting";
 import {
   Accordion,
   AccordionContent,
@@ -17,15 +18,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const SUPPORTED = ["IN", "GB", "CA", "AU", "US"];
-
 const Pricing = () => {
   useRequireCountry();
   const { detectedCountry } = useGeoContext();
-  const [userCountry, setUserCountry] = useState<string>("US");
+  const location = useLocation();
+  const [profileCountry, setProfileCountry] = useState<string | null>(null);
+  const [userCountry, setUserCountry] = useState<SupportedRegion>("US");
 
   useEffect(() => {
-    const determine = async () => {
+    (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const { data: profile } = await supabase
@@ -33,25 +34,20 @@ const Pricing = () => {
           .select("country")
           .eq("id", session.user.id)
           .single();
-        const cc = profile?.country === "UK" ? "GB" : profile?.country;
-        if (cc && SUPPORTED.includes(cc)) {
-          setUserCountry(cc);
-          return;
-        }
+        if (profile?.country) setProfileCountry(profile.country);
       }
-      const saved = localStorage.getItem("user_country_preference");
-      if (saved && SUPPORTED.includes(saved)) {
-        setUserCountry(saved);
-        return;
-      }
-      if (detectedCountry && SUPPORTED.includes(detectedCountry)) {
-        setUserCountry(detectedCountry);
-        return;
-      }
-      setUserCountry("US");
-    };
-    determine();
-  }, [detectedCountry]);
+    })();
+  }, []);
+
+  useEffect(() => {
+    const urlCountry = new URLSearchParams(location.search).get("country");
+    setUserCountry(resolveRegion({
+      pathname: location.pathname,
+      urlCountry,
+      detectedCountry,
+      profileCountry,
+    }));
+  }, [location.search, location.pathname, detectedCountry, profileCountry]);
 
   const faqItems = [
     {
