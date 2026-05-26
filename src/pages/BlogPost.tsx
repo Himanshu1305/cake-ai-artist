@@ -2224,7 +2224,7 @@ const BlogPost = () => {
                 <div className="relative h-64 md:h-80 lg:h-96">
                   <img loading="lazy" decoding="async" 
                     src={heroImage} 
-                    alt={post.title}
+                    alt={(post as any).imageAlt || post.title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
