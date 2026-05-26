@@ -10,6 +10,7 @@ interface Post {
   category: string;
   read_time: string | null;
   featured_image: string | null;
+  image_alt: string | null;
 }
 
 interface Props {
