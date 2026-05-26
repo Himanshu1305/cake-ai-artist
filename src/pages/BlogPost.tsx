@@ -2122,6 +2122,7 @@ const BlogPost = () => {
     keywords: dbPost.keywords?.join(', ') || '',
     content: dbPost.content,
     featuredImage: dbPost.featured_image,
+    imageAlt: dbPost.image_alt || dbPost.title,
     relatedPosts: [] as { id: string; title: string; readTime: string }[],
     isAiGenerated: dbPost.is_ai_generated,
     aiDisclosure: dbPost.ai_disclosure || 'This article was written with AI assistance and reviewed by our editorial team.',
