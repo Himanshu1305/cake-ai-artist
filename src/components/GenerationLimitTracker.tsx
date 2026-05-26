@@ -48,6 +48,16 @@ export const GenerationLimitTracker = ({ current, limit, isPremium }: Generation
       
       <Progress value={percentage} className="h-2 mb-3" />
       
+      {remaining > 1 && remaining <= 3 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-xs text-muted-foreground mt-2"
+        >
+          Only {remaining} cakes left on your free plan. <button onClick={() => navigate("/pricing")} className="text-primary underline font-medium">See plans</button>
+        </motion.div>
+      )}
+
       {remaining <= 1 && (
         <motion.div
           initial={{ scale: 0.95 }}
@@ -56,10 +66,10 @@ export const GenerationLimitTracker = ({ current, limit, isPremium }: Generation
         >
           <div>
             <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-              {remaining === 0 ? "You've used all free generations" : "Last free generation!"}
+              {remaining === 0 ? "Free limit reached — unlock unlimited HD cakes" : "Last free cake! Unlock unlimited HD next"}
             </p>
             <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-              Upgrade for unlimited creations
+              Unlimited cakes + Party Pack + Commercial use
             </p>
           </div>
           <Button
