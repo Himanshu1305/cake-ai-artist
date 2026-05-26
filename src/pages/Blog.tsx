@@ -402,6 +402,7 @@ const Blog = () => {
       readTime: post.read_time || '5 min read',
       category: post.category,
       featuredImage: post.featured_image || 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600&h=400&fit=crop',
+      imageAlt: post.image_alt || post.title,
       isAiGenerated: post.is_ai_generated,
     })),
     // Hardcoded posts (legacy)
