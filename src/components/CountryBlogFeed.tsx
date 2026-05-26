@@ -31,7 +31,7 @@ export const CountryBlogFeed = ({ countryCode, countryName }: Props) => {
       try {
         const { data } = await supabase
           .from("blog_posts")
-          .select("slug, title, excerpt, category, read_time, featured_image")
+          .select("slug, title, excerpt, category, read_time, featured_image, image_alt")
           .eq("is_published", true)
           .or(`target_country.eq.${countryCode},target_country.is.null`)
           .order("published_at", { ascending: false, nullsFirst: false })
