@@ -257,10 +257,10 @@ const CanadaLanding = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-6 px-4 max-w-4xl">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              🇨🇦 Pick the plan that fits your celebrations
+              🇨🇦 Canada's Favourite Free AI Cake Generator
             </motion.h1>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-white text-lg md:text-xl drop-shadow-md">
-              Monthly, Yearly or Lifetime — pay in CAD (C$). Cancel anytime.
+              Design custom birthday, Canada Day, hockey &amp; winter celebration cakes in 30 seconds — priced in CAD, no signup needed
             </motion.p>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
               <Button size="lg" className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>

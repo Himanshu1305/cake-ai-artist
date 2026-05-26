@@ -279,7 +279,7 @@ const IndiaLanding = () => {
               transition={{ delay: 0.3 }}
               className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
             >
-              🇮🇳 Pick the plan that fits your celebrations
+              🇮🇳 India's #1 Free AI Cake Generator with Name
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -287,7 +287,7 @@ const IndiaLanding = () => {
               transition={{ delay: 0.4 }}
               className="text-white text-lg md:text-xl drop-shadow-md"
             >
-              Monthly, Yearly or Lifetime — pay in INR (₹). Cancel anytime.
+              Design AI birthday cakes for Diwali, Holi, anniversary &amp; weddings in 30 seconds — pay in ₹, no signup needed
             </motion.p>
             <motion.div
               initial={{ opacity: 0 }}
