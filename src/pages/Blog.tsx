@@ -408,6 +408,7 @@ const Blog = () => {
     // Hardcoded posts (legacy)
     ...blogPosts.map(post => ({
       ...post,
+      imageAlt: (post as any).imageAlt || post.title,
       isAiGenerated: false,
     })),
   ];
