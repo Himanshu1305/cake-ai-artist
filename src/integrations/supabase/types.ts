@@ -112,6 +112,7 @@ export type Database = {
           excerpt: string
           featured_image: string | null
           id: string
+          image_alt: string | null
           is_ai_generated: boolean | null
           is_published: boolean | null
           keywords: string[] | null
@@ -131,6 +132,7 @@ export type Database = {
           excerpt: string
           featured_image?: string | null
           id?: string
+          image_alt?: string | null
           is_ai_generated?: boolean | null
           is_published?: boolean | null
           keywords?: string[] | null
@@ -150,6 +152,7 @@ export type Database = {
           excerpt?: string
           featured_image?: string | null
           id?: string
+          image_alt?: string | null
           is_ai_generated?: boolean | null
           is_published?: boolean | null
           keywords?: string[] | null
