@@ -216,7 +216,7 @@ const IndiaLanding = () => {
             <div className="hidden lg:flex gap-2 items-center">
               <Badge variant="outline" className="border-party-gold text-party-gold">🇮🇳 India</Badge>
               <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
-              <Link to="/pricing">
+              <Link to="/pricing?country=IN">
                 <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
                   <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
@@ -245,7 +245,7 @@ const IndiaLanding = () => {
                   <Link to="/how-it-works">
                     <Button variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button>
                   </Link>
-                  <Link to="/pricing">
+                  <Link to="/pricing?country=IN">
                     <Button variant="ghost" className="w-full justify-start relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                       Pricing
                       <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span>
