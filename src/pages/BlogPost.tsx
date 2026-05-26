@@ -27,6 +27,7 @@ interface DatabaseBlogPost {
   category: string;
   read_time: string;
   featured_image: string | null;
+  image_alt: string | null;
   published_at: string | null;
   is_ai_generated: boolean;
   ai_disclosure: string | null;
