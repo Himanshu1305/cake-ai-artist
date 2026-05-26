@@ -439,15 +439,15 @@ const Index = () => {
               </div>
 
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-                The Best{" "}
+                Cake AI —{" "}
                 <span className="bg-gradient-gold bg-clip-text text-transparent">
-                  AI Cake Generator & Designer
+                  Free AI Birthday Cake Generator
                 </span>{" "}
-                for Personalized Birthday Cakes
+                with Any Name
               </h1>
 
               <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto md:mx-0">
-                Birthdays, anniversaries, weddings, baby showers, Diwali, retirements — our AI cake generator designs personalized AI cakes in 30 seconds. Just type a name, pick the occasion, and get a stunning birthday cake AI design you can share, save, or take to your local baker.
+                Cake AI Artist is the free AI cake generator behind thousands of personalized birthday cake AI designs. Type a name, pick the occasion — birthday, anniversary, wedding, baby shower, Diwali, retirement — and our AI cake designer creates a stunning cake in 30 seconds. Share it, save it, or hand it to your local baker.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
