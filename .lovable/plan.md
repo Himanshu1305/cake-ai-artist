@@ -1,37 +1,22 @@
-## Problem
+## Plan
 
-4 image URLs are still duplicated across 8 existing posts (confirmed via DB query):
-- `photo-1551404973` → "Northern Lights" + "Strike Gold Metallic"
-- `photo-1607478900766` → "Coronation & Jubilee" + "Bold Typography"
-- `photo-1601979031925` → "Northern Lights Celestial" + "Rocky Mountain Wedding"
-- `photo-1599785209707` → "Retro Vintage" + "Aussie Day"
+1. **Fix the missing hero image bug on blog detail pages**
+   - Update `BlogPost.tsx` so database posts use their own `featured_image` for the visible hero image and social share image.
+   - This directly fixes the listed AI-generated posts that currently have an image in the database but show no image on the article page.
 
-Root cause: the bulk update we ran earlier assigned from a 45-image pool to 48 posts without a uniqueness constraint, so a few collided. Also, several pool images look visually similar (multiple chocolate drip cakes), which makes even non-duplicate URLs feel repetitive on the grid.
+2. **Remove duplicate legacy blog cards in the blog grid**
+   - Deduplicate `/blog` results by slug so a database article and an older hardcoded article with the same URL do not both appear.
+   - This should reduce confusion where the same blog URL appears more than once with different/fallback imagery.
 
-## Fix
+3. **Give the duplicate-image articles unique images and alt text**
+   - Update the affected existing records, especially `ai-cake-for-kids-birthday`, with a distinct kid-birthday cake image and matching descriptive alt text.
+   - Update the static legacy image entries for `creative-cake-ideas-birthday`, `cake-design-trends-2025`, `anniversary-cake-ideas`, and `holi-cake-ideas` where needed so they are not visually repeated.
 
-### Step 1 — Eliminate exact URL duplicates (SQL only)
-Run a single SQL update that, for each `featured_image` appearing more than once, keeps it on the oldest post and reassigns the other(s) to a brand-new Unsplash photo not currently used anywhere in `blog_posts`.
+4. **Verify after implementation**
+   - Re-check the affected slugs in the database for duplicate or missing `featured_image` values.
+   - Inspect `/blog` and at least one listed blog detail page to confirm images render and duplicates are gone.
 
-### Step 2 — Expand the curated image pool for visual diversity
-Grow the pool from 45 → ~80 URLs, deliberately mixing cake styles (white tiered, fondant, naked cakes, fruit-topped, floral, themed, kids, minimalist) so adjacent grid cards don't all look like chocolate drip cakes. Add the new URLs to `IMAGE_POOL` in `supabase/functions/generate-blog-post/index.ts`.
+## Technical notes
 
-### Step 3 — Harden the picker against future repeats
-Update `pickFeaturedImage()` in the edge function to:
-- exclude every `featured_image` currently in `blog_posts` (not just the last 12)
-- fall back to the no-repeat-in-last-12 logic only when the pool is exhausted
-
-This guarantees no new AI-generated post can collide with an existing one until the entire pool is used.
-
-### Step 4 — Verify
-Re-run the duplicate-detection query; expect zero rows. Refresh `/blog` and confirm the grid shows visually distinct cakes.
-
-## Out of scope
-- Replacing existing Unsplash images with our own AI-generated cake renders (Track B, queued).
-- Changing alt-text logic (already correct from previous round).
-
-## Files touched
-- One SQL update (no migration — data-only via insert tool's update path is not allowed, so I'll use a migration with `UPDATE` statements).
-- `supabase/functions/generate-blog-post/index.ts` — expand `IMAGE_POOL`, harden `pickFeaturedImage()`.
-
-No frontend changes needed.
+- This is mostly a frontend data-selection bug: `BlogPost.tsx` builds a `post.featuredImage` from the database, but the rendered hero currently reads from a separate `heroImage` value that only checks hardcoded image maps.
+- Data-only corrections will use the backend data update tool, not a schema migration.

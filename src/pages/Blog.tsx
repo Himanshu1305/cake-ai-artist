@@ -391,7 +391,8 @@ const Blog = () => {
     }
   ];
 
-  // Combine database posts with hardcoded posts (DB posts first)
+  // Combine database posts with hardcoded posts (DB posts first), dedup by id/slug
+  const dbSlugs = new Set(dbPosts.map(p => p.slug));
   const allPosts = [
     // Database posts converted to same format
     ...dbPosts.map(post => ({
@@ -405,13 +406,16 @@ const Blog = () => {
       imageAlt: post.image_alt || post.title,
       isAiGenerated: post.is_ai_generated,
     })),
-    // Hardcoded posts (legacy)
-    ...blogPosts.map(post => ({
-      ...post,
-      imageAlt: (post as any).imageAlt || post.title,
-      isAiGenerated: false,
-    })),
+    // Hardcoded posts (legacy) — skip any whose slug already exists in the DB
+    ...blogPosts
+      .filter(post => !dbSlugs.has(post.id))
+      .map(post => ({
+        ...post,
+        imageAlt: (post as any).imageAlt || post.title,
+        isAiGenerated: false,
+      })),
   ];
+
 
   // Popular posts - sorted by actual view counts (use slug/id for lookup)
   const popularPosts = [...allPosts]
