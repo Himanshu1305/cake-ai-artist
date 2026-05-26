@@ -38,6 +38,9 @@ const AustraliaLanding = lazy(() => import("./pages/AustraliaLanding"));
 const IndiaLanding = lazy(() => import("./pages/IndiaLanding"));
 const USALanding = lazy(() => import("./pages/USALanding"));
 const FreeCakeDesigner = lazy(() => import("./pages/FreeCakeDesigner"));
+const AiCakeGeneratorFree = lazy(() => import("./pages/AiCakeGeneratorFree"));
+const ThreeDCakeDesigner = lazy(() => import("./pages/ThreeDCakeDesigner"));
+const AiBirthdayCakeWithName = lazy(() => import("./pages/AiBirthdayCakeWithName"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 const BlogUnsubscribe = lazy(() => import("./pages/BlogUnsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -103,6 +106,9 @@ const App = () => {
                   <Route path="/india" element={<IndiaLanding />} />
                   <Route path="/usa" element={<USALanding />} />
                   <Route path="/free-ai-cake-designer" element={<FreeCakeDesigner />} />
+                  <Route path="/ai-cake-generator-free" element={<AiCakeGeneratorFree />} />
+                  <Route path="/3d-cake-designer" element={<ThreeDCakeDesigner />} />
+                  <Route path="/ai-birthday-cake-with-name" element={<AiBirthdayCakeWithName />} />
                   <Route path="/complete-profile" element={<CompleteProfile />} />
                   <Route path="/blog/unsubscribe" element={<BlogUnsubscribe />} />
                   <Route path="/embed/gallery" element={<EmbedGalleryPage />} />
