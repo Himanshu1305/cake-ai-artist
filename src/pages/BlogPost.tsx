@@ -2128,6 +2128,7 @@ const BlogPost = () => {
     aiDisclosure: dbPost.ai_disclosure || 'This article was written with AI assistance and reviewed by our editorial team.',
   } : hardcodedPost ? {
     ...hardcodedPost,
+    imageAlt: hardcodedPost.title,
     isAiGenerated: false,
     aiDisclosure: '',
   } : null;
