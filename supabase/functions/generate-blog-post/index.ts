@@ -365,7 +365,14 @@ ${parsed.content}`;
     autoPublish = (setting?.value as any)?.enabled === true;
   } catch (_) { /* ignore */ }
 
-  // Insert into database
+  // Randomize publish time slightly so dates don't all collide
+  const publishedAt = autoPublish
+    ? new Date(Date.now() - Math.floor(Math.random() * 6 * 3600 * 1000)).toISOString()
+    : null;
+
+  // Pick a unique-ish image, avoiding the last 10 used
+  const featuredImage = await pickFeaturedImage(supabase);
+
   const { error: insertError } = await supabase
     .from("blog_posts")
     .insert({
@@ -379,9 +386,10 @@ ${parsed.content}`;
       category,
       meta_description: parsed.excerpt,
       is_published: autoPublish,
-      published_at: autoPublish ? new Date().toISOString() : null,
+      published_at: publishedAt,
       is_ai_generated: true,
-      featured_image: getDefaultImage(category),
+      featured_image: featuredImage,
+      image_alt: parsed.image_alt || parsed.title,
     });
 
   if (insertError) {
