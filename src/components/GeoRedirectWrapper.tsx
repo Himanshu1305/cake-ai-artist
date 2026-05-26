@@ -3,27 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
 import { isSearchBot, hasNoRedirectParam } from '@/utils/botDetection';
+import {
+  normalizeRegion,
+  regionFromPathname,
+  landingPathForRegion,
+  getExplicitRegion,
+} from '@/utils/countryRouting';
 
-const COUNTRY_STORAGE_KEY = 'user_country_preference';
 const GEO_CHECKED_KEY = 'geo_detection_done';
 
-const ASIA_COUNTRIES = ['JP', 'KR', 'CN', 'SG', 'MY', 'TH', 'VN', 'PH', 'ID', 'BD', 'PK', 'LK', 'NP', 'HK', 'TW', 'NZ'];
-const EUROPE_COUNTRIES = ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'PT', 'SE', 'NO', 'DK', 'FI', 'PL', 'AT', 'CH', 'IE', 'GR', 'CZ', 'HU', 'RO', 'UA', 'RU'];
-const MENA_COUNTRIES = ['AE', 'SA', 'EG', 'ZA', 'NG', 'KE', 'IL', 'TR', 'DZ'];
-
-const REDIRECTABLE_ROUTES = ['/', '/pricing'];
-
-const getTargetRoute = (countryCode: string): string | null => {
-  if (countryCode === 'US') return '/usa';
-  if (countryCode === 'IN') return '/india';
-  if (countryCode === 'GB' || countryCode === 'UK') return '/uk';
-  if (countryCode === 'CA') return '/canada';
-  if (countryCode === 'AU') return '/australia';
-  if (ASIA_COUNTRIES.includes(countryCode)) return '/australia';
-  if (EUROPE_COUNTRIES.includes(countryCode)) return '/uk';
-  if (MENA_COUNTRIES.includes(countryCode)) return '/uk';
-  return null;
-};
+// Routes where a country mismatch should trigger a redirect for humans.
+const REDIRECTABLE_ROUTES = ['/', '/usa', '/uk', '/india', '/canada', '/australia'];
 
 const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
   const controller = new AbortController();
@@ -65,67 +55,50 @@ export const GeoRedirectWrapper = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('[GeoRedirect] Starting, pathname:', location.pathname);
-    
-    // CRITICAL: Synchronous bot check FIRST - before any async operations
-    // This prevents race conditions that could cause bots to be redirected
-    const botDetected = isSearchBot();
-    console.log('[GeoRedirect] isSearchBot result:', botDetected);
-    
-    if (botDetected) {
-      console.log('[GeoRedirect] Search bot detected, skipping all redirect logic');
-      return;
-    }
-    
-    // Check for URL escape hatch (e.g., ?noredirect or ?googlebot)
-    if (hasNoRedirectParam()) {
-      console.log('[GeoRedirect] noredirect param detected, skipping redirect');
-      return;
-    }
+    if (isSearchBot()) return;
+    if (hasNoRedirectParam()) return;
+    if (hasRedirected) return;
 
-    console.log('[GeoRedirect] hasRedirected:', hasRedirected, 'isRedirectable:', REDIRECTABLE_ROUTES.includes(location.pathname));
+    // Only act on routes where region matters.
+    const isRedirectable =
+      REDIRECTABLE_ROUTES.includes(location.pathname) ||
+      regionFromPathname(location.pathname) !== null;
+    if (!isRedirectable) return;
 
-    if (hasRedirected || !REDIRECTABLE_ROUTES.includes(location.pathname)) {
-      return;
-    }
-
-    const detectAndRedirect = async () => {
+    const run = async () => {
       try {
-        const savedPreference = safeGetItem(COUNTRY_STORAGE_KEY);
-        if (savedPreference) {
+        // Explicit manual selection takes precedence — never override.
+        const explicit = getExplicitRegion();
+
+        // Get live geo (cached per session).
+        let iso = safeGetItem(GEO_CHECKED_KEY, 'session');
+        if (!iso) {
+          iso = (await detectCountryClient()) || (await detectCountryServer());
+          if (iso) safeSetItem(GEO_CHECKED_KEY, iso, 'session');
+        }
+
+        const targetRegion = explicit || normalizeRegion(iso);
+        if (!targetRegion) return;
+
+        const targetPath = landingPathForRegion(targetRegion);
+        const currentRegion = regionFromPathname(location.pathname);
+
+        // On `/`, redirect to localized landing if not US.
+        // On any localized landing page, redirect to the correct one if mismatched.
+        const shouldRedirect =
+          (location.pathname === '/' && targetRegion !== 'US') ||
+          (currentRegion !== null && currentRegion !== targetRegion);
+
+        if (shouldRedirect && targetPath !== location.pathname) {
           setHasRedirected(true);
-          return;
-        }
-
-        const geoChecked = safeGetItem(GEO_CHECKED_KEY, 'session');
-        if (geoChecked) {
-          const targetRoute = getTargetRoute(geoChecked);
-          if (targetRoute) {
-            setHasRedirected(true);
-            setTimeout(() => navigate(targetRoute, { replace: true }), 0);
-          }
-          return;
-        }
-
-        let countryCode = await detectCountryClient();
-        if (!countryCode) {
-          countryCode = await detectCountryServer();
-        }
-
-        if (countryCode) {
-          safeSetItem(GEO_CHECKED_KEY, countryCode, 'session');
-          const targetRoute = getTargetRoute(countryCode);
-          if (targetRoute) {
-            setHasRedirected(true);
-            setTimeout(() => navigate(targetRoute, { replace: true }), 0);
-          }
+          setTimeout(() => navigate(targetPath, { replace: true }), 0);
         }
       } catch (error) {
         console.error('GeoRedirect error:', error);
       }
     };
 
-    detectAndRedirect();
+    run();
   }, [location.pathname, hasRedirected, navigate]);
 
   return null;
