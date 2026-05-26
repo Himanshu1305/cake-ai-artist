@@ -311,7 +311,7 @@ const Index = () => {
                   <span className="bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">PREMIUM</span>
                 </Button>
               </Link>
-              <Link to="/pricing">
+              <Link to="/pricing?country=US">
                 <Button variant="ghost" size="sm" className="relative px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
                   <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
@@ -356,7 +356,7 @@ const Index = () => {
                       <span className="ml-2 bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">PREMIUM</span>
                     </Button>
                   </Link>
-                  <Link to="/pricing">
+                  <Link to="/pricing?country=US">
                     <Button variant="ghost" className="w-full justify-start relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                       Pricing
                       <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span>
@@ -1066,7 +1066,7 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => navigate("/pricing")}
+                  onClick={() => navigate("/pricing?country=US")}
                   className="border-party-purple/40"
                 >
                   See Premium Plans
@@ -1118,7 +1118,7 @@ const Index = () => {
                 <Button size="lg" onClick={() => navigate("/auth")} className="btn-shimmer text-lg px-8">
                   Get Started Free
                 </Button>
-                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
+                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing?country=US")} className="text-lg px-8">
                   View Pricing
                 </Button>
               </>
@@ -1139,7 +1139,7 @@ const Index = () => {
                 >
                   Create a Cake Now
                 </Button>
-                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing")} className="text-lg px-8">
+                <Button size="lg" variant="secondary" onClick={() => navigate("/pricing?country=US")} className="text-lg px-8">
                   Upgrade to Premium
                 </Button>
               </>
