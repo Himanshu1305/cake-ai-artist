@@ -244,12 +244,14 @@ Generate:
 2. A compelling excerpt/meta description (max 160 characters)
 3. 5 relevant SEO keywords (comma-separated)
 4. The full article content in HTML format
+5. A descriptive image alt text (10-15 words) describing a celebration cake that matches this article's topic — be specific (colors, decorations, style)
 
 Respond in this exact JSON format:
 {
   "title": "Your Article Title Here",
   "excerpt": "A compelling 1-2 sentence excerpt that makes readers want to click.",
   "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "image_alt": "Descriptive alt text of a cake matching this article topic",
   "content": "<p>Your HTML content here...</p>"
 }`;
 
