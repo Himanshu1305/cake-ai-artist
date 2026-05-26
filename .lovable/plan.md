@@ -1,73 +1,37 @@
-## Issues confirmed
+## Problem
 
-**1. Duplicate dates**: 7 newly-seeded posts all share `published_at = 2026-05-26 06:29:40`. Older batches also share timestamps (3 on May 13, 3 on May 16, etc.). Looks like a spam-publish pattern to Google.
+4 image URLs are still duplicated across 8 existing posts (confirmed via DB query):
+- `photo-1551404973` → "Northern Lights" + "Strike Gold Metallic"
+- `photo-1607478900766` → "Coronation & Jubilee" + "Bold Typography"
+- `photo-1601979031925` → "Northern Lights Celestial" + "Rocky Mountain Wedding"
+- `photo-1599785209707` → "Retro Vintage" + "Aussie Day"
 
-**2. Duplicate images**: The same 4–5 Unsplash URLs repeat across many posts (e.g. `photo-1558301211` on 3+ posts, `photo-1605810230434` on 2 Indian posts, `photo-1535254973040` on 2 posts). Same image + similar alt text = weak image SEO and a "templated content farm" signal.
+Root cause: the bulk update we ran earlier assigned from a 45-image pool to 48 posts without a uniqueness constraint, so a few collided. Also, several pool images look visually similar (multiple chocolate drip cakes), which makes even non-duplicate URLs feel repetitive on the grid.
 
----
+## Fix
 
-## Yes, unique images help SEO + trust
+### Step 1 — Eliminate exact URL duplicates (SQL only)
+Run a single SQL update that, for each `featured_image` appearing more than once, keeps it on the oldest post and reassigns the other(s) to a brand-new Unsplash photo not currently used anywhere in `blog_posts`.
 
-- **SEO**: Google Images is a real traffic source. Unique images with descriptive alt text (e.g. "AI-generated Diwali birthday cake with diya and rangoli design") can rank for image search. Duplicate stock photos can't.
-- **Trust**: Users skimming the blog index see the same thumbnail repeated → looks auto-generated and low-effort. Unique imagery (especially AI cakes we generated ourselves) signals real content.
-- **Bonus**: Using our own AI-generated cakes as featured images doubles as product demo — every blog header becomes a portfolio piece.
+### Step 2 — Expand the curated image pool for visual diversity
+Grow the pool from 45 → ~80 URLs, deliberately mixing cake styles (white tiered, fondant, naked cakes, fruit-topped, floral, themed, kids, minimalist) so adjacent grid cards don't all look like chocolate drip cakes. Add the new URLs to `IMAGE_POOL` in `supabase/functions/generate-blog-post/index.ts`.
 
----
+### Step 3 — Harden the picker against future repeats
+Update `pickFeaturedImage()` in the edge function to:
+- exclude every `featured_image` currently in `blog_posts` (not just the last 12)
+- fall back to the no-repeat-in-last-12 logic only when the pool is exhausted
 
-## Plan
+This guarantees no new AI-generated post can collide with an existing one until the entire pool is used.
 
-### Step 1 — Fix dates (immediate, SQL only)
-Spread `published_at` across the last ~5 months with realistic, varied timestamps. Rules:
-- Newest post → today, then walk backwards
-- Gap between consecutive posts: random 3–10 days
-- Randomize the hour (8am–8pm) so they don't all land at 00:00:00
-- One single migration, no app code changes
+### Step 4 — Verify
+Re-run the duplicate-detection query; expect zero rows. Refresh `/blog` and confirm the grid shows visually distinct cakes.
 
-### Step 2 — Fix duplicate images (two-track)
+## Out of scope
+- Replacing existing Unsplash images with our own AI-generated cake renders (Track B, queued).
+- Changing alt-text logic (already correct from previous round).
 
-**Track A — Immediate (today, no cost):**
-- Curate ~25 unique high-quality cake Unsplash URLs (one per post + buffer)
-- Assign a unique image to every existing post via SQL
-- Match image to topic (Diwali post → diya cake photo, wedding post → tiered white cake, kids → colorful unicorn, etc.)
-- Update `featured_image` column
+## Files touched
+- One SQL update (no migration — data-only via insert tool's update path is not allowed, so I'll use a migration with `UPDATE` statements).
+- `supabase/functions/generate-blog-post/index.ts` — expand `IMAGE_POOL`, harden `pickFeaturedImage()`.
 
-**Track B — Generate unique AI cake images (recommended next, separate task):**
-- Use our own `generate-complete-cake` flow to create 1 branded hero image per post
-- Upload to `cake-images` storage bucket
-- Replace stock Unsplash URLs with our own CDN-hosted images
-- This is a bigger job (~20 image generations) — flag it as Phase 2
-
-### Step 3 — Add proper alt text (SEO win)
-Currently `<img alt={p.title}>` is fine but generic. Add a dedicated `image_alt` column to `blog_posts` and populate with descriptive, keyword-rich alt text per post:
-- e.g. "Three-tier AI-generated wedding cake with gold floral details"
-- e.g. "Diwali-themed AI cake with diya and rangoli decorations"
-- Update `CountryBlogFeed.tsx` and `BlogPost.tsx` to use `image_alt` with fallback to title
-
-### Step 4 — Prevent recurrence in AI generator
-Update `generate-blog-post` edge function to:
-- Stop using the same 9-image `getDefaultImage()` lookup table
-- Either: (a) pick from a much larger pool of 30+ curated images with no-repeat-in-last-10 logic, or (b) call our own image generator to create a unique hero per post
-- Also: set `published_at` with a small random offset, not exact `now()`, when auto-publishing
-
----
-
-## Technical details
-
-**Files / DB touched:**
-- Migration: add `image_alt TEXT` column to `blog_posts`
-- Insert SQL: bulk UPDATE `published_at` and `featured_image` + `image_alt` for all existing rows
-- `src/components/CountryBlogFeed.tsx` — use `image_alt` with fallback
-- `src/pages/Blog.tsx` and `src/pages/BlogPost.tsx` — same
-- `supabase/functions/generate-blog-post/index.ts` — expand image pool, add `image_alt` field to AI prompt JSON schema, randomize publish time
-
-**Out of scope for this round:**
-- AI-generated hero images (Track B) — propose as Phase 2 after this lands
-- Bulk-replacing existing 16 posts with our own AI cakes (separate task)
-
----
-
-## Confirm before I build
-
-1. Date spread strategy: **last 5 months, 3–10 day gaps, randomized hours** — OK?
-2. Images: **Track A only now (curated unique Unsplash + alt text)**, queue Track B (our own AI hero images) as a follow-up — OK?
-3. Should the oldest post date back to roughly **January 2026** or further (e.g. **November 2025**) to show longer publishing history?
+No frontend changes needed.
