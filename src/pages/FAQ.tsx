@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { FAQSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 import { useGeoContext } from "@/contexts/GeoContext";
+import { resolveRegion } from "@/utils/countryRouting";
 import {
   Accordion,
   AccordionContent,
@@ -23,11 +24,12 @@ const PRICING_LOOKUP: Record<string, { monthly: string; yearly: string; lifetime
 
 const FAQ = () => {
   const { detectedCountry } = useGeoContext();
+  const location = useLocation();
   const pricing = useMemo(() => {
-    const saved = localStorage.getItem('user_country_preference');
-    const country = saved || detectedCountry || 'US';
-    return PRICING_LOOKUP[country] || PRICING_LOOKUP['US'];
-  }, [detectedCountry]);
+    const urlCountry = new URLSearchParams(location.search).get("country");
+    const region = resolveRegion({ pathname: location.pathname, urlCountry, detectedCountry });
+    return PRICING_LOOKUP[region] || PRICING_LOOKUP.US;
+  }, [detectedCountry, location.pathname, location.search]);
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>

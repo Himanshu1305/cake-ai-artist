@@ -240,7 +240,7 @@ const AustraliaLanding = () => {
             <div className="hidden lg:flex gap-2 items-center">
               <Badge variant="outline" className="border-party-gold text-party-gold">🇦🇺 Australia</Badge>
               <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
-              <Link to="/pricing">
+              <Link to="/pricing?country=AU">
                 <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
                   Pricing
                   <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">🔥</span>
@@ -264,7 +264,7 @@ const AustraliaLanding = () => {
                 <div className="flex flex-col gap-2">
                   <Badge variant="outline" className="w-fit border-party-gold text-party-gold mb-4">🇦🇺 Australia</Badge>
                   <Link to="/how-it-works"><Button variant="ghost" className="w-full justify-start">How It Works</Button></Link>
-                  <Link to="/pricing"><Button variant="ghost" className="w-full justify-start">Pricing <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span></Button></Link>
+                  <Link to="/pricing?country=AU"><Button variant="ghost" className="w-full justify-start">Pricing <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span></Button></Link>
                   <Link to="/faq"><Button variant="ghost" className="w-full justify-start">FAQ</Button></Link>
                   <div className="border-t border-party-pink/20 my-2" />
                   <Button onClick={() => navigate("/auth")} className="w-full bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>

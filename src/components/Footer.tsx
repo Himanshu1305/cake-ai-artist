@@ -4,12 +4,13 @@ import { triggerCookieConsentOpen } from '@/hooks/useCookieConsent';
 import { safeGetItem, safeSetItem } from '@/utils/storage';
 import { Globe, ChevronDown, RotateCcw } from 'lucide-react';
 import { useGeoContext } from '@/contexts/GeoContext';
+import { resolveRegion, pricingPathForRegion, SupportedRegion } from '@/utils/countryRouting';
 
 const PREF_KEY = 'user_country_preference';
 const PREF_EXPLICIT_KEY = 'user_country_preference_explicit';
 const MIGRATION_KEY = 'user_country_pref_migrated_v1';
 
-const countries = [
+const countries: Array<{ code: SupportedRegion | 'UK'; name: string; flag: string; path: string }> = [
   { code: 'US', name: 'United States', flag: '🇺🇸', path: '/' },
   { code: 'UK', name: 'United Kingdom', flag: '🇬🇧', path: '/uk' },
   { code: 'CA', name: 'Canada', flag: '🇨🇦', path: '/canada' },
@@ -17,41 +18,18 @@ const countries = [
   { code: 'IN', name: 'India', flag: '🇮🇳', path: '/india' },
 ];
 
-// Map ISO country codes (and broader regions) to one of our 5 supported entries
-const ASIA = ['JP','KR','CN','SG','MY','TH','VN','PH','ID','BD','PK','LK','NP','HK','TW','NZ'];
-const EUROPE_MENA = ['DE','FR','IT','ES','NL','BE','PT','SE','NO','DK','FI','PL','AT','CH','IE','GR','CZ','HU','RO','UA','RU','AE','SA','EG','ZA','NG','KE','IL','TR','DZ'];
-
-const resolveCountryCode = (iso: string | null, pathname: string): string => {
-  // 1. URL hint wins for landing pages
-  if (pathname.startsWith('/india')) return 'IN';
-  if (pathname.startsWith('/uk')) return 'UK';
-  if (pathname.startsWith('/canada')) return 'CA';
-  if (pathname.startsWith('/australia')) return 'AU';
-
-  if (!iso) return 'US';
-  const code = iso.toUpperCase();
-  if (code === 'IN') return 'IN';
-  if (code === 'GB' || code === 'UK') return 'UK';
-  if (code === 'CA') return 'CA';
-  if (code === 'AU') return 'AU';
-  if (code === 'US') return 'US';
-  if (ASIA.includes(code)) return 'AU';
-  if (EUROPE_MENA.includes(code)) return 'UK';
-  return 'US';
-};
+const regionToDisplayCode = (r: SupportedRegion): typeof countries[number]['code'] =>
+  r === 'GB' ? 'UK' : r;
 
 export const Footer = () => {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const { detectedCountry } = useGeoContext();
   const location = useLocation();
 
-  // One-time migration: any existing saved preference from older versions is treated as
-  // non-explicit (auto-saved) so geo-detection can self-correct it.
   useEffect(() => {
     try {
       if (!localStorage.getItem(MIGRATION_KEY)) {
         if (localStorage.getItem(PREF_KEY) && !localStorage.getItem(PREF_EXPLICIT_KEY)) {
-          // leave PREF_KEY as-is, just ensure explicit flag is absent
           localStorage.removeItem(PREF_EXPLICIT_KEY);
         }
         localStorage.setItem(MIGRATION_KEY, '1');
@@ -61,28 +39,21 @@ export const Footer = () => {
     }
   }, []);
 
+  const resolvedRegion = useMemo<SupportedRegion>(() => {
+    const urlCountry = new URLSearchParams(location.search).get('country');
+    return resolveRegion({
+      pathname: location.pathname,
+      urlCountry,
+      detectedCountry,
+    });
+  }, [detectedCountry, location.pathname, location.search]);
+
   const currentCountry = useMemo(() => {
-    const saved = safeGetItem(PREF_KEY);
-    const isExplicit = safeGetItem(PREF_EXPLICIT_KEY) === '1';
-    const geoCode = resolveCountryCode(detectedCountry, location.pathname);
+    const displayCode = regionToDisplayCode(resolvedRegion);
+    return countries.find(c => c.code === displayCode) || countries[0];
+  }, [resolvedRegion]);
 
-    // Explicit user pick always wins
-    if (saved && isExplicit) {
-      const match = countries.find(c => c.code === saved);
-      if (match) return match;
-    }
-
-    // Non-explicit (legacy/auto) saved value: prefer live geo if it disagrees,
-    // and silently update the saved value so it stays consistent.
-    if (saved && !isExplicit && detectedCountry) {
-      if (saved !== geoCode) {
-        safeSetItem(PREF_KEY, geoCode);
-      }
-      return countries.find(c => c.code === geoCode) || countries[0];
-    }
-
-    return countries.find(c => c.code === geoCode) || countries[0];
-  }, [detectedCountry, location.pathname]);
+  const pricingHref = pricingPathForRegion(resolvedRegion);
 
   const handleCookieSettings = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -107,6 +78,7 @@ export const Footer = () => {
     setShowCountryPicker(false);
     window.location.href = '/';
   };
+
 
   return (
     <footer className="relative bg-gradient-to-br from-party-purple via-party-pink to-party-orange py-12">
@@ -179,7 +151,7 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/pricing" className="hover:underline opacity-90">
+                <Link to={pricingHref} className="hover:underline opacity-90">
                   Pricing
                 </Link>
               </li>
