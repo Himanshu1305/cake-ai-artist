@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download, Loader2 } from "lucide-react";
+import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download, Loader2, Gift, Heart } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
@@ -130,28 +130,28 @@ const IndiaLanding = () => {
 
   const celebrations = [
     { name: "Birthday Parties", icon: PartyPopper },
-    { name: "Diwali Celebrations", icon: Sparkles },
-    { name: "Holi Festival", icon: Palette },
-    { name: "Anniversary", icon: Cake }
+    { name: "Anniversaries", icon: Heart },
+    { name: "Weddings", icon: Sparkles },
+    { name: "Christmas", icon: Gift }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>AI Cake Generator India — Birthday Cake AI Designer</title>
-        <meta name="description" content="India's #1 AI cake generator. Design personalized AI birthday cakes, anniversary, wedding, Diwali & Holi cakes in 30 seconds. Free to try." />
-        <meta name="keywords" content="ai cake generator india, ai cake india, ai cakes india, cake ai india, birthday cake ai india, ai birthday cakes, free ai cake generator, best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, diwali cake, holi cake, ai cake maker india, chhota bheem cake, motu patlu cake" />
+        <meta name="description" content="India's #1 AI cake generator. Design personalized AI cakes for birthdays, anniversaries, weddings & Christmas in 30 seconds. Free to try, priced in ₹." />
+        <meta name="keywords" content="ai cake generator india, ai cake india, ai cakes india, cake ai india, birthday cake ai india, ai birthday cakes, free ai cake generator, best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, christmas cake india, ai cake maker india, chhota bheem cake, motu patlu cake" />
         <link rel="canonical" href="https://cakeaiartist.com/india" />
         <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
         <meta property="og:title" content="Best AI Cake Designer in India — Free Online" />
-        <meta property="og:description" content="India's best AI cake designer for personalized birthday cakes & every Indian celebration — Diwali, anniversaries, weddings & more." />
+        <meta property="og:description" content="India's best AI cake designer for birthdays, anniversaries, weddings, Christmas & every celebration — priced in ₹." />
         <meta property="og:url" content="https://cakeaiartist.com/india" />
         <meta property="og:locale" content="en_IN" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://cakeaiartist.com/og-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Best AI Cake Designer in India — Free Online" />
-        <meta name="twitter:description" content="India's best AI cake designer for birthdays, Diwali, anniversaries & every celebration." />
+        <meta name="twitter:description" content="India's best AI cake designer for birthdays, anniversaries, weddings & every celebration." />
       </Helmet>
 
       <BreadcrumbSchema
@@ -172,7 +172,7 @@ const IndiaLanding = () => {
 
       <FAQSchema
         faqs={[
-          { question: "Can I design Indian-themed cakes like Diwali or Holi?", answer: "Yes — the AI cake designer supports Diwali, Holi, Raksha Bandhan, weddings and birthday themes popular in India." },
+          { question: "What occasions does the AI cake designer support?", answer: "Birthdays, anniversaries, weddings, baby showers, Christmas, New Year and every personal celebration — with Indian cartoon characters and themes built in." },
           { question: "Does it support Indian cartoon characters?", answer: "Yes — Chhota Bheem, Motu Patlu and 50+ characters loved by Indian kids are available." },
           { question: "What's the price in INR?", answer: "Three plans in INR: Monthly ₹299/month, Yearly ₹1,999/year, or Lifetime ₹2,999 once. A free plan is available forever." },
         ]}
@@ -181,7 +181,7 @@ const IndiaLanding = () => {
       <OrganizationSchema 
         name="Cake AI Artist"
         url="https://cakeaiartist.com/india"
-        description="AI-powered cake design for Indian celebrations - birthdays, Diwali, Holi, and anniversaries"
+        description="AI-powered cake design for Indian celebrations - birthdays, anniversaries, weddings and Christmas"
       />
 
       <ProductReviewSchema
@@ -287,7 +287,7 @@ const IndiaLanding = () => {
               transition={{ delay: 0.4 }}
               className="text-white text-lg md:text-xl drop-shadow-md"
             >
-              Design AI birthday cakes for Diwali, Holi, anniversary &amp; weddings in 30 seconds — pay in ₹, no signup needed
+              Design AI cakes for birthdays, anniversaries, weddings &amp; every celebration — ready in 30 seconds, priced in ₹
             </motion.p>
             <motion.div
               initial={{ opacity: 0 }}
@@ -333,7 +333,7 @@ const IndiaLanding = () => {
             </h2>
             <p className="text-xl text-foreground/80 leading-relaxed">
               Here&apos;s the thing about Indian celebrations—they&apos;re only as special as the thought you put into them. 
-              From Diwali diyas to Holi colours, get gorgeous, personalised cake designs faster than ordering mithai from the corner shop.
+              From milestone birthdays to anniversaries and weddings, get gorgeous, personalised cake designs faster than ordering mithai from the corner shop.
               Your little one&apos;s favourite <strong>Chhota Bheem</strong> or <strong>Motu Patlu</strong> cake—ready in seconds!
             </p>
           </motion.div>
@@ -412,7 +412,7 @@ const IndiaLanding = () => {
             Perfect for Indian Celebrations
           </motion.h2>
           <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-            From Diwali festivities to colourful Holi parties, create the perfect cake for any occasion
+            From birthdays and anniversaries to weddings and Christmas, create the perfect cake for any occasion
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
             {celebrations.map((celebration, idx) => (
