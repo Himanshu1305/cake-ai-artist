@@ -174,15 +174,6 @@ export const ProductSchema = ({ name, description, price, priceCurrency, availab
   );
 };
 
-  return (
-    <Helmet>
-      <script type="application/ld+json">
-        {JSON.stringify(schema)}
-      </script>
-    </Helmet>
-  );
-};
-
 interface FAQSchemaProps {
   faqs: Array<{
     question: string;
