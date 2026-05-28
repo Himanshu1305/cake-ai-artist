@@ -398,6 +398,11 @@ interface ProductReviewSchemaProps {
   ratingCount: number;
   reviewCount: number;
   reviews: ReviewItem[];
+  image?: string | string[];
+  brand?: string;
+  offerPrice?: string;
+  offerCurrency?: string;
+  shippingCountry?: string;
 }
 
 export const ProductReviewSchema = ({ 
@@ -407,14 +412,30 @@ export const ProductReviewSchema = ({
   ratingValue, 
   ratingCount, 
   reviewCount,
-  reviews 
+  reviews,
+  image,
+  brand,
+  offerPrice,
+  offerCurrency,
+  shippingCountry,
 }: ProductReviewSchemaProps) => {
+  const currency = offerCurrency || "USD";
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: itemName,
     ...(description && { description }),
     ...(url && { url }),
+    image: image || DEFAULT_PRODUCT_IMAGE,
+    brand: { "@type": "Brand", name: brand || DEFAULT_BRAND },
+    offers: {
+      "@type": "Offer",
+      price: offerPrice || "0",
+      priceCurrency: currency,
+      availability: "https://schema.org/InStock",
+      ...(url && { url }),
+      ...buildOfferExtras(currency, shippingCountry),
+    },
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: ratingValue.toString(),
@@ -439,6 +460,7 @@ export const ProductReviewSchema = ({
       datePublished: review.datePublished || new Date().toISOString().split('T')[0]
     }))
   };
+
 
   return (
     <Helmet>
