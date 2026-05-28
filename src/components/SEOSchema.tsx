@@ -102,6 +102,7 @@ export const WebSiteSchema = ({ name, url }: WebSiteSchemaProps) => {
   );
 };
 
+
 interface ProductSchemaProps {
   name: string;
   description: string;
@@ -109,22 +110,59 @@ interface ProductSchemaProps {
   priceCurrency: string;
   availability: string;
   url: string;
+  image?: string | string[];
+  brand?: string;
+  shippingCountry?: string;
 }
 
-export const ProductSchema = ({ name, description, price, priceCurrency, availability, url }: ProductSchemaProps) => {
+const DEFAULT_PRODUCT_IMAGE = "https://cakeaiartist.com/og-image.jpg";
+const DEFAULT_BRAND = "Cake AI Artist";
+
+const buildOfferExtras = (priceCurrency: string, shippingCountry?: string) => ({
+  hasMerchantReturnPolicy: {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: shippingCountry || "US",
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: 7,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/FreeReturn",
+  },
+  shippingDetails: {
+    "@type": "OfferShippingDetails",
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: "0",
+      currency: priceCurrency,
+    },
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: shippingCountry || "US",
+    },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+      transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+    },
+  },
+});
+
+export const ProductSchema = ({ name, description, price, priceCurrency, availability, url, image, brand, shippingCountry }: ProductSchemaProps) => {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name,
     description,
     url,
+    image: image || DEFAULT_PRODUCT_IMAGE,
+    brand: { "@type": "Brand", name: brand || DEFAULT_BRAND },
     offers: {
       "@type": "Offer",
       price,
       priceCurrency,
       availability: `https://schema.org/${availability}`,
-      url
-    }
+      url,
+      ...buildOfferExtras(priceCurrency, shippingCountry),
+    },
   };
 
   return (
@@ -360,6 +398,11 @@ interface ProductReviewSchemaProps {
   ratingCount: number;
   reviewCount: number;
   reviews: ReviewItem[];
+  image?: string | string[];
+  brand?: string;
+  offerPrice?: string;
+  offerCurrency?: string;
+  shippingCountry?: string;
 }
 
 export const ProductReviewSchema = ({ 
@@ -369,14 +412,30 @@ export const ProductReviewSchema = ({
   ratingValue, 
   ratingCount, 
   reviewCount,
-  reviews 
+  reviews,
+  image,
+  brand,
+  offerPrice,
+  offerCurrency,
+  shippingCountry,
 }: ProductReviewSchemaProps) => {
+  const currency = offerCurrency || "USD";
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: itemName,
     ...(description && { description }),
     ...(url && { url }),
+    image: image || DEFAULT_PRODUCT_IMAGE,
+    brand: { "@type": "Brand", name: brand || DEFAULT_BRAND },
+    offers: {
+      "@type": "Offer",
+      price: offerPrice || "0",
+      priceCurrency: currency,
+      availability: "https://schema.org/InStock",
+      ...(url && { url }),
+      ...buildOfferExtras(currency, shippingCountry),
+    },
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: ratingValue.toString(),
@@ -401,6 +460,7 @@ export const ProductReviewSchema = ({
       datePublished: review.datePublished || new Date().toISOString().split('T')[0]
     }))
   };
+
 
   return (
     <Helmet>

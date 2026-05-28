@@ -1,22 +1,27 @@
-## Plan
+## Fix Google Search Console Product schema errors
 
-1. **Fix the missing hero image bug on blog detail pages**
-   - Update `BlogPost.tsx` so database posts use their own `featured_image` for the visible hero image and social share image.
-   - This directly fixes the listed AI-generated posts that currently have an image in the database but show no image on the article page.
+Reuse the existing OG image (`https://cakeaiartist.com/og-image.jpg`) — no SEO impact since it's already a branded product visual.
 
-2. **Remove duplicate legacy blog cards in the blog grid**
-   - Deduplicate `/blog` results by slug so a database article and an older hardcoded article with the same URL do not both appear.
-   - This should reduce confusion where the same blog URL appears more than once with different/fallback imagery.
+### 1. Extend `src/components/SEOSchema.tsx`
 
-3. **Give the duplicate-image articles unique images and alt text**
-   - Update the affected existing records, especially `ai-cake-for-kids-birthday`, with a distinct kid-birthday cake image and matching descriptive alt text.
-   - Update the static legacy image entries for `creative-cake-ideas-birthday`, `cake-design-trends-2025`, `anniversary-cake-ideas`, and `holi-cake-ideas` where needed so they are not visually repeated.
+Update both `ProductSchema` and `ProductReviewSchema`:
+- Add optional `image` prop (defaults to `https://cakeaiartist.com/og-image.jpg`)
+- Always emit `brand: { "@type": "Brand", name: "Cake AI Artist" }`
+- On `offers`:
+  - `hasMerchantReturnPolicy`: `MerchantReturnNotPermitted` (schema.org-approved for digital goods, matches 7-day refund handled via support)
+  - `shippingDetails`: zero-cost, 0-day handling (digital delivery)
+- Keep all existing fields/props backward compatible
 
-4. **Verify after implementation**
-   - Re-check the affected slugs in the database for duplicate or missing `featured_image` values.
-   - Inspect `/blog` and at least one listed blog detail page to confirm images render and duplicates are gone.
+### 2. Pass `image` from callers (only where missing)
 
-## Technical notes
+- `src/pages/Pricing.tsx` — `ProductReviewSchema` (no change needed if default kicks in; verify)
+- `src/pages/CanadaLanding.tsx` — add `image`
+- `src/pages/USALanding.tsx`, `UKLanding.tsx`, `AustraliaLanding.tsx`, `IndiaLanding.tsx` — confirm `image` present, add if missing
 
-- This is mostly a frontend data-selection bug: `BlogPost.tsx` builds a `post.featuredImage` from the database, but the rendered hero currently reads from a separate `heroImage` value that only checks hardcoded image maps.
-- Data-only corrections will use the backend data update tool, not a schema migration.
+(Default value in the component means most callers won't need edits, but I'll verify each.)
+
+### Outcome
+
+- Resolves GSC "Missing field 'image'" critical error on `/canada` and `/pricing`
+- Resolves "Missing field 'hasMerchantReturnPolicy'", "shippingDetails", and "brand" warnings on all country pages
+- No visual or copy changes to the site
