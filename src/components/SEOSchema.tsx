@@ -94,6 +94,15 @@ export const WebSiteSchema = ({ name, url }: WebSiteSchemaProps) => {
   };
 
   return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+  );
+};
+
+
 interface ProductSchemaProps {
   name: string;
   description: string;
