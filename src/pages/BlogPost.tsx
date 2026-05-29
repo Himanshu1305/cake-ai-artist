@@ -16,6 +16,7 @@ import { BlogCTABox } from "@/components/BlogCTABox";
 import { BlogExitIntentPopup } from "@/components/BlogExitIntentPopup";
 import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
 import { supabase } from "@/integrations/supabase/client";
+import { SiteHeader } from "@/components/SiteHeader";
 
 // Database blog post type
 interface DatabaseBlogPost {

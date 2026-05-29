@@ -13,6 +13,7 @@ import { PopularCakesSection } from "@/components/PopularCakesSection";
 import { useGalleryInteractions } from "@/hooks/useGalleryInteractions";
 import { GalleryComments } from "@/components/GalleryComments";
 import { cn } from "@/lib/utils";
+import { SiteHeader } from "@/components/SiteHeader";
 
 interface CommunityImage {
   id: string;

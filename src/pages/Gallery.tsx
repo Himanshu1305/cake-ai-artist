@@ -22,6 +22,7 @@ import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
+import { SiteHeader } from "@/components/SiteHeader";
 
 interface GeneratedImage {
   id: string;
