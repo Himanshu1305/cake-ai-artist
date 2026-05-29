@@ -49,6 +49,10 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
   }
 
+  public render() {
+    if (this.state.hasError) {
+      return (
+
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-lg w-full bg-card border border-destructive/20 rounded-lg p-6 shadow-lg">
             <h1 className="text-2xl font-bold text-destructive mb-4">Something went wrong</h1>
