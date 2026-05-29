@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,48 +11,50 @@ import { GeoProvider } from "@/contexts/GeoContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 // Route-level code splitting: keep the homepage in the main bundle for fast LCP,
 // load every other route on demand to dramatically shrink the initial JS payload.
-const About = lazy(() => import("./pages/About"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Advertising = lazy(() => import("./pages/Advertising"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Gallery = lazy(() => import("./pages/Gallery"));
-const CommunityGallery = lazy(() => import("./pages/CommunityGallery"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Contact = lazy(() => import("./pages/Contact"));
-const FAQ = lazy(() => import("./pages/FAQ"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const HowItWorks = lazy(() => import("./pages/HowItWorks"));
-const UseCases = lazy(() => import("./pages/UseCases"));
-const Blog = lazy(() => import("./pages/Blog"));
-const BlogPost = lazy(() => import("./pages/BlogPost"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Admin = lazy(() => import("./pages/Admin"));
-const AdminLogoGenerator = lazy(() => import("./pages/AdminLogoGenerator"));
-const AdminBlogAnalytics = lazy(() => import("./pages/AdminBlogAnalytics"));
-const UKLanding = lazy(() => import("./pages/UKLanding"));
-const CanadaLanding = lazy(() => import("./pages/CanadaLanding"));
-const AustraliaLanding = lazy(() => import("./pages/AustraliaLanding"));
-const IndiaLanding = lazy(() => import("./pages/IndiaLanding"));
-const USALanding = lazy(() => import("./pages/USALanding"));
-const FreeCakeDesigner = lazy(() => import("./pages/FreeCakeDesigner"));
-const AiCakeGeneratorFree = lazy(() => import("./pages/AiCakeGeneratorFree"));
-const ThreeDCakeDesigner = lazy(() => import("./pages/ThreeDCakeDesigner"));
-const AiBirthdayCakeWithName = lazy(() => import("./pages/AiBirthdayCakeWithName"));
-const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
-const BlogUnsubscribe = lazy(() => import("./pages/BlogUnsubscribe"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const EmbedGalleryPage = lazy(() =>
+const About = lazyWithRetry(() => import("./pages/About"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const Advertising = lazyWithRetry(() => import("./pages/Advertising"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Gallery = lazyWithRetry(() => import("./pages/Gallery"));
+const CommunityGallery = lazyWithRetry(() => import("./pages/CommunityGallery"));
+const Terms = lazyWithRetry(() => import("./pages/Terms"));
+const Contact = lazyWithRetry(() => import("./pages/Contact"));
+const FAQ = lazyWithRetry(() => import("./pages/FAQ"));
+const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
+const HowItWorks = lazyWithRetry(() => import("./pages/HowItWorks"));
+const UseCases = lazyWithRetry(() => import("./pages/UseCases"));
+const Blog = lazyWithRetry(() => import("./pages/Blog"));
+const BlogPost = lazyWithRetry(() => import("./pages/BlogPost"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"));
+const Admin = lazyWithRetry(() => import("./pages/Admin"));
+const AdminLogoGenerator = lazyWithRetry(() => import("./pages/AdminLogoGenerator"));
+const AdminBlogAnalytics = lazyWithRetry(() => import("./pages/AdminBlogAnalytics"));
+const UKLanding = lazyWithRetry(() => import("./pages/UKLanding"));
+const CanadaLanding = lazyWithRetry(() => import("./pages/CanadaLanding"));
+const AustraliaLanding = lazyWithRetry(() => import("./pages/AustraliaLanding"));
+const IndiaLanding = lazyWithRetry(() => import("./pages/IndiaLanding"));
+const USALanding = lazyWithRetry(() => import("./pages/USALanding"));
+const FreeCakeDesigner = lazyWithRetry(() => import("./pages/FreeCakeDesigner"));
+const AiCakeGeneratorFree = lazyWithRetry(() => import("./pages/AiCakeGeneratorFree"));
+const ThreeDCakeDesigner = lazyWithRetry(() => import("./pages/ThreeDCakeDesigner"));
+const AiBirthdayCakeWithName = lazyWithRetry(() => import("./pages/AiBirthdayCakeWithName"));
+const CompleteProfile = lazyWithRetry(() => import("./pages/CompleteProfile"));
+const BlogUnsubscribe = lazyWithRetry(() => import("./pages/BlogUnsubscribe"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const EmbedGalleryPage = lazyWithRetry(() =>
   import("./components/EmbeddableGalleryWidget").then((m) => ({ default: m.EmbedGalleryPage }))
 );
-const PartyPlanner = lazy(() => import("./pages/PartyPlanner"));
-const PartyPlannerDetail = lazy(() => import("./pages/PartyPlannerDetail"));
-const PartyRSVP = lazy(() => import("./pages/PartyRSVP"));
-const SharedCake = lazy(() => import("./pages/SharedCake"));
-const Recipes = lazy(() => import("./pages/Recipes"));
-const RecipeDetail = lazy(() => import("./pages/RecipeDetail"));
+const PartyPlanner = lazyWithRetry(() => import("./pages/PartyPlanner"));
+const PartyPlannerDetail = lazyWithRetry(() => import("./pages/PartyPlannerDetail"));
+const PartyRSVP = lazyWithRetry(() => import("./pages/PartyRSVP"));
+const SharedCake = lazyWithRetry(() => import("./pages/SharedCake"));
+const Recipes = lazyWithRetry(() => import("./pages/Recipes"));
+const RecipeDetail = lazyWithRetry(() => import("./pages/RecipeDetail"));
+
 
 const queryClient = new QueryClient();
 
