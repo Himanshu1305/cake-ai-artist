@@ -10,6 +10,16 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
+const RELOAD_KEY = "lazy-retry-reloaded";
+
+const isChunkLoadError = (error: Error | null): boolean => {
+  if (!error) return false;
+  const msg = error.message || "";
+  return /loading (dynamically imported module|chunk)|Failed to fetch dynamically imported module|ChunkLoadError|Importing a module script failed/i.test(
+    msg
+  );
+};
+
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
@@ -22,13 +32,23 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Stale chunk after deploy — recover silently with a one-shot reload.
+    if (isChunkLoadError(error)) {
+      try {
+        const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY);
+        if (!alreadyReloaded) {
+          sessionStorage.setItem(RELOAD_KEY, "1");
+          window.location.reload();
+          return;
+        }
+      } catch {
+        /* fall through to normal error UI */
+      }
+    }
     console.error("ErrorBoundary caught an error:", error, errorInfo);
     this.setState({ errorInfo });
   }
 
-  public render() {
-    if (this.state.hasError) {
-      return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-lg w-full bg-card border border-destructive/20 rounded-lg p-6 shadow-lg">
             <h1 className="text-2xl font-bold text-destructive mb-4">Something went wrong</h1>

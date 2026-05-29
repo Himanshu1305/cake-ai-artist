@@ -1,27 +1,33 @@
-## Fix Google Search Console Product schema errors
+# Fix "error then disappears" on page load
 
-Reuse the existing OG image (`https://cakeaiartist.com/og-image.jpg`) — no SEO impact since it's already a branded product visual.
+## Root cause
 
-### 1. Extend `src/components/SEOSchema.tsx`
+After a new deploy, the previously cached `index.html` references old hashed chunk filenames (e.g. `IndiaLanding-B3_-1MKG.js`, `party-hero-CTCVHVUE.js`). When the user navigates, `React.lazy(() => import(...))` fails with `TypeError: error loading dynamically imported module` / `NetworkError when attempting to fetch resource`. The `ErrorBoundary` catches it and renders the red "Something went wrong" screen — then SPA navigation re-mounts and it disappears. This is visible in the console logs and matches exactly the symptom the user describes.
 
-Update both `ProductSchema` and `ProductReviewSchema`:
-- Add optional `image` prop (defaults to `https://cakeaiartist.com/og-image.jpg`)
-- Always emit `brand: { "@type": "Brand", name: "Cake AI Artist" }`
-- On `offers`:
-  - `hasMerchantReturnPolicy`: `MerchantReturnNotPermitted` (schema.org-approved for digital goods, matches 7-day refund handled via support)
-  - `shippingDetails`: zero-cost, 0-day handling (digital delivery)
-- Keep all existing fields/props backward compatible
+This is unrelated to the country page, India copy, or schema work — it's a build/deploy artifact issue and will keep happening on every release until handled.
 
-### 2. Pass `image` from callers (only where missing)
+## Fix
 
-- `src/pages/Pricing.tsx` — `ProductReviewSchema` (no change needed if default kicks in; verify)
-- `src/pages/CanadaLanding.tsx` — add `image`
-- `src/pages/USALanding.tsx`, `UKLanding.tsx`, `AustraliaLanding.tsx`, `IndiaLanding.tsx` — confirm `image` present, add if missing
+Two small, surgical changes — no UI/behavior changes for the happy path.
 
-(Default value in the component means most callers won't need edits, but I'll verify each.)
+### 1. Add a `lazyWithRetry` helper (new file `src/lib/lazyWithRetry.ts`)
 
-### Outcome
+Wrap `React.lazy` so that when a dynamic `import()` fails with a chunk-load error, we:
+- retry once after a short delay (handles transient network blips), then
+- if it still fails, do a **one-time** hard reload of the page (using a `sessionStorage` flag so we never loop). After reload the browser fetches the new `index.html` with the current chunk hashes and the page loads cleanly.
 
-- Resolves GSC "Missing field 'image'" critical error on `/canada` and `/pricing`
-- Resolves "Missing field 'hasMerchantReturnPolicy'", "shippingDetails", and "brand" warnings on all country pages
-- No visual or copy changes to the site
+This is the standard Vite/CRA pattern for handling stale chunks post-deploy.
+
+### 2. Use it in `src/App.tsx`
+
+Replace every `lazy(() => import("./pages/..."))` with `lazyWithRetry(() => import("./pages/..."))`. No other changes to routing or Suspense fallback.
+
+### 3. Harden `ErrorBoundary` (`src/components/ErrorBoundary.tsx`)
+
+As a safety net: in `componentDidCatch`, if the error message matches the chunk-load pattern (`error loading dynamically imported module` / `Failed to fetch dynamically imported module` / `ChunkLoadError`), trigger the same one-shot reload instead of rendering the error UI. Non-chunk errors continue to show the existing fallback so real bugs stay visible.
+
+## Outcome
+
+- No more flash of the red error screen on first navigation after a deploy.
+- Real runtime errors still surface in `ErrorBoundary` as before.
+- Zero changes to page content, styling, or business logic.
