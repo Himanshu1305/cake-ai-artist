@@ -11,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { CountryPicker } from "@/components/CountryPicker";
 import { useGeoContext } from "@/contexts/GeoContext";
+import { getCountryHomePath, withWelcomeFlag } from "@/lib/postLoginRedirect";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -144,7 +145,7 @@ const Auth = () => {
               // OAuth user without country - redirect to complete profile
               navigate("/complete-profile");
             } else {
-              navigate("/free-ai-cake-designer");
+              navigate(getCountryHomePath(detectedCountry));
             }
           }, 0));
         }
@@ -170,7 +171,7 @@ const Auth = () => {
         if (!profile?.country) {
           navigate("/complete-profile");
         } else {
-          navigate("/free-ai-cake-designer");
+          navigate(getCountryHomePath(detectedCountry));
         }
       }
     });
@@ -202,7 +203,7 @@ const Auth = () => {
       sessionStorage.removeItem('password_reset_in_progress');
       toast.success("Password updated successfully!");
       setIsResetMode(false);
-      navigate("/free-ai-cake-designer");
+      navigate(getCountryHomePath(detectedCountry));
     } catch (error: any) {
       toast.error(error.message || "Failed to update password");
     } finally {
@@ -302,7 +303,7 @@ const Auth = () => {
         await addContactToBrevo(email, firstName.trim(), lastName.trim());
 
         toast.success("Welcome! Let's design your first cake.");
-        navigate("/free-ai-cake-designer?welcome=true");
+        navigate(withWelcomeFlag(getCountryHomePath(detectedCountry)));
       }
     } catch (error: any) {
       console.error("Auth error:", error);

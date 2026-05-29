@@ -1,33 +1,42 @@
-# Fix "error then disappears" on page load
+# Fix post-login redirect + add menu bar across the site
 
-## Root cause
+## 1. Country-aware post-login redirect
 
-After a new deploy, the previously cached `index.html` references old hashed chunk filenames (e.g. `IndiaLanding-B3_-1MKG.js`, `party-hero-CTCVHVUE.js`). When the user navigates, `React.lazy(() => import(...))` fails with `TypeError: error loading dynamically imported module` / `NetworkError when attempting to fetch resource`. The `ErrorBoundary` catches it and renders the red "Something went wrong" screen — then SPA navigation re-mounts and it disappears. This is visible in the console logs and matches exactly the symptom the user describes.
+Replace every `navigate("/free-ai-cake-designer"...)` in the auth flow with a redirect to the user's regional home page.
 
-This is unrelated to the country page, India copy, or schema work — it's a build/deploy artifact issue and will keep happening on every release until handled.
+- Add a small helper `getCountryHomePath()` that reads the same signals already used by `Footer` and `GeoRedirectWrapper`:
+  - `user_country_preference` from localStorage (explicit choice)
+  - `detectedCountry` from `GeoContext`
+  - Falls back to `/`
+  - Mapping: `US → /`, `GB/UK → /uk`, `CA → /canada`, `AU → /australia`, `IN → /india`
+- Update redirects in:
+  - `src/pages/Auth.tsx` — 4 places (sign-in success, OAuth callback, existing-session check, signup success). Preserve the `?welcome=true` query on first signup.
+  - `src/pages/CompleteProfile.tsx` — 2 places (existing-profile skip, profile completion). Preserve `?welcome=true` on the post-completion redirect.
+- Leave the `/dashboard → /free-ai-cake-designer` route alone (separate intent: a direct dashboard shortcut).
 
-## Fix
+## 2. Shared `SiteHeader` component on all public pages
 
-Two small, surgical changes — no UI/behavior changes for the happy path.
+Currently only `Index.tsx` has the full nav menu (How It Works, Party Planner, Pricing, Examples, Community, Blog, FAQ). Every other page shows only the logo + brand name, which is what the user is complaining about.
 
-### 1. Add a `lazyWithRetry` helper (new file `src/lib/lazyWithRetry.ts`)
+- Create `src/components/SiteHeader.tsx`:
+  - Lifts the desktop + mobile nav markup straight out of `Index.tsx` (lines ~297–390) into a reusable component.
+  - Props: `variant?: "transparent" | "solid"` (so it can sit on gradient hero sections or plain backgrounds) and optional `hideOn?: string[]` for items to omit on a given page.
+  - Uses the same country-aware `pricingHref` logic already in `Footer` so the Pricing link points to `/pricing?country=XX` for the active region.
+  - Includes a "Sign in" / account button on the right (mirrors current Index behaviour if present; otherwise a simple link to `/auth`).
+- Refactor `Index.tsx` to render `<SiteHeader />` instead of its inline nav (no visual change).
+- Add `<SiteHeader />` to every public page that currently has only the logo block, replacing the local logo header:
+  - `FreeCakeDesigner`, `AiCakeGeneratorFree`, `ThreeDCakeDesigner`, `AiBirthdayCakeWithName`
+  - `Gallery`, `CommunityGallery`
+  - `Pricing`, `About`, `FAQ`, `Contact`, `HowItWorks`, `UseCases`
+  - `Blog`, `BlogPost`, `Recipes`, `RecipeDetail`
+  - `PartyPlanner`, `PartyPlannerDetail`
+  - `Privacy`, `Terms`, `Advertising`
+  - Country landings: `UKLanding`, `CanadaLanding`, `AustraliaLanding`, `IndiaLanding`, `USALanding`
+- Do NOT add it to: `Auth`, `CompleteProfile`, `Admin`, `AdminLogoGenerator`, `AdminBlogAnalytics`, `Settings`, `PartyRSVP`, `SharedCake`, `BlogUnsubscribe`, `EmbedGalleryPage`, `NotFound` (auth/admin/embed/utility flows).
 
-Wrap `React.lazy` so that when a dynamic `import()` fails with a chunk-load error, we:
-- retry once after a short delay (handles transient network blips), then
-- if it still fails, do a **one-time** hard reload of the page (using a `sessionStorage` flag so we never loop). After reload the browser fetches the new `index.html` with the current chunk hashes and the page loads cleanly.
+## Technical notes
 
-This is the standard Vite/CRA pattern for handling stale chunks post-deploy.
-
-### 2. Use it in `src/App.tsx`
-
-Replace every `lazy(() => import("./pages/..."))` with `lazyWithRetry(() => import("./pages/..."))`. No other changes to routing or Suspense fallback.
-
-### 3. Harden `ErrorBoundary` (`src/components/ErrorBoundary.tsx`)
-
-As a safety net: in `componentDidCatch`, if the error message matches the chunk-load pattern (`error loading dynamically imported module` / `Failed to fetch dynamically imported module` / `ChunkLoadError`), trigger the same one-shot reload instead of rendering the error UI. Non-chunk errors continue to show the existing fallback so real bugs stay visible.
-
-## Outcome
-
-- No more flash of the red error screen on first navigation after a deploy.
-- Real runtime errors still surface in `ErrorBoundary` as before.
-- Zero changes to page content, styling, or business logic.
+- No backend, schema, or business-logic changes.
+- No styling redesign — the new `SiteHeader` is the existing Index nav extracted verbatim so the look stays consistent.
+- Country detection reuses existing `GeoContext` + `countryRouting` utils; no new geo logic.
+- Mobile nav (sheet/drawer) is included in `SiteHeader` from day one so every page gets a working mobile menu, not just desktop.

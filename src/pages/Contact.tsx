@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, Clock, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { LocalBusinessSchema, BreadcrumbSchema } from "@/components/SEOSchema";
 
@@ -69,12 +70,7 @@ const Contact = () => {
       />
       
       {/* Header with Logo */}
-      <header className="container mx-auto px-4 py-4 max-w-5xl">
-        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-          <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-          <span>Cake AI Artist</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
 

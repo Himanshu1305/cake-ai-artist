@@ -22,6 +22,7 @@ import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
+import { SiteHeader } from "@/components/SiteHeader";
 
 interface GeneratedImage {
   id: string;
@@ -257,44 +258,27 @@ const Gallery = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       
-      <nav className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-            <span>Cake AI Artist</span>
-          </Link>
-          <div className="flex gap-4">
-            <Button
-              onClick={() => {
-                setPartyPackMode(!partyPackMode);
-                setSelectedCakeForPartyPack(null);
-              }}
-              variant={partyPackMode ? "default" : "outline"}
-              className={partyPackMode 
-                ? "bg-gradient-to-r from-party-purple to-party-pink text-white font-bold shadow-lg" 
-                : "border-party-purple hover:border-party-pink hover:bg-party-purple/10"
-              }
-            >
-              <Gift className="w-4 h-4 mr-2" />
-              {partyPackMode ? "Exit Party Pack Mode" : "Party Pack"}
-            </Button>
-            <Button
-              onClick={() => navigate("/")}
-              variant="outline"
-              className="border-party-purple/30 hover:border-party-purple"
-            >
-              Home
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-party-pink/30 hover:border-party-pink"
-            >
-              Logout
-            </Button>
-          </div>
+      <SiteHeader />
+
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-wrap gap-3 justify-end">
+          <Button
+            onClick={() => {
+              setPartyPackMode(!partyPackMode);
+              setSelectedCakeForPartyPack(null);
+            }}
+            variant={partyPackMode ? "default" : "outline"}
+            className={partyPackMode
+              ? "bg-gradient-to-r from-party-purple to-party-pink text-white font-bold shadow-lg"
+              : "border-party-purple hover:border-party-pink hover:bg-party-purple/10"
+            }
+          >
+            <Gift className="w-4 h-4 mr-2" />
+            {partyPackMode ? "Exit Party Pack Mode" : "Party Pack"}
+          </Button>
         </div>
-      </nav>
+      </div>
+
 
       <div className="container mx-auto px-4 py-8">
         {/* Party Pack Mode Banner with Instructions */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
@@ -106,14 +107,7 @@ const Pricing = () => {
 
       <FAQSchema faqs={faqItems} />
 
-      <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-            <span>Cake AI Artist</span>
-          </Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <section className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-6xl">

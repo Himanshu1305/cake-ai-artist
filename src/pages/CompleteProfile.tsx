@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { CountryPicker } from "@/components/CountryPicker";
 import { useGeoContext } from "@/contexts/GeoContext";
+import { getCountryHomePath, withWelcomeFlag } from "@/lib/postLoginRedirect";
 import { User } from "@supabase/supabase-js";
 
 const CompleteProfile = () => {
@@ -46,7 +47,7 @@ const CompleteProfile = () => {
         .single();
       
       if (profile?.country) {
-        navigate("/free-ai-cake-designer");
+        navigate(getCountryHomePath(detectedCountry));
         return;
       }
       
@@ -79,7 +80,7 @@ const CompleteProfile = () => {
       if (error) throw error;
       
       toast.success("Profile completed!");
-      navigate("/free-ai-cake-designer?welcome=true");
+      navigate(withWelcomeFlag(getCountryHomePath(country || detectedCountry)));
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast.error("Failed to save profile. Please try again.");

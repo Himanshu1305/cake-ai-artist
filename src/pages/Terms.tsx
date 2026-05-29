@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema } from "@/components/SEOSchema";
 
@@ -26,12 +27,7 @@ const Terms = () => {
       </Helmet>
       
       {/* Header with Logo */}
-      <header className="container mx-auto px-4 py-4 max-w-4xl">
-        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-          <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-          <span>Cake AI Artist</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       <BreadcrumbSchema
         items={[

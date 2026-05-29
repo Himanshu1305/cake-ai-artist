@@ -16,6 +16,7 @@ import { BlogCTABox } from "@/components/BlogCTABox";
 import { BlogExitIntentPopup } from "@/components/BlogExitIntentPopup";
 import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
 import { supabase } from "@/integrations/supabase/client";
+import { SiteHeader } from "@/components/SiteHeader";
 
 // Database blog post type
 interface DatabaseBlogPost {
@@ -2187,26 +2188,8 @@ const BlogPost = () => {
       <BlogExitIntentPopup />
       
       {/* Sticky Navigation Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border/50">
-        <div className="container mx-auto px-4 py-3 max-w-4xl flex justify-between items-center">
-          <Link to="/blog">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              All Articles
-            </Button>
-          </Link>
-          <Link to="/" className="inline-flex items-center gap-2 text-lg font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-8 h-8 rounded-lg" />
-            <span className="hidden sm:inline">Cake AI Artist</span>
-          </Link>
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <Home className="w-4 h-4" />
-              Home
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
+
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex gap-8">

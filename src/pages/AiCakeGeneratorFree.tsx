@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import featuredCake1 from "@/assets/featured-cake-1.jpg";
@@ -73,15 +74,7 @@ const AiCakeGeneratorFree = () => {
         steps={howToSteps}
       />
 
-      <nav className="border-b border-border bg-surface-elevated/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-            <span>Cake AI Artist</span>
-          </Link>
-          <Link to="/pricing" className="text-sm font-medium text-foreground hover:text-party-pink">Pricing</Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <section className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-5xl text-center">
