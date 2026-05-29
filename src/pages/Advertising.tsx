@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Home, Megaphone, Eye, UserCheck, Shield, Baby, Link2, Mail, Settings } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 
 const Advertising = () => {
@@ -25,12 +26,7 @@ const Advertising = () => {
       </Helmet>
       
       {/* Header with Logo */}
-      <header className="container mx-auto px-4 py-4">
-        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity">
-          <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-          <span>Cake AI Artist</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-12 max-w-4xl">
