@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { PartyPopper, Plus, Calendar, Users, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export default function PartyPlanner() {
   const navigate = useNavigate();
@@ -104,6 +105,7 @@ export default function PartyPlanner() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SiteHeader />
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>

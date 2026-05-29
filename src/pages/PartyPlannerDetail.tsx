@@ -34,6 +34,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SiteHeader } from "@/components/SiteHeader";
 
 // Themes grouped for the Select UI. Order within group matters; flatten preserves order.
 const THEME_GROUPS: Array<{ label: string; themes: string[] }> = [
@@ -985,6 +986,7 @@ export default function PartyPlannerDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SiteHeader />
       <div className="max-w-5xl mx-auto px-4 py-6">
         <Link to="/party-planner" className="text-sm text-muted-foreground hover:underline">
           ← All parties

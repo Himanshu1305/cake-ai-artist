@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ChefHat, Clock, Users } from "lucide-react";
 
 interface Recipe {
@@ -87,6 +88,7 @@ const Recipes = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SiteHeader />
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={desc} />
