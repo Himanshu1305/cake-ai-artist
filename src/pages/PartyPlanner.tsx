@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export default function PartyPlanner() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [isPremium, setIsPremium] = useState(false);
@@ -19,6 +20,8 @@ export default function PartyPlanner() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [creating, setCreating] = useState(false);
+  const [prefillOccasion, setPrefillOccasion] = useState<string | null>(null);
+  const [prefillTheme, setPrefillTheme] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -40,15 +43,38 @@ export default function PartyPlanner() {
         .order("created_at", { ascending: false });
       setParties(data || []);
       setLoading(false);
+
+      // Handle prefill from cake generation flow
+      const prefillName = searchParams.get("name");
+      const prefillOcc = searchParams.get("occasion");
+      const prefillThm = searchParams.get("theme");
+      if (prefillName) {
+        const suggestedTitle = prefillOcc
+          ? `${prefillName}'s ${prefillOcc.charAt(0).toUpperCase() + prefillOcc.slice(1)}`
+          : `${prefillName}'s Party`;
+        const alreadyExists = (data || []).some((p) => p.title === suggestedTitle);
+        if (!alreadyExists) {
+          setTitle(suggestedTitle);
+          setPrefillOccasion(prefillOcc);
+          setPrefillTheme(prefillThm);
+          setOpen(true);
+        }
+        // Clear query so refresh doesn't re-open
+        setSearchParams({}, { replace: true });
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
     setCreating(true);
+    const insertPayload: any = { user_id: user.id, title: title.trim() };
+    if (prefillOccasion) insertPayload.occasion = prefillOccasion;
+    if (prefillTheme) insertPayload.theme = prefillTheme;
     const { data, error } = await supabase
       .from("parties")
-      .insert({ user_id: user.id, title: title.trim() })
+      .insert(insertPayload)
       .select()
       .single();
     setCreating(false);
@@ -58,6 +84,8 @@ export default function PartyPlanner() {
     }
     setOpen(false);
     setTitle("");
+    setPrefillOccasion(null);
+    setPrefillTheme(null);
     navigate(`/party-planner/${data.id}`);
   };
 
