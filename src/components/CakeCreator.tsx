@@ -2804,6 +2804,38 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                     />
                   </div>
                 )}
+
+                {/* Party Planner CTA - Show after saving to gallery */}
+                {isLoggedIn && savedCakeImageId && (
+                  <div className="pt-4 border-t border-muted">
+                    <div className="rounded-xl border-2 border-party-purple/30 bg-gradient-to-br from-party-purple/10 to-party-pink/10 p-5">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="font-semibold text-foreground flex items-center gap-2">
+                          🎊 Throw the whole party, not just the cake
+                        </h4>
+                        <span className="shrink-0 bg-gradient-to-r from-party-purple to-party-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          PREMIUM
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Let your AI Party Concierge build a smart checklist, send digital invites & track RSVPs — all themed around {name || "your celebration"}.
+                      </p>
+                      <Button
+                        onClick={() => {
+                          const params = new URLSearchParams();
+                          if (name) params.set("name", name);
+                          if (occasion) params.set("occasion", occasion);
+                          if (theme) params.set("theme", theme);
+                          navigate(`/party-planner?${params.toString()}`);
+                        }}
+                        className="w-full bg-gradient-to-r from-party-purple to-party-pink text-white border-0 hover:opacity-90"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Plan {name ? `${name}'s` : "the"} Party →
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Share Buttons */}
