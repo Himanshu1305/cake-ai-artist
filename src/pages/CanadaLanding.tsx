@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
@@ -203,52 +204,7 @@ const CanadaLanding = () => {
       <ConfettiRain count={32} />
       <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="CA" />
 
-      {/* Navigation */}
-      <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
-              <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-              <span>Cake AI Artist</span>
-            </Link>
-            
-            <div className="hidden lg:flex gap-2 items-center">
-              <Badge variant="outline" className="border-party-gold text-party-gold">🇨🇦 Canada</Badge>
-              <Link to="/how-it-works"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">How It Works</Button></Link>
-              <Link to="/pricing?country=CA">
-                <Button variant="ghost" size="sm" className="relative text-foreground/80 hover:text-foreground hover:bg-party-pink/10">
-                  Pricing
-                  <span className="absolute -top-1 -right-1 bg-gradient-party text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">🔥</span>
-                </Button>
-              </Link>
-              <Link to="/faq"><Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-party-pink/10">FAQ</Button></Link>
-              <Button onClick={() => navigate("/auth")} size="sm" className="bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
-            </div>
-
-            <Sheet>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-party-pink/10">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] bg-background/95 backdrop-blur-md border-l border-party-pink/20">
-                <div className="flex items-center gap-2 mb-6">
-                  <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-10 h-10 rounded-lg" />
-                  <span className="text-lg font-bold text-party-pink">Cake AI Artist</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Badge variant="outline" className="w-fit border-party-gold text-party-gold mb-4">🇨🇦 Canada</Badge>
-                  <Link to="/how-it-works"><Button variant="ghost" className="w-full justify-start">How It Works</Button></Link>
-                  <Link to="/pricing?country=CA"><Button variant="ghost" className="w-full justify-start">Pricing <span className="ml-2 bg-gradient-party text-white text-xs px-2 py-0.5 rounded-full">🔥 Sale</span></Button></Link>
-                  <Link to="/faq"><Button variant="ghost" className="w-full justify-start">FAQ</Button></Link>
-                  <div className="border-t border-party-pink/20 my-2" />
-                  <Button onClick={() => navigate("/auth")} className="w-full bg-gradient-party hover:opacity-90 text-white border-0">Sign In</Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
