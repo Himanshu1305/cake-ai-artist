@@ -58,10 +58,16 @@ export default function PartyRSVP() {
       }
       setGuest(g);
       setPlusOnes(g.plus_ones || 0);
-      setPlusOneNames(Array.isArray(g.plus_one_names) ? g.plus_one_names : []);
+      setPlusOneNames(
+        Array.isArray(g.plus_one_names)
+          ? (g.plus_one_names as unknown[]).map((x) => String(x ?? ""))
+          : [],
+      );
       setMealPreference(g.meal_preference || "");
       setCustomAnswers(
-        g.custom_answers && typeof g.custom_answers === "object" ? g.custom_answers : {},
+        g.custom_answers && typeof g.custom_answers === "object" && !Array.isArray(g.custom_answers)
+          ? (g.custom_answers as Record<string, string>)
+          : {},
       );
 
       const { data: p } = await supabase
