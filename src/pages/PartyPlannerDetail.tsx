@@ -903,6 +903,50 @@ export default function PartyPlannerDetail() {
     }
   };
 
+  const sendReminderInvites = async () => {
+    const pending = guests.filter((g) => g.email && g.invited_at && !g.responded_at);
+    if (!pending.length) {
+      toast.info("Everyone with an email has either responded or hasn't been invited yet");
+      return;
+    }
+    setSendingReminder(true);
+    toast.loading(`Reminding ${pending.length}…`, { id: "rem" });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
+      const { data, error } = await supabase.functions.invoke("send-party-invite", {
+        body: { partyId: id, guestIds: pending.map((g) => g.id), reminder: true },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      toast.success(`Sent ${data.sent} reminder${data.sent === 1 ? "" : "s"}`, { id: "rem" });
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reminders", { id: "rem" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
+  const saveRsvpSettings = async () => {
+    await supabase
+      .from("parties")
+      .update({
+        rsvp_deadline: rsvpDeadline ? rsvpDeadline.toISOString().slice(0, 10) : null,
+        custom_questions: customQuestions.filter((q) => q.question.trim()) as any,
+      } as any)
+      .eq("id", id);
+    toast.success("RSVP settings saved");
+  };
+
+  const updateTaskCost = async (taskId: string, patch: { estimated_cost?: number | null; actual_cost?: number | null }) => {
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, ...patch } : t)));
+    await supabase.from("party_tasks").update(patch as any).eq("id", taskId);
+  };
+
+
+
   if (!party) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   const completedCount = tasks.filter((t) => t.is_completed).length;
