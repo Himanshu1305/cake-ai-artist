@@ -1504,6 +1504,157 @@ export default function PartyPlannerDetail() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="budget">
+            {(() => {
+              const currencySymbol = (party as any).contact_email?.endsWith(".in") ? "₹" : "₹"; // default INR; per-task currency column reserved for future
+              const totalEstimated = tasks.reduce((s, t) => s + (Number(t.estimated_cost) || 0), 0);
+              const totalActual = tasks.reduce((s, t) => s + (Number(t.actual_cost) || 0), 0);
+              const budget = Number(party.budget) || 0;
+              const remaining = budget - totalActual;
+              const overBudget = budget > 0 && totalActual > budget;
+              const byCategory: Record<string, { est: number; act: number }> = {};
+              for (const t of tasks) {
+                const cat = (t.category || "other").toLowerCase();
+                if (!byCategory[cat]) byCategory[cat] = { est: 0, act: 0 };
+                byCategory[cat].est += Number(t.estimated_cost) || 0;
+                byCategory[cat].act += Number(t.actual_cost) || 0;
+              }
+              const maxCat = Math.max(1, ...Object.values(byCategory).map((c) => Math.max(c.est, c.act)));
+              return (
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Total Budget</CardTitle>
+                      <p className="text-sm text-muted-foreground">Set your overall budget — line-item costs below feed into the totals.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-wrap items-end gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Overall budget</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="50000"
+                            defaultValue={party.budget ?? ""}
+                            onBlur={async (e) => {
+                              const val = e.target.value ? Number(e.target.value) : null;
+                              await supabase.from("parties").update({ budget: val } as any).eq("id", id!);
+                              setParty((p: any) => ({ ...p, budget: val }));
+                            }}
+                            className="w-40"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">Planned</div>
+                          <div className="text-lg font-bold">{currencySymbol}{totalEstimated.toLocaleString()}</div>
+                        </div>
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">Spent</div>
+                          <div className={`text-lg font-bold ${overBudget ? "text-destructive" : ""}`}>{currencySymbol}{totalActual.toLocaleString()}</div>
+                        </div>
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">{remaining >= 0 ? "Remaining" : "Over by"}</div>
+                          <div className={`text-lg font-bold ${remaining < 0 ? "text-destructive" : "text-green-600"}`}>
+                            {currencySymbol}{Math.abs(remaining).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                      {budget > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${overBudget ? "bg-destructive" : "bg-primary"}`}
+                              style={{ width: `${Math.min(100, (totalActual / budget) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.round((totalActual / budget) * 100)}% of budget spent
+                          </p>
+                        </div>
+                      )}
+                      {overBudget && (
+                        <Badge variant="destructive">Over budget by {currencySymbol}{Math.abs(remaining).toLocaleString()}</Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {Object.keys(byCategory).length > 0 && (
+                    <Card>
+                      <CardHeader><CardTitle>By category</CardTitle></CardHeader>
+                      <CardContent className="space-y-3">
+                        {Object.entries(byCategory).map(([cat, vals]) => (
+                          <div key={cat} className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="capitalize font-medium">{cat}</span>
+                              <span className="text-muted-foreground">
+                                {currencySymbol}{vals.act.toLocaleString()} <span className="opacity-60">/ {currencySymbol}{vals.est.toLocaleString()} planned</span>
+                              </span>
+                            </div>
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden flex">
+                              <div className="h-full bg-primary" style={{ width: `${(vals.act / maxCat) * 100}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardHeader><CardTitle>Per-task costs</CardTitle></CardHeader>
+                    <CardContent>
+                      {tasks.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Build a checklist first — line-item costs show up here.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {tasks.map((t) => (
+                            <div key={t.id} className="flex items-center gap-2 p-2 border rounded-lg">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{t.title}</div>
+                                {t.category && (
+                                  <div className="text-xs text-muted-foreground capitalize">{t.category}</div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="Est."
+                                  defaultValue={t.estimated_cost ?? ""}
+                                  onBlur={(e) =>
+                                    updateTaskCost(t.id, {
+                                      estimated_cost: e.target.value ? Number(e.target.value) : null,
+                                    })
+                                  }
+                                  className="w-20 h-8 text-xs"
+                                />
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="Actual"
+                                  defaultValue={t.actual_cost ?? ""}
+                                  onBlur={(e) =>
+                                    updateTaskCost(t.id, {
+                                      actual_cost: e.target.value ? Number(e.target.value) : null,
+                                    })
+                                  }
+                                  className="w-20 h-8 text-xs"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="invite">
             <div className="grid lg:grid-cols-2 gap-4">
               <Card>
