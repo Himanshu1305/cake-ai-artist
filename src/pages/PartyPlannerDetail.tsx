@@ -1737,6 +1737,91 @@ export default function PartyPlannerDetail() {
           <TabsContent value="invites">
             <Card className="mb-4">
               <CardHeader>
+                <CardTitle>Public invite page</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p className="text-muted-foreground">Share this link anywhere — guests see a rich invite, countdown, who's coming, and can add to calendar.</p>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/party/${party.public_slug}`}
+                    className="text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/party/${party.public_slug}`);
+                      toast.success("Public link copied");
+                    }}
+                  >
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={`/party/${party.public_slug}`} target="_blank" rel="noopener noreferrer">Open</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-4">
+              <CardHeader>
+                <CardTitle>RSVP form settings</CardTitle>
+                <p className="text-sm text-muted-foreground">Set a deadline and ask custom questions on the RSVP form.</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>RSVP deadline</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !rsvpDeadline && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {rsvpDeadline ? format(rsvpDeadline, "PPP") : "No deadline"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={rsvpDeadline} onSelect={setRsvpDeadline} initialFocus className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label>Custom questions (up to 3)</Label>
+                  {customQuestions.map((q, i) => (
+                    <div key={q.id} className="flex gap-2">
+                      <Input
+                        value={q.question}
+                        placeholder="e.g. Any song requests?"
+                        onChange={(e) =>
+                          setCustomQuestions((qs) =>
+                            qs.map((x, idx) => (idx === i ? { ...x, question: e.target.value } : x)),
+                          )
+                        }
+                      />
+                      <Button size="icon" variant="ghost" onClick={() => setCustomQuestions((qs) => qs.filter((_, idx) => idx !== i))}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {customQuestions.length < 3 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setCustomQuestions((qs) => [...qs, { id: `q-${Math.random().toString(36).slice(2, 8)}`, question: "" }])
+                      }
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Add question
+                    </Button>
+                  )}
+                </div>
+                <Button onClick={saveRsvpSettings} size="sm">
+                  <Save className="w-4 h-4 mr-2" /> Save RSVP settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-4">
+              <CardHeader>
                 <CardTitle>Add a guest</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -1760,15 +1845,25 @@ export default function PartyPlannerDetail() {
             </Card>
 
             <Card>
-              <CardHeader className="flex-row items-center justify-between">
+              <CardHeader className="flex-row items-center justify-between flex-wrap gap-2">
                 <CardTitle>Guest List ({guests.length})</CardTitle>
-                <Button
-                  onClick={sendInvites}
-                  size="sm"
-                  disabled={!guests.some((g) => g.email && !g.invited_at)}
-                >
-                  <Mail className="w-4 h-4 mr-1" /> Send New Invites
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={sendReminderInvites}
+                    size="sm"
+                    variant="outline"
+                    disabled={sendingReminder || !guests.some((g) => g.email && g.invited_at && !g.responded_at)}
+                  >
+                    🔔 Remind non-responders
+                  </Button>
+                  <Button
+                    onClick={sendInvites}
+                    size="sm"
+                    disabled={!guests.some((g) => g.email && !g.invited_at)}
+                  >
+                    <Mail className="w-4 h-4 mr-1" /> Send New Invites
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {guests.length === 0 ? (
