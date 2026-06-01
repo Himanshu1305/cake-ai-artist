@@ -51,6 +51,7 @@ const EmbedGalleryPage = lazyWithRetry(() =>
 const PartyPlanner = lazyWithRetry(() => import("./pages/PartyPlanner"));
 const PartyPlannerDetail = lazyWithRetry(() => import("./pages/PartyPlannerDetail"));
 const PartyRSVP = lazyWithRetry(() => import("./pages/PartyRSVP"));
+const PublicParty = lazyWithRetry(() => import("./pages/PublicParty"));
 const SharedCake = lazyWithRetry(() => import("./pages/SharedCake"));
 const Recipes = lazyWithRetry(() => import("./pages/Recipes"));
 const RecipeDetail = lazyWithRetry(() => import("./pages/RecipeDetail"));
@@ -117,6 +118,7 @@ const App = () => {
                   <Route path="/party-planner" element={<PartyPlanner />} />
                   <Route path="/party-planner/:id" element={<PartyPlannerDetail />} />
                   <Route path="/rsvp/:token" element={<PartyRSVP />} />
+                  <Route path="/party/:slug" element={<PublicParty />} />
                   <Route path="/cake/:id" element={<SharedCake />} />
                   <Route path="/recipes" element={<Recipes />} />
                   <Route path="/recipes/:slug" element={<RecipeDetail />} />
