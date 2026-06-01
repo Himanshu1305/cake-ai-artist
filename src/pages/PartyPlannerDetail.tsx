@@ -1893,7 +1893,15 @@ export default function PartyPlannerDetail() {
                                 {g.rsvp_status}
                               </Badge>
                               {g.invited_at && (
-                                <span className="text-xs text-muted-foreground">Invited</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {g.responded_at ? "Responded" : "Invited"}
+                                </span>
+                              )}
+                              {g.plus_ones > 0 && (
+                                <span className="text-xs text-muted-foreground">+{g.plus_ones}</span>
+                              )}
+                              {g.meal_preference && (
+                                <span className="text-xs text-muted-foreground">🍽 {g.meal_preference}</span>
                               )}
                             </div>
                           </div>
