@@ -688,6 +688,7 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          custom_questions: Json | null
           event_date: string | null
           event_timezone: string | null
           guest_count: number | null
@@ -699,6 +700,7 @@ export type Database = {
           notes: string | null
           occasion: string | null
           public_slug: string
+          rsvp_deadline: string | null
           status: string
           theme: string | null
           title: string
@@ -714,6 +716,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          custom_questions?: Json | null
           event_date?: string | null
           event_timezone?: string | null
           guest_count?: number | null
@@ -725,6 +728,7 @@ export type Database = {
           notes?: string | null
           occasion?: string | null
           public_slug?: string
+          rsvp_deadline?: string | null
           status?: string
           theme?: string | null
           title: string
@@ -740,6 +744,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          custom_questions?: Json | null
           event_date?: string | null
           event_timezone?: string | null
           guest_count?: number | null
@@ -751,6 +756,7 @@ export type Database = {
           notes?: string | null
           occasion?: string | null
           public_slug?: string
+          rsvp_deadline?: string | null
           status?: string
           theme?: string | null
           title?: string
@@ -795,12 +801,15 @@ export type Database = {
       party_guests: {
         Row: {
           created_at: string
+          custom_answers: Json | null
           email: string | null
           id: string
           invited_at: string | null
+          meal_preference: string | null
           name: string
           notes: string | null
           party_id: string
+          plus_one_names: Json | null
           plus_ones: number | null
           responded_at: string | null
           rsvp_status: string
@@ -808,12 +817,15 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_answers?: Json | null
           email?: string | null
           id?: string
           invited_at?: string | null
+          meal_preference?: string | null
           name: string
           notes?: string | null
           party_id: string
+          plus_one_names?: Json | null
           plus_ones?: number | null
           responded_at?: string | null
           rsvp_status?: string
@@ -821,12 +833,15 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_answers?: Json | null
           email?: string | null
           id?: string
           invited_at?: string | null
+          meal_preference?: string | null
           name?: string
           notes?: string | null
           party_id?: string
+          plus_one_names?: Json | null
           plus_ones?: number | null
           responded_at?: string | null
           rsvp_status?: string
@@ -895,10 +910,13 @@ export type Database = {
       }
       party_tasks: {
         Row: {
+          actual_cost: number | null
           category: string | null
           created_at: string
+          currency: string | null
           description: string | null
           due_date: string | null
+          estimated_cost: number | null
           id: string
           is_completed: boolean
           party_id: string
@@ -913,10 +931,13 @@ export type Database = {
           vendor_status: string
         }
         Insert: {
+          actual_cost?: number | null
           category?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           due_date?: string | null
+          estimated_cost?: number | null
           id?: string
           is_completed?: boolean
           party_id: string
@@ -931,10 +952,13 @@ export type Database = {
           vendor_status?: string
         }
         Update: {
+          actual_cost?: number | null
           category?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           due_date?: string | null
+          estimated_cost?: number | null
           id?: string
           is_completed?: boolean
           party_id?: string
@@ -1351,6 +1375,7 @@ export type Database = {
         Returns: undefined
       }
       get_available_spots: { Args: never; Returns: Json }
+      get_party_public: { Args: { p_slug: string }; Returns: Json }
       get_public_cake: {
         Args: { p_id: string }
         Returns: {
