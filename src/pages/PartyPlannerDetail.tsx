@@ -615,6 +615,16 @@ export default function PartyPlannerDetail() {
     setGuests(g || []);
     setMessages(m || []);
     setChildAge((p as any).child_age != null ? String((p as any).child_age) : "");
+    setRsvpDeadline((p as any).rsvp_deadline ? new Date((p as any).rsvp_deadline) : undefined);
+    const cqRaw = (p as any).custom_questions;
+    setCustomQuestions(
+      Array.isArray(cqRaw)
+        ? cqRaw.filter((q: any) => q && typeof q.question === "string").map((q: any) => ({
+            id: String(q.id || `q-${Math.random().toString(36).slice(2, 8)}`),
+            question: String(q.question),
+          }))
+        : [],
+    );
 
     // Auto-generate hero artwork when missing or stale (theme/occasion/age changed).
     const meta = (p as any).invite_artwork_meta || {};
