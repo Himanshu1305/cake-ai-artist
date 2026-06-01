@@ -545,6 +545,9 @@ export default function PartyPlannerDetail() {
   const [artworkGenerating, setArtworkGenerating] = useState(false);
   const [childAge, setChildAge] = useState<string>("");
   const [showSecondary, setShowSecondary] = useState(false);
+  const [rsvpDeadline, setRsvpDeadline] = useState<Date | undefined>(undefined);
+  const [customQuestions, setCustomQuestions] = useState<Array<{ id: string; question: string }>>([]);
+  const [sendingReminder, setSendingReminder] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
