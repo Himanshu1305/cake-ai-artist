@@ -196,7 +196,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { partyId, guestIds } = await req.json();
+    const { partyId, guestIds, reminder } = await req.json();
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -226,13 +226,21 @@ serve(async (req) => {
     const { data: profile } = await supabase.from("profiles").select("first_name, email").eq("id", userId).maybeSingle();
     const hostName = profile?.first_name || "Your friend";
 
-    const guestQuery = supabase.from("party_guests").select("*").eq("party_id", partyId);
-    const { data: guests } = guestIds?.length
-      ? await guestQuery.in("id", guestIds)
-      : await guestQuery.is("invited_at", null);
+    let guests: any[] | null = null;
+    if (guestIds?.length) {
+      const { data } = await supabase.from("party_guests").select("*").eq("party_id", partyId).in("id", guestIds);
+      guests = data;
+    } else if (reminder) {
+      const { data } = await supabase.from("party_guests").select("*").eq("party_id", partyId).not("invited_at", "is", null).is("responded_at", null);
+      guests = data;
+    } else {
+      const { data } = await supabase.from("party_guests").select("*").eq("party_id", partyId).is("invited_at", null);
+      guests = data;
+    }
 
     const origin = req.headers.get("origin") || "https://cakeaiartist.com";
     const results: any[] = [];
+    const subjectPrefix = reminder ? "⏰ Friendly reminder — " : "🎉 You're invited to ";
     for (const g of guests || []) {
       if (!g.email) continue;
       const rsvpUrl = `${origin}/rsvp/${g.rsvp_token}`;
@@ -240,10 +248,13 @@ serve(async (req) => {
         await resend.emails.send({
           from: "Cake AI Artist <invites@cakeaiartist.com>",
           to: [g.email],
-          subject: `🎉 You're invited to ${party.title}`,
+          subject: `${subjectPrefix}${party.title}`,
           html: inviteEmail(hostName, party, g.name, rsvpUrl),
         });
-        await supabase.from("party_guests").update({ invited_at: new Date().toISOString() }).eq("id", g.id);
+        // Only stamp invited_at on first send; reminders don't overwrite
+        if (!reminder) {
+          await supabase.from("party_guests").update({ invited_at: new Date().toISOString() }).eq("id", g.id);
+        }
         results.push({ id: g.id, ok: true });
       } catch (err) {
         console.error("send failed for", g.email, err);

@@ -1,51 +1,100 @@
-# Integrate Party Planner into the Cake Generation Flow
 
-## Why this is needed
+# Party Planner — Tier 1 Improvements (excluding WhatsApp/SMS)
 
-Today, Party Planner only lives in the site header. Users who just generated a cake (their highest intent moment — they've named a recipient, picked an occasion, theme, date context) are never invited to plan the actual party around it. Meanwhile the Party Pack Generator (printables) already appears in that exact spot, so the slot is proven.
+Ship 4 upgrades that close the biggest gaps vs Partiful / Evite / RSVPify without new infra dependencies.
 
-`SuccessCelebration.tsx` exists but is never imported anywhere — dead code we can either delete or repurpose.
+## 1. Rich public event page at `/party/:public_slug`
 
-## Recommendation
+A new public route guests land on when they get the invite link. Read-only, no auth required.
 
-Add a **contextual Party Planner CTA card** in two places, prefilled with the cake's context (recipient name → party title, occasion, theme). Keep it lightweight; don't compete with sharing.
+**Layout (mobile-first, 484px target):**
+- Hero with `invite_artwork_url` (or themed fallback)
+- Countdown to `event_date` (reuses `useCountdown`)
+- `invite_headline` + `invite_message`
+- Date · time · timezone · venue · city (with "Open in Maps" link)
+- Host contact (email/phone) — only if filled
+- "Who's coming" — list of guests with `rsvp_status='yes'` (first name only)
+- RSVP CTA → links to existing `/rsvp/:token` (each guest's invite email already carries their token)
+- "Add to Calendar" button (.ics download — see #4)
+- Footer: subtle "Powered by Cake AI Artist" with link to home
 
-### 1. Inline card under Party Pack section (primary placement)
+**Data**: `parties` already has `Public can view by slug` SELECT policy. `party_guests` needs a read-by-slug path for the "Who's coming" list. Add a SECURITY DEFINER RPC `get_party_public(p_slug text)` that returns party fields + an array of confirmed guest first-names. Avoids opening guest table to anon.
 
-In `src/components/CakeCreator.tsx` right after the `PartyPackGenerator` block (~line 2806), add a sibling card:
+**Files**: `src/pages/PublicParty.tsx` (new), route added in `src/App.tsx`. SQL migration for the RPC.
 
-- Heading: "Throw the whole party, not just the cake"
-- Subtext: one line about AI concierge + checklist + invites with RSVP
-- Primary button → `/party-planner?prefill=...` with `name`, `occasion`, `theme` as query params
-- Small "Premium" pill (matches existing Party Planner gating)
-- Only show when `isLoggedIn && savedCakeImageId` (same gate as Party Pack)
+## 2. Per-line-item budget tracking
 
-### 2. Post-generation success modal (secondary, optional reach)
+Turn `parties.budget` (single number) into a real tracker driven by tasks.
 
-Wire up the unused `SuccessCelebration.tsx` so it actually fires after a successful generation, and add a 4th button: **"Plan the Party →"** alongside Share / Download / Create Another. This catches users who close the editor immediately.
+**Schema**: add to `party_tasks`:
+- `estimated_cost numeric`
+- `actual_cost numeric`
+- `currency text` (inherits from party — default INR/USD by host's profile country)
 
-If you'd rather not touch the success flow, we can skip #2 and ship only #1.
+**UI**: new "💰 Budget" tab on `PartyPlannerDetail.tsx` (6th tab):
+- Total budget input (existing `parties.budget`)
+- Per-task estimate + actual inline-edit table grouped by category
+- Summary card: Planned vs Spent, % of budget, remaining, over-budget badge
+- Per-category bar chart (simple CSS bars, no chart lib)
 
-### 3. Prefill on Party Planner side
+**AI concierge**: extend `build_party_plan` tool schema with optional `estimated_cost` per task. Update system prompt to fill estimates based on `city` + `guest_count`. Existing tasks without estimates stay editable.
 
-In `src/pages/PartyPlanner.tsx`, read `?prefill=` query params on mount. If present and the user has no existing party with that title, auto-open the "New Party" dialog with the title prefilled (e.g. "Mia's Birthday"). Then when the party is created, also seed `occasion` and `theme` on the insert so the AI concierge skips re-asking.
+**Files**: migration, `PartyPlannerDetail.tsx` (new tab), `supabase/functions/party-planner-chat/index.ts` (tool schema + prompt).
 
-### 4. Non-premium handling
+## 3. RSVP upgrades
 
-Party Planner is premium-gated. The CTA should still be visible to free users — clicking takes them to `/party-planner`, which already shows the upgrade screen. This doubles as a soft upsell at peak excitement. Add a subtle "Premium" badge so expectations are clear.
+**Schema additions to `party_guests`:**
+- `plus_one_names jsonb` (array of strings)
+- `meal_preference text` (free text — "vegetarian", "vegan", "no nuts")
+- `custom_answers jsonb` (answers to host's custom questions)
 
-## Files to change
+**Schema additions to `parties`:**
+- `rsvp_deadline date`
+- `custom_questions jsonb` — array of `{ id, question, type: 'text' | 'choice', options? }`
 
-- `src/components/CakeCreator.tsx` — add CTA card after PartyPackGenerator block (~line 2806)
-- `src/pages/PartyPlanner.tsx` — read prefill query params, auto-open create dialog, seed occasion/theme
-- `src/components/SuccessCelebration.tsx` — add "Plan the Party" button (only if doing #2)
-- `src/components/CakeCreator.tsx` — actually mount `<SuccessCelebration>` after a successful save (only if doing #2)
+**Host UI** (Invites tab on `PartyPlannerDetail.tsx`):
+- New "RSVP form settings" collapsible: deadline picker, toggle meal preference, add/remove up to 3 custom questions
+- Guest list shows meal preferences inline + plus-one names
+- "Send reminder to non-responders" button — calls existing `send-party-invite` with a different template for guests where `responded_at IS NULL` and `invited_at IS NOT NULL`
 
-## Out of scope (flag for later)
+**Guest UI** (`src/pages/PartyRSVP.tsx`):
+- If status=yes and plus_ones>0, prompt for each plus-one's name
+- Meal preference field if enabled
+- Render custom questions
+- Show RSVP deadline + "respond by" copy
 
-- Reverse direction: from inside a Party Planner party, deep-link to the cake creator prefilled with the party's recipient/occasion/theme. Worth doing in a follow-up — closes the loop both ways.
-- Showing the generated cake image as the party's hero on the planner detail page.
+**Files**: migration, `PartyPlannerDetail.tsx` (Invites tab additions), `PartyRSVP.tsx`, `send-party-invite/index.ts` (reminder template branch).
 
-## Open question
+## 4. Add-to-Calendar (.ics)
 
-Do you want **both** placements (#1 inline card + #2 success modal), or just the inline card? The inline card alone is the safe minimum; adding the modal gives broader reach but means wiring up currently-dead code.
+Client-side generated, no backend. Used in two places:
+- Public event page (#1)
+- RSVP confirmation page after guest says "yes"
+
+**Util**: `src/utils/icsCalendar.ts` — builds a minimal VCALENDAR string from party fields and triggers download. No deps.
+
+## Non-goals (explicit)
+
+- WhatsApp / SMS distribution — deferred per user request
+- Co-host collaboration
+- Vendor marketplace
+- Photo memory wall / post-event loop
+- Quick-start templates
+
+## File list
+
+- `supabase/migrations/<timestamp>_party_planner_tier1.sql` — new columns, RPC
+- `src/pages/PublicParty.tsx` — new public event page
+- `src/App.tsx` — register `/party/:slug` route
+- `src/utils/icsCalendar.ts` — .ics builder
+- `src/pages/PartyPlannerDetail.tsx` — Budget tab + RSVP settings UI + reminder button
+- `src/pages/PartyRSVP.tsx` — plus-one names, meal, custom Qs, .ics button
+- `supabase/functions/party-planner-chat/index.ts` — estimated_cost on tool schema
+- `supabase/functions/send-party-invite/index.ts` — reminder template branch
+
+## Order of build
+
+1. Migration first (schema unlocks everything)
+2. Public event page + .ics (highest visible impact)
+3. RSVP upgrades (host UI then guest UI)
+4. Budget tab + AI concierge estimates

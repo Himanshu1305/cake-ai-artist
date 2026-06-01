@@ -545,6 +545,9 @@ export default function PartyPlannerDetail() {
   const [artworkGenerating, setArtworkGenerating] = useState(false);
   const [childAge, setChildAge] = useState<string>("");
   const [showSecondary, setShowSecondary] = useState(false);
+  const [rsvpDeadline, setRsvpDeadline] = useState<Date | undefined>(undefined);
+  const [customQuestions, setCustomQuestions] = useState<Array<{ id: string; question: string }>>([]);
+  const [sendingReminder, setSendingReminder] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -612,6 +615,16 @@ export default function PartyPlannerDetail() {
     setGuests(g || []);
     setMessages(m || []);
     setChildAge((p as any).child_age != null ? String((p as any).child_age) : "");
+    setRsvpDeadline((p as any).rsvp_deadline ? new Date((p as any).rsvp_deadline) : undefined);
+    const cqRaw = (p as any).custom_questions;
+    setCustomQuestions(
+      Array.isArray(cqRaw)
+        ? cqRaw.filter((q: any) => q && typeof q.question === "string").map((q: any) => ({
+            id: String(q.id || `q-${Math.random().toString(36).slice(2, 8)}`),
+            question: String(q.question),
+          }))
+        : [],
+    );
 
     // Auto-generate hero artwork when missing or stale (theme/occasion/age changed).
     const meta = (p as any).invite_artwork_meta || {};
@@ -890,6 +903,50 @@ export default function PartyPlannerDetail() {
     }
   };
 
+  const sendReminderInvites = async () => {
+    const pending = guests.filter((g) => g.email && g.invited_at && !g.responded_at);
+    if (!pending.length) {
+      toast.info("Everyone with an email has either responded or hasn't been invited yet");
+      return;
+    }
+    setSendingReminder(true);
+    toast.loading(`Reminding ${pending.length}…`, { id: "rem" });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Please sign in again");
+      const { data, error } = await supabase.functions.invoke("send-party-invite", {
+        body: { partyId: id, guestIds: pending.map((g) => g.id), reminder: true },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      toast.success(`Sent ${data.sent} reminder${data.sent === 1 ? "" : "s"}`, { id: "rem" });
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reminders", { id: "rem" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
+  const saveRsvpSettings = async () => {
+    await supabase
+      .from("parties")
+      .update({
+        rsvp_deadline: rsvpDeadline ? rsvpDeadline.toISOString().slice(0, 10) : null,
+        custom_questions: customQuestions.filter((q) => q.question.trim()) as any,
+      } as any)
+      .eq("id", id);
+    toast.success("RSVP settings saved");
+  };
+
+  const updateTaskCost = async (taskId: string, patch: { estimated_cost?: number | null; actual_cost?: number | null }) => {
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, ...patch } : t)));
+    await supabase.from("party_tasks").update(patch as any).eq("id", taskId);
+  };
+
+
+
   if (!party) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   const completedCount = tasks.filter((t) => t.is_completed).length;
@@ -1015,12 +1072,13 @@ export default function PartyPlannerDetail() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto">
             <TabsTrigger value="details">📋 Details</TabsTrigger>
             <TabsTrigger value="chat">
               <MessageSquare className="w-4 h-4 mr-1" /> Concierge
             </TabsTrigger>
             <TabsTrigger value="checklist">✅ Checklist {tasks.length > 0 && `(${tasks.length})`}</TabsTrigger>
+            <TabsTrigger value="budget">💰 Budget</TabsTrigger>
             <TabsTrigger value="invite">
               <Ticket className="w-4 h-4 mr-1" /> Invite
             </TabsTrigger>
@@ -1446,6 +1504,157 @@ export default function PartyPlannerDetail() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="budget">
+            {(() => {
+              const currencySymbol = (party as any).contact_email?.endsWith(".in") ? "₹" : "₹"; // default INR; per-task currency column reserved for future
+              const totalEstimated = tasks.reduce((s, t) => s + (Number(t.estimated_cost) || 0), 0);
+              const totalActual = tasks.reduce((s, t) => s + (Number(t.actual_cost) || 0), 0);
+              const budget = Number(party.budget) || 0;
+              const remaining = budget - totalActual;
+              const overBudget = budget > 0 && totalActual > budget;
+              const byCategory: Record<string, { est: number; act: number }> = {};
+              for (const t of tasks) {
+                const cat = (t.category || "other").toLowerCase();
+                if (!byCategory[cat]) byCategory[cat] = { est: 0, act: 0 };
+                byCategory[cat].est += Number(t.estimated_cost) || 0;
+                byCategory[cat].act += Number(t.actual_cost) || 0;
+              }
+              const maxCat = Math.max(1, ...Object.values(byCategory).map((c) => Math.max(c.est, c.act)));
+              return (
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Total Budget</CardTitle>
+                      <p className="text-sm text-muted-foreground">Set your overall budget — line-item costs below feed into the totals.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-wrap items-end gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Overall budget</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="50000"
+                            defaultValue={party.budget ?? ""}
+                            onBlur={async (e) => {
+                              const val = e.target.value ? Number(e.target.value) : null;
+                              await supabase.from("parties").update({ budget: val } as any).eq("id", id!);
+                              setParty((p: any) => ({ ...p, budget: val }));
+                            }}
+                            className="w-40"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">Planned</div>
+                          <div className="text-lg font-bold">{currencySymbol}{totalEstimated.toLocaleString()}</div>
+                        </div>
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">Spent</div>
+                          <div className={`text-lg font-bold ${overBudget ? "text-destructive" : ""}`}>{currencySymbol}{totalActual.toLocaleString()}</div>
+                        </div>
+                        <div className="rounded-lg border p-3">
+                          <div className="text-xs text-muted-foreground">{remaining >= 0 ? "Remaining" : "Over by"}</div>
+                          <div className={`text-lg font-bold ${remaining < 0 ? "text-destructive" : "text-green-600"}`}>
+                            {currencySymbol}{Math.abs(remaining).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                      {budget > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${overBudget ? "bg-destructive" : "bg-primary"}`}
+                              style={{ width: `${Math.min(100, (totalActual / budget) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.round((totalActual / budget) * 100)}% of budget spent
+                          </p>
+                        </div>
+                      )}
+                      {overBudget && (
+                        <Badge variant="destructive">Over budget by {currencySymbol}{Math.abs(remaining).toLocaleString()}</Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {Object.keys(byCategory).length > 0 && (
+                    <Card>
+                      <CardHeader><CardTitle>By category</CardTitle></CardHeader>
+                      <CardContent className="space-y-3">
+                        {Object.entries(byCategory).map(([cat, vals]) => (
+                          <div key={cat} className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="capitalize font-medium">{cat}</span>
+                              <span className="text-muted-foreground">
+                                {currencySymbol}{vals.act.toLocaleString()} <span className="opacity-60">/ {currencySymbol}{vals.est.toLocaleString()} planned</span>
+                              </span>
+                            </div>
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden flex">
+                              <div className="h-full bg-primary" style={{ width: `${(vals.act / maxCat) * 100}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardHeader><CardTitle>Per-task costs</CardTitle></CardHeader>
+                    <CardContent>
+                      {tasks.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Build a checklist first — line-item costs show up here.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {tasks.map((t) => (
+                            <div key={t.id} className="flex items-center gap-2 p-2 border rounded-lg">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{t.title}</div>
+                                {t.category && (
+                                  <div className="text-xs text-muted-foreground capitalize">{t.category}</div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="Est."
+                                  defaultValue={t.estimated_cost ?? ""}
+                                  onBlur={(e) =>
+                                    updateTaskCost(t.id, {
+                                      estimated_cost: e.target.value ? Number(e.target.value) : null,
+                                    })
+                                  }
+                                  className="w-20 h-8 text-xs"
+                                />
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="Actual"
+                                  defaultValue={t.actual_cost ?? ""}
+                                  onBlur={(e) =>
+                                    updateTaskCost(t.id, {
+                                      actual_cost: e.target.value ? Number(e.target.value) : null,
+                                    })
+                                  }
+                                  className="w-20 h-8 text-xs"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="invite">
             <div className="grid lg:grid-cols-2 gap-4">
               <Card>
@@ -1528,6 +1737,91 @@ export default function PartyPlannerDetail() {
           <TabsContent value="invites">
             <Card className="mb-4">
               <CardHeader>
+                <CardTitle>Public invite page</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p className="text-muted-foreground">Share this link anywhere — guests see a rich invite, countdown, who's coming, and can add to calendar.</p>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/party/${party.public_slug}`}
+                    className="text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/party/${party.public_slug}`);
+                      toast.success("Public link copied");
+                    }}
+                  >
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={`/party/${party.public_slug}`} target="_blank" rel="noopener noreferrer">Open</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-4">
+              <CardHeader>
+                <CardTitle>RSVP form settings</CardTitle>
+                <p className="text-sm text-muted-foreground">Set a deadline and ask custom questions on the RSVP form.</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>RSVP deadline</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !rsvpDeadline && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {rsvpDeadline ? format(rsvpDeadline, "PPP") : "No deadline"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={rsvpDeadline} onSelect={setRsvpDeadline} initialFocus className="p-3 pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label>Custom questions (up to 3)</Label>
+                  {customQuestions.map((q, i) => (
+                    <div key={q.id} className="flex gap-2">
+                      <Input
+                        value={q.question}
+                        placeholder="e.g. Any song requests?"
+                        onChange={(e) =>
+                          setCustomQuestions((qs) =>
+                            qs.map((x, idx) => (idx === i ? { ...x, question: e.target.value } : x)),
+                          )
+                        }
+                      />
+                      <Button size="icon" variant="ghost" onClick={() => setCustomQuestions((qs) => qs.filter((_, idx) => idx !== i))}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {customQuestions.length < 3 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setCustomQuestions((qs) => [...qs, { id: `q-${Math.random().toString(36).slice(2, 8)}`, question: "" }])
+                      }
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Add question
+                    </Button>
+                  )}
+                </div>
+                <Button onClick={saveRsvpSettings} size="sm">
+                  <Save className="w-4 h-4 mr-2" /> Save RSVP settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-4">
+              <CardHeader>
                 <CardTitle>Add a guest</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -1551,15 +1845,25 @@ export default function PartyPlannerDetail() {
             </Card>
 
             <Card>
-              <CardHeader className="flex-row items-center justify-between">
+              <CardHeader className="flex-row items-center justify-between flex-wrap gap-2">
                 <CardTitle>Guest List ({guests.length})</CardTitle>
-                <Button
-                  onClick={sendInvites}
-                  size="sm"
-                  disabled={!guests.some((g) => g.email && !g.invited_at)}
-                >
-                  <Mail className="w-4 h-4 mr-1" /> Send New Invites
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={sendReminderInvites}
+                    size="sm"
+                    variant="outline"
+                    disabled={sendingReminder || !guests.some((g) => g.email && g.invited_at && !g.responded_at)}
+                  >
+                    🔔 Remind non-responders
+                  </Button>
+                  <Button
+                    onClick={sendInvites}
+                    size="sm"
+                    disabled={!guests.some((g) => g.email && !g.invited_at)}
+                  >
+                    <Mail className="w-4 h-4 mr-1" /> Send New Invites
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {guests.length === 0 ? (
@@ -1589,7 +1893,15 @@ export default function PartyPlannerDetail() {
                                 {g.rsvp_status}
                               </Badge>
                               {g.invited_at && (
-                                <span className="text-xs text-muted-foreground">Invited</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {g.responded_at ? "Responded" : "Invited"}
+                                </span>
+                              )}
+                              {g.plus_ones > 0 && (
+                                <span className="text-xs text-muted-foreground">+{g.plus_ones}</span>
+                              )}
+                              {g.meal_preference && (
+                                <span className="text-xs text-muted-foreground">🍽 {g.meal_preference}</span>
                               )}
                             </div>
                           </div>
