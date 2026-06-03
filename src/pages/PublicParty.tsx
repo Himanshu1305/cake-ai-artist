@@ -163,6 +163,10 @@ export default function PublicParty() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-amber-50 to-rose-50">
+      <Helmet>
+        <title>{party.title} — You're invited</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
         {/* Hero */}
         <div className="rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-pink-500 to-rose-600 text-white">
