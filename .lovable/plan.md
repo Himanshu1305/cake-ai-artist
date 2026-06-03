@@ -1,100 +1,131 @@
 
-# Party Planner — Tier 1 Improvements (excluding WhatsApp/SMS)
+# Next steps after Tier 1
 
-Ship 4 upgrades that close the biggest gaps vs Partiful / Evite / RSVPify without new infra dependencies.
+Two parallel workstreams: **Tier 2 Party Planner features** (depth) and an **SEO sprint** (reach). The SEO sprint is the bigger near-term win since the site currently surfaces for only ~15 keywords and ranks #13 even for its own brand term "cake ai".
 
-## 1. Rich public event page at `/party/:public_slug`
+---
 
-A new public route guests land on when they get the invite link. Read-only, no auth required.
+## A. Tier 2 Party Planner (deferred work from competitor analysis)
 
-**Layout (mobile-first, 484px target):**
-- Hero with `invite_artwork_url` (or themed fallback)
-- Countdown to `event_date` (reuses `useCountdown`)
-- `invite_headline` + `invite_message`
-- Date · time · timezone · venue · city (with "Open in Maps" link)
-- Host contact (email/phone) — only if filled
-- "Who's coming" — list of guests with `rsvp_status='yes'` (first name only)
-- RSVP CTA → links to existing `/rsvp/:token` (each guest's invite email already carries their token)
-- "Add to Calendar" button (.ics download — see #4)
-- Footer: subtle "Powered by Cake AI Artist" with link to home
+Pick what to ship; not all four are required:
 
-**Data**: `parties` already has `Public can view by slug` SELECT policy. `party_guests` needs a read-by-slug path for the "Who's coming" list. Add a SECURITY DEFINER RPC `get_party_public(p_slug text)` that returns party fields + an array of confirmed guest first-names. Avoids opening guest table to anon.
+1. **AI vendor suggestions by city** — concierge already knows the city; extend it to suggest 2-3 vendor types per task (bakers, decorators, photographers) with realistic local price ranges. No new infra — prompt change + UI chip on each task.
+2. **Quick-start templates** — 5 prebuilt party blueprints (kid birthday, milestone, baby shower, anniversary, corporate) so users don't always go through chat. One-click → seeds tasks + RSVP defaults.
+3. **Host countdown reminders** — piggy-back on existing `send-anniversary-reminders` cron: email host at T-14 / T-7 / T-2 / T-0 with overdue tasks + RSVP status.
+4. **Co-host invite** — add `party_collaborators` table; second user can edit tasks/guests. Useful but adds auth complexity.
 
-**Files**: `src/pages/PublicParty.tsx` (new), route added in `src/App.tsx`. SQL migration for the RPC.
+Recommendation: ship **#1 + #2 + #3** as Tier 2. Skip #4 unless users ask.
 
-## 2. Per-line-item budget tracking
+---
 
-Turn `parties.budget` (single number) into a real tracker driven by tasks.
+## B. SEO sprint — keyword research & page optimization
 
-**Schema**: add to `party_tasks`:
-- `estimated_cost numeric`
-- `actual_cost numeric`
-- `currency text` (inherits from party — default INR/USD by host's profile country)
+### What Semrush shows today (US database)
 
-**UI**: new "💰 Budget" tab on `PartyPlannerDetail.tsx` (6th tab):
-- Total budget input (existing `parties.budget`)
-- Per-task estimate + actual inline-edit table grouped by category
-- Summary card: Planned vs Spent, % of budget, remaining, over-budget badge
-- Per-category bar chart (simple CSS bars, no chart lib)
+- Site has **15 indexed keywords**, est. **1 visit/mo**. Ranks #13 for "cake ai" (320/mo, KD 27) and #13 for "birthday cake ai" (50/mo).
+- All ranking URLs are the homepage. **Recipes, Party Planner, Gallery, Country pages are not indexed for any tracked keyword.**
 
-**AI concierge**: extend `build_party_plan` tool schema with optional `estimated_cost` per task. Update system prompt to fill estimates based on `city` + `guest_count`. Existing tasks without estimates stay editable.
+### Target keyword map
 
-**Files**: migration, `PartyPlannerDetail.tsx` (new tab), `supabase/functions/party-planner-chat/index.ts` (tool schema + prompt).
+**Tier A — Brand & core product (own these)**
 
-## 3. RSVP upgrades
+| Keyword | Vol/mo | KD | Current | Target page |
+|---|---|---|---|---|
+| cake ai | 320 | 27 | #13 | `/` (homepage) |
+| ai cake generator | 90 | 8 | not ranked | `/ai-cake-generator-free` |
+| ai cake design | 50 | 8 | #32 | `/free-cake-designer` |
+| birthday cake ai | 50 | 10 | #13 | `/ai-birthday-cake-with-name` |
+| ai birthday cake | 90 | low | #20 | `/ai-birthday-cake-with-name` |
+| cake generator | 70 | low | #79 | `/ai-cake-generator-free` |
+| ai cake generator free | 50 | low | #25 | `/ai-cake-generator-free` |
+| photo cake | 1,900 | 21 | not ranked | new `/photo-cake-maker` (or repurpose use-cases) |
+| personalized cake | 480 | 45 | not ranked | `/` + new `/personalized-cake-online` |
 
-**Schema additions to `party_guests`:**
-- `plus_one_names jsonb` (array of strings)
-- `meal_preference text` (free text — "vegetarian", "vegan", "no nuts")
-- `custom_answers jsonb` (answers to host's custom questions)
+**Tier B — Party Planner page** (currently no rankings)
 
-**Schema additions to `parties`:**
-- `rsvp_deadline date`
-- `custom_questions jsonb` — array of `{ id, question, type: 'text' | 'choice', options? }`
+Primary: `party planner` (3,600/mo, KD 42 — possible). Site won't outrank Partiful/Evite on this term in 6 months, so target the long tail:
 
-**Host UI** (Invites tab on `PartyPlannerDetail.tsx`):
-- New "RSVP form settings" collapsible: deadline picker, toggle meal preference, add/remove up to 3 custom questions
-- Guest list shows meal preferences inline + plus-one names
-- "Send reminder to non-responders" button — calls existing `send-party-invite` with a different template for guests where `responded_at IS NULL` and `invited_at IS NOT NULL`
+| Keyword | Vol/mo | KD note | Page |
+|---|---|---|---|
+| free party planner | low-med | easy | `/party-planner` |
+| ai party planner | very low | very easy | `/party-planner` |
+| birthday party planner online | low | easy | `/party-planner` |
+| party planning checklist | 1,600 | medium | new section on `/party-planner` |
+| party planning template | ~1k | medium | new section / template gallery |
+| how to plan a birthday party | high | medium | new blog post |
+| free rsvp website | medium | medium | `/party-planner` + landing variant |
+| online invitation maker | 1,300+ | medium | new landing or extend `/party-planner` |
+| kids birthday party planner | low | easy | `/party-planner` |
+| 1st birthday party planner | low | easy | new sub-landing or blog |
 
-**Guest UI** (`src/pages/PartyRSVP.tsx`):
-- If status=yes and plus_ones>0, prompt for each plus-one's name
-- Meal preference field if enabled
-- Render custom questions
-- Show RSVP deadline + "respond by" copy
+**Tier C — Recipes pages** (currently no rankings; each recipe is a separate landing opportunity)
 
-**Files**: migration, `PartyPlannerDetail.tsx` (Invites tab additions), `PartyRSVP.tsx`, `send-party-invite/index.ts` (reminder template branch).
+Recipe keywords have realistic difficulty (KD 20-35) and clear intent. Each recipe page needs:
 
-## 4. Add-to-Calendar (.ics)
+| Sample recipe | Primary keyword | Vol/mo | KD |
+|---|---|---|---|
+| Chocolate Truffle Cake | chocolate truffle cake recipe | 480 | 30 |
+| (variant) | truffle cake recipe | 480 | low |
+| (variant) | how to make chocolate truffle cake at home | low-medium | very low |
+| Vanilla Sponge | vanilla sponge cake recipe | ~1.6k | medium |
+| Red Velvet | red velvet cake recipe | ~6k | medium-high |
+| Black Forest | black forest cake recipe | ~3k | medium |
+| Carrot Cake | carrot cake recipe | ~40k | high |
+| Pineapple Upside-Down | pineapple upside down cake recipe | ~9k | medium |
 
-Client-side generated, no backend. Used in two places:
-- Public event page (#1)
-- RSVP confirmation page after guest says "yes"
+Each recipe should also target "[recipe name] eggless", "[recipe name] without oven", "easy [recipe name]" long-tails (huge in India market specifically).
 
-**Util**: `src/utils/icsCalendar.ts` — builds a minimal VCALENDAR string from party fields and triggers download. No deps.
+---
 
-## Non-goals (explicit)
+## C. What to actually build/edit for the SEO sprint
 
-- WhatsApp / SMS distribution — deferred per user request
-- Co-host collaboration
-- Vendor marketplace
-- Photo memory wall / post-event loop
-- Quick-start templates
+### 1. Recipes pages — `src/pages/RecipeDetail.tsx` + DB
+- Add per-recipe **SEO meta**: title (`<H1> recipe — primary keyword`), `meta_description` (already in `cake_recipes` table; populate it for every recipe), `meta_title`.
+- Add **`react-helmet-async`** so each recipe sets its own `<title>`, description, canonical, `og:*`, and **Recipe JSON-LD** (schema.org/Recipe with ingredients, instructions, cookTime, prepTime, image, aggregateRating placeholder). Recipe JSON-LD is the single biggest SEO win — it earns rich result snippets in Google.
+- Add **BreadcrumbList JSON-LD** (Home → Recipes → Recipe).
+- Ensure recipes list page (`/recipes`) has its own title/desc + ItemList JSON-LD.
+- Migration: backfill `meta_title` and `meta_description` for all existing recipes (use AI gateway script — see "Backfill script" below).
 
-## File list
+### 2. Party Planner page — `src/pages/PartyPlanner.tsx`
+- Rewrite hero copy to lead with **"Free AI Party Planner — Plan birthdays, baby showers & anniversaries in minutes"**.
+- Add a long-tail content section below the fold (collapsed/SEO content): "Party planning checklist", "How to plan a birthday party in 7 steps", "Online invitations & RSVP — free", "Templates by occasion".
+- `react-helmet-async`: per-page title/desc/canonical + **WebApplication / SoftwareApplication JSON-LD** + **HowTo JSON-LD** for the checklist section.
+- Add internal links to top-performing recipes and `/free-cake-designer`.
 
-- `supabase/migrations/<timestamp>_party_planner_tier1.sql` — new columns, RPC
-- `src/pages/PublicParty.tsx` — new public event page
-- `src/App.tsx` — register `/party/:slug` route
-- `src/utils/icsCalendar.ts` — .ics builder
-- `src/pages/PartyPlannerDetail.tsx` — Budget tab + RSVP settings UI + reminder button
-- `src/pages/PartyRSVP.tsx` — plus-one names, meal, custom Qs, .ics button
-- `supabase/functions/party-planner-chat/index.ts` — estimated_cost on tool schema
-- `supabase/functions/send-party-invite/index.ts` — reminder template branch
+### 3. Homepage + key landing pages — `src/pages/Index.tsx`, `AiCakeGeneratorFree.tsx`, `AiBirthdayCakeWithName.tsx`, `FreeCakeDesigner.tsx`, country landings
+- Audit current `<Helmet>` usage; tighten title (<60 chars) and description (<160 chars) for each, with **one primary keyword per page** from Tier A.
+- Single H1 per page, primary keyword in the first 100 words.
+- Add **Organization** + **WebSite** + **SearchAction** JSON-LD on `/` (sitewide is in `index.html` — confirm SearchAction is there).
+- Add `/photo-cake` and `/personalized-cake-online` as new landing pages targeting two underserved Tier A terms (high volume, no current ranking).
 
-## Order of build
+### 4. Sitemap + technical
+- Regenerate `public/sitemap.xml` to include **every published recipe**, every party RSVP landing isn't needed (private), and every country page. Currently the sitemap likely misses dynamic recipe URLs.
+- Confirm `robots.txt` allows `/` and excludes `/admin`, `/rsvp/*`, `/party/*` (public party invites — decide: index or not; recommend `noindex` since they're per-user invites).
+- Add `<link rel="alternate" hreflang>` between country landing pages.
+- Image alt text audit on Recipes and Party Planner (currently many `<img>` lack alts).
 
-1. Migration first (schema unlocks everything)
-2. Public event page + .ics (highest visible impact)
-3. RSVP upgrades (host UI then guest UI)
-4. Budget tab + AI concierge estimates
+### 5. Backfill script (one-off, no UI)
+Run a script via the AI gateway to generate `meta_title`, `meta_description`, and keyword-tagged `excerpt` for every recipe that's missing them — then write straight to the `cake_recipes` table.
+
+### 6. Verify in Google Search Console
+After deploy, register the new property (or confirm existing), submit the updated sitemap, and request indexing on Recipes index + Party Planner. The Search Console connector can automate verification.
+
+---
+
+## Suggested order
+
+1. **Recipes SEO** (highest ROI — long tail × many pages × low difficulty). Helmet + Recipe JSON-LD + meta backfill + sitemap.
+2. **Party Planner SEO** (Helmet + long-tail content section + HowTo JSON-LD).
+3. **Tier A landing pages** — tighten copy/meta on `/ai-cake-generator-free`, `/free-cake-designer`, `/ai-birthday-cake-with-name`; add 1-2 new pages (`/photo-cake-maker`, `/personalized-cake-online`).
+4. **Tier 2 Party Planner features** (#1 + #2 + #3 from section A).
+5. **Search Console verification + sitemap resubmit** to accelerate indexing.
+
+## Out of scope for this plan
+- Off-page SEO (backlinks, outreach) — separate effort.
+- Paid search.
+- Translating the site (could unlock huge IN/UK volume later).
+
+## What I need from you to proceed
+1. Approve scope: full sprint (1→5), or SEO-only (1→3 + 5), or Tier 2 features only (skip SEO).
+2. Confirm new landing pages (`/photo-cake-maker`, `/personalized-cake-online`) are wanted.
+3. Confirm `/party/:slug` public pages should be `noindex` (recommended — they're per-user).
