@@ -203,6 +203,8 @@ serve(async (req) => {
             due_date: due.toISOString().slice(0, 10),
             sort_order: i,
             vendor_notes: vendorMatch ? `Suggested: ${vendorMatch[1].trim()}` : null,
+            estimated_cost: typeof t.estimated_cost === "number" ? t.estimated_cost : null,
+            currency: t.currency || null,
           };
         });
       if (tasksToInsert.length) await supabase.from("party_tasks").insert(tasksToInsert);
