@@ -121,6 +121,8 @@ serve(async (req) => {
                   description: { type: "string" },
                   category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of", "photography", "entertainment", "gifts"] },
                   days_before: { type: "number", description: "Days before event_date" },
+                  estimated_cost: { type: "number", description: "Realistic local-market cost estimate for this task" },
+                  currency: { type: "string", description: "3-letter ISO currency code (INR, USD, GBP, EUR, AUD, CAD)" },
                 },
                 required: ["title", "category", "days_before"],
               },
