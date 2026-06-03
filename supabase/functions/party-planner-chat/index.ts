@@ -18,6 +18,12 @@ CRITICAL RULES:
 
 When calling \`build_party_plan\`, return 9-12 PRACTICAL, vendor-driven tasks. Every task needs \`days_before\` relative to the event date.
 
+BUDGET ESTIMATES (IMPORTANT):
+- For EVERY task, include \`estimated_cost\` (realistic number) and \`currency\` (3-letter ISO code).
+- Calibrate by the host's \`city\` and \`guest_count\`. Indian cities (Mumbai, Delhi, Bangalore, etc.) → INR; US cities → USD; UK → GBP; otherwise infer from city or default to USD.
+- Use realistic local market rates — e.g. 2kg theme cake in Mumbai ~₹2500, NYC ~$80; decor for 20 guests in Bangalore ~₹5000, London ~£200; catering per head in Delhi ~₹600, NYC ~$35.
+- If you genuinely cannot estimate, omit \`estimated_cost\` rather than guess wildly.
+
 MANDATORY baseline tasks (skip only if clearly not needed):
 1. Cake — vendor: Local baker / Cake AI Artist designer
 2. Decoration & balloons — vendor: Decorator
