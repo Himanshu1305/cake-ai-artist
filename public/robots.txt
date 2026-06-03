@@ -20,6 +20,9 @@ Disallow: /auth
 Disallow: /complete-profile
 Disallow: /embed/
 Disallow: /blog/unsubscribe
+Disallow: /rsvp/
+Disallow: /party/
+
 
 # Allow major search/social bots full access to public assets
 User-agent: Googlebot-Image

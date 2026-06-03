@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -163,6 +164,10 @@ export default function PartyRSVP() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-cream-100 to-rose-50 flex items-center justify-center p-4">
+      <Helmet>
+        <title>RSVP — {party?.title || "Party invitation"}</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Card className="max-w-md w-full overflow-hidden">
         <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-8 text-center">
           <PartyPopper className="w-12 h-12 mx-auto mb-3" />
