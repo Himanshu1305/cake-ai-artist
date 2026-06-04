@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -179,7 +179,21 @@ const CanadaLanding = () => {
         ]}
       />
 
-      <OrganizationSchema 
+      <HowToSchema
+        name="Free AI Cake Designer Canada — Custom Cake Design in 30 Seconds"
+        description="Design birthday, Canada Day, holiday and celebration cakes with AI — free for all Canadians"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "CAD", value: "0" }}
+        steps={[
+          { name: "Choose your occasion", text: "Pick from birthday, Canada Day, Christmas, Thanksgiving, wedding, baby shower or any Canadian celebration." },
+          { name: "Describe your cake", text: "Enter the recipient's name and describe your cake — maple-inspired, classic Canadian, winter themed or elegant tiered designs." },
+          { name: "Generate in 30 seconds", text: "The AI creates a photorealistic cake design in under 30 seconds — personalised to your occasion and style preferences." },
+          { name: "Download and share", text: "Save your design in high resolution. Send to your baker as a visual brief or share with friends and family." }
+        ]}
+        image="https://cakeaiartist.com/hero-cake.jpg"
+      />
+
+      <OrganizationSchema
         name="Cake AI Artist"
         url="https://cakeaiartist.com/canada"
         description="AI-powered cake design for Canadian celebrations - birthdays, Canada Day, and winter parties"

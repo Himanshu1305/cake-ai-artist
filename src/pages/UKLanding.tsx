@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -202,7 +202,21 @@ const UKLanding = () => {
         ]}
       />
 
-      <OrganizationSchema 
+      <HowToSchema
+        name="How to Create a Free AI Cake Design in the UK"
+        description="Design a personalised birthday, wedding or celebration cake with AI in 30 seconds — free to try, no signup needed"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "GBP", value: "0" }}
+        steps={[
+          { name: "Describe your cake", text: "Type the recipient's name and choose your occasion — birthday, wedding, christening, anniversary or any British celebration." },
+          { name: "Choose your style", text: "Pick from elegant, fun, kids themed or classic British styles. Add colours, tiers and decorations in plain English." },
+          { name: "Generate in 30 seconds", text: "Click generate and your personalised AI cake design appears in under 30 seconds — photorealistic and ready to share." },
+          { name: "Download or share", text: "Save your high-resolution cake image and send it to your baker, share on WhatsApp, or use it as inspiration for your celebration." }
+        ]}
+        image="https://cakeaiartist.com/hero-cake.jpg"
+      />
+
+      <OrganizationSchema
         name="Cake AI Artist"
         url="https://cakeaiartist.com/uk"
         description="AI-powered personalised cake design for UK celebrations - birthdays, royal events, and garden parties"

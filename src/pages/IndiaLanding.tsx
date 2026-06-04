@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -179,7 +179,21 @@ const IndiaLanding = () => {
         ]}
       />
 
-      <OrganizationSchema 
+      <HowToSchema
+        name="AI Cake Designer India — Free Online Cake Design in 30 Seconds"
+        description="Design personalised birthday, Diwali, wedding and celebration cakes with AI — free for your first 5 designs"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "INR", value: "0" }}
+        steps={[
+          { name: "Enter the name and occasion", text: "Type the recipient's name and choose your occasion — birthday, Diwali, wedding, anniversary, Holi or any Indian celebration." },
+          { name: "Choose your design style", text: "Pick from traditional, modern, kids themed or festive styles. Describe colours, decorations and themes in Hindi or English." },
+          { name: "Generate your cake", text: "Click generate and get a beautiful photorealistic AI cake design in under 30 seconds — personalised just for you." },
+          { name: "Download and share", text: "Download your cake image in high resolution. Share on WhatsApp with family, send to your baker, or post on Instagram." }
+        ]}
+        image="https://cakeaiartist.com/hero-cake.jpg"
+      />
+
+      <OrganizationSchema
         name="Cake AI Artist"
         url="https://cakeaiartist.com/india"
         description="AI-powered cake design for Indian celebrations - birthdays, anniversaries, weddings and Christmas"

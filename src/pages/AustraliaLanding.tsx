@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -202,7 +202,21 @@ const AustraliaLanding = () => {
         ]}
       />
 
-      <OrganizationSchema 
+      <HowToSchema
+        name="Free AI Cake Designer Australia — Custom Cake Design in 30 Seconds"
+        description="Design birthday, Australia Day, wedding and celebration cakes with AI — free to try for all Australians"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "AUD", value: "0" }}
+        steps={[
+          { name: "Choose your occasion", text: "Pick from birthday, Australia Day, ANZAC Day, Christmas, wedding, baby shower or any Aussie celebration." },
+          { name: "Describe your cake", text: "Enter the recipient's name and describe your cake — lamington-inspired, pavlova style, beach themed or classic Australian designs." },
+          { name: "Generate in 30 seconds", text: "The AI produces a photorealistic custom cake design in under 30 seconds. No design skills needed — just type and generate." },
+          { name: "Download and share", text: "Download your cake image and send it to your local baker, share it on WhatsApp or post it to Instagram." }
+        ]}
+        image="https://cakeaiartist.com/hero-cake.jpg"
+      />
+
+      <OrganizationSchema
         name="Cake AI Artist"
         url="https://cakeaiartist.com/australia"
         description="AI-powered cake design for Australian celebrations - birthdays, Australia Day, and beach parties"

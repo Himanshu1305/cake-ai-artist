@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema } from "@/components/SEOSchema";
+import { OrganizationSchema, ProductReviewSchema, BreadcrumbSchema, ProductSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -180,6 +180,20 @@ const USALanding = () => {
           { question: "Is there a free tier?", answer: "Yes — you get 5 free cake designs with no signup required. After that, paid plans start from $4.99/month." },
           { question: "What's the pricing in USD?", answer: "Three plans in USD: Monthly $4.99/month, Yearly $19.99/year, or Lifetime $49 once. The free plan lets you try 5 designs instantly." },
         ]}
+      />
+
+      <HowToSchema
+        name="How to Design a Custom AI Birthday Cake — Free Online"
+        description="Create stunning birthday, 4th of July, Thanksgiving and celebration cakes with AI in 30 seconds — America's favourite free cake designer"
+        totalTime="PT30S"
+        estimatedCost={{ currency: "USD", value: "0" }}
+        steps={[
+          { name: "Pick your occasion", text: "Choose from birthday, 4th of July, Thanksgiving, Halloween, Christmas, graduation, baby shower or any American celebration." },
+          { name: "Describe your cake", text: "Type the recipient's name and describe your cake — flavors, colors, tiers, themes and decorations in plain English." },
+          { name: "AI generates in 30 seconds", text: "Our AI creates four photorealistic cake designs based on your description. Pick the one that feels right." },
+          { name: "Download and share", text: "Save your cake design at full resolution. Send it to your baker as a reference or share it directly on social media." }
+        ]}
+        image="https://cakeaiartist.com/hero-cake.jpg"
       />
 
       <OrganizationSchema
