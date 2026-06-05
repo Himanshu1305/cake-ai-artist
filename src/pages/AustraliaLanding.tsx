@@ -63,6 +63,7 @@ const AustraliaLanding = () => {
       const { data, error } = await supabase
         .from("public_featured_images" as any)
         .select("id, image_url, created_at, occasion_type")
+        .in("featured_page", ["home", "wedding", "anniversary"])
         .order("created_at", { ascending: false })
         .limit(20);
 

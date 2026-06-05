@@ -50,6 +50,8 @@ interface CommunityImage {
   created_at: string;
   prompt: string;
   profiles: { email: string };
+  featured_page: string | null;
+  occasion_type: string | null;
 }
 
 interface BlogSubscriber {
@@ -117,6 +119,7 @@ export default function Admin() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [profileLoadLimit, setProfileLoadLimit] = useState(100);
   const [totalProfileCount, setTotalProfileCount] = useState(0);
+  const [featuredPageMap, setFeaturedPageMap] = useState<Record<string, string>>({});
   const { adsEnabled, loading: adsLoading } = useAdsEnabled();
   const updateAdsEnabled = useUpdateAdsEnabled();
   useEffect(() => {
@@ -342,7 +345,7 @@ export default function Admin() {
   const loadImages = async () => {
     const { data, error } = await supabase
       .from('generated_images')
-      .select('id, image_url, featured, created_at, prompt, profiles(email)')
+      .select('id, image_url, featured, created_at, prompt, profiles(email), featured_page, occasion_type')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -503,10 +506,40 @@ export default function Admin() {
     }
   };
 
+  const getAutoPage = (occasionType: string): string => {
+    const map: Record<string, string> = {
+      wedding: 'wedding',
+      eid: 'eid',
+      graduation: 'graduation',
+      diwali: 'diwali',
+      halloween: 'halloween',
+      'baby-shower': 'baby-shower',
+      anniversary: 'anniversary',
+      christmas: 'christmas',
+    };
+    return map[occasionType?.toLowerCase()] || 'home';
+  };
+
+  const featureImageOnPage = async (imageId: string, selectedPage: string) => {
+    const { error } = await supabase
+      .from('generated_images')
+      .update({ featured: true, featured_page: selectedPage })
+      .eq('id', imageId);
+
+    if (error) {
+      toast.error('Failed to feature image');
+      return;
+    }
+
+    toast.success(`Image featured on ${selectedPage}`);
+    loadImages();
+    loadAnalytics();
+  };
+
   const toggleFeatured = async (imageId: string, currentStatus: boolean) => {
     const { error } = await supabase
       .from('generated_images')
-      .update({ featured: !currentStatus })
+      .update({ featured: !currentStatus, featured_page: currentStatus ? null : undefined })
       .eq('id', imageId);
 
     if (error) {
@@ -1554,22 +1587,60 @@ export default function Admin() {
                         <p className="text-xs text-muted-foreground mb-3">
                           By: {image.profiles?.email || 'Unknown'}
                         </p>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant={image.featured ? "outline" : "default"}
-                            onClick={() => toggleFeatured(image.id, image.featured)}
-                            className="flex-1"
-                          >
-                            <Star className="w-3 h-3 mr-1" />
-                            {image.featured ? 'Unfeature' : 'Feature'}
-                          </Button>
+                        <div className="flex gap-2 flex-col">
+                          {image.featured ? (
+                            <div className="flex gap-2">
+                              <Badge className="flex-1 justify-center bg-green-600 text-white py-1">
+                                <Star className="w-3 h-3 mr-1" />
+                                {image.featured_page || 'featured'}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toggleFeatured(image.id, true)}
+                                className="flex-1"
+                              >
+                                Unfeature
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Select
+                                value={featuredPageMap[image.id] || getAutoPage(image.occasion_type || '')}
+                                onValueChange={(v) => setFeaturedPageMap(prev => ({ ...prev, [image.id]: v }))}
+                              >
+                                <SelectTrigger className="h-8 text-xs flex-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="home">Home</SelectItem>
+                                  <SelectItem value="wedding">Wedding</SelectItem>
+                                  <SelectItem value="graduation">Graduation</SelectItem>
+                                  <SelectItem value="eid">Eid</SelectItem>
+                                  <SelectItem value="diwali">Diwali</SelectItem>
+                                  <SelectItem value="halloween">Halloween</SelectItem>
+                                  <SelectItem value="baby-shower">Baby Shower</SelectItem>
+                                  <SelectItem value="anniversary">Anniversary</SelectItem>
+                                  <SelectItem value="christmas">Christmas</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                onClick={() => featureImageOnPage(image.id, featuredPageMap[image.id] || getAutoPage(image.occasion_type || ''))}
+                              >
+                                <Star className="w-3 h-3 mr-1" />
+                                Feature
+                              </Button>
+                            </div>
+                          )}
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() => deleteImage(image.id)}
+                            className="w-full"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </CardContent>

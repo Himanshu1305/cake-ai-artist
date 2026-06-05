@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
@@ -7,8 +9,31 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 
+const WEDDING_FALLBACK = [
+  "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1522498628165-0f8c94b31534?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1531956531700-dc0ee0f1f9a5?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
+];
+
 const WeddingCakeDesigner = () => {
   const navigate = useNavigate();
+  const [featuredCakes, setFeaturedCakes] = useState<string[]>(WEDDING_FALLBACK);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("public_featured_images" as any)
+        .select("image_url")
+        .eq("featured_page", "wedding")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (data && data.length >= 3) {
+        setFeaturedCakes((data as { image_url: string }[]).map((d) => d.image_url));
+      }
+    })();
+  }, []);
 
   const faqs = [
     {
@@ -50,13 +75,6 @@ const WeddingCakeDesigner = () => {
     { title: "Free to explore", desc: "Five full designs free, no credit card. Explore different styles before committing to any one direction with your baker." },
   ];
 
-  const samples = [
-    "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1522498628165-0f8c94b31534?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1531956531700-dc0ee0f1f9a5?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -144,7 +162,7 @@ const WeddingCakeDesigner = () => {
             Photorealistic wedding cake designs generated with AI. Download, share with your baker, and bring your vision to life.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {samples.map((img, i) => (
+            {featuredCakes.map((img, i) => (
               <img
                 key={i}
                 src={img}

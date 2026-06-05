@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
@@ -7,8 +9,31 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 
+const GRADUATION_FALLBACK = [
+  "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1607478900766-efe13248b125?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=400&fit=crop",
+];
+
 const GraduationCakeDesigner = () => {
   const navigate = useNavigate();
+  const [featuredCakes, setFeaturedCakes] = useState<string[]>(GRADUATION_FALLBACK);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("public_featured_images" as any)
+        .select("image_url")
+        .eq("featured_page", "graduation")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (data && data.length >= 3) {
+        setFeaturedCakes((data as { image_url: string }[]).map((d) => d.image_url));
+      }
+    })();
+  }, []);
 
   const faqs = [
     {
@@ -46,13 +71,6 @@ const GraduationCakeDesigner = () => {
     { title: "Free to explore", desc: "Five full designs free, no credit card. Try cap and gown, subject themes, school colours and more before choosing your favourite." },
   ];
 
-  const samples = [
-    "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1607478900766-efe13248b125?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=400&fit=crop",
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -131,7 +149,7 @@ const GraduationCakeDesigner = () => {
             Photorealistic celebration cake designs generated with AI. Perfect for every graduation level — from high school to PhD.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {samples.map((img, i) => (
+            {featuredCakes.map((img, i) => (
               <img
                 key={i}
                 src={img}

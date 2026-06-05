@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
@@ -7,8 +9,31 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 
+const EID_FALLBACK = [
+  "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
+];
+
 const EidCakeDesigner = () => {
   const navigate = useNavigate();
+  const [featuredCakes, setFeaturedCakes] = useState<string[]>(EID_FALLBACK);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("public_featured_images" as any)
+        .select("image_url")
+        .eq("featured_page", "eid")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (data && data.length >= 3) {
+        setFeaturedCakes((data as { image_url: string }[]).map((d) => d.image_url));
+      }
+    })();
+  }, []);
 
   const faqs = [
     {
@@ -46,13 +71,6 @@ const EidCakeDesigner = () => {
     { title: "Free to try", desc: "Your first 5 Eid cake designs are completely free. No account needed for your first design — just type and generate." },
   ];
 
-  const samples = [
-    "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -131,7 +149,7 @@ const EidCakeDesigner = () => {
             Beautiful celebration cake designs generated with AI. Perfect for Eid al-Fitr, Eid al-Adha and every special occasion.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {samples.map((img, i) => (
+            {featuredCakes.map((img, i) => (
               <img
                 key={i}
                 src={img}

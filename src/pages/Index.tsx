@@ -132,6 +132,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("public_featured_images" as any)
         .select("id, image_url, created_at, occasion_type")
+        .eq("featured_page", "home")
         .order("created_at", { ascending: false })
         .limit(10);
 
