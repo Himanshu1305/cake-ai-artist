@@ -6,11 +6,6 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
-import featuredCake1 from "@/assets/featured-cake-1.jpg";
-import featuredCake2 from "@/assets/featured-cake-2.jpg";
-import featuredCake3 from "@/assets/featured-cake-3.jpg";
-import featuredCake4 from "@/assets/featured-cake-4.jpg";
-import featuredCake5 from "@/assets/featured-cake-5.jpg";
 
 const EidCakeDesigner = () => {
   const navigate = useNavigate();
@@ -51,7 +46,13 @@ const EidCakeDesigner = () => {
     { title: "Free to try", desc: "Your first 5 Eid cake designs are completely free. No account needed for your first design — just type and generate." },
   ];
 
-  const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
+  const samples = [
+    "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -125,7 +126,7 @@ const EidCakeDesigner = () => {
 
       <section className="py-12 px-4 bg-surface">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">AI Eid cake designs — real examples</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">Beautiful AI-Generated Eid Cake Designs</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
             Beautiful celebration cake designs generated with AI. Perfect for Eid al-Fitr, Eid al-Adha and every special occasion.
           </p>
@@ -134,7 +135,7 @@ const EidCakeDesigner = () => {
               <img
                 key={i}
                 src={img}
-                alt={`AI Eid cake design sample ${i + 1} — personalised Eid Mubarak cake created with AI`}
+                alt={`Eid celebration cake design ${i + 1}`}
                 loading="lazy"
                 className="rounded-xl aspect-square object-cover shadow-md hover:shadow-xl transition-shadow"
               />

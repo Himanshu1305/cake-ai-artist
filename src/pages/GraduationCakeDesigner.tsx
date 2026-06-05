@@ -6,11 +6,6 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
-import featuredCake1 from "@/assets/featured-cake-1.jpg";
-import featuredCake2 from "@/assets/featured-cake-2.jpg";
-import featuredCake3 from "@/assets/featured-cake-3.jpg";
-import featuredCake4 from "@/assets/featured-cake-4.jpg";
-import featuredCake5 from "@/assets/featured-cake-5.jpg";
 
 const GraduationCakeDesigner = () => {
   const navigate = useNavigate();
@@ -51,7 +46,13 @@ const GraduationCakeDesigner = () => {
     { title: "Free to explore", desc: "Five full designs free, no credit card. Try cap and gown, subject themes, school colours and more before choosing your favourite." },
   ];
 
-  const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
+  const samples = [
+    "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1607478900766-efe13248b125?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=400&fit=crop",
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -125,7 +126,7 @@ const GraduationCakeDesigner = () => {
 
       <section className="py-12 px-4 bg-surface">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">AI graduation cake designs — real examples</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">Real AI-Generated Graduation Cake Designs</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
             Photorealistic celebration cake designs generated with AI. Perfect for every graduation level — from high school to PhD.
           </p>
@@ -134,7 +135,7 @@ const GraduationCakeDesigner = () => {
               <img
                 key={i}
                 src={img}
-                alt={`AI graduation cake design sample ${i + 1} — personalised celebration cake created with AI`}
+                alt={`Graduation cake design ${i + 1}`}
                 loading="lazy"
                 className="rounded-xl aspect-square object-cover shadow-md hover:shadow-xl transition-shadow"
               />

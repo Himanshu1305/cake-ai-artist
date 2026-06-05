@@ -6,11 +6,6 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
-import featuredCake1 from "@/assets/featured-cake-1.jpg";
-import featuredCake2 from "@/assets/featured-cake-2.jpg";
-import featuredCake3 from "@/assets/featured-cake-3.jpg";
-import featuredCake4 from "@/assets/featured-cake-4.jpg";
-import featuredCake5 from "@/assets/featured-cake-5.jpg";
 
 const WeddingCakeDesigner = () => {
   const navigate = useNavigate();
@@ -55,7 +50,13 @@ const WeddingCakeDesigner = () => {
     { title: "Free to explore", desc: "Five full designs free, no credit card. Explore different styles before committing to any one direction with your baker." },
   ];
 
-  const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
+  const samples = [
+    "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1522498628165-0f8c94b31534?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1531956531700-dc0ee0f1f9a5?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -138,7 +139,7 @@ const WeddingCakeDesigner = () => {
 
       <section className="py-12 px-4 bg-surface">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">AI wedding cake designs — real examples</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">Real AI-Generated Wedding Cake Designs</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
             Photorealistic wedding cake designs generated with AI. Download, share with your baker, and bring your vision to life.
           </p>
@@ -147,7 +148,7 @@ const WeddingCakeDesigner = () => {
               <img
                 key={i}
                 src={img}
-                alt={`AI wedding cake design sample ${i + 1} — personalised wedding cake created with AI`}
+                alt={`Wedding cake design ${i + 1}`}
                 loading="lazy"
                 className="rounded-xl aspect-square object-cover shadow-md hover:shadow-xl transition-shadow"
               />

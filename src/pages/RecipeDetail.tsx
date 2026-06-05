@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
+import { BreadcrumbSchema } from "@/components/SEOSchema";
 import { ArrowLeft, ChefHat, Clock, Users, Sparkles } from "lucide-react";
 
 interface Recipe {
@@ -69,6 +70,8 @@ const RecipeDetail = () => {
     );
   }
 
+  const designPrompt = recipe.related_cake_design_prompt || `${recipe.title} celebration cake, elegant design, personalised`;
+
   const recipeSchema = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -114,6 +117,16 @@ const RecipeDetail = () => {
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
+      {recipe && (
+        <BreadcrumbSchema
+          items={[
+            { name: "Home", url: "https://cakeaiartist.com" },
+            { name: "Recipes", url: "https://cakeaiartist.com/recipes" },
+            { name: recipe.title, url: `https://cakeaiartist.com/recipes/${recipe.slug}` },
+          ]}
+        />
+      )}
+
       <article className="max-w-3xl mx-auto px-4 py-8">
         <Link to="/recipes" className="inline-flex items-center gap-1 text-sm font-bold text-party-purple mb-4 hover:text-party-pink">
           <ArrowLeft className="w-4 h-4" /> All recipes
@@ -129,9 +142,16 @@ const RecipeDetail = () => {
           <img
             src={recipe.hero_image}
             alt={recipe.title}
-            className="w-full aspect-[16/10] object-cover rounded-2xl mb-6 shadow-lg"
+            className="w-full aspect-[16/10] object-cover rounded-2xl mb-4 shadow-lg"
           />
         )}
+
+        <Link
+          to="/free-ai-cake-designer?ref=recipe_top"
+          className="flex items-center justify-center gap-1 text-sm text-party-pink font-medium bg-party-pink/8 hover:bg-party-pink/15 rounded-full px-4 py-2 mb-6 transition-colors w-fit mx-auto"
+        >
+          Want a designer version of this cake? Generate a free AI design in 30 seconds →
+        </Link>
 
         <div className="flex flex-wrap gap-4 text-sm bg-white rounded-xl p-4 shadow-sm mb-8">
           {recipe.prep_time && (
@@ -181,23 +201,26 @@ const RecipeDetail = () => {
           </ol>
         </section>
 
-        {recipe.related_cake_design_prompt && (
-          <section className="bg-gradient-to-br from-party-pink/10 to-party-purple/10 rounded-2xl p-6 my-8 text-center">
-            <Sparkles className="w-6 h-6 text-party-pink mx-auto mb-2" />
-            <h3 className="text-xl font-bold mb-2">Want it as a designer cake too?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Let our AI design a celebration version of this cake in 30 seconds.
-            </p>
-            <button
-              onClick={() =>
-                navigate(`/?prompt=${encodeURIComponent(recipe.related_cake_design_prompt!)}`)
-              }
-              className="inline-flex items-center gap-2 bg-party-pink text-white px-6 py-3 rounded-full font-bold hover:bg-party-pink/90 transition-colors"
-            >
-              <Sparkles className="w-4 h-4" /> Design this cake with AI
-            </button>
-          </section>
-        )}
+        <section className="bg-gradient-to-br from-party-pink/10 to-party-purple/10 rounded-2xl p-6 my-8 text-center">
+          <Sparkles className="w-6 h-6 text-party-pink mx-auto mb-2" />
+          <h3 className="text-xl font-bold mb-2">
+            See what your {recipe.title} could look like as a celebration cake
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Our AI designs a photorealistic version in 30 seconds — free to try
+          </p>
+          <button
+            onClick={() =>
+              navigate(`/free-ai-cake-designer?prompt=${encodeURIComponent(designPrompt)}&ref=recipe`)
+            }
+            className="inline-flex items-center gap-2 bg-party-pink text-white px-6 py-3 rounded-full font-bold hover:bg-party-pink/90 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" /> 🎂 Design This Cake with AI →
+          </button>
+          <Link to="/free-ai-cake-designer" className="text-xs text-muted-foreground hover:underline mt-2 block">
+            Or design any custom cake →
+          </Link>
+        </section>
       </article>
 
       <Footer />
