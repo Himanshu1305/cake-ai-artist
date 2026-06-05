@@ -87,6 +87,46 @@ interface ChartData {
   pageVisitsOverTime: { date: string; visits: number }[];
 }
 
+const FEATURED_PAGE_OPTIONS = [
+  // Main pages
+  { value: "home", label: "🏠 Homepage" },
+  { value: "free-ai-cake-designer", label: "🎂 Free AI Cake Designer" },
+  { value: "ai-cake-generator-free", label: "✨ AI Cake Generator Free" },
+  { value: "3d-cake-designer", label: "📦 3D Cake Designer" },
+  { value: "ai-birthday-cake-with-name", label: "🔤 AI Birthday Cake with Name" },
+  { value: "community", label: "🖼️ Community Gallery" },
+  // Country pages
+  { value: "india", label: "🇮🇳 India" },
+  { value: "uk", label: "🇬🇧 UK" },
+  { value: "usa", label: "🇺🇸 USA" },
+  { value: "australia", label: "🇦🇺 Australia" },
+  { value: "canada", label: "🇨🇦 Canada" },
+  // Occasion pages
+  { value: "wedding", label: "💍 Wedding" },
+  { value: "graduation", label: "🎓 Graduation" },
+  { value: "eid", label: "🌙 Eid" },
+  { value: "anniversary", label: "❤️ Anniversary" },
+  { value: "baby-shower", label: "👶 Baby Shower" },
+  { value: "diwali", label: "🎆 Diwali" },
+  { value: "halloween", label: "🎃 Halloween" },
+  { value: "christmas", label: "🎄 Christmas" },
+  { value: "birthday", label: "🎈 Birthday" },
+  { value: "valentines", label: "💝 Valentine's Day" },
+  { value: "mothers-day", label: "🌸 Mother's Day" },
+  { value: "fathers-day", label: "👔 Father's Day" },
+  { value: "thanksgiving", label: "🦃 Thanksgiving" },
+  { value: "easter", label: "🐣 Easter" },
+  { value: "holi", label: "🎨 Holi" },
+  { value: "dussehra", label: "🙏 Dussehra" },
+  { value: "raksha-bandhan", label: "🪢 Raksha Bandhan" },
+  // Other public pages
+  { value: "recipes", label: "📖 Recipes" },
+  { value: "party-planner", label: "🎉 Party Planner" },
+  { value: "how-it-works", label: "❓ How It Works" },
+  { value: "use-cases", label: "💡 Use Cases" },
+  { value: "pricing", label: "💰 Pricing" },
+];
+
 export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -506,18 +546,27 @@ export default function Admin() {
     }
   };
 
-  const getAutoPage = (occasionType: string): string => {
-    const map: Record<string, string> = {
-      wedding: 'wedding',
-      eid: 'eid',
-      graduation: 'graduation',
-      diwali: 'diwali',
-      halloween: 'halloween',
-      'baby-shower': 'baby-shower',
-      anniversary: 'anniversary',
-      christmas: 'christmas',
-    };
-    return map[occasionType?.toLowerCase()] || 'home';
+  const getAutoPage = (occasionType: string | null): string => {
+    if (!occasionType) return 'home';
+    const o = occasionType.toLowerCase();
+    if (o.includes('wedding')) return 'wedding';
+    if (o.includes('eid')) return 'eid';
+    if (o.includes('graduation')) return 'graduation';
+    if (o.includes('diwali')) return 'diwali';
+    if (o.includes('halloween')) return 'halloween';
+    if (o.includes('baby') || o.includes('shower')) return 'baby-shower';
+    if (o.includes('anniversary')) return 'anniversary';
+    if (o.includes('christmas')) return 'christmas';
+    if (o.includes('birthday')) return 'birthday';
+    if (o.includes('valentine')) return 'valentines';
+    if (o.includes('mother')) return 'mothers-day';
+    if (o.includes('father')) return 'fathers-day';
+    if (o.includes('thanksgiving')) return 'thanksgiving';
+    if (o.includes('easter')) return 'easter';
+    if (o.includes('holi')) return 'holi';
+    if (o.includes('dussehra')) return 'dussehra';
+    if (o.includes('raksha')) return 'raksha-bandhan';
+    return 'home';
   };
 
   const featureImageOnPage = async (imageId: string, selectedPage: string) => {
@@ -1613,15 +1662,9 @@ export default function Admin() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="home">Home</SelectItem>
-                                  <SelectItem value="wedding">Wedding</SelectItem>
-                                  <SelectItem value="graduation">Graduation</SelectItem>
-                                  <SelectItem value="eid">Eid</SelectItem>
-                                  <SelectItem value="diwali">Diwali</SelectItem>
-                                  <SelectItem value="halloween">Halloween</SelectItem>
-                                  <SelectItem value="baby-shower">Baby Shower</SelectItem>
-                                  <SelectItem value="anniversary">Anniversary</SelectItem>
-                                  <SelectItem value="christmas">Christmas</SelectItem>
+                                  {FEATURED_PAGE_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <Button
