@@ -26,7 +26,7 @@ const EidCakeDesigner = () => {
       const { data } = await supabase
         .from("public_featured_images" as any)
         .select("image_url")
-        .eq("featured_page", "eid")
+        .filter("featured_pages", "cs", '{"eid"}')
         .order("created_at", { ascending: false })
         .limit(5);
       if (data && data.length >= 3) {

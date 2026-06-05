@@ -30,6 +30,7 @@ interface GeneratedImage {
   prompt: string;
   created_at: string;
   featured: boolean;
+  featured_pages?: string[] | null;
   recipient_name?: string | null;
   occasion_type?: string | null;
   occasion_date?: string | null;
@@ -84,7 +85,7 @@ const Gallery = () => {
       // SECURITY: Explicitly select only needed fields instead of *
       const { data, error } = await supabase
         .from("generated_images")
-        .select("id, image_url, prompt, created_at, featured, recipient_name, occasion_type, occasion_date, user_id, message")
+        .select("id, image_url, prompt, created_at, featured, featured_pages, recipient_name, occasion_type, occasion_date, user_id, message")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -382,7 +383,7 @@ const Gallery = () => {
                         Selected
                       </Badge>
                     )}
-                    <div 
+                    <div
                       className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(image)}
                     >
@@ -391,6 +392,20 @@ const Gallery = () => {
                         alt={image.prompt}
                         className="w-full h-full object-cover"
                       />
+                      {image.featured && image.featured_pages && image.featured_pages.length > 0 && (
+                        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                          {image.featured_pages.slice(0, 2).map(page => (
+                            <span key={page} className="text-xs bg-party-pink/90 text-white px-2 py-0.5 rounded-full">
+                              ⭐ {page}
+                            </span>
+                          ))}
+                          {image.featured_pages.length > 2 && (
+                            <span className="text-xs bg-party-pink/90 text-white px-2 py-0.5 rounded-full">
+                              +{image.featured_pages.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="p-4">
@@ -535,7 +550,7 @@ const Gallery = () => {
                     : 'border-party-pink/30 hover:border-party-pink'
                 }`}
               >
-                <div 
+                <div
                   className="aspect-square relative cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => handleImageClick(image)}
                 >
@@ -550,6 +565,20 @@ const Gallery = () => {
                     alt={image.prompt}
                     className="w-full h-full object-cover"
                   />
+                  {image.featured && image.featured_pages && image.featured_pages.length > 0 && (
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                      {image.featured_pages.slice(0, 2).map(page => (
+                        <span key={page} className="text-xs bg-party-pink/90 text-white px-2 py-0.5 rounded-full">
+                          ⭐ {page}
+                        </span>
+                      ))}
+                      {image.featured_pages.length > 2 && (
+                        <span className="text-xs bg-party-pink/90 text-white px-2 py-0.5 rounded-full">
+                          +{image.featured_pages.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   {/* Memory Info */}

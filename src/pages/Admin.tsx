@@ -51,6 +51,7 @@ interface CommunityImage {
   prompt: string;
   profiles: { email: string };
   featured_page: string | null;
+  featured_pages: string[] | null;
   occasion_type: string | null;
 }
 
@@ -127,6 +128,13 @@ const FEATURED_PAGE_OPTIONS = [
   { value: "pricing", label: "💰 Pricing" },
 ];
 
+const FEATURED_PAGE_GROUPS = [
+  { label: "Main Pages", options: FEATURED_PAGE_OPTIONS.slice(0, 6) },
+  { label: "Country Pages", options: FEATURED_PAGE_OPTIONS.slice(6, 11) },
+  { label: "Occasions", options: FEATURED_PAGE_OPTIONS.slice(11, 28) },
+  { label: "Other Pages", options: FEATURED_PAGE_OPTIONS.slice(28) },
+];
+
 export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -159,7 +167,7 @@ export default function Admin() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [profileLoadLimit, setProfileLoadLimit] = useState(100);
   const [totalProfileCount, setTotalProfileCount] = useState(0);
-  const [featuredPageMap, setFeaturedPageMap] = useState<Record<string, string>>({});
+  const [featuredPagesMap, setFeaturedPagesMap] = useState<Record<string, string[]>>({});
   const { adsEnabled, loading: adsLoading } = useAdsEnabled();
   const updateAdsEnabled = useUpdateAdsEnabled();
   useEffect(() => {
@@ -385,7 +393,7 @@ export default function Admin() {
   const loadImages = async () => {
     const { data, error } = await supabase
       .from('generated_images')
-      .select('id, image_url, featured, created_at, prompt, profiles(email), featured_page, occasion_type')
+      .select('id, image_url, featured, created_at, prompt, profiles(email), featured_page, featured_pages, occasion_type')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -569,10 +577,14 @@ export default function Admin() {
     return 'home';
   };
 
-  const featureImageOnPage = async (imageId: string, selectedPage: string) => {
+  const featureImageOnPages = async (imageId: string, pages: string[]) => {
+    if (pages.length === 0) {
+      toast.error('Select at least one page');
+      return;
+    }
     const { error } = await supabase
       .from('generated_images')
-      .update({ featured: true, featured_page: selectedPage })
+      .update({ featured: true, featured_page: pages[0], featured_pages: pages })
       .eq('id', imageId);
 
     if (error) {
@@ -580,7 +592,7 @@ export default function Admin() {
       return;
     }
 
-    toast.success(`Image featured on ${selectedPage}`);
+    toast.success(`Featured on ${pages.length} page${pages.length > 1 ? 's' : ''}`);
     loadImages();
     loadAnalytics();
   };
@@ -588,7 +600,7 @@ export default function Admin() {
   const toggleFeatured = async (imageId: string, currentStatus: boolean) => {
     const { error } = await supabase
       .from('generated_images')
-      .update({ featured: !currentStatus, featured_page: currentStatus ? null : undefined })
+      .update({ featured: !currentStatus, featured_page: currentStatus ? null : undefined, featured_pages: currentStatus ? [] : undefined })
       .eq('id', imageId);
 
     if (error) {
@@ -1638,44 +1650,78 @@ export default function Admin() {
                         </p>
                         <div className="flex gap-2 flex-col">
                           {image.featured ? (
-                            <div className="flex gap-2">
-                              <Badge className="flex-1 justify-center bg-green-600 text-white py-1">
-                                <Star className="w-3 h-3 mr-1" />
-                                {image.featured_page || 'featured'}
-                              </Badge>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1">
+                                {(image.featured_pages?.length ? image.featured_pages : [image.featured_page].filter(Boolean)).map((page) => (
+                                  <Badge key={page} className="bg-green-600 text-white text-xs">
+                                    <Star className="w-2.5 h-2.5 mr-1" />{page}
+                                  </Badge>
+                                ))}
+                              </div>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => toggleFeatured(image.id, true)}
-                                className="flex-1"
+                                className="w-full"
                               >
                                 Unfeature
                               </Button>
                             </div>
-                          ) : (
-                            <div className="flex gap-2">
-                              <Select
-                                value={featuredPageMap[image.id] || getAutoPage(image.occasion_type || '')}
-                                onValueChange={(v) => setFeaturedPageMap(prev => ({ ...prev, [image.id]: v }))}
-                              >
-                                <SelectTrigger className="h-8 text-xs flex-1">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {FEATURED_PAGE_OPTIONS.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ) : (() => {
+                            const autoPage = getAutoPage(image.occasion_type);
+                            const selected = featuredPagesMap[image.id] ?? [autoPage];
+                            const toggle = (val: string) =>
+                              setFeaturedPagesMap(prev => ({
+                                ...prev,
+                                [image.id]: selected.includes(val)
+                                  ? selected.filter(v => v !== val)
+                                  : [...selected, val],
+                              }));
+                            return (
+                              <div className="space-y-1.5">
+                                <div className="flex gap-1">
+                                  <button
+                                    className="text-xs text-party-pink underline"
+                                    onClick={() => setFeaturedPagesMap(prev => ({ ...prev, [image.id]: FEATURED_PAGE_OPTIONS.map(o => o.value) }))}
+                                  >Select All</button>
+                                  <span className="text-xs text-muted-foreground">·</span>
+                                  <button
+                                    className="text-xs text-muted-foreground underline"
+                                    onClick={() => setFeaturedPagesMap(prev => ({ ...prev, [image.id]: [] }))}
+                                  >Clear</button>
+                                  <span className="ml-auto text-xs text-muted-foreground">{selected.length} selected</span>
+                                </div>
+                                <div className="overflow-y-auto border rounded p-1.5 space-y-2" style={{ maxHeight: 200 }}>
+                                  {FEATURED_PAGE_GROUPS.map(group => (
+                                    <div key={group.label}>
+                                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">{group.label}</p>
+                                      <div className="grid grid-cols-1 gap-0.5">
+                                        {group.options.map(opt => (
+                                          <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer hover:bg-muted rounded px-1 py-0.5">
+                                            <input
+                                              type="checkbox"
+                                              className="accent-party-pink"
+                                              checked={selected.includes(opt.value)}
+                                              onChange={() => toggle(opt.value)}
+                                            />
+                                            <span className="text-xs">{opt.label}</span>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
                                   ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                size="sm"
-                                onClick={() => featureImageOnPage(image.id, featuredPageMap[image.id] || getAutoPage(image.occasion_type || ''))}
-                              >
-                                <Star className="w-3 h-3 mr-1" />
-                                Feature
-                              </Button>
-                            </div>
-                          )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={() => featureImageOnPages(image.id, selected)}
+                                >
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Feature on {selected.length || 0} page{selected.length !== 1 ? 's' : ''}
+                                </Button>
+                              </div>
+                            );
+                          })()}
                           <Button
                             size="sm"
                             variant="destructive"

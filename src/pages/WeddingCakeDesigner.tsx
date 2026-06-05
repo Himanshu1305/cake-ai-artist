@@ -26,7 +26,7 @@ const WeddingCakeDesigner = () => {
       const { data } = await supabase
         .from("public_featured_images" as any)
         .select("image_url")
-        .eq("featured_page", "wedding")
+        .filter("featured_pages", "cs", '{"wedding"}')
         .order("created_at", { ascending: false })
         .limit(5);
       if (data && data.length >= 3) {

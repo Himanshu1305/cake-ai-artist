@@ -26,7 +26,7 @@ const GraduationCakeDesigner = () => {
       const { data } = await supabase
         .from("public_featured_images" as any)
         .select("image_url")
-        .eq("featured_page", "graduation")
+        .filter("featured_pages", "cs", '{"graduation"}')
         .order("created_at", { ascending: false })
         .limit(5);
       if (data && data.length >= 3) {
