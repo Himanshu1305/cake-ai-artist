@@ -51,12 +51,34 @@ const detectCountryServer = async (): Promise<string | null> => {
 
 export const GeoRedirectWrapper = () => {
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin',
+        });
+        setIsAdmin(!!data);
+      }
+      setAdminChecked(true);
+    };
+    checkAdmin();
+  }, []);
+
+  useEffect(() => {
+    if (!adminChecked) return;
     if (isSearchBot()) return;
     if (hasNoRedirectParam()) return;
+    if (isAdmin) {
+      console.log('[GeoRedirect] Admin user detected, skipping geo-redirect');
+      return;
+    }
     if (hasRedirected) return;
 
     // Only act on routes where region matters.
@@ -99,7 +121,7 @@ export const GeoRedirectWrapper = () => {
     };
 
     run();
-  }, [location.pathname, hasRedirected, navigate]);
+  }, [location.pathname, hasRedirected, navigate, adminChecked, isAdmin]);
 
   return null;
 };
