@@ -55,6 +55,9 @@ const PublicParty = lazyWithRetry(() => import("./pages/PublicParty"));
 const SharedCake = lazyWithRetry(() => import("./pages/SharedCake"));
 const Recipes = lazyWithRetry(() => import("./pages/Recipes"));
 const RecipeDetail = lazyWithRetry(() => import("./pages/RecipeDetail"));
+const WeddingCakeDesigner = lazyWithRetry(() => import("./pages/WeddingCakeDesigner"));
+const GraduationCakeDesigner = lazyWithRetry(() => import("./pages/GraduationCakeDesigner"));
+const EidCakeDesigner = lazyWithRetry(() => import("./pages/EidCakeDesigner"));
 
 
 const queryClient = new QueryClient();
@@ -123,6 +126,9 @@ const App = () => {
                   <Route path="/recipes" element={<Recipes />} />
                   <Route path="/recipes/:slug" element={<RecipeDetail />} />
                   <Route path="/dashboard" element={<Navigate to="/free-ai-cake-designer" replace />} />
+                  <Route path="/wedding-cake-designer" element={<WeddingCakeDesigner />} />
+                  <Route path="/graduation-cake-ideas" element={<GraduationCakeDesigner />} />
+                  <Route path="/eid-cake-ideas" element={<EidCakeDesigner />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

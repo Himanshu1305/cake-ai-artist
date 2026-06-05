@@ -346,6 +346,32 @@ const AustraliaLanding = () => {
         </div>
       </section>
 
+      {/* Explore by Occasion */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-3">Design Cakes for Every Occasion</h2>
+          <p className="text-center text-muted-foreground mb-10">Explore our dedicated cake designers for your special moment</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+            {[
+              { emoji: "💍", name: "Wedding Cakes", desc: "Elegant tiered designs for your perfect day", href: "/wedding-cake-designer" },
+              { emoji: "🎓", name: "Graduation Cakes", desc: "Celebrate every achievement with a personalised cake", href: "/graduation-cake-ideas" },
+              { emoji: "🎂", name: "Free AI Cake Designer", desc: "Design any cake in 30 seconds — free to try", href: "/free-ai-cake-designer" },
+              { emoji: "🌙", name: "Eid Cakes", desc: "Beautiful Eid Mubarak cake designs for Australia's Muslim community", href: "/eid-cake-ideas" },
+              { emoji: "🇦🇺", name: "Australia Day Cakes", desc: "Celebrate Australia Day with a themed AI cake design", href: "/free-ai-cake-designer?occasion=australia+day" },
+            ].map((item) => (
+              <Link key={item.name} to={item.href}>
+                <Card className="p-5 h-full border-2 hover:border-party-pink/40 transition-colors hover:shadow-lg cursor-pointer">
+                  <div className="text-3xl mb-3">{item.emoji}</div>
+                  <h3 className="font-bold text-foreground mb-1">{item.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-3">{item.desc}</p>
+                  <span className="text-sm font-semibold text-party-pink">Design Now →</span>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Cakes Carousel */}
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-8">
