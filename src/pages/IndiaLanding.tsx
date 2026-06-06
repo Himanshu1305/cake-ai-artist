@@ -182,6 +182,8 @@ const IndiaLanding = () => {
           { question: "What occasions does the AI cake designer support?", answer: "Birthdays, anniversaries, weddings, baby showers, Christmas, New Year and every personal celebration — with Indian cartoon characters and themes built in." },
           { question: "Does it support Indian cartoon characters?", answer: "Yes — Chhota Bheem, Motu Patlu and 50+ characters loved by Indian kids are available." },
           { question: "What's the price in INR?", answer: "Three plans in INR: Monthly ₹299/month, Yearly ₹1,999/year, or Lifetime ₹2,999 once. A free plan is available forever." },
+          { question: "Can I design eggless cakes with the AI cake generator?", answer: "Yes — describe your cake as eggless in the prompt and the AI generates designs appropriate for eggless cake styles. The design works as a visual brief for any baker offering eggless options." },
+          { question: "Does the AI cake designer support Indian regional occasions like Onam, Pongal or Navratri?", answer: "Yes — describe any Indian regional occasion in plain English and the AI incorporates relevant design elements. For Onam, mention Kerala boat race or floral themes. For Pongal, describe harvest festival elements. The AI adapts to any occasion you describe." },
         ]}
       />
 
@@ -394,6 +396,63 @@ const IndiaLanding = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Popular Indian Cake Occasions */}
+      <section className="py-12 px-4 bg-surface">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-3xl font-bold text-center mb-3">AI Cake Designs for Every Indian Celebration</h2>
+          <p className="text-center text-muted-foreground mb-10">From Diwali to weddings — India's most-loved celebration cakes, designed by AI in 30 seconds</p>
+          <div className="space-y-6">
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Birthday Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Birthday cakes in India have evolved from simple cream cakes to elaborate multi-tier creations. Popular styles include cartoon character themes for children (Chhota Bheem, Doraemon, Peppa Pig), elegant fondant designs for adults, and personalised photo cakes. Indian birthday cakes often feature the recipient's name prominently with vibrant colours and decorations that match the party theme.</p>
+              <Link to="/free-ai-cake-designer?occasion=birthday&ref=india" className="text-sm font-semibold text-party-pink hover:underline">Design a Birthday Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Diwali Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Diwali cake designs blend traditional Indian festival aesthetics with modern cake artistry. Popular elements include diyas (oil lamps), rangoli patterns, lotus flowers, gold and orange colour palettes, and Lakshmi motifs. Diwali cakes are increasingly popular as gifting alternatives to traditional mithai, combining the festive spirit with a contemporary celebration touch.</p>
+              <Link to="/free-ai-cake-designer?occasion=diwali&ref=india" className="text-sm font-semibold text-party-pink hover:underline">Design a Diwali Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Wedding Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Indian wedding cakes range from traditional white tiered designs to elaborate creations incorporating mehndi patterns, zari work motifs and floral designs inspired by bridal wear. Popular flavours include rose, kesar pista and fruit cake. South Indian weddings favour banana leaf-inspired designs while North Indian weddings often feature gold-accented fondant cakes with marigold decorations.</p>
+              <Link to="/free-ai-cake-designer?occasion=wedding&ref=india" className="text-sm font-semibold text-party-pink hover:underline">Design a Wedding Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Holi Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Holi cake designs celebrate the festival of colours with vibrant, multi-coloured designs that capture the joy of the festival. Popular approaches include rainbow-layered interiors revealed on cutting, fondant splashes in Holi colours, and edible gulal (colour powder) effects. Holi cakes make memorable gifts and party centrepieces for the spring festival celebrations.</p>
+              <Link to="/free-ai-cake-designer?occasion=holi&ref=india" className="text-sm font-semibold text-party-pink hover:underline">Design a Holi Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Eid Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Eid cake designs for Indian Muslim celebrations combine elegant aesthetics with festive symbolism. Crescent moon and star motifs, Arabic calligraphy, gold and green colour palettes, and intricate geometric patterns inspired by Islamic art are popular design elements. Eid cakes are shared with family during Eid al-Fitr and Eid al-Adha celebrations across India.</p>
+              <Link to="/free-ai-cake-designer?occasion=eid&ref=india" className="text-sm font-semibold text-party-pink hover:underline">Design an Eid Cake →</Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Indian Cake Traditions — E-E-A-T */}
+      <section className="py-10 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-2xl font-bold mb-4">About Indian Celebration Cakes</h2>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            India's cake culture has grown dramatically over the past two decades, blending Western cake traditions with distinctly Indian aesthetics and flavours. Bakeries across Mumbai, Delhi, Bangalore, Chennai and Hyderabad now create elaborate custom cakes for every occasion — from intimate family birthdays to large wedding receptions.
+          </p>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Traditional Indian flavour preferences — kesar (saffron), rose, pista (pistachio), mango and cardamom — are increasingly incorporated into cake designs alongside globally popular choices like chocolate truffle and red velvet. Eggless cakes remain particularly popular across India due to dietary preferences, with bakeries offering eggless versions of virtually every cake style.
+          </p>
+          <p className="text-muted-foreground leading-relaxed">
+            AI cake design tools like Cake AI Artist have made it easier than ever to visualise personalised cake designs before ordering from a baker — helping customers communicate their vision clearly and reducing costly misunderstandings. The tool supports all major Indian occasions and characters, with pricing shown in Indian Rupees.
+          </p>
         </div>
       </section>
 

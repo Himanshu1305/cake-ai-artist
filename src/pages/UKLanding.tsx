@@ -205,6 +205,8 @@ const UKLanding = () => {
           { question: "Is the AI cake generator free in the UK?", answer: "Yes — Cake AI Artist is completely free to try in the UK. Design your first AI cake with no signup required. Premium plans are available for unlimited designs." },
           { question: "Can I design a traditional British cake with AI?", answer: "Absolutely. Our AI understands British cake traditions — from Victoria sponge and Christmas cake to christening cakes and royal celebration cakes." },
           { question: "Does it work on mobile in the UK?", answer: "Yes — Cake AI Artist is fully optimised for mobile, tablet and desktop. Design a cake on your phone in seconds, wherever you are in Britain." },
+          { question: "Can I design a traditional British cake like a Victoria sponge or Christmas cake with AI?", answer: "Yes — describe the cake style in your prompt. For a Victoria sponge, mention cream and strawberry jam filling, light sponge, dusted icing sugar top. For a Christmas cake, describe marzipan base, royal icing, and any specific decorations. The AI produces a design that captures the traditional style." },
+          { question: "Does the AI cake designer show prices in British pounds?", answer: "Yes — Cake AI Artist shows all pricing in GBP for UK users. The free tier includes 5 cake designs at no cost. Premium plans are priced in British pounds with no hidden currency conversion fees." },
         ]}
       />
 
@@ -418,6 +420,63 @@ const UKLanding = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Popular British Cake Occasions */}
+      <section className="py-12 px-4 bg-surface">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-3xl font-bold text-center mb-3">AI Cake Designs for Every British Celebration</h2>
+          <p className="text-center text-muted-foreground mb-10">From birthday parties to royal celebrations — Britain's most-loved occasion cakes, designed by AI in 30 seconds</p>
+          <div className="space-y-6">
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Birthday Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">British birthday cakes range from classic Victoria sponge-inspired designs to elaborate fondant creations. Popular styles include number cakes for milestone birthdays (30th, 40th, 50th), character cakes for children, and elegant floral designs for adults. The Great British Bake Off has inspired a generation of elaborate birthday cake designs across the UK.</p>
+              <Link to="/free-ai-cake-designer?occasion=birthday&ref=uk" className="text-sm font-semibold text-party-pink hover:underline">Design a Birthday Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Wedding Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">British wedding cakes traditionally feature white fondant with elegant piped decorations, fresh flowers or ribbon details. Modern British weddings increasingly favour naked cakes with fresh berries, drip cakes with chocolate ganache, and geometric designs. Classic flavours include fruit cake, Victoria sponge and lemon drizzle — often served with traditional wedding cake portions wrapped for guests.</p>
+              <Link to="/free-ai-cake-designer?occasion=wedding&ref=uk" className="text-sm font-semibold text-party-pink hover:underline">Design a Wedding Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Christening Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Christening cakes are a beloved British tradition, typically featuring soft pastel colours, cross motifs, angel figures and the baby's name and christening date. White and ivory fondant designs with delicate sugar flowers are most popular. Many families commission christening cakes as keepsakes alongside the celebration cake.</p>
+              <Link to="/free-ai-cake-designer?occasion=christening&ref=uk" className="text-sm font-semibold text-party-pink hover:underline">Design a Christening Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Christmas Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">British Christmas cake traditions date back centuries — rich fruit cake covered in marzipan and royal icing, decorated with snowscenes, holly and Father Christmas figures. Modern British Christmas cakes also include lighter alternatives like chocolate yule logs, gingerbread designs and decorated sponge cakes for those who prefer less traditional flavours.</p>
+              <Link to="/free-ai-cake-designer?occasion=christmas&ref=uk" className="text-sm font-semibold text-party-pink hover:underline">Design a Christmas Cake →</Link>
+            </div>
+
+            <div className="border rounded-xl p-6 bg-background hover:border-party-pink/30 transition-colors">
+              <h3 className="text-xl font-bold text-foreground mb-2">Coronation and Royal Celebration Cakes</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">Royal celebrations have always inspired British cake design — from coronation cakes featuring crowns and Union Jacks to Jubilee cakes in red, white and blue. The 2023 King's Coronation sparked a wave of creative royal-themed cake designs across the UK, with bakers producing everything from simple Union Jack sheet cakes to elaborate crown-topped tiered creations.</p>
+              <Link to="/free-ai-cake-designer?occasion=royal+celebration&ref=uk" className="text-sm font-semibold text-party-pink hover:underline">Design a Royal Celebration Cake →</Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* About British Cake Culture — E-E-A-T */}
+      <section className="py-10 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-2xl font-bold mb-4">About British Celebration Cakes</h2>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Britain has one of the world's richest cake cultures, shaped by centuries of baking tradition and more recently by the global phenomenon of The Great British Bake Off. From the classic Victoria sponge — named after Queen Victoria who reportedly enjoyed a slice with her afternoon tea — to elaborate celebration tiers, British cakes are a central part of every significant occasion.
+          </p>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Regional cake traditions vary significantly across the UK. Scotland is known for Dundee cake and clootie dumpling; Wales has the spiced Welsh cake; Northern Ireland favours Barmbrack for celebrations. These regional identities sit alongside nationally popular styles — drip cakes, naked cakes and number cakes — that have become standard choices at modern British parties.
+          </p>
+          <p className="text-muted-foreground leading-relaxed">
+            AI cake design tools like Cake AI Artist help UK customers communicate their vision to a baker before ordering — reducing misunderstandings and saving consultation time. The tool supports all major British occasions from christenings to coronations, with pricing in GBP and no hidden currency conversion fees.
+          </p>
         </div>
       </section>
 
