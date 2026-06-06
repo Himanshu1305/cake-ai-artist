@@ -338,7 +338,7 @@ const Index = () => {
             {/* Mobile Hamburger Menu */}
             <Sheet>
               <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-party-pink/10">
+                <Button variant="ghost" size="icon" aria-label="Open menu" className="text-foreground hover:bg-party-pink/10">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
