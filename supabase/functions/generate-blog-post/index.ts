@@ -127,6 +127,32 @@ serve(async (req) => {
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseKey);
 
+  // Dual auth: CRON_SECRET header OR admin JWT
+  {
+    const cronSecret = req.headers.get("X-Cron-Secret");
+    const expectedSecret = Deno.env.get("CRON_SECRET");
+    const authHeader = req.headers.get("Authorization");
+    let isAuthorized = !!(expectedSecret && cronSecret === expectedSecret);
+    if (!isAuthorized && authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (!authError && user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (roleData) isAuthorized = true;
+      }
+    }
+    if (!isAuthorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   // Helper to log task run
   const logTaskRun = async (status: string, resultMessage?: string, errorMessage?: string, recordsProcessed?: number) => {
     try {

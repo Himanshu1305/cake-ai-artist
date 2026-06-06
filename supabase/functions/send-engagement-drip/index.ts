@@ -269,7 +269,15 @@ serve(async (req) => {
     if (!isAuthorized && authHeader) {
       const token = authHeader.replace("Bearer ", "");
       const { data: { user }, error } = await supabase.auth.getUser(token);
-      if (!error && user) isAuthorized = true;
+      if (!error && user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (roleData) isAuthorized = true;
+      }
     }
     if (!isAuthorized) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
