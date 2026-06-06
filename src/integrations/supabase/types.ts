@@ -508,6 +508,8 @@ export type Database = {
           audio_url: string | null
           created_at: string | null
           featured: boolean | null
+          featured_page: string | null
+          featured_pages: string[] | null
           id: string
           image_url: string
           message: string | null
@@ -525,6 +527,8 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string
           image_url: string
           message?: string | null
@@ -542,6 +546,8 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string
           image_url?: string
           message?: string | null
@@ -1350,21 +1356,33 @@ export type Database = {
       public_featured_images: {
         Row: {
           created_at: string | null
+          featured_page: string | null
+          featured_pages: string[] | null
           id: string | null
           image_url: string | null
+          message: string | null
           occasion_type: string | null
+          recipient_name: string | null
         }
         Insert: {
           created_at?: string | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string | null
           image_url?: string | null
+          message?: string | null
           occasion_type?: string | null
+          recipient_name?: string | null
         }
         Update: {
           created_at?: string | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string | null
           image_url?: string | null
+          message?: string | null
           occasion_type?: string | null
+          recipient_name?: string | null
         }
         Relationships: []
       }
@@ -1375,6 +1393,7 @@ export type Database = {
         Returns: undefined
       }
       get_available_spots: { Args: never; Returns: Json }
+      get_guest_by_token: { Args: { p_token: string }; Returns: Json }
       get_party_public: { Args: { p_slug: string }; Returns: Json }
       get_public_cake: {
         Args: { p_id: string }
@@ -1407,6 +1426,17 @@ export type Database = {
       link_session_visits_to_user: {
         Args: { p_session_id: string; p_user_id: string }
         Returns: undefined
+      }
+      rsvp_by_token: {
+        Args: {
+          p_custom_answers?: Json
+          p_meal_preference?: string
+          p_plus_one_names?: Json
+          p_plus_ones?: number
+          p_status: string
+          p_token: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

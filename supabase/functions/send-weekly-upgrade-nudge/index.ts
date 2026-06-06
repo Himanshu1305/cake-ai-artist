@@ -226,7 +226,13 @@ serve(async (req) => {
       const token = authHeader.replace("Bearer ", "");
       const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
       if (!authError && user) {
-        isAuthorized = true;
+        const { data: roleData } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (roleData) isAuthorized = true;
       }
     }
 

@@ -17,6 +17,7 @@ import { BlogExitIntentPopup } from "@/components/BlogExitIntentPopup";
 import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
+import DOMPurify from "dompurify";
 
 // Database blog post type
 interface DatabaseBlogPost {
@@ -2150,8 +2151,14 @@ const BlogPost = () => {
   // Split content to insert CTA box mid-article
   const contentParts = post.content.split('</p>');
   const midPoint = Math.floor(contentParts.length / 2);
-  const firstHalf = contentParts.slice(0, midPoint).join('</p>') + '</p>';
-  const secondHalf = contentParts.slice(midPoint).join('</p>');
+  const sanitizeHtml = (html: string) =>
+    DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form'],
+      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+    });
+  const firstHalf = sanitizeHtml(contentParts.slice(0, midPoint).join('</p>') + '</p>');
+  const secondHalf = sanitizeHtml(contentParts.slice(midPoint).join('</p>'));
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

@@ -164,9 +164,10 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify test secret for security
+  // Verify test secret for security (from env, not hardcoded)
+  const expectedTestSecret = Deno.env.get("TEST_EMAIL_SECRET");
   const testSecret = req.headers.get("x-test-secret");
-  if (testSecret !== "cake-test-digest-2025") {
+  if (!expectedTestSecret || testSecret !== expectedTestSecret) {
     return new Response(
       JSON.stringify({ error: "Invalid test secret" }),
       { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
