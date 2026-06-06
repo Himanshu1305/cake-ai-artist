@@ -48,15 +48,13 @@ export default function PartyRSVP() {
 
   useEffect(() => {
     (async () => {
-      const { data: g } = await supabase
-        .from("party_guests")
-        .select("*")
-        .eq("rsvp_token", token!)
-        .maybeSingle();
-      if (!g) {
+      const { data } = await supabase.rpc("get_guest_by_token", { p_token: token! });
+      const payload = data as { guest: any; party: any } | null;
+      if (!payload?.guest) {
         setLoading(false);
         return;
       }
+      const g = payload.guest;
       setGuest(g);
       setPlusOnes(g.plus_ones || 0);
       setPlusOneNames(
@@ -70,15 +68,7 @@ export default function PartyRSVP() {
           ? (g.custom_answers as Record<string, string>)
           : {},
       );
-
-      const { data: p } = await supabase
-        .from("parties")
-        .select(
-          "id, public_slug, title, occasion, event_date, event_timezone, venue, city, theme, rsvp_deadline, custom_questions",
-        )
-        .eq("id", g.party_id)
-        .maybeSingle();
-      setParty(p);
+      setParty(payload.party);
       setDone(g.rsvp_status !== "pending");
       setLoading(false);
     })();
@@ -90,27 +80,29 @@ export default function PartyRSVP() {
 
   const respond = async (status: "yes" | "no" | "maybe") => {
     setSubmitting(true);
-    const payload: any = {
-      rsvp_status: status,
-      responded_at: new Date().toISOString(),
+    const args: any = {
+      p_token: token!,
+      p_status: status,
+      p_plus_ones: status === "yes" ? plusOnes : 0,
+      p_plus_one_names: status === "yes" ? plusOneNames.slice(0, plusOnes).filter(Boolean) : null,
+      p_meal_preference: status === "yes" && mealPreference ? mealPreference : null,
+      p_custom_answers: status === "yes" && Object.keys(customAnswers).length ? customAnswers : null,
     };
-    if (status === "yes") {
-      payload.plus_ones = plusOnes;
-      payload.plus_one_names = plusOneNames.slice(0, plusOnes).filter(Boolean);
-      if (mealPreference) payload.meal_preference = mealPreference;
-      if (Object.keys(customAnswers).length) payload.custom_answers = customAnswers;
-    }
-    const { error } = await supabase
-      .from("party_guests")
-      .update(payload)
-      .eq("rsvp_token", token!);
+    const { data, error } = await supabase.rpc("rsvp_by_token", args);
     setSubmitting(false);
-    if (error) {
+    if (error || data !== true) {
       toast.error("Could not save your response");
       return;
     }
     setDone(true);
-    setGuest({ ...guest, ...payload });
+    setGuest({
+      ...guest,
+      rsvp_status: status,
+      plus_ones: args.p_plus_ones,
+      plus_one_names: args.p_plus_one_names,
+      meal_preference: args.p_meal_preference,
+      custom_answers: args.p_custom_answers,
+    });
   };
 
   const handleAddToCalendar = () => {
