@@ -1,0 +1,42 @@
+# Cake AI Artist
+
+> Free AI cake designer that creates personalized birthday, anniversary, wedding and celebration cakes in 30 seconds. Generate custom cakes with any name, share them, and plan the whole party.
+
+Cake AI Artist is an AI-powered cake design and party-planning tool. Users describe a cake (occasion, name, theme, colors) and the app generates a high-quality image of a personalized cake. Premium members get unlimited generations, an AI party planner, printable party packs, RSVP invites, and a public gallery.
+
+## Pages
+
+- [Home](/): Free AI birthday cake generator with name personalization.
+- [Free AI Cake Designer](/free-ai-cake-designer): Main designer flow — pick occasion, name and theme.
+- [AI Cake Generator (Free)](/ai-cake-generator-free): Landing page for the free AI cake generator.
+- [AI Birthday Cake With Name](/ai-birthday-cake-with-name): Personalized birthday cakes featuring any name.
+- [Photo Cake Maker](/photo-cake-maker): Upload a photo and place it on a top-down cake.
+- [Personalized Cake Online](/personalized-cake-online): Custom cakes for any occasion.
+- [Wedding Cake Designer](/wedding-cake-designer): AI-designed wedding cakes.
+- [Eid Cake Designer](/eid-cake-designer): Cakes for Eid celebrations.
+- [Graduation Cake Designer](/graduation-cake-designer): Graduation cake designs.
+- [3D Cake Designer](/3d-cake-designer): 3D-style cake renders.
+- [Party Planner](/party-planner): Free AI party planner — tasks, guests, invites, RSVP.
+- [Recipes](/recipes): Cake recipes with ingredients and instructions.
+- [Community Gallery](/community): Cakes shared by other users.
+- [Blog](/blog): Articles on cake design, party planning and celebration ideas.
+- [Pricing](/pricing): Plans and pricing.
+- [How It Works](/how-it-works): 3-step overview of the cake designer.
+- [Use Cases](/use-cases): Occasions and use cases supported.
+- [FAQ](/faq): Frequently asked questions.
+- [About](/about): About Cake AI Artist.
+- [Contact](/contact): Contact and support.
+
+## Country Pages
+
+- [USA](/usa): US landing page.
+- [UK](/uk): UK landing page.
+- [Canada](/canada): Canada landing page.
+- [Australia](/australia): Australia landing page.
+- [India](/india): India landing page.
+
+## Optional
+
+- [Privacy Policy](/privacy)
+- [Terms of Service](/terms)
+- [Advertising](/advertising)
