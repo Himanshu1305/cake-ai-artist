@@ -508,6 +508,8 @@ export type Database = {
           audio_url: string | null
           created_at: string | null
           featured: boolean | null
+          featured_page: string | null
+          featured_pages: string[] | null
           id: string
           image_url: string
           message: string | null
@@ -525,6 +527,8 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string
           image_url: string
           message?: string | null
@@ -542,6 +546,8 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           featured?: boolean | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string
           image_url?: string
           message?: string | null
@@ -1350,21 +1356,33 @@ export type Database = {
       public_featured_images: {
         Row: {
           created_at: string | null
+          featured_page: string | null
+          featured_pages: string[] | null
           id: string | null
           image_url: string | null
+          message: string | null
           occasion_type: string | null
+          recipient_name: string | null
         }
         Insert: {
           created_at?: string | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string | null
           image_url?: string | null
+          message?: string | null
           occasion_type?: string | null
+          recipient_name?: string | null
         }
         Update: {
           created_at?: string | null
+          featured_page?: string | null
+          featured_pages?: string[] | null
           id?: string | null
           image_url?: string | null
+          message?: string | null
           occasion_type?: string | null
+          recipient_name?: string | null
         }
         Relationships: []
       }
