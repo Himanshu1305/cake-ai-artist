@@ -50,8 +50,8 @@ const AiCakeGeneratorFree = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>Free AI Cake Generator — Design Personalized Cakes Online | Cake AI Artist</title>
-        <meta name="description" content="The best free AI cake generator. Design personalized birthday cakes, anniversary cakes, and celebration cakes with AI in 30 seconds. No credit card needed." />
+        <title>Free AI Cake Generator — Design Any Cake Online Free</title>
+        <meta name="description" content="The best free AI cake generator online. Create personalised birthday, wedding and Eid cakes with AI in 30 seconds. No credit card needed." />
         <link rel="canonical" href="https://cakeaiartist.com/ai-cake-generator-free" />
         <meta property="og:title" content="Free AI Cake Generator | Cake AI Artist" />
         <meta property="og:description" content="Design personalized AI cakes free. 30 seconds, any name, any occasion." />

@@ -2318,6 +2318,26 @@ const BlogPost = () => {
             ))}
           </div>
         </div>
+
+        {post.category !== 'Legal' && post.category !== 'Privacy' && (
+          <div className="mt-12 pt-8 border-t border-border/50">
+            <h2 className="text-lg font-bold mb-4 text-foreground">Try these free AI cake tools</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { to: "/free-ai-cake-designer", label: "Free AI Cake Designer", desc: "Design any cake in 30 seconds" },
+                { to: "/ai-birthday-cake-with-name", label: "AI Birthday Cake with Name", desc: "Names spelled correctly, every time" },
+                { to: "/wedding-cake-designer", label: "Wedding Cake Designer", desc: "From rustic to elegant, free to try" },
+              ].map(({ to, label, desc }) => (
+                <Link key={to} to={to}>
+                  <div className="border border-border rounded-lg p-3 hover:border-party-pink/40 hover:shadow-sm transition-all">
+                    <p className="font-semibold text-sm text-foreground">{label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
     </div>

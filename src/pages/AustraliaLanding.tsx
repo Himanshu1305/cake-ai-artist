@@ -165,6 +165,11 @@ const AustraliaLanding = () => {
         <meta name="keywords" content="ai cake generator australia, ai cake australia, ai cakes australia, cake ai australia, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer australia, personalised birthday cake australia, anniversary cake australia, wedding cake design australia, australia day cake, ai cake maker au, ai cake generator free australia, custom cake design australia, cake designer online australia, birthday cake ideas australia" />
         <link rel="canonical" href="https://cakeaiartist.com/australia" />
         <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
+        <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
+        <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
+        <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
+        <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
+        <link rel="alternate" hrefLang="x-default" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="AI Cake Designer Australia — Personalised Cakes" />
         <meta property="og:description" content="Australia's best AI cake designer for personalised birthday cakes & every Aussie celebration — weddings, Australia Day & more." />
         <meta property="og:url" content="https://cakeaiartist.com/australia" />

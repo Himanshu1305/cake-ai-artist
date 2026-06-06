@@ -43,8 +43,8 @@ const ThreeDCakeDesigner = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>3D Cake Designer Free Online — AI Cake Design Tool | Cake AI Artist</title>
-        <meta name="description" content="The best 3D cake designer free online. Design realistic 3D AI cakes for birthdays, weddings, and celebrations in 30 seconds. No download needed." />
+        <title>Free 3D Cake Designer Online — AI Cake Design Tool</title>
+        <meta name="description" content="Design photorealistic 3D cakes online for free. AI-powered 3D cake designer with realistic depth, lighting and custom decorations." />
         <link rel="canonical" href="https://cakeaiartist.com/3d-cake-designer" />
         <meta property="og:title" content="3D Cake Designer Free Online | Cake AI Artist" />
         <meta property="og:description" content="Design realistic 3D AI cakes free online. No download, no signup to explore." />

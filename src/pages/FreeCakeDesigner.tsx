@@ -89,8 +89,8 @@ const FreeCakeDesigner = () => {
       )}
 
       <Helmet>
-        <title>Free AI Cake Generator — AI Cake Designer Online</title>
-        <meta name="description" content="Free AI cake generator. Design AI birthday cakes & personalized cake designs in 30 seconds. The #1 free cake generator and AI cake designer online." />
+        <title>Free AI Cake Designer — Create Custom Cakes in 30 Seconds</title>
+        <meta name="description" content="Design free AI cakes online in 30 seconds. Personalised birthday, wedding and celebration cakes with AI. No design skills needed." />
         <meta name="keywords" content="ai cake generator free, free ai cake generator, cake generator, ai cakes, cake ai, ai cake, birthday cake ai, ai birthday cakes, free ai cake designer, ai cake maker, personalized cake design, virtual cake creator, birthday cake designer" />
         <link rel="canonical" href="https://cakeaiartist.com/free-ai-cake-designer" />
         <meta property="og:title" content="Free AI Cake Generator — AI Cake Designer Online" />

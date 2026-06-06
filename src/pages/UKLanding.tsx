@@ -165,6 +165,11 @@ const UKLanding = () => {
         <meta name="keywords" content="ai cake generator uk, ai cake uk, ai cakes uk, cake ai uk, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer uk, personalised birthday cake uk, anniversary cake uk, wedding cake design uk, christening cake, ai cake maker england, virtual cake creator uk, ai cake generator free uk, personalised cake design uk, cake designer online uk, birthday cake ideas uk" />
         <link rel="canonical" href="https://cakeaiartist.com/uk" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
+        <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
+        <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
+        <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
+        <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
+        <link rel="alternate" hrefLang="x-default" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="Best AI Cake Designer UK — Personalised Cakes" />
         <meta property="og:description" content="The UK's best AI cake designer for personalised birthday cakes & every British celebration — weddings, christenings & more." />
         <meta property="og:url" content="https://cakeaiartist.com/uk" />

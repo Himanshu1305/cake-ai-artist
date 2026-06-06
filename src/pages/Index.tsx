@@ -202,7 +202,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Free AI Cake Generator — Design Custom Cakes with AI in Seconds</title>
+        <title>Cake AI Artist — Free AI Cake Generator &amp; Designer Online</title>
         <meta name="description" content="The best free AI cake generator. Create stunning birthday, wedding and celebration cakes with AI. Used by cake lovers in 100+ countries." />
         <meta name="keywords" content="cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake designer, ai cake design, best ai cake designer, personalized birthday cake, custom cake design, anniversary cake design, wedding cake ai, baby shower cake, diwali cake, virtual cake maker, online cake design tool" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -1151,6 +1151,29 @@ const Index = () => {
 
       {/* Homepage FAQ — SEO + rich results */}
       <HomepageFAQ />
+
+      {/* Explore Our AI Cake Designers */}
+      <div className="container mx-auto px-4 py-10">
+        <h2 className="text-2xl font-bold text-center text-foreground mb-6">Explore Our AI Cake Designers</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl mx-auto text-center text-sm">
+          {[
+            { to: "/wedding-cake-designer", label: "AI Wedding Cake Designer" },
+            { to: "/photo-cake-maker", label: "Photo Cake Maker" },
+            { to: "/personalized-cake-online", label: "Personalised Cake Online" },
+            { to: "/ai-birthday-cake-with-name", label: "AI Birthday Cake with Name" },
+            { to: "/graduation-cake-ideas", label: "Graduation Cake Ideas" },
+            { to: "/eid-cake-ideas", label: "Eid Cake Ideas" },
+          ].map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              className="text-party-pink hover:underline hover:text-party-pink/80 transition-colors py-1"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* Footer */}
       <Footer />

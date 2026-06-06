@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
-import { ChefHat, Clock, Users } from "lucide-react";
+import { ChefHat, Clock, Users, Sparkles } from "lucide-react";
 
 interface Recipe {
   slug: string;
@@ -133,6 +133,24 @@ const Recipes = () => {
               {COUNTRY_FLAGS[code]} {name}
             </button>
           ))}
+        </div>
+      </section>
+
+      <section className="px-4 pb-4 max-w-6xl mx-auto">
+        <div className="bg-gradient-to-r from-party-pink/10 to-party-purple/10 border border-party-pink/20 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-6 h-6 text-party-pink flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xl font-bold">See what these cakes look like as AI designs</p>
+              <p className="text-sm text-muted-foreground">Generate a photorealistic AI version of any cake in 30 seconds — free</p>
+            </div>
+          </div>
+          <Link
+            to="/free-ai-cake-designer?ref=recipes_hub"
+            className="whitespace-nowrap bg-party-pink text-white px-6 py-3 rounded-full font-bold hover:bg-party-pink/90 transition-colors"
+          >
+            Try AI Cake Designer →
+          </Link>
         </div>
       </section>
 

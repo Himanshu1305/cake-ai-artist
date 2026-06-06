@@ -148,6 +148,11 @@ const USALanding = () => {
         <meta name="keywords" content="ai cake generator usa, ai cake usa, ai birthday cake generator, free ai cake generator usa, best ai cake designer usa, personalized birthday cake usa, 4th of july cake, thanksgiving cake design, halloween cake ai, christmas cake ai, wedding cake ai usa, baby shower cake generator, graduation cake design, american cake designer, ai cake maker usa, super bowl cake" />
         <link rel="canonical" href="https://cakeaiartist.com/usa" />
         <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
+        <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
+        <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
+        <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
+        <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
+        <link rel="alternate" hrefLang="x-default" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="Best AI Cake Generator USA — Free Online Cake Designer" />
         <meta property="og:description" content="America's best free AI cake generator. Design stunning birthday, 4th of July, Thanksgiving, Halloween and wedding cakes in 30 seconds." />
         <meta property="og:url" content="https://cakeaiartist.com/usa" />

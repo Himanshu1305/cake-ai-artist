@@ -145,6 +145,11 @@ const IndiaLanding = () => {
         <meta name="keywords" content="ai cake generator india, ai cake india, ai cakes india, cake ai india, birthday cake ai india, ai birthday cakes, free ai cake generator, best ai cake designer india, personalized birthday cake india, anniversary cake india, wedding cake design india, christmas cake india, ai cake maker india, chhota bheem cake, motu patlu cake" />
         <link rel="canonical" href="https://cakeaiartist.com/india" />
         <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
+        <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
+        <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
+        <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
+        <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
+        <link rel="alternate" hrefLang="x-default" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="Best AI Cake Designer in India — Free Online" />
         <meta property="og:description" content="India's best AI cake designer for birthdays, anniversaries, weddings, Christmas & every celebration — priced in ₹." />
         <meta property="og:url" content="https://cakeaiartist.com/india" />

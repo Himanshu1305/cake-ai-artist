@@ -145,6 +145,11 @@ const CanadaLanding = () => {
         <meta name="keywords" content="ai cake generator canada, ai cake canada, ai cakes canada, cake ai canada, birthday cake ai, ai birthday cakes, free ai cake generator, best ai cake designer canada, personalized birthday cake canada, anniversary cake canada, wedding cake design canada, canada day cake, ai cake maker canada" />
         <link rel="canonical" href="https://cakeaiartist.com/canada" />
         <link rel="alternate" hrefLang="en-CA" href="https://cakeaiartist.com/canada" />
+        <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
+        <link rel="alternate" hrefLang="en-IN" href="https://cakeaiartist.com/india" />
+        <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
+        <link rel="alternate" hrefLang="en-AU" href="https://cakeaiartist.com/australia" />
+        <link rel="alternate" hrefLang="x-default" href="https://cakeaiartist.com/" />
         <meta property="og:title" content="AI Cake Designer Canada — Personalized Cakes" />
         <meta property="og:description" content="Canada's best AI cake designer for personalized birthday cakes & every Canadian celebration — weddings, Canada Day & more." />
         <meta property="og:url" content="https://cakeaiartist.com/canada" />
