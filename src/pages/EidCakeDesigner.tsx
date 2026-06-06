@@ -38,23 +38,23 @@ const EidCakeDesigner = () => {
   const faqs = [
     {
       question: "Can the AI design a traditional Eid Mubarak cake?",
-      answer: "Yes — describe traditional Eid elements like crescent moons, stars, geometric patterns, lanterns or Arabic calligraphy and the AI incorporates them into a beautiful celebration cake design.",
+      answer: "Yes — describe crescent moons, stars, geometric patterns, lanterns or Arabic calligraphy and the AI incorporates them into a culturally respectful Eid cake design.",
     },
     {
       question: "What colours work best for Eid cake designs?",
-      answer: "Gold, emerald green, white, deep teal and royal blue are the most popular Eid colour palettes. You can also request a specific colour combination in your description.",
+      answer: "Gold, emerald green, white, deep teal and royal blue are the most popular Eid palettes. Mention a specific combination in your description and the AI applies it exactly.",
     },
     {
       question: "Can I design an Eid cake with Arabic text or calligraphy?",
-      answer: "Yes. Request Eid Mubarak, Eid al-Fitr or any celebratory text in your design description and the AI will incorporate beautiful calligraphy-style lettering on the cake.",
+      answer: "Yes — request Eid Mubarak, Eid al-Fitr or any celebratory phrase in your description and the AI incorporates calligraphy-style lettering into the cake design.",
     },
     {
       question: "Is the Eid cake designer free to use?",
-      answer: "Yes — your first 5 Eid cake designs are completely free. No account needed for your first design. Create multiple variations and choose your favourite.",
+      answer: "Yes — your first 5 Eid cake designs are completely free with no account required for your first design.",
     },
     {
       question: "Can I design Eid cakes for both Eid al-Fitr and Eid al-Adha?",
-      answer: "Absolutely. Both occasions are supported. Simply mention which Eid you are celebrating and any specific elements you want — the AI will create an appropriate and respectful design.",
+      answer: "Yes — both occasions are fully supported. Mention which Eid you are celebrating and any specific elements you want and the AI creates an appropriate, respectful design.",
     },
   ];
 

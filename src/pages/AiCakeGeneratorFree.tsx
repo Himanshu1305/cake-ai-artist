@@ -18,23 +18,23 @@ const AiCakeGeneratorFree = () => {
   const faqs = [
     {
       question: "Is the AI cake generator really free?",
-      answer: "Yes — your first 5 cakes are completely free, no credit card needed. Most people end up upgrading because the cakes are way too good not to share.",
+      answer: "Yes — your first 5 designs are completely free with no credit card required. Each design takes about 30 seconds and you can download or share the result immediately.",
     },
     {
       question: "Do I need to sign up to use the free AI cake generator?",
-      answer: "You can browse and explore without signing up. To save or download your AI cake, a quick free signup takes 10 seconds (Google login works too).",
+      answer: "No signup is needed for your first design. To save or download, a free account takes under 10 seconds — Google login works.",
     },
     {
       question: "What makes this different from other free AI cake generators?",
-      answer: "Honestly? Three things. The AI actually spells names correctly. It understands occasions (a Diwali cake looks different from a baby shower cake). And you get clear local pricing — no surprise charges at checkout.",
+      answer: "Three things: names are spelled correctly every time, the AI understands occasion context (a Diwali cake looks different from a baby shower cake), and pricing is shown in your local currency with no surprise charges.",
     },
     {
       question: "Can I use the AI cake design at a real bakery?",
-      answer: "Absolutely. Many of our users take the AI design straight to their local baker as a reference. The image is high-resolution and shows colors, decorations, and text clearly.",
+      answer: "Yes — download the high-resolution image and take it to any bakery as a visual brief. The design shows colours, decorations and text clearly enough for most bakers to replicate.",
     },
     {
       question: "How long does the free AI cake generator take?",
-      answer: "About 30 seconds from picking the occasion to seeing your finished cake. Sometimes faster, sometimes slower if you tweak the design a few times.",
+      answer: "30 seconds from entering the occasion to a finished design. If you adjust the prompt and regenerate it takes another 30 seconds per variation.",
     },
   ];
 

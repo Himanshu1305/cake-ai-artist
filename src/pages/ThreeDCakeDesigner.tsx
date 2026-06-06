@@ -18,23 +18,23 @@ const ThreeDCakeDesigner = () => {
   const faqs = [
     {
       question: "Is the 3D cake designer actually free online?",
-      answer: "Yep. You get 5 full 3D cake designs free with no credit card. Most cake design tools either charge upfront or watermark the results — we don't do either.",
+      answer: "Yes — 5 full 3D cake designs are free with no credit card required. Results are high-resolution with no watermark.",
     },
     {
       question: "How is this different from regular 2D cake design tools?",
-      answer: "A 2D tool gives you a flat sketch. Our 3D AI cake designer renders the cake with realistic depth, lighting, and dimension — so you can actually see what the finished cake will look like before you order it from a baker.",
+      answer: "A 2D tool produces a flat sketch. This 3D AI designer renders photorealistic depth, lighting and dimension so you can see exactly what the finished cake will look like before ordering from a baker.",
     },
     {
-      question: "Can I customize the 3D cake design — colors, tiers, decorations?",
-      answer: "Yes. Pick the number of tiers, frosting style, decoration theme, and color palette. You can also describe specific touches (gold drip, edible flowers, fondant figures) in plain English.",
+      question: "Can I customise the 3D cake design — colours, tiers, decorations?",
+      answer: "Yes — choose tier count, frosting style, decoration theme and colour palette. Describe specific details (gold drip, edible flowers, fondant figures) in plain English and the AI incorporates them.",
     },
     {
       question: "Can my baker use the 3D cake design as a reference?",
-      answer: "That's exactly what most users do. The 3D render is high-resolution and shows tier sizes, decorations, colors, and proportions clearly enough for any decent baker to recreate.",
+      answer: "Yes — that is the most common use case. The high-resolution render shows tier sizes, decorations, colours and proportions clearly enough for any professional baker to recreate.",
     },
     {
       question: "Does it work on phones?",
-      answer: "Yes — fully mobile-friendly. Most people design their 3D cakes on their phone while waiting in line for coffee.",
+      answer: "Yes — fully mobile-optimised. The design tool works on any smartphone browser with no app download required.",
     },
   ];
 

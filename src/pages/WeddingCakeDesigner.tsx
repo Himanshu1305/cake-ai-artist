@@ -42,23 +42,23 @@ const WeddingCakeDesigner = () => {
     },
     {
       question: "Can I design a multi-tier wedding cake with AI?",
-      answer: "Absolutely. Describe the number of tiers, flavours, frosting style and decorations and the AI renders a photorealistic multi-tier wedding cake. Three-tier, five-tier, or any configuration.",
+      answer: "Yes — describe the number of tiers, frosting style and decorations and the AI renders a photorealistic multi-tier cake. Three-tier, five-tier, or any configuration works.",
     },
     {
       question: "How do I use the AI wedding cake design with my baker?",
-      answer: "Download the high-resolution image and bring it to your baker consultation. It gives your baker an exact visual reference, reducing misunderstandings and saving time on revisions.",
+      answer: "Download the high-resolution image and bring it to your baker consultation. It gives your baker an exact visual reference, cutting down on misunderstandings and revision time.",
     },
     {
-      question: "Can the AI design specific wedding cake styles like rustic, naked or geode cakes?",
-      answer: "Yes. Just describe the style in plain English — rustic naked cake with fresh berries, geode effect with amethyst crystals, or classic white fondant with sugar flowers — and the AI handles the rest.",
+      question: "Can the AI design rustic, naked or geode wedding cakes?",
+      answer: "Yes — describe the style in plain English: rustic naked cake with fresh berries, geode effect with amethyst crystals, or classic white fondant with sugar flowers. The AI handles any style.",
     },
     {
       question: "Can I add our names and wedding date to the cake design?",
-      answer: "Yes. Include the names and date in your description and the AI will incorporate them into the cake design naturally.",
+      answer: "Yes — include the names and date in your description and the AI incorporates them naturally into the cake design.",
     },
     {
       question: "How accurate are the AI wedding cake designs?",
-      answer: "The AI produces photorealistic designs that closely match your description. Most bakers find the designs detailed enough to use as a direct brief. You can generate multiple variations until you find the perfect one.",
+      answer: "Photorealistic and closely matched to your description. Most bakers find the output detailed enough to use as a direct brief. Generate multiple variations until one is exactly right.",
     },
   ];
 

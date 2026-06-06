@@ -18,23 +18,23 @@ const AiBirthdayCakeWithName = () => {
   const faqs = [
     {
       question: "Can the AI birthday cake really show any name?",
-      answer: "Yes — any name, in any script the standard English alphabet supports. Short names (Sam, Eli), long names (Alessandra, Maximilian), double names (Mary-Jane), names with apostrophes (O'Brien) — all rendered cleanly on the cake.",
+      answer: "Yes — any name the English alphabet supports is rendered accurately. Short names (Sam, Eli), long names (Alessandra, Maximilian), double names (Mary-Jane) and names with apostrophes (O'Brien) all appear cleanly on the cake.",
     },
     {
       question: "What if the AI spells the name wrong on the cake?",
-      answer: "It almost never happens, but if it does, regenerate with the same name and it'll fix itself. We specifically trained the model to handle names — it's the #1 thing people care about, and most AI cake tools get it wrong.",
+      answer: "Regenerate with the same name and it corrects itself. The model is specifically trained for name accuracy — it is the single most important thing users care about and the most common failure point in competing tools.",
     },
     {
-      question: "Can I add a personalized message too, not just a name?",
-      answer: "Absolutely. You can add a short message like 'Happy 30th Sarah!' or 'You did it, Dad!' — the cake will show both the name and the greeting clearly.",
+      question: "Can I add a personalised message too, not just a name?",
+      answer: "Yes — add any short message alongside the name. 'Happy 30th Sarah' or 'You did it, Dad' both appear clearly on the finished cake design.",
     },
     {
       question: "Does it work for non-English names?",
-      answer: "For names spelled in the English alphabet (Priya, Aarav, Saoirse, Mateo, etc.) — yes, perfectly. For names in non-Latin scripts (Hindi, Mandarin, Arabic) — we recommend the English transliteration.",
+      answer: "Yes, for names in the English alphabet (Priya, Aarav, Saoirse, Mateo). For names in non-Latin scripts (Hindi, Mandarin, Arabic), use the English transliteration for best results.",
     },
     {
       question: "How long does it take to make an AI birthday cake with a name?",
-      answer: "About 30 seconds. Pick birthday → type the name → choose a style → generate. The name appears cleanly on the finished cake design.",
+      answer: "30 seconds. Choose birthday as the occasion, type the name, pick a style, and generate. The name appears on the finished cake in the first result.",
     },
   ];
 

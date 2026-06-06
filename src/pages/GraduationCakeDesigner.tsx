@@ -38,23 +38,23 @@ const GraduationCakeDesigner = () => {
   const faqs = [
     {
       question: "Can I put a specific year like Class of 2026 on the graduation cake?",
-      answer: "Yes — include the graduation year, school name, or degree type in your description and the AI incorporates it into the cake design.",
+      answer: "Yes — include the graduation year, school name or degree type in your description and the AI incorporates it accurately into the cake design.",
     },
     {
       question: "What graduation cake themes work best with AI?",
-      answer: "Cap and gown, school colours, subject-specific themes (medical, law, engineering), and elegant number designs all work brilliantly. Just describe what you want.",
+      answer: "Cap and gown, school colours, subject-specific themes (medical, law, engineering) and elegant number designs all produce strong results. Describe any combination in plain English.",
     },
     {
       question: "Can I design a graduation cake for a PhD or university graduation?",
-      answer: "Absolutely. The AI handles all graduation levels — high school, undergraduate, masters, PhD. Describe the occasion and level and it tailors the design accordingly.",
+      answer: "Yes — the AI handles every graduation level including high school, undergraduate, masters and PhD. Mention the level in your description and it tailors the design accordingly.",
     },
     {
       question: "How do I personalise the graduation cake with school colours?",
-      answer: "Simply mention the school colours in your description. For example: navy blue and gold graduation cake, Class of 2026, with mortar board topper.",
+      answer: "Mention the school colours directly in your description — for example: navy blue and gold graduation cake, Class of 2026, with mortar board topper. The AI applies them exactly.",
     },
     {
       question: "Is the graduation cake designer really free?",
-      answer: "Yes — your first 5 designs are completely free. No credit card required. Generate different styles until you find the perfect graduation cake.",
+      answer: "Yes — your first 5 designs are completely free with no credit card required. Generate different styles and themes until you find the perfect graduation cake.",
     },
   ];
 
