@@ -30,7 +30,7 @@ const EidCakeDesigner = () => {
         .order("created_at", { ascending: false })
         .limit(5);
       if (data && data.length >= 3) {
-        setFeaturedCakes((data as { image_url: string }[]).map((d) => d.image_url));
+        setFeaturedCakes((data as unknown as { image_url: string }[]).map((d) => d.image_url));
       }
     })();
   }, []);
