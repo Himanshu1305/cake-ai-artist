@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 
 const PERSONALIZED_FALLBACK = [
   "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
@@ -20,6 +21,22 @@ const PERSONALIZED_FALLBACK = [
 const PersonalizedCakeOnline = () => {
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(PERSONALIZED_FALLBACK);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles').select('is_premium').eq('id', user.id).single();
+        setIsPremium(profile?.is_premium || false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -232,6 +249,7 @@ const PersonalizedCakeOnline = () => {
         </div>
       </section>
 
+      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
       <Footer />
     </div>
   );

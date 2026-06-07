@@ -73,6 +73,7 @@ const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasGeneratedCake, setHasGeneratedCake] = useState(true); // default true avoids false positives
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [bannerHeight, setBannerHeight] = useState(48); // Default estimate
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
@@ -165,6 +166,13 @@ const Index = () => {
       
       if (profile) {
         setIsPremium(profile.is_premium);
+        if (profile.is_premium) {
+          const { count } = await supabase
+            .from('generated_images')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', session.user.id);
+          setHasGeneratedCake((count || 0) > 0);
+        }
       }
 
       // Check if user is admin
@@ -285,7 +293,7 @@ const Index = () => {
         <Suspense fallback={null}>
           <FloatingEmojis />
           <ConfettiRain count={14} />
-          <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} />
+          <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} isPremiumInactive={isPremium && !hasGeneratedCake} country={detectedCountry || 'US'} />
           <LiveActivityFeed />
           <LivePurchaseNotifications />
           <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />

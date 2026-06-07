@@ -660,7 +660,7 @@ const USALanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="US" countryName="USA" adjective="American" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <ExitIntentModal isLoggedIn={false} isPremium={false} country="US" />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="US" countryName="USA" />
       <Footer />

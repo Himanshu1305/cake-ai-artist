@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,9 +13,12 @@ import featuredCake2 from "@/assets/featured-cake-2.jpg";
 import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 
 const AiCakeGeneratorFree = () => {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   const faqs = [
     {
@@ -46,6 +51,19 @@ const AiCakeGeneratorFree = () => {
   ];
 
   const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles').select('is_premium').eq('id', user.id).single();
+        setIsPremium(profile?.is_premium || false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -196,6 +214,7 @@ const AiCakeGeneratorFree = () => {
         </div>
       </section>
 
+      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
       <Footer />
     </div>
   );

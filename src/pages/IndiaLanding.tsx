@@ -730,7 +730,7 @@ const IndiaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="IN" countryName="India" adjective="Indian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <ExitIntentModal isLoggedIn={false} isPremium={false} country="IN" />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="IN" countryName="India" />
       <Footer />

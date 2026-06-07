@@ -550,7 +550,7 @@ const AustraliaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="AU" countryName="Australia" adjective="Australian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <ExitIntentModal isLoggedIn={false} isPremium={false} country="AU" />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="AU" countryName="Australia" />
       <Footer />

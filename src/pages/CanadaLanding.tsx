@@ -485,7 +485,7 @@ const CanadaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="CA" countryName="Canada" adjective="Canadian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <ExitIntentModal isLoggedIn={false} isPremium={false} country="CA" />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="CA" countryName="Canada" />
       <Footer />

@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 
 const WEDDING_FALLBACK = [
   "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
@@ -20,6 +21,22 @@ const WEDDING_FALLBACK = [
 const WeddingCakeDesigner = () => {
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(WEDDING_FALLBACK);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles').select('is_premium').eq('id', user.id).single();
+        setIsPremium(profile?.is_premium || false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -237,6 +254,7 @@ const WeddingCakeDesigner = () => {
         </div>
       </section>
 
+      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
       <Footer />
     </div>
   );

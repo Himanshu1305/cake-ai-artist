@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ChefHat, Clock, Users, Sparkles } from "lucide-react";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 
 interface Recipe {
   slug: string;
@@ -37,6 +38,20 @@ const Recipes = () => {
   const [loading, setLoading] = useState(true);
   const [params, setParams] = useSearchParams();
   const country = params.get("country");
+
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles').select('is_premium').eq('id', user.id).single();
+        setIsPremium(profile?.is_premium || false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -207,6 +222,7 @@ const Recipes = () => {
         )}
       </section>
 
+      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
       <Footer />
     </div>
   );

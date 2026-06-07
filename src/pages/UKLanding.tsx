@@ -794,7 +794,7 @@ const UKLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="UK" countryName="UK" adjective="British" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} />
+      <ExitIntentModal isLoggedIn={false} isPremium={false} country="GB" />
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="UK" countryName="the UK" />
       <Footer />

@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
 
 const SEO_TITLE = "Free AI Party Planner — Plan Birthdays & Showers in Minutes";
 const SEO_DESC =
@@ -487,6 +488,7 @@ export default function PartyPlanner() {
           </div>
         )}
       </div>
+      <ExitIntentModal isLoggedIn={!!user} isPremium={isPremium} country="US" />
       <Footer />
     </div>
   );
