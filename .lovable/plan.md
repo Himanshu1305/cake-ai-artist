@@ -1,131 +1,107 @@
 
-# Next steps after Tier 1
+## The gap (yes, I agree)
 
-Two parallel workstreams: **Tier 2 Party Planner features** (depth) and an **SEO sprint** (reach). The SEO sprint is the bigger near-term win since the site currently surfaces for only ~15 keywords and ranks #13 even for its own brand term "cake ai".
+Today `CharacterPicker` has ~55 options across 12 categories — **every single one is a kids/pop-culture character** (Disney, Marvel, anime, Peppa Pig, Chhota Bheem…). Meanwhile the occasion dropdown now offers 22 occasions, most of which are adult/non-character contexts:
 
----
+- Wedding, Anniversary, Baby Shower, Valentine's, Mother's/Father's Day, Farewell, Congratulations
+- Eid, Diwali, Holi, Christmas, Easter, Thanksgiving, Halloween, Dussehra, Raksha Bandhan, New Year
 
-## A. Tier 2 Party Planner (deferred work from competitor analysis)
+A bride looking for a wedding cake currently sees "Pikachu" and "Hulk" as her only "character" options. That's a clear mismatch and a missed personalization lever.
 
-Pick what to ship; not all four are required:
+## What competitors actually do
 
-1. **AI vendor suggestions by city** — concierge already knows the city; extend it to suggest 2-3 vendor types per task (bakers, decorators, photographers) with realistic local price ranges. No new infra — prompt change + UI chip on each task.
-2. **Quick-start templates** — 5 prebuilt party blueprints (kid birthday, milestone, baby shower, anniversary, corporate) so users don't always go through chat. One-click → seeds tasks + RSVP defaults.
-3. **Host countdown reminders** — piggy-back on existing `send-anniversary-reminders` cron: email host at T-14 / T-7 / T-2 / T-0 with overdue tasks + RSVP status.
-4. **Co-host invite** — add `party_collaborators` table; second user can edit tasks/guests. Useful but adds auth complexity.
+Quick scan of the cake-design space (Bakingo, FlowerAura, FNP, Cake2Home, Etsy AI-cake tools, Midjourney cake prompts, Pinterest cake taxonomies) — the dominant adult/occasion "themes" are **motifs and aesthetics**, not licensed characters:
 
-Recommendation: ship **#1 + #2 + #3** as Tier 2. Skip #4 unless users ask.
+- **Wedding:** floral cascades, monogram, two-tier, lace, gold leaf, bride & groom toppers, ring & doves
+- **Anniversary:** roses, hearts, "Mr & Mrs", years milestone, champagne flutes, photo memory
+- **Baby shower:** teddy bear, baby booties, stork, pram, "It's a boy/girl", baby clouds, rattles, gender-neutral pastels
+- **Valentine's:** red roses, cupid, heart, love letters, lock-and-key
+- **Mother's / Father's Day:** flowers + "Mom" lettering, tie/moustache/tools "Dad" themes
+- **Religious — Eid:** crescent moon, lanterns, mosque silhouette, dates & henna
+- **Religious — Diwali:** diyas, rangoli, marigold, fireworks
+- **Christmas:** Santa, reindeer, snowman, tree, wreath, gingerbread
+- **Halloween:** pumpkin, ghost, witch, spider web, skull
+- **Thanksgiving:** turkey, cornucopia, autumn leaves
+- **Holi:** color splash, gulaal, pichkari
+- **Raksha Bandhan:** rakhi, sibling motif
+- **Farewell / Congratulations / Graduation:** cap & scroll, "Good Luck" banner, suitcase, trophy
+- **New Year:** fireworks, champagne, "Cheers 2026", clock at midnight
 
----
+These map cleanly onto our existing `THEME_MAP` in `generate-invite-artwork` — we already speak this vocabulary on the invite side, just not on the cake side.
 
-## B. SEO sprint — keyword research & page optimization
+## The fix
 
-### What Semrush shows today (US database)
+Rename the field intent from "Character" to **"Theme / Character"** and expand `CHARACTER_CATEGORIES` with motif-based options grouped by occasion. Then **filter visible categories based on the selected occasion** so the picker stays short and relevant.
 
-- Site has **15 indexed keywords**, est. **1 visit/mo**. Ranks #13 for "cake ai" (320/mo, KD 27) and #13 for "birthday cake ai" (50/mo).
-- All ranking URLs are the homepage. **Recipes, Party Planner, Gallery, Country pages are not indexed for any tracked keyword.**
+### New categories to add
 
-### Target keyword map
+1. **💍 Wedding & Engagement** — Floral cascade, Two-tier classic, Monogram, Bride & Groom toppers, Ring & doves, Lace & pearls, Gold leaf elegance
+2. **❤️ Anniversary & Love** — Roses & hearts, Mr & Mrs, Milestone years (25/50), Champagne toast, Photo memory, Lock & key
+3. **👶 Baby Shower** — Teddy bear, Baby booties & rattle, Stork delivery, "It's a Boy" blue, "It's a Girl" pink, Gender-neutral clouds, Pram & moon
+4. **💐 Valentine's & Romance** — Red roses, Cupid, Heart bouquet, Love letters
+5. **🌷 Mother's Day** — Flower bouquet for Mom, "Best Mom" elegant, Tea & pearls
+6. **👔 Father's Day** — Tie & moustache, Tools & toolbox, "Best Dad" rustic
+7. **🌙 Eid Mubarak** — Crescent & lantern, Mosque silhouette, Dates & henna, Geometric gold
+8. **🪔 Diwali** — Diyas & rangoli, Marigold garland, Fireworks night, Lakshmi gold
+9. **🎨 Holi** — Color splash, Gulaal swirl, Pichkari fun
+10. **🎄 Christmas** — Santa, Reindeer & sleigh, Snowman, Christmas tree, Wreath, Gingerbread house
+11. **🎃 Halloween (adult)** — Pumpkin patch, Ghost & spider, Witch's brew, Skull & roses *(merge with existing Jack Skellington)*
+12. **🦃 Thanksgiving** — Turkey & feast, Cornucopia, Autumn leaves
+13. **🎓 Graduation & Achievement** — Cap & scroll, Trophy, "Class of 2026", Books & apple
+14. **✈️ Farewell & Congratulations** — Suitcase & globe, "Bon Voyage", "Congrats" banner, Champagne celebration
+15. **🎆 New Year** — Fireworks, Champagne toast, Clock at midnight, Gold confetti
+16. **🪢 Raksha Bandhan** — Rakhi & sibling, Sister-brother bond
+17. **🏵️ Dussehra / Festive India** — Marigold, Traditional gold, Festive elegance
+18. **🌸 Easter** — Bunny & eggs, Pastel pastoral, Spring blooms
 
-**Tier A — Brand & core product (own these)**
+Plus a top-level **"✨ Elegant Adult Themes"** evergreen group:
+- Floral elegance, Minimalist gold, Vintage romance, Modern geometric, Watercolor pastel
 
-| Keyword | Vol/mo | KD | Current | Target page |
-|---|---|---|---|---|
-| cake ai | 320 | 27 | #13 | `/` (homepage) |
-| ai cake generator | 90 | 8 | not ranked | `/ai-cake-generator-free` |
-| ai cake design | 50 | 8 | #32 | `/free-cake-designer` |
-| birthday cake ai | 50 | 10 | #13 | `/ai-birthday-cake-with-name` |
-| ai birthday cake | 90 | low | #20 | `/ai-birthday-cake-with-name` |
-| cake generator | 70 | low | #79 | `/ai-cake-generator-free` |
-| ai cake generator free | 50 | low | #25 | `/ai-cake-generator-free` |
-| photo cake | 1,900 | 21 | not ranked | new `/photo-cake-maker` (or repurpose use-cases) |
-| personalized cake | 480 | 45 | not ranked | `/` + new `/personalized-cake-online` |
+### Occasion → category filtering
 
-**Tier B — Party Planner page** (currently no rankings)
+Add an `occasions: string[]` field on each category. When `occasion` is selected in `CakeCreator`, the picker:
+- Pins matching categories to the top (e.g. selecting Wedding promotes "Wedding & Engagement" + "Elegant Adult Themes")
+- Keeps "🆓 Free Characters" and full list available below a divider ("Show all themes")
+- For child occasions (Birthday, age < 13), keeps current behavior unchanged
 
-Primary: `party planner` (3,600/mo, KD 42 — possible). Site won't outrank Partiful/Evite on this term in 6 months, so target the long tail:
+If no occasion is selected, show all categories as today.
 
-| Keyword | Vol/mo | KD note | Page |
-|---|---|---|---|
-| free party planner | low-med | easy | `/party-planner` |
-| ai party planner | very low | very easy | `/party-planner` |
-| birthday party planner online | low | easy | `/party-planner` |
-| party planning checklist | 1,600 | medium | new section on `/party-planner` |
-| party planning template | ~1k | medium | new section / template gallery |
-| how to plan a birthday party | high | medium | new blog post |
-| free rsvp website | medium | medium | `/party-planner` + landing variant |
-| online invitation maker | 1,300+ | medium | new landing or extend `/party-planner` |
-| kids birthday party planner | low | easy | `/party-planner` |
-| 1st birthday party planner | low | easy | new sub-landing or blog |
+### Premium gating
 
-**Tier C — Recipes pages** (currently no rankings; each recipe is a separate landing opportunity)
+- 3 free options per major adult category (e.g. Wedding: Floral cascade, Roses & hearts, Classic two-tier are free; rest premium)
+- Matches existing model — keeps free tier viable across occasions, not just kids
 
-Recipe keywords have realistic difficulty (KD 20-35) and clear intent. Each recipe page needs:
+### Free-tier expansion (small but important)
 
-| Sample recipe | Primary keyword | Vol/mo | KD |
-|---|---|---|---|
-| Chocolate Truffle Cake | chocolate truffle cake recipe | 480 | 30 |
-| (variant) | truffle cake recipe | 480 | low |
-| (variant) | how to make chocolate truffle cake at home | low-medium | very low |
-| Vanilla Sponge | vanilla sponge cake recipe | ~1.6k | medium |
-| Red Velvet | red velvet cake recipe | ~6k | medium-high |
-| Black Forest | black forest cake recipe | ~3k | medium |
-| Carrot Cake | carrot cake recipe | ~40k | high |
-| Pineapple Upside-Down | pineapple upside down cake recipe | ~9k | medium |
+Add to the existing "🆓 Free Characters" group: **Floral elegance, Roses & hearts, Teddy bear, Pumpkin, Christmas tree** — so every major occasion has at least one free starter theme.
 
-Each recipe should also target "[recipe name] eggless", "[recipe name] without oven", "easy [recipe name]" long-tails (huge in India market specifically).
+## Technical scope
 
----
+**Files to change (frontend only — no backend/business logic):**
 
-## C. What to actually build/edit for the SEO sprint
+1. `src/components/CharacterPicker.tsx`
+   - Rename label from "Character" to "Theme or Character" (UI copy)
+   - Extend `Character` type with optional `occasions?: string[]`
+   - Extend `CharacterCategory` with optional `occasions?: string[]`
+   - Add ~18 new categories with ~80 new entries
+   - Add `occasion?: string` prop
+   - Sort categories: matching-occasion first, then "Free", then rest (collapsible "Show all themes" toggle)
 
-### 1. Recipes pages — `src/pages/RecipeDetail.tsx` + DB
-- Add per-recipe **SEO meta**: title (`<H1> recipe — primary keyword`), `meta_description` (already in `cake_recipes` table; populate it for every recipe), `meta_title`.
-- Add **`react-helmet-async`** so each recipe sets its own `<title>`, description, canonical, `og:*`, and **Recipe JSON-LD** (schema.org/Recipe with ingredients, instructions, cookTime, prepTime, image, aggregateRating placeholder). Recipe JSON-LD is the single biggest SEO win — it earns rich result snippets in Google.
-- Add **BreadcrumbList JSON-LD** (Home → Recipes → Recipe).
-- Ensure recipes list page (`/recipes`) has its own title/desc + ItemList JSON-LD.
-- Migration: backfill `meta_title` and `meta_description` for all existing recipes (use AI gateway script — see "Backfill script" below).
+2. `src/components/CakeCreator.tsx`
+   - Pass `occasion` prop into `<CharacterPicker />` (line ~1717 area)
+   - Update label text "Character" → "Theme or Character (optional)"
 
-### 2. Party Planner page — `src/pages/PartyPlanner.tsx`
-- Rewrite hero copy to lead with **"Free AI Party Planner — Plan birthdays, baby showers & anniversaries in minutes"**.
-- Add a long-tail content section below the fold (collapsed/SEO content): "Party planning checklist", "How to plan a birthday party in 7 steps", "Online invitations & RSVP — free", "Templates by occasion".
-- `react-helmet-async`: per-page title/desc/canonical + **WebApplication / SoftwareApplication JSON-LD** + **HowTo JSON-LD** for the checklist section.
-- Add internal links to top-performing recipes and `/free-cake-designer`.
+3. Prompt-side awareness (light touch — same file):
+   - Where the prompt is composed (line 1062: `${character ? \` with ${character}\` : ''}`), no change needed — values like `floral-cascade-wedding` are already descriptive enough. The image model will render them as cake decoration motifs.
 
-### 3. Homepage + key landing pages — `src/pages/Index.tsx`, `AiCakeGeneratorFree.tsx`, `AiBirthdayCakeWithName.tsx`, `FreeCakeDesigner.tsx`, country landings
-- Audit current `<Helmet>` usage; tighten title (<60 chars) and description (<160 chars) for each, with **one primary keyword per page** from Tier A.
-- Single H1 per page, primary keyword in the first 100 words.
-- Add **Organization** + **WebSite** + **SearchAction** JSON-LD on `/` (sitewide is in `index.html` — confirm SearchAction is there).
-- Add `/photo-cake` and `/personalized-cake-online` as new landing pages targeting two underserved Tier A terms (high volume, no current ranking).
+**Out of scope (this change):**
+- No DB migration — `character` is already a free-text string
+- No edge function changes
+- No new images/assets
+- Gallery filtering, search, or analytics around new themes
 
-### 4. Sitemap + technical
-- Regenerate `public/sitemap.xml` to include **every published recipe**, every party RSVP landing isn't needed (private), and every country page. Currently the sitemap likely misses dynamic recipe URLs.
-- Confirm `robots.txt` allows `/` and excludes `/admin`, `/rsvp/*`, `/party/*` (public party invites — decide: index or not; recommend `noindex` since they're per-user invites).
-- Add `<link rel="alternate" hreflang>` between country landing pages.
-- Image alt text audit on Recipes and Party Planner (currently many `<img>` lack alts).
+## Open questions (will default if not answered)
 
-### 5. Backfill script (one-off, no UI)
-Run a script via the AI gateway to generate `meta_title`, `meta_description`, and keyword-tagged `excerpt` for every recipe that's missing them — then write straight to the `cake_recipes` table.
-
-### 6. Verify in Google Search Console
-After deploy, register the new property (or confirm existing), submit the updated sitemap, and request indexing on Recipes index + Party Planner. The Search Console connector can automate verification.
-
----
-
-## Suggested order
-
-1. **Recipes SEO** (highest ROI — long tail × many pages × low difficulty). Helmet + Recipe JSON-LD + meta backfill + sitemap.
-2. **Party Planner SEO** (Helmet + long-tail content section + HowTo JSON-LD).
-3. **Tier A landing pages** — tighten copy/meta on `/ai-cake-generator-free`, `/free-cake-designer`, `/ai-birthday-cake-with-name`; add 1-2 new pages (`/photo-cake-maker`, `/personalized-cake-online`).
-4. **Tier 2 Party Planner features** (#1 + #2 + #3 from section A).
-5. **Search Console verification + sitemap resubmit** to accelerate indexing.
-
-## Out of scope for this plan
-- Off-page SEO (backlinks, outreach) — separate effort.
-- Paid search.
-- Translating the site (could unlock huge IN/UK volume later).
-
-## What I need from you to proceed
-1. Approve scope: full sprint (1→5), or SEO-only (1→3 + 5), or Tier 2 features only (skip SEO).
-2. Confirm new landing pages (`/photo-cake-maker`, `/personalized-cake-online`) are wanted.
-3. Confirm `/party/:slug` public pages should be `noindex` (recommended — they're per-user).
+1. **Free vs premium split** — confirm "3 free per category" or prefer "1 free per category, rest premium"? *Default: 3 free per major category.*
+2. **Filtering strictness** — when Wedding is selected, hide kids categories entirely, or just demote them? *Default: demote behind a "Show all themes" toggle so users can still mix.*
+3. **Label rename** — "Theme or Character" vs "Cake Theme" vs keep as "Character"? *Default: "Theme or Character (optional)".*
