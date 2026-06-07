@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
-import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X } from "lucide-react";
+import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import WelcomeModal from "@/components/WelcomeModal";
 
@@ -21,6 +21,8 @@ const FreeCakeDesigner = () => {
   const [welcomeOccasion, setWelcomeOccasion] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showStartBanner, setShowStartBanner] = useState(false);
+  const [cakeGenerated, setCakeGenerated] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -33,6 +35,8 @@ const FreeCakeDesigner = () => {
         if (!localStorage.getItem(bannerKey)) {
           setShowStartBanner(true);
         }
+        const { data: profile } = await supabase.from('profiles').select('is_premium').eq('id', userId).single();
+        setIsPremium(profile?.is_premium || false);
       }
 
       const params = new URLSearchParams(window.location.search);
@@ -188,61 +192,104 @@ const FreeCakeDesigner = () => {
               <p className="text-muted-foreground">Loading cake designer...</p>
             </Card>
           }>
-            <CakeCreator />
+            <CakeCreator onGenerate={() => setCakeGenerated(true)} />
           </Suspense>
         </div>
 
-        {/* Features Grid */}
-        <div className="max-w-5xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-8">
-            Why Our Free AI Cake Generator Is the Best AI Cake Designer Online
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+        {cakeGenerated && (
+          <div className="max-w-4xl mx-auto mt-8 mb-16 space-y-4">
+            {isPremium ? (
+              <div className="rounded-2xl border-2 border-party-purple/30 bg-gradient-to-br from-party-purple/10 to-party-pink/10 p-6 text-center">
+                <h3 className="text-xl font-bold mb-2">🎊 Now plan the whole party!</h3>
+                <p className="text-muted-foreground mb-4">Your cake is ready — let AI build the full party checklist, invites and RSVP tracking.</p>
+                <Button
+                  onClick={() => navigate('/party-planner')}
+                  className="bg-gradient-to-r from-party-purple to-party-pink text-white"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Open AI Party Planner →
+                </Button>
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-party-gold/30 bg-gradient-to-br from-party-gold/10 to-party-orange/10 p-6 text-center">
+                <h3 className="text-xl font-bold mb-2">✨ Love your cake? Unlock unlimited designs</h3>
+                <p className="text-muted-foreground mb-2">You have used 1 of your 5 free designs. Premium unlocks unlimited cakes, Party Pack Generator, and AI Party Planner.</p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                  <Button
+                    onClick={() => navigate('/pricing')}
+                    className="bg-gradient-to-r from-party-gold to-party-orange text-white font-bold"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to Premium →
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/party-planner')}
+                    className="border-party-purple/30"
+                  >
+                    Try Party Planner Free →
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!cakeGenerated && (
+          <>
+            {/* Features Grid */}
+            <div className="max-w-5xl mx-auto mb-16">
+              <h2 className="text-3xl font-bold text-center text-foreground mb-8">
+                Why Our Free AI Cake Generator Is the Best AI Cake Designer Online
+              </h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.map((feature, index) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Card className="p-6 h-full bg-surface-elevated border-border/50 hover:border-party-pink/30 transition-all">
+                      <feature.icon className="w-10 h-10 text-party-pink mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground text-sm">{feature.description}</p>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Proof */}
+            <div className="max-w-3xl mx-auto text-center mb-16">
+              <div className="flex justify-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-6 h-6 text-party-gold fill-party-gold" />
+                ))}
+              </div>
+              <p className="text-xl text-foreground mb-2">Rated 4.9/5 by 2,800+ users</p>
+              <p className="text-muted-foreground">
+                "I couldn't believe how easy it was. Typed my daughter's name, picked birthday,
+                and got the most beautiful cake design in seconds!" - Sarah M.
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <Button
+                size="lg"
+                className="bg-gradient-party text-white hover:opacity-90 px-8 py-6 text-lg"
+                onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                <Card className="p-6 h-full bg-surface-elevated border-border/50 hover:border-party-pink/30 transition-all">
-                  <feature.icon className="w-10 h-10 text-party-pink mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Social Proof */}
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <div className="flex justify-center gap-1 mb-4">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-6 h-6 text-party-gold fill-party-gold" />
-            ))}
-          </div>
-          <p className="text-xl text-foreground mb-2">Rated 4.9/5 by 2,800+ users</p>
-          <p className="text-muted-foreground">
-            "I couldn't believe how easy it was. Typed my daughter's name, picked birthday,
-            and got the most beautiful cake design in seconds!" - Sarah M.
-          </p>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center">
-          <Button
-            size="lg"
-            className="bg-gradient-party text-white hover:opacity-90 px-8 py-6 text-lg"
-            onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Start Designing for Free
-          </Button>
-          <p className="text-sm text-muted-foreground mt-4">
-            Sign up free — no credit card required • Upgrade anytime for unlimited designs
-          </p>
-        </div>
+                <Sparkles className="w-5 h-5 mr-2" />
+                Start Designing for Free
+              </Button>
+              <p className="text-sm text-muted-foreground mt-4">
+                Sign up free — no credit card required • Upgrade anytime for unlimited designs
+              </p>
+            </div>
+          </>
+        )}
       </section>
 
       <Footer />

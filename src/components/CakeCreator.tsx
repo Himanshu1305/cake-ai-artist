@@ -47,9 +47,9 @@ const cakeFormSchema = z.object({
   colors: z.string().max(100, "Colors value too long").optional(),
 });
 
-interface CakeCreatorProps {}
+interface CakeCreatorProps { onGenerate?: () => void; }
 
-export const CakeCreator = ({}: CakeCreatorProps) => {
+export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [useAI] = useState(true);
@@ -962,6 +962,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
         // Images come with name and photo already baked in!
         setGeneratedImages(images);
         setOriginalImages(images); // Same as generated since no post-processing needed
+        if (onGenerate) onGenerate();
         // Auto-select the HERO/front view (index 0) when ready; otherwise the
         // first real image. This guarantees the shared cake defaults to the
         // intended front view instead of whichever image arrived first.
@@ -2623,7 +2624,7 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
 
                 {/* Save to Gallery Button */}
                 {isLoggedIn && (
-                  <div className="space-y-2">
+                  <div id="save-to-gallery-btn" className="space-y-2">
                     <Button
                       onClick={async () => {
                         if (isSavingToGallery) return; // Prevent double-clicks
@@ -2797,8 +2798,8 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   </div>
                 )}
 
-                {/* Party Pack Generator - Show after saving to gallery */}
-                {isLoggedIn && savedCakeImageId && (
+                {/* Party Pack Generator - Show after generation */}
+                {isLoggedIn && generatedImages.length > 0 && (
                   <div className="pt-4 border-t border-muted">
                     <div className="space-y-2 mb-4 text-center">
                       <h4 className="font-semibold text-foreground flex items-center justify-center gap-2">
@@ -2808,19 +2809,33 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                         Generate matching invitations, thank you cards, banner, cake topper & place cards!
                       </p>
                     </div>
-                    <PartyPackGenerator
-                      cakeImageId={savedCakeImageId}
-                      name={name}
-                      occasion={occasion}
-                      theme={theme}
-                      colors={colors}
-                      character={character}
-                    />
+                    {savedCakeImageId ? (
+                      <PartyPackGenerator
+                        cakeImageId={savedCakeImageId}
+                        name={name}
+                        occasion={occasion}
+                        theme={theme}
+                        colors={colors}
+                        character={character}
+                      />
+                    ) : (
+                      <div className="rounded-lg border border-party-pink/30 bg-party-pink/5 p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-3">Save your cake first to generate matching party items →</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-party-pink/40 text-party-pink hover:bg-party-pink/10"
+                          onClick={() => document.getElementById('save-to-gallery-btn')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                        >
+                          Save to Gallery
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Party Planner CTA - Show after saving to gallery */}
-                {isLoggedIn && savedCakeImageId && (
+                {/* Party Planner CTA - Show after generation */}
+                {isLoggedIn && generatedImages.length > 0 && (
                   <div className="pt-4 border-t border-muted">
                     <div className="rounded-xl border-2 border-party-purple/30 bg-gradient-to-br from-party-purple/10 to-party-pink/10 p-5">
                       <div className="flex items-start justify-between gap-2 mb-2">
