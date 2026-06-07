@@ -1716,22 +1716,24 @@ export const CakeCreator = ({}: CakeCreatorProps) => {
                   <div className="space-y-2">
                     <Label htmlFor="character" className="text-sm font-medium flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      Character
+                      Theme or Character (optional)
                     </Label>
                     <CharacterPicker
                       value={character}
                       onValueChange={setCharacter}
                       isPremium={isPremium}
                       disabled={isLoading}
+                      occasion={occasion}
                       onPremiumBlock={() => {
                         toast({
-                          title: "Premium character",
-                          description: "This character requires Premium. Upgrade to unlock!",
+                          title: "Premium theme",
+                          description: "This theme requires Premium. Upgrade to unlock!",
                           variant: "destructive",
                         });
                       }}
                     />
                   </div>
+
 
                 </div>
 
