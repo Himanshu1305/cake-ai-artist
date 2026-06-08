@@ -190,9 +190,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
       { progress: 75, step: "🪄 Still rendering — this can take a little longer...", delay: 36000 },
       // Bar stays at 75% (honest) but copy keeps moving so it never feels frozen.
-      { progress: 75, step: "🎨 Heavy traffic right now — your cake is still in the oven...", delay: 50000 },
-      { progress: 75, step: "🧁 Wrapping up the final touches — almost there...", delay: 65000 },
-      { progress: 75, step: "✨ Hang tight — the AI is putting the cherry on top...", delay: 80000 },
+      { progress: 75, step: "🔎 Waiting for the cake job to start...", delay: 50000 },
+      { progress: 75, step: "🎂 Still waiting for a job response...", delay: 65000 },
+      { progress: 75, step: "⏳ This is taking too long — we’ll stop and show retry options soon.", delay: 80000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
