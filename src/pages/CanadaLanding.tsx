@@ -479,7 +479,7 @@ const CanadaLanding = () => {
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
             <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Create Your Perfect Cake?</h2>
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">Join thousands of happy customers across Canada. Start designing your personalized cake in seconds!</p>
-            <Link to="/"><Button size="lg" className="bg-gradient-to-r from-party-pink to-party-purple text-white text-lg px-8 py-6 pulse-glow"><Sparkles className="mr-2 h-5 w-5" />Create Your Cake Now</Button></Link>
+            <Link to="/free-ai-cake-designer"><Button size="lg" className="bg-gradient-to-r from-party-pink to-party-purple text-white text-lg px-8 py-6 pulse-glow"><Sparkles className="mr-2 h-5 w-5" />Create Your Cake Now</Button></Link>
           </motion.div>
         </div>
       </section>
