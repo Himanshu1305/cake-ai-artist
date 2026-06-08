@@ -47,6 +47,23 @@ const cakeFormSchema = z.object({
   colors: z.string().max(100, "Colors value too long").optional(),
 });
 
+const CAKE_JOB_START_TIMEOUT_MS = 90000;
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${Math.round(timeoutMs / 1000)}s`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 interface CakeCreatorProps { onGenerate?: () => void; }
 
 export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
