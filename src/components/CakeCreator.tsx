@@ -506,18 +506,32 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     });
   };
 
-  // Single-attempt invoke. We deliberately do NOT race a client-side timer here:
-  // the backend now returns the hero view fast (HQ + Standard) and finishes the
-  // remaining views in the background, so a client race timer can only do harm
-  // (kill a successful job and show a confusing "timed out" toast). A long
-  // watchdog (4 min) is applied separately in handleSubmit only as a safety net.
+  // Single-attempt invoke. The backend should return a jobId quickly; if that
+  // startup request hangs, fail clearly instead of leaving the progress bar at 75%.
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
+    const startedAt = Date.now();
+    console.info('[cake] invoking function', { functionName, quality: body?.quality });
     try {
-      const result = await supabase.functions.invoke(functionName, { body });
+      const result = await withTimeout(
+        supabase.functions.invoke(functionName, { body }),
+        CAKE_JOB_START_TIMEOUT_MS,
+        'Cake generation startup request',
+      );
+      console.info('[cake] function invoke resolved', {
+        functionName,
+        elapsedMs: Date.now() - startedAt,
+        hasData: !!result.data,
+        hasError: !!result.error,
+        jobId: result.data?.jobId,
+      });
       if (result.error) return { data: result.data, error: result.error };
       return { data: result.data, error: null };
     } catch (err) {
-      console.log('Generation attempt failed:', err);
+      console.error('[cake] function invoke failed', {
+        functionName,
+        elapsedMs: Date.now() - startedAt,
+        error: err,
+      });
       return { data: null, error: err };
     }
   };
@@ -669,6 +683,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             : `AI is generating 3 beautiful views together — back in ~30 seconds!`,
         });
 
+        setGenerationStep('Starting secure cake generation...');
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -684,9 +699,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         });
 
         if (error) {
+          setGenerationProgress(0);
+          setGenerationStep('');
           if (data?.error === 'generation_limit_reached') {
-            setGenerationProgress(0);
-            setGenerationStep('');
             toast({
               title: "Free generations used up",
               description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
