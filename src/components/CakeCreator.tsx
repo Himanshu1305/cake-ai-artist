@@ -98,6 +98,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [isSavingToGallery, setIsSavingToGallery] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
+  const [showSlowRetry, setShowSlowRetry] = useState(false);
   const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
   const [bgPending, setBgPending] = useState<Set<number>>(new Set());
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
