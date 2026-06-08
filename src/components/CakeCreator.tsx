@@ -1684,14 +1684,31 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           </div>
           
           <div className="space-y-6">
-            <Input
-              type="text"
-              placeholder="🎯 Enter the special person's name..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="text-lg py-6 px-4 bg-surface border-party-pink/50 focus:ring-party-pink focus:border-party-pink transition-all duration-300"
-              disabled={isLoading}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="recipient-name" className="text-sm font-medium text-foreground">
+                Recipient's name
+              </Label>
+              <Input
+                id="recipient-name"
+                type="text"
+                placeholder="e.g. Aarav, Riya, Baby"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={30}
+                className="text-lg py-6 px-4 bg-surface border-party-pink/50 focus:ring-party-pink focus:border-party-pink transition-all duration-300"
+                disabled={isLoading}
+                aria-invalid={name.trim().length > 0 && MESSAGE_PHRASE_REGEX.test(name)}
+              />
+              <p className="text-xs text-foreground/70">
+                Just the person's name (e.g. Aarav, Baby Riya). Don't put messages here — the cake message is generated separately below.
+              </p>
+              {name.trim().length > 0 && MESSAGE_PHRASE_REGEX.test(name) && (
+                <p className="text-xs text-destructive font-medium">
+                  ⚠️ This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below.
+                </p>
+              )}
+            </div>
+
 
             {/* Context Fields for AI */}
             <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
