@@ -649,7 +649,7 @@ const USALanding = () => {
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
               Join thousands of happy customers across America. Start designing your personalized cake in seconds!
             </p>
-            <Link to="/">
+            <Link to="/free-ai-cake-designer">
               <Button size="lg" className="bg-gradient-to-r from-party-pink to-party-purple text-white text-lg px-8 py-6 pulse-glow">
                 <Sparkles className="mr-2 h-5 w-5" />
                 Create Your Cake Now

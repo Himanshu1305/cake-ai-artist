@@ -1,36 +1,29 @@
-## What's happening
+## Problem
 
-This isn't a bug in the image model and it isn't leakage from a previous cake. You typed `Love you Dad` into the "special person's name" field. The cake generator takes whatever is in that field and tells the image model to render it on the cake as the name, alongside the occasion text (`Welcome Baby`). So all three views correctly rendered:
+On `/india` (and other country landing pages), the "Create Your Cake Now" button links to `/`. The `GeoRedirectWrapper` detects the user is in India and immediately redirects `/` back to `/india`. The page appears to reload but the creator never shows — the India landing page does not contain `CakeCreator` at all.
 
-- `Welcome Baby` (occasion text for baby-shower)
-- `Love you Dad` (treated as the name)
-
-The field is labeled `🎯 Enter the special person's name...` which is too vague — users can easily think it's the message line.
+This affects every country landing CTA that points to `/` (India, USA, UK, Canada, Australia).
 
 ## Fix
 
-Two-part fix, all on the frontend form (no change to the image-generation backend logic):
+Point the country-landing CTAs to a route that is not in `REDIRECTABLE_ROUTES` and that renders the creator:
 
-1. **Clarify the field** in `src/components/CakeCreator.tsx`:
-   - Label: `Recipient's name` with a small helper line: `Just the person's name (e.g. Aarav, Baby Riya). Don't put messages here — the cake message is generated separately below.`
-   - Placeholder: `e.g. Aarav, Riya, Baby` (drop the vague "special person").
+- Change the `Link to="/"` on each country landing's bottom CTA (and any similar buttons) to `Link to="/free-ai-cake-designer"`. That route renders `FreeCakeDesigner`, which already mounts `CakeCreator` and isn't intercepted by the geo redirect.
+- Keep the button styling, icon, and label unchanged.
 
-2. **Validate the name** before submit (and on blur with an inline error):
-   - Max 30 chars (already 50, tighten it).
-   - Reject obvious message phrases. If the value contains any of these tokens (case-insensitive, whole-word): `love you`, `happy`, `welcome`, `congrats`, `congratulations`, `merry`, `wishes`, `wishing`, `best wishes`, `dear`, `to my`, `from`, show an inline error:
-     > "This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below."
-   - Block submission until corrected. No silent rewriting (don't auto-strip — the user should see what's wrong).
-   - Add the same regex check to the Zod schema (`nameSchema`) so it runs in one place.
-
-3. **Optional safety on the prompt** (small, low-risk): in `supabase/functions/generate-complete-cake/index.ts`, when building the cake image prompt, hard-cap `name` to 30 chars and strip newlines before interpolation. This is defensive only; the real fix is the input validation above.
+Files to edit:
+- `src/pages/IndiaLanding.tsx` (line ~722)
+- `src/pages/USALanding.tsx` (line ~655 area)
+- `src/pages/UKLanding.tsx` (line ~789 area)
+- `src/pages/AustraliaLanding.tsx` (line ~547)
+- `src/pages/CanadaLanding.tsx` (line ~482)
 
 ## Out of scope
 
-- No change to occasion text, message generation, photo overlay, or job/polling logic.
-- No reset of unrelated form state between generations.
+- No changes to `GeoRedirectWrapper`, geo detection, or routing config.
+- No changes to `CakeCreator` itself or the landing page layouts beyond the CTA's `to` prop.
+- Sticky mobile CTA / header buttons not touched unless you want them updated too — say the word and I'll include them.
 
-## Technical notes
+## Verification
 
-- File touched: `src/components/CakeCreator.tsx` (label, placeholder, helper text around line 1677–1682; Zod `name` schema around line 39; submit handler error surface).
-- Optional second file: `supabase/functions/generate-complete-cake/index.ts` (sanitize `name` near line 141 before it's used in `buildMessages`).
-- No DB migration, no new dependency.
+After build: on mobile viewport at `/india`, tap "Create Your Cake Now" → lands on `/free-ai-cake-designer` with the creator form visible, no redirect back to `/india`.
