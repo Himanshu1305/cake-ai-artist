@@ -34,9 +34,19 @@ import { AudioRecorder } from "@/components/AudioRecorder";
 import { Mic, Volume2, Link2, Trash2, Rotate3D } from "lucide-react";
 import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
 
+// Phrases that indicate the user typed a message instead of a name.
+const MESSAGE_PHRASE_REGEX = /\b(love\s+you|happy|welcome|congrats|congratulations|merry|wishes|wishing|dear|to\s+my|from)\b/i;
+
 // Input validation schema
 const cakeFormSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(50, "Name must be 50 characters or less"),
+  name: z.string()
+    .trim()
+    .min(1, "Name is required")
+    .max(30, "Name must be 30 characters or less")
+    .refine(
+      (v) => !MESSAGE_PHRASE_REGEX.test(v),
+      "This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below."
+    ),
   occasion: z.string().min(1, "Occasion is required"),
   relation: z.string().min(1, "Relation is required"),
   gender: z.string().min(1, "Gender is required"),
@@ -46,6 +56,7 @@ const cakeFormSchema = z.object({
   theme: z.string().max(100, "Theme too long").optional(),
   colors: z.string().max(100, "Colors value too long").optional(),
 });
+
 
 const CAKE_JOB_START_TIMEOUT_MS = 90000;
 
@@ -1673,14 +1684,31 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           </div>
           
           <div className="space-y-6">
-            <Input
-              type="text"
-              placeholder="🎯 Enter the special person's name..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="text-lg py-6 px-4 bg-surface border-party-pink/50 focus:ring-party-pink focus:border-party-pink transition-all duration-300"
-              disabled={isLoading}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="recipient-name" className="text-sm font-medium text-foreground">
+                Recipient's name
+              </Label>
+              <Input
+                id="recipient-name"
+                type="text"
+                placeholder="e.g. Aarav, Riya, Baby"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={30}
+                className="text-lg py-6 px-4 bg-surface border-party-pink/50 focus:ring-party-pink focus:border-party-pink transition-all duration-300"
+                disabled={isLoading}
+                aria-invalid={name.trim().length > 0 && MESSAGE_PHRASE_REGEX.test(name)}
+              />
+              <p className="text-xs text-foreground/70">
+                Just the person's name (e.g. Aarav, Baby Riya). Don't put messages here — the cake message is generated separately below.
+              </p>
+              {name.trim().length > 0 && MESSAGE_PHRASE_REGEX.test(name) && (
+                <p className="text-xs text-destructive font-medium">
+                  ⚠️ This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below.
+                </p>
+              )}
+            </div>
+
 
             {/* Context Fields for AI */}
             <div className="space-y-3 md:space-y-4 p-3 md:p-4 bg-surface rounded-lg border border-border">
