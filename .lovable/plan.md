@@ -1,29 +1,20 @@
-## Problem
+## Goal
 
-On `/india` (and other country landing pages), the "Create Your Cake Now" button links to `/`. The `GeoRedirectWrapper` detects the user is in India and immediately redirects `/` back to `/india`. The page appears to reload but the creator never shows — the India landing page does not contain `CakeCreator` at all.
+Let users put whatever they want on the cake. Remove the warning that flags inputs like "Love you Dad" as invalid in the name field.
 
-This affects every country landing CTA that points to `/` (India, USA, UK, Canada, Australia).
+## Changes (single file: `src/components/CakeCreator.tsx`)
 
-## Fix
-
-Point the country-landing CTAs to a route that is not in `REDIRECTABLE_ROUTES` and that renders the creator:
-
-- Change the `Link to="/"` on each country landing's bottom CTA (and any similar buttons) to `Link to="/free-ai-cake-designer"`. That route renders `FreeCakeDesigner`, which already mounts `CakeCreator` and isn't intercepted by the geo redirect.
-- Keep the button styling, icon, and label unchanged.
-
-Files to edit:
-- `src/pages/IndiaLanding.tsx` (line ~722)
-- `src/pages/USALanding.tsx` (line ~655 area)
-- `src/pages/UKLanding.tsx` (line ~789 area)
-- `src/pages/AustraliaLanding.tsx` (line ~547)
-- `src/pages/CanadaLanding.tsx` (line ~482)
+1. **Remove the `MESSAGE_PHRASE_REGEX` validation** from the Zod schema (lines ~37–49). Keep only the `min(1)` / `max(30)` length checks.
+2. **Remove the inline red warning** rendered below the input (lines ~1700–1709), and drop the `aria-invalid` prop tied to the regex.
+3. **Soften the helper text** under the input from a restrictive "Don't put messages here…" to a neutral hint, e.g. "This text will appear on the cake. Use a name, nickname, or a short phrase like 'Happy Birthday Aarav'."
+4. Delete the now-unused `MESSAGE_PHRASE_REGEX` constant.
 
 ## Out of scope
 
-- No changes to `GeoRedirectWrapper`, geo detection, or routing config.
-- No changes to `CakeCreator` itself or the landing page layouts beyond the CTA's `to` prop.
-- Sticky mobile CTA / header buttons not touched unless you want them updated too — say the word and I'll include them.
+- No change to the generation edge function, occasion/relation fields, or the previously fixed cross-cake context leak.
+- No change to placeholder examples or label.
 
 ## Verification
 
-After build: on mobile viewport at `/india`, tap "Create Your Cake Now" → lands on `/free-ai-cake-designer` with the creator form visible, no redirect back to `/india`.
+- Type "Love you Dad" in the name field → no red warning appears, submit button stays enabled.
+- Type a plain name like "Aarav" → still works as before.
