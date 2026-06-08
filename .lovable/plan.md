@@ -1,41 +1,33 @@
-## What's happening
+Findings so far:
+- Last successful cake job: Jun 7 12:24 UTC, Eid Mubarak, completed normally.
+- After that: page visits continued, but there are no new cake jobs, no generation tracking rows, and no new user profiles.
+- Live browser test shows public page requests now fail with `401 permission denied for function has_role`.
+- The failure maps to the Jun 6 auth-hardening migration that revoked anonymous access to `has_role`, while public policies/views still evaluate `has_role` for recipes and featured images.
+- Earlier table-grant theory for `cake_generation_jobs` is not supported by the evidence.
 
-The progress bar in `CakeCreator.tsx` is a simulated timeline that climbs to **75% over ~36 seconds** and then sits there until one of two real signals arrives:
+Plan:
+1. Fix the public policy regression
+   - Add a migration that removes `has_role` from anonymous/public read paths.
+   - Split public and admin policies instead of using `is_published = true OR has_role(...)` in one policy.
+   - Make admin-only policies apply only to authenticated users so anonymous users never evaluate `has_role`.
+   - Add/repair the public featured-image read policy used by `public_featured_images`.
 
-1. The `generate-complete-cake` edge function returns with a `jobId` (then bar bumps to 76%), or
-2. A Realtime/poll event reports a filled image slot (then bar bumps to 80–100%).
+2. Verify the homepage/landing data path
+   - Re-test `/india` and confirm `cake_recipes` and `public_featured_images` no longer return 401.
+   - Confirm public browsing still works without exposing private/non-featured user images.
 
-In the backend, **every generation (Fast and High)** is now job-first: the function inserts a `cake_generation_jobs` row, kicks off image generation in `EdgeRuntime.waitUntil`, and returns 202 with `images: [null, null, null]` + `jobId`. The hero image is **not** in the response — it lands later via the job row.
+3. Add hard evidence around cake generation start
+   - Add client-side logging around the exact `generate-complete-cake` invoke phase.
+   - Add a hard timeout for the initial job-start request so the UI cannot sit at simulated 75% forever.
+   - Surface the true phase to users: starting request, job queued, waiting for first cake view, or backend error.
 
-Failure modes that all surface as "stuck at 75%":
-- The HTTP invoke takes longer than 36s (cold start, slow network, India route) — the bar parks at 75 with no further status until the response comes back.
-- The invoke fails silently or the realtime subscription drops, so the job finishes server-side but the client never gets the UPDATE event and never polls again past the initial fetch.
-- The background `Promise.all` of view generations hits a model timeout — the row eventually flips to `partial_failed`, but if the realtime channel is gone the client doesn't see it.
+4. Improve job polling failure handling
+   - Make polling inspect and report read errors from `cake_generation_jobs` instead of silently ignoring them.
+   - If a job cannot be read, stop the indefinite loading state and show a retry path.
 
-There's currently **no client-side watchdog**: no rotating reassurance message after 36s, no fallback poll on a timer if no event has arrived in N seconds, and no "this is taking longer than usual — retry?" affordance.
+5. Validate end-to-end stability
+   - Use a logged-in test attempt or live preview session to confirm a generation request creates a job row quickly.
+   - Check that the UI moves past 75% when a job starts, or fails clearly with a real error if the function/auth path is blocked.
 
-## Plan
-
-All changes are frontend-only in `src/components/CakeCreator.tsx`:
-
-1. **Keep the 75% cap, but stop it feeling frozen**
-   Add a 9th and 10th simulator entry that rotates the *step text* (not the percentage) every ~15s after 36s: "Still rendering — heavy traffic right now…", then "Almost done — wrapping up final touches…". Bar stays at 75 (honest) but the line of copy keeps moving.
-
-2. **Watchdog poll on the job row**
-   When the invoke returns with a `jobId`, start a background `setInterval` (every 4s) that does a `select` on `cake_generation_jobs` and calls the existing `applyRow` if anything new came in. This already exists for the *initial* fetch but does not repeat. Stop the interval when `finished` flips true or after 3 minutes. This makes the UI self-heal even if Realtime drops.
-
-3. **Hard timeout + recovery affordance**
-   If 90 seconds have passed since `isLoading` started and `bgPending` still has all slots and no image has been filled, surface a small inline action under the loader: "Taking longer than usual — Try again" button that cancels and re-invokes `generate-complete-cake`. Do not auto-reload.
-
-4. **Surface invoke failure**
-   If the `supabase.functions.invoke('generate-complete-cake', …)` call itself rejects or returns an error before we ever get a `jobId`, today we throw and the catch shows a toast — but the bar can remain at 75 because cleanup of `isLoading` isn't guaranteed in every branch. Audit the catch block to ensure `setIsLoading(false)` and `setGenerationProgress(0)` always run on error.
-
-5. **No backend changes.** Job rows are completing fine (verified recent rows: `completed` with hero/side/top all filled). The fix is making the client honest and recoverable when the network or realtime layer hiccups.
-
-## Out of scope (separate)
-
-The console error `permission denied for function has_role` on the India landing page is a different bug (featured cakes loader). Not touching it in this fix.
-
-## Files
-
-- `src/components/CakeCreator.tsx` — simulator extension, watchdog poll, 90s recovery button, error-path cleanup audit.
+Technical note:
+The immediate confirmed regression is not missing grants on `cake_generation_jobs`; it is the `has_role` permission change interacting with public RLS/view policies. The generation stuck symptom still needs validation after that fix because its request is authenticated and JWT-gated, but the absence of new jobs proves the failure happens before job creation.
