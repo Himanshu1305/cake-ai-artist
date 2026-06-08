@@ -2284,6 +2284,31 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
               <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🎊</span>
               <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
             </div>
+
+            {showSlowRetry && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Taking longer than usual? You can cancel and try again.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsLoading(false);
+                    setGenerationProgress(0);
+                    setGenerationStep("");
+                    setShowSlowRetry(false);
+                    toast({
+                      title: "Cancelled",
+                      description: "Tap Create Cake again to retry.",
+                    });
+                  }}
+                >
+                  Cancel & try again
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
       )}
