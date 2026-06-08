@@ -1,107 +1,41 @@
+## What's happening
 
-## The gap (yes, I agree)
+The progress bar in `CakeCreator.tsx` is a simulated timeline that climbs to **75% over ~36 seconds** and then sits there until one of two real signals arrives:
 
-Today `CharacterPicker` has ~55 options across 12 categories — **every single one is a kids/pop-culture character** (Disney, Marvel, anime, Peppa Pig, Chhota Bheem…). Meanwhile the occasion dropdown now offers 22 occasions, most of which are adult/non-character contexts:
+1. The `generate-complete-cake` edge function returns with a `jobId` (then bar bumps to 76%), or
+2. A Realtime/poll event reports a filled image slot (then bar bumps to 80–100%).
 
-- Wedding, Anniversary, Baby Shower, Valentine's, Mother's/Father's Day, Farewell, Congratulations
-- Eid, Diwali, Holi, Christmas, Easter, Thanksgiving, Halloween, Dussehra, Raksha Bandhan, New Year
+In the backend, **every generation (Fast and High)** is now job-first: the function inserts a `cake_generation_jobs` row, kicks off image generation in `EdgeRuntime.waitUntil`, and returns 202 with `images: [null, null, null]` + `jobId`. The hero image is **not** in the response — it lands later via the job row.
 
-A bride looking for a wedding cake currently sees "Pikachu" and "Hulk" as her only "character" options. That's a clear mismatch and a missed personalization lever.
+Failure modes that all surface as "stuck at 75%":
+- The HTTP invoke takes longer than 36s (cold start, slow network, India route) — the bar parks at 75 with no further status until the response comes back.
+- The invoke fails silently or the realtime subscription drops, so the job finishes server-side but the client never gets the UPDATE event and never polls again past the initial fetch.
+- The background `Promise.all` of view generations hits a model timeout — the row eventually flips to `partial_failed`, but if the realtime channel is gone the client doesn't see it.
 
-## What competitors actually do
+There's currently **no client-side watchdog**: no rotating reassurance message after 36s, no fallback poll on a timer if no event has arrived in N seconds, and no "this is taking longer than usual — retry?" affordance.
 
-Quick scan of the cake-design space (Bakingo, FlowerAura, FNP, Cake2Home, Etsy AI-cake tools, Midjourney cake prompts, Pinterest cake taxonomies) — the dominant adult/occasion "themes" are **motifs and aesthetics**, not licensed characters:
+## Plan
 
-- **Wedding:** floral cascades, monogram, two-tier, lace, gold leaf, bride & groom toppers, ring & doves
-- **Anniversary:** roses, hearts, "Mr & Mrs", years milestone, champagne flutes, photo memory
-- **Baby shower:** teddy bear, baby booties, stork, pram, "It's a boy/girl", baby clouds, rattles, gender-neutral pastels
-- **Valentine's:** red roses, cupid, heart, love letters, lock-and-key
-- **Mother's / Father's Day:** flowers + "Mom" lettering, tie/moustache/tools "Dad" themes
-- **Religious — Eid:** crescent moon, lanterns, mosque silhouette, dates & henna
-- **Religious — Diwali:** diyas, rangoli, marigold, fireworks
-- **Christmas:** Santa, reindeer, snowman, tree, wreath, gingerbread
-- **Halloween:** pumpkin, ghost, witch, spider web, skull
-- **Thanksgiving:** turkey, cornucopia, autumn leaves
-- **Holi:** color splash, gulaal, pichkari
-- **Raksha Bandhan:** rakhi, sibling motif
-- **Farewell / Congratulations / Graduation:** cap & scroll, "Good Luck" banner, suitcase, trophy
-- **New Year:** fireworks, champagne, "Cheers 2026", clock at midnight
+All changes are frontend-only in `src/components/CakeCreator.tsx`:
 
-These map cleanly onto our existing `THEME_MAP` in `generate-invite-artwork` — we already speak this vocabulary on the invite side, just not on the cake side.
+1. **Keep the 75% cap, but stop it feeling frozen**
+   Add a 9th and 10th simulator entry that rotates the *step text* (not the percentage) every ~15s after 36s: "Still rendering — heavy traffic right now…", then "Almost done — wrapping up final touches…". Bar stays at 75 (honest) but the line of copy keeps moving.
 
-## The fix
+2. **Watchdog poll on the job row**
+   When the invoke returns with a `jobId`, start a background `setInterval` (every 4s) that does a `select` on `cake_generation_jobs` and calls the existing `applyRow` if anything new came in. This already exists for the *initial* fetch but does not repeat. Stop the interval when `finished` flips true or after 3 minutes. This makes the UI self-heal even if Realtime drops.
 
-Rename the field intent from "Character" to **"Theme / Character"** and expand `CHARACTER_CATEGORIES` with motif-based options grouped by occasion. Then **filter visible categories based on the selected occasion** so the picker stays short and relevant.
+3. **Hard timeout + recovery affordance**
+   If 90 seconds have passed since `isLoading` started and `bgPending` still has all slots and no image has been filled, surface a small inline action under the loader: "Taking longer than usual — Try again" button that cancels and re-invokes `generate-complete-cake`. Do not auto-reload.
 
-### New categories to add
+4. **Surface invoke failure**
+   If the `supabase.functions.invoke('generate-complete-cake', …)` call itself rejects or returns an error before we ever get a `jobId`, today we throw and the catch shows a toast — but the bar can remain at 75 because cleanup of `isLoading` isn't guaranteed in every branch. Audit the catch block to ensure `setIsLoading(false)` and `setGenerationProgress(0)` always run on error.
 
-1. **💍 Wedding & Engagement** — Floral cascade, Two-tier classic, Monogram, Bride & Groom toppers, Ring & doves, Lace & pearls, Gold leaf elegance
-2. **❤️ Anniversary & Love** — Roses & hearts, Mr & Mrs, Milestone years (25/50), Champagne toast, Photo memory, Lock & key
-3. **👶 Baby Shower** — Teddy bear, Baby booties & rattle, Stork delivery, "It's a Boy" blue, "It's a Girl" pink, Gender-neutral clouds, Pram & moon
-4. **💐 Valentine's & Romance** — Red roses, Cupid, Heart bouquet, Love letters
-5. **🌷 Mother's Day** — Flower bouquet for Mom, "Best Mom" elegant, Tea & pearls
-6. **👔 Father's Day** — Tie & moustache, Tools & toolbox, "Best Dad" rustic
-7. **🌙 Eid Mubarak** — Crescent & lantern, Mosque silhouette, Dates & henna, Geometric gold
-8. **🪔 Diwali** — Diyas & rangoli, Marigold garland, Fireworks night, Lakshmi gold
-9. **🎨 Holi** — Color splash, Gulaal swirl, Pichkari fun
-10. **🎄 Christmas** — Santa, Reindeer & sleigh, Snowman, Christmas tree, Wreath, Gingerbread house
-11. **🎃 Halloween (adult)** — Pumpkin patch, Ghost & spider, Witch's brew, Skull & roses *(merge with existing Jack Skellington)*
-12. **🦃 Thanksgiving** — Turkey & feast, Cornucopia, Autumn leaves
-13. **🎓 Graduation & Achievement** — Cap & scroll, Trophy, "Class of 2026", Books & apple
-14. **✈️ Farewell & Congratulations** — Suitcase & globe, "Bon Voyage", "Congrats" banner, Champagne celebration
-15. **🎆 New Year** — Fireworks, Champagne toast, Clock at midnight, Gold confetti
-16. **🪢 Raksha Bandhan** — Rakhi & sibling, Sister-brother bond
-17. **🏵️ Dussehra / Festive India** — Marigold, Traditional gold, Festive elegance
-18. **🌸 Easter** — Bunny & eggs, Pastel pastoral, Spring blooms
+5. **No backend changes.** Job rows are completing fine (verified recent rows: `completed` with hero/side/top all filled). The fix is making the client honest and recoverable when the network or realtime layer hiccups.
 
-Plus a top-level **"✨ Elegant Adult Themes"** evergreen group:
-- Floral elegance, Minimalist gold, Vintage romance, Modern geometric, Watercolor pastel
+## Out of scope (separate)
 
-### Occasion → category filtering
+The console error `permission denied for function has_role` on the India landing page is a different bug (featured cakes loader). Not touching it in this fix.
 
-Add an `occasions: string[]` field on each category. When `occasion` is selected in `CakeCreator`, the picker:
-- Pins matching categories to the top (e.g. selecting Wedding promotes "Wedding & Engagement" + "Elegant Adult Themes")
-- Keeps "🆓 Free Characters" and full list available below a divider ("Show all themes")
-- For child occasions (Birthday, age < 13), keeps current behavior unchanged
+## Files
 
-If no occasion is selected, show all categories as today.
-
-### Premium gating
-
-- 3 free options per major adult category (e.g. Wedding: Floral cascade, Roses & hearts, Classic two-tier are free; rest premium)
-- Matches existing model — keeps free tier viable across occasions, not just kids
-
-### Free-tier expansion (small but important)
-
-Add to the existing "🆓 Free Characters" group: **Floral elegance, Roses & hearts, Teddy bear, Pumpkin, Christmas tree** — so every major occasion has at least one free starter theme.
-
-## Technical scope
-
-**Files to change (frontend only — no backend/business logic):**
-
-1. `src/components/CharacterPicker.tsx`
-   - Rename label from "Character" to "Theme or Character" (UI copy)
-   - Extend `Character` type with optional `occasions?: string[]`
-   - Extend `CharacterCategory` with optional `occasions?: string[]`
-   - Add ~18 new categories with ~80 new entries
-   - Add `occasion?: string` prop
-   - Sort categories: matching-occasion first, then "Free", then rest (collapsible "Show all themes" toggle)
-
-2. `src/components/CakeCreator.tsx`
-   - Pass `occasion` prop into `<CharacterPicker />` (line ~1717 area)
-   - Update label text "Character" → "Theme or Character (optional)"
-
-3. Prompt-side awareness (light touch — same file):
-   - Where the prompt is composed (line 1062: `${character ? \` with ${character}\` : ''}`), no change needed — values like `floral-cascade-wedding` are already descriptive enough. The image model will render them as cake decoration motifs.
-
-**Out of scope (this change):**
-- No DB migration — `character` is already a free-text string
-- No edge function changes
-- No new images/assets
-- Gallery filtering, search, or analytics around new themes
-
-## Open questions (will default if not answered)
-
-1. **Free vs premium split** — confirm "3 free per category" or prefer "1 free per category, rest premium"? *Default: 3 free per major category.*
-2. **Filtering strictness** — when Wedding is selected, hide kids categories entirely, or just demote them? *Default: demote behind a "Show all themes" toggle so users can still mix.*
-3. **Label rename** — "Theme or Character" vs "Cake Theme" vs keep as "Character"? *Default: "Theme or Character (optional)".*
+- `src/components/CakeCreator.tsx` — simulator extension, watchdog poll, 90s recovery button, error-path cleanup audit.

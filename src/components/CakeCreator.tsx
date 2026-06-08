@@ -98,6 +98,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [isSavingToGallery, setIsSavingToGallery] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
+  const [showSlowRetry, setShowSlowRetry] = useState(false);
   const [regeneratingView, setRegeneratingView] = useState<number | null>(null);
   const [bgPending, setBgPending] = useState<Set<number>>(new Set());
   const [bgFailed, setBgFailed] = useState<Set<number>>(new Set());
@@ -171,6 +172,10 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       { progress: 62, step: "🌟 Rendering your cake views...", delay: 21000 },
       { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
       { progress: 75, step: "🪄 Still rendering — this can take a little longer...", delay: 36000 },
+      // Bar stays at 75% (honest) but copy keeps moving so it never feels frozen.
+      { progress: 75, step: "🎨 Heavy traffic right now — your cake is still in the oven...", delay: 50000 },
+      { progress: 75, step: "🧁 Wrapping up the final touches — almost there...", delay: 65000 },
+      { progress: 75, step: "✨ Hang tight — the AI is putting the cherry on top...", delay: 80000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -186,7 +191,14 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       timers.push(timer);
     });
 
-    return () => timers.forEach(clearTimeout);
+    // Surface a "Try again" affordance if 60s pass with nothing filled yet.
+    const slowTimer = setTimeout(() => setShowSlowRetry(true), 60000);
+    timers.push(slowTimer);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      setShowSlowRetry(false);
+    };
   }, [isLoading, generationQuality]);
 
   // Regenerate specific view (decorated cakes only: 0=front, 1=side, 2=top)
@@ -2272,6 +2284,31 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
               <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🎊</span>
               <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
             </div>
+
+            {showSlowRetry && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Taking longer than usual? You can cancel and try again.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsLoading(false);
+                    setGenerationProgress(0);
+                    setGenerationStep("");
+                    setShowSlowRetry(false);
+                    toast({
+                      title: "Cancelled",
+                      description: "Tap Create Cake again to retry.",
+                    });
+                  }}
+                >
+                  Cancel & try again
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
       )}

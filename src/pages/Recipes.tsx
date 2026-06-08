@@ -36,6 +36,8 @@ const COUNTRY_FLAGS: Record<string, string> = {
 const Recipes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [params, setParams] = useSearchParams();
   const country = params.get("country");
 
