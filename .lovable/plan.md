@@ -1,33 +1,36 @@
-Findings so far:
-- Last successful cake job: Jun 7 12:24 UTC, Eid Mubarak, completed normally.
-- After that: page visits continued, but there are no new cake jobs, no generation tracking rows, and no new user profiles.
-- Live browser test shows public page requests now fail with `401 permission denied for function has_role`.
-- The failure maps to the Jun 6 auth-hardening migration that revoked anonymous access to `has_role`, while public policies/views still evaluate `has_role` for recipes and featured images.
-- Earlier table-grant theory for `cake_generation_jobs` is not supported by the evidence.
+## What's happening
 
-Plan:
-1. Fix the public policy regression
-   - Add a migration that removes `has_role` from anonymous/public read paths.
-   - Split public and admin policies instead of using `is_published = true OR has_role(...)` in one policy.
-   - Make admin-only policies apply only to authenticated users so anonymous users never evaluate `has_role`.
-   - Add/repair the public featured-image read policy used by `public_featured_images`.
+This isn't a bug in the image model and it isn't leakage from a previous cake. You typed `Love you Dad` into the "special person's name" field. The cake generator takes whatever is in that field and tells the image model to render it on the cake as the name, alongside the occasion text (`Welcome Baby`). So all three views correctly rendered:
 
-2. Verify the homepage/landing data path
-   - Re-test `/india` and confirm `cake_recipes` and `public_featured_images` no longer return 401.
-   - Confirm public browsing still works without exposing private/non-featured user images.
+- `Welcome Baby` (occasion text for baby-shower)
+- `Love you Dad` (treated as the name)
 
-3. Add hard evidence around cake generation start
-   - Add client-side logging around the exact `generate-complete-cake` invoke phase.
-   - Add a hard timeout for the initial job-start request so the UI cannot sit at simulated 75% forever.
-   - Surface the true phase to users: starting request, job queued, waiting for first cake view, or backend error.
+The field is labeled `🎯 Enter the special person's name...` which is too vague — users can easily think it's the message line.
 
-4. Improve job polling failure handling
-   - Make polling inspect and report read errors from `cake_generation_jobs` instead of silently ignoring them.
-   - If a job cannot be read, stop the indefinite loading state and show a retry path.
+## Fix
 
-5. Validate end-to-end stability
-   - Use a logged-in test attempt or live preview session to confirm a generation request creates a job row quickly.
-   - Check that the UI moves past 75% when a job starts, or fails clearly with a real error if the function/auth path is blocked.
+Two-part fix, all on the frontend form (no change to the image-generation backend logic):
 
-Technical note:
-The immediate confirmed regression is not missing grants on `cake_generation_jobs`; it is the `has_role` permission change interacting with public RLS/view policies. The generation stuck symptom still needs validation after that fix because its request is authenticated and JWT-gated, but the absence of new jobs proves the failure happens before job creation.
+1. **Clarify the field** in `src/components/CakeCreator.tsx`:
+   - Label: `Recipient's name` with a small helper line: `Just the person's name (e.g. Aarav, Baby Riya). Don't put messages here — the cake message is generated separately below.`
+   - Placeholder: `e.g. Aarav, Riya, Baby` (drop the vague "special person").
+
+2. **Validate the name** before submit (and on blur with an inline error):
+   - Max 30 chars (already 50, tighten it).
+   - Reject obvious message phrases. If the value contains any of these tokens (case-insensitive, whole-word): `love you`, `happy`, `welcome`, `congrats`, `congratulations`, `merry`, `wishes`, `wishing`, `best wishes`, `dear`, `to my`, `from`, show an inline error:
+     > "This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below."
+   - Block submission until corrected. No silent rewriting (don't auto-strip — the user should see what's wrong).
+   - Add the same regex check to the Zod schema (`nameSchema`) so it runs in one place.
+
+3. **Optional safety on the prompt** (small, low-risk): in `supabase/functions/generate-complete-cake/index.ts`, when building the cake image prompt, hard-cap `name` to 30 chars and strip newlines before interpolation. This is defensive only; the real fix is the input validation above.
+
+## Out of scope
+
+- No change to occasion text, message generation, photo overlay, or job/polling logic.
+- No reset of unrelated form state between generations.
+
+## Technical notes
+
+- File touched: `src/components/CakeCreator.tsx` (label, placeholder, helper text around line 1677–1682; Zod `name` schema around line 39; submit handler error surface).
+- Optional second file: `supabase/functions/generate-complete-cake/index.ts` (sanitize `name` near line 141 before it's used in `buildMessages`).
+- No DB migration, no new dependency.
