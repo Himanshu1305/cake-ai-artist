@@ -34,9 +34,19 @@ import { AudioRecorder } from "@/components/AudioRecorder";
 import { Mic, Volume2, Link2, Trash2, Rotate3D } from "lucide-react";
 import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
 
+// Phrases that indicate the user typed a message instead of a name.
+const MESSAGE_PHRASE_REGEX = /\b(love\s+you|happy|welcome|congrats|congratulations|merry|wishes|wishing|dear|to\s+my|from)\b/i;
+
 // Input validation schema
 const cakeFormSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(50, "Name must be 50 characters or less"),
+  name: z.string()
+    .trim()
+    .min(1, "Name is required")
+    .max(30, "Name must be 30 characters or less")
+    .refine(
+      (v) => !MESSAGE_PHRASE_REGEX.test(v),
+      "This looks like a message, not a name. Please enter just the recipient's name — the cake message is generated for you below."
+    ),
   occasion: z.string().min(1, "Occasion is required"),
   relation: z.string().min(1, "Relation is required"),
   gender: z.string().min(1, "Gender is required"),
@@ -46,6 +56,7 @@ const cakeFormSchema = z.object({
   theme: z.string().max(100, "Theme too long").optional(),
   colors: z.string().max(100, "Colors value too long").optional(),
 });
+
 
 const CAKE_JOB_START_TIMEOUT_MS = 90000;
 
