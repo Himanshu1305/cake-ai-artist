@@ -946,11 +946,29 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           // emitted and missed. This initial fetch picks up that completed state.
           const fetchOnce = async () => {
             if (finished) return;
-            const { data: row } = await supabase
+            const { data: row, error: pollError } = await supabase
               .from('cake_generation_jobs')
                 .select('hero_url, side_url, top_url, hero_error, side_error, top_error, error_message, status, view_count, greeting_message, updated_at')
               .eq('id', jobId)
               .maybeSingle();
+            if (pollError) {
+              console.error('[cake] job poll failed', { jobId, error: pollError });
+              if (!finished) {
+                finished = true;
+                cleanup();
+                setIsLoading(false);
+                setGenerationProgress(0);
+                setGenerationStep('');
+                setBgPending(new Set());
+                setBgFailed(new Set(viewOrder.map((_, i) => i)));
+                toast({
+                  title: 'Could not load cake job',
+                  description: 'The cake started, but the app could not read its progress. Please try again.',
+                  variant: 'destructive',
+                });
+              }
+              return;
+            }
             if (row) applyRow(row);
           };
           // Declare timers + cleanup BEFORE first fetch so applyRow→cleanup
