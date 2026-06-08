@@ -106,7 +106,7 @@ serve(async (req) => {
     }
 
     const { 
-      name, 
+      name: rawName, 
       character, 
       occasion, 
       relation, 
@@ -120,6 +120,11 @@ serve(async (req) => {
       specificView,
       quality
     } = validationResult.data;
+
+    // Defensive: strip newlines and clamp length so a message accidentally
+    // entered as a name can't bake an unwanted phrase onto the cake.
+    const name = rawName.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 30);
+
 
     // Model selection based on quality setting.
     // Both modes use Nano Banana 2 (fast, pro-level quality) as the PRIMARY
