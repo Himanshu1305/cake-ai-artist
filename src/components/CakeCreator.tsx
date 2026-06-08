@@ -47,6 +47,23 @@ const cakeFormSchema = z.object({
   colors: z.string().max(100, "Colors value too long").optional(),
 });
 
+const CAKE_JOB_START_TIMEOUT_MS = 90000;
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${Math.round(timeoutMs / 1000)}s`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 interface CakeCreatorProps { onGenerate?: () => void; }
 
 export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
@@ -173,9 +190,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       { progress: 70, step: "✨ Almost there — finishing touches...", delay: 28000 },
       { progress: 75, step: "🪄 Still rendering — this can take a little longer...", delay: 36000 },
       // Bar stays at 75% (honest) but copy keeps moving so it never feels frozen.
-      { progress: 75, step: "🎨 Heavy traffic right now — your cake is still in the oven...", delay: 50000 },
-      { progress: 75, step: "🧁 Wrapping up the final touches — almost there...", delay: 65000 },
-      { progress: 75, step: "✨ Hang tight — the AI is putting the cherry on top...", delay: 80000 },
+      { progress: 75, step: "🔎 Waiting for the cake job to start...", delay: 50000 },
+      { progress: 75, step: "🎂 Still waiting for a job response...", delay: 65000 },
+      { progress: 75, step: "⏳ This is taking too long — we’ll stop and show retry options soon.", delay: 80000 },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -489,18 +506,32 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     });
   };
 
-  // Single-attempt invoke. We deliberately do NOT race a client-side timer here:
-  // the backend now returns the hero view fast (HQ + Standard) and finishes the
-  // remaining views in the background, so a client race timer can only do harm
-  // (kill a successful job and show a confusing "timed out" toast). A long
-  // watchdog (4 min) is applied separately in handleSubmit only as a safety net.
+  // Single-attempt invoke. The backend should return a jobId quickly; if that
+  // startup request hangs, fail clearly instead of leaving the progress bar at 75%.
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
+    const startedAt = Date.now();
+    console.info('[cake] invoking function', { functionName, quality: body?.quality });
     try {
-      const result = await supabase.functions.invoke(functionName, { body });
+      const result = await withTimeout(
+        supabase.functions.invoke(functionName, { body }),
+        CAKE_JOB_START_TIMEOUT_MS,
+        'Cake generation startup request',
+      );
+      console.info('[cake] function invoke resolved', {
+        functionName,
+        elapsedMs: Date.now() - startedAt,
+        hasData: !!result.data,
+        hasError: !!result.error,
+        jobId: result.data?.jobId,
+      });
       if (result.error) return { data: result.data, error: result.error };
       return { data: result.data, error: null };
     } catch (err) {
-      console.log('Generation attempt failed:', err);
+      console.error('[cake] function invoke failed', {
+        functionName,
+        elapsedMs: Date.now() - startedAt,
+        error: err,
+      });
       return { data: null, error: err };
     }
   };
@@ -652,6 +683,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             : `AI is generating 3 beautiful views together — back in ~30 seconds!`,
         });
 
+        setGenerationStep('Starting secure cake generation...');
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -667,9 +699,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         });
 
         if (error) {
+          setGenerationProgress(0);
+          setGenerationStep('');
           if (data?.error === 'generation_limit_reached') {
-            setGenerationProgress(0);
-            setGenerationStep('');
             toast({
               title: "Free generations used up",
               description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
@@ -914,11 +946,29 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           // emitted and missed. This initial fetch picks up that completed state.
           const fetchOnce = async () => {
             if (finished) return;
-            const { data: row } = await supabase
+            const { data: row, error: pollError } = await supabase
               .from('cake_generation_jobs')
                 .select('hero_url, side_url, top_url, hero_error, side_error, top_error, error_message, status, view_count, greeting_message, updated_at')
               .eq('id', jobId)
               .maybeSingle();
+            if (pollError) {
+              console.error('[cake] job poll failed', { jobId, error: pollError });
+              if (!finished) {
+                finished = true;
+                cleanup();
+                setIsLoading(false);
+                setGenerationProgress(0);
+                setGenerationStep('');
+                setBgPending(new Set());
+                setBgFailed(new Set(viewOrder.map((_, i) => i)));
+                toast({
+                  title: 'Could not load cake job',
+                  description: 'The cake started, but the app could not read its progress. Please try again.',
+                  variant: 'destructive',
+                });
+              }
+              return;
+            }
             if (row) applyRow(row);
           };
           // Declare timers + cleanup BEFORE first fetch so applyRow→cleanup
