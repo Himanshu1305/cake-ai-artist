@@ -38,6 +38,7 @@ const AustraliaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Track page visits
   usePageTracking('/australia', 'AU');
@@ -55,6 +56,7 @@ const AustraliaLanding = () => {
   };
 
   useEffect(() => {
+    supabase.auth.getUser().then(() => setAuthChecked(true));
     loadFeaturedCakes();
   }, []);
 
@@ -550,7 +552,7 @@ const AustraliaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="AU" countryName="Australia" adjective="Australian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} country="AU" />
+      {authChecked && <ExitIntentModal isLoggedIn={false} isPremium={false} country="AU" />}
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="AU" countryName="Australia" />
       <Footer />

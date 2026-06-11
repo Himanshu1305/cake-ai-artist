@@ -38,6 +38,7 @@ const CanadaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Track page visits
   usePageTracking('/canada', 'CA');
@@ -55,6 +56,7 @@ const CanadaLanding = () => {
   };
 
   useEffect(() => {
+    supabase.auth.getUser().then(() => setAuthChecked(true));
     loadFeaturedCakes();
   }, []);
 
@@ -485,7 +487,7 @@ const CanadaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="CA" countryName="Canada" adjective="Canadian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} country="CA" />
+      {authChecked && <ExitIntentModal isLoggedIn={false} isPremium={false} country="CA" />}
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="CA" countryName="Canada" />
       <Footer />

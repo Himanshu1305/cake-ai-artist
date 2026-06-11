@@ -73,6 +73,7 @@ const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [hasGeneratedCake, setHasGeneratedCake] = useState(true); // default true avoids false positives
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [bannerHeight, setBannerHeight] = useState(48); // Default estimate
@@ -182,9 +183,10 @@ const Index = () => {
         .eq("user_id", session.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      
+
       setIsAdmin(!!roleData);
     }
+    setAuthChecked(true);
   };
 
   const handleLogout = async () => {
@@ -293,7 +295,9 @@ const Index = () => {
         <Suspense fallback={null}>
           <FloatingEmojis />
           <ConfettiRain count={14} />
-          <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} isPremiumInactive={isPremium && !hasGeneratedCake} country={detectedCountry || 'US'} />
+          {authChecked && (
+            <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} isPremiumInactive={isPremium && !hasGeneratedCake} country={detectedCountry || 'US'} />
+          )}
           <LiveActivityFeed />
           <LivePurchaseNotifications />
           <FeedbackWidget externalOpen={feedbackOpen} onExternalOpenChange={setFeedbackOpen} />

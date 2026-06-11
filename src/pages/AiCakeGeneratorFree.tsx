@@ -19,6 +19,7 @@ const AiCakeGeneratorFree = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const faqs = [
     {
@@ -61,6 +62,7 @@ const AiCakeGeneratorFree = () => {
           .from('profiles').select('is_premium').eq('id', user.id).single();
         setIsPremium(profile?.is_premium || false);
       }
+      setAuthChecked(true);
     };
     checkAuth();
   }, []);
@@ -214,7 +216,7 @@ const AiCakeGeneratorFree = () => {
         </div>
       </section>
 
-      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
       <Footer />
     </div>
   );

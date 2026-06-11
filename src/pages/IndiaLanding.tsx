@@ -38,6 +38,7 @@ const IndiaLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Track page visits
   usePageTracking('/india', 'IN');
@@ -55,6 +56,7 @@ const IndiaLanding = () => {
   };
 
   useEffect(() => {
+    supabase.auth.getUser().then(() => setAuthChecked(true));
     loadFeaturedCakes();
   }, []);
 
@@ -730,7 +732,7 @@ const IndiaLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="IN" countryName="India" adjective="Indian" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} country="IN" />
+      {authChecked && <ExitIntentModal isLoggedIn={false} isPremium={false} country="IN" />}
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="IN" countryName="India" />
       <Footer />

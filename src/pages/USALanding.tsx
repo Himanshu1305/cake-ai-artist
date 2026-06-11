@@ -38,6 +38,7 @@ const USALanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   usePageTracking('/usa', 'US');
 
@@ -52,6 +53,7 @@ const USALanding = () => {
   const resolveImageUrl = (url: string): string => localImageMap[url] || url;
 
   useEffect(() => {
+    supabase.auth.getUser().then(() => setAuthChecked(true));
     loadFeaturedCakes();
   }, []);
 
@@ -660,7 +662,7 @@ const USALanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="US" countryName="USA" adjective="American" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} country="US" />
+      {authChecked && <ExitIntentModal isLoggedIn={false} isPremium={false} country="US" />}
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="US" countryName="USA" />
       <Footer />

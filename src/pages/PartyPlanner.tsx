@@ -291,6 +291,7 @@ export default function PartyPlanner() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [parties, setParties] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -303,6 +304,7 @@ export default function PartyPlanner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
+        setAuthChecked(true);
         return;
       }
       setUser(user);
@@ -318,6 +320,7 @@ export default function PartyPlanner() {
         .order("created_at", { ascending: false });
       setParties(data || []);
       setLoading(false);
+      setAuthChecked(true);
 
       const prefillName = searchParams.get("name");
       const prefillOcc = searchParams.get("occasion");
@@ -488,7 +491,7 @@ export default function PartyPlanner() {
           </div>
         )}
       </div>
-      <ExitIntentModal isLoggedIn={!!user} isPremium={isPremium} country="US" />
+      {authChecked && <ExitIntentModal isLoggedIn={!!user} isPremium={isPremium} country="US" />}
       <Footer />
     </div>
   );

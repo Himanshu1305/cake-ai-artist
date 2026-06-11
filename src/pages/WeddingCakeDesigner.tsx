@@ -23,6 +23,7 @@ const WeddingCakeDesigner = () => {
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(WEDDING_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
 
   useEffect(() => {
@@ -34,6 +35,7 @@ const WeddingCakeDesigner = () => {
           .from('profiles').select('is_premium').eq('id', user.id).single();
         setIsPremium(profile?.is_premium || false);
       }
+      setAuthChecked(true);
     };
     checkAuth();
   }, []);
@@ -254,7 +256,7 @@ const WeddingCakeDesigner = () => {
         </div>
       </section>
 
-      <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
       <Footer />
     </div>
   );

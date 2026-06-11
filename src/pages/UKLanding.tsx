@@ -38,6 +38,7 @@ const UKLanding = () => {
   const [bannerHeight, setBannerHeight] = useState(48);
   const [featuredCakes, setFeaturedCakes] = useState<Array<{ image_url: string; prompt: string }>>([]);
   const [selectedCarouselImage, setSelectedCarouselImage] = useState<{ image_url: string; prompt: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Track page visits
   usePageTracking('/uk', 'UK');
@@ -55,6 +56,7 @@ const UKLanding = () => {
   };
 
   useEffect(() => {
+    supabase.auth.getUser().then(() => setAuthChecked(true));
     loadFeaturedCakes();
   }, []);
 
@@ -794,7 +796,7 @@ const UKLanding = () => {
       </section>
 
       <CountryRecipesSection countryCode="UK" countryName="UK" adjective="British" />
-      <ExitIntentModal isLoggedIn={false} isPremium={false} country="GB" />
+      {authChecked && <ExitIntentModal isLoggedIn={false} isPremium={false} country="GB" />}
       <StickyMobileCTA />
       <CountryBlogFeed countryCode="UK" countryName="the UK" />
       <Footer />
