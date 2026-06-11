@@ -1,20 +1,23 @@
-## Goal
+Add the Google Analytics gtag.js tag to the site so page views and events are tracked on all routes.
 
-Let users put whatever they want on the cake. Remove the warning that flags inputs like "Love you Dad" as invalid in the name field.
+What will change
+- Edit `index.html` (the single entry point for this React app) to load the Google tag. Because the app is a single-page application, one insertion in `index.html` covers every current and future route.
+- The existing Google Consent Mode script already creates `window.dataLayer` and `gtag()`. The new tag will reuse those objects and only add the async library load + the `gtag('config', 'G-3XYSM50D2P')` call.
 
-## Changes (single file: `src/components/CakeCreator.tsx`)
+Placement
+- Immediately after the existing Consent Mode `<script>` block and before the `<meta charset>` tag inside `<head>`.
 
-1. **Remove the `MESSAGE_PHRASE_REGEX` validation** from the Zod schema (lines ~37–49). Keep only the `min(1)` / `max(30)` length checks.
-2. **Remove the inline red warning** rendered below the input (lines ~1700–1709), and drop the `aria-invalid` prop tied to the regex.
-3. **Soften the helper text** under the input from a restrictive "Don't put messages here…" to a neutral hint, e.g. "This text will appear on the cake. Use a name, nickname, or a short phrase like 'Happy Birthday Aarav'."
-4. Delete the now-unused `MESSAGE_PHRASE_REGEX` constant.
+Code to insert
+```html
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3XYSM50D2P"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-3XYSM50D2P');
+</script>
+```
 
-## Out of scope
+Why omit the `dataLayer` / `gtag()` re-declaration?
+- The Consent Mode block at the top of `<head>` already declares them. Re-declaring is safe but redundant; keeping the tag clean avoids confusion.
 
-- No change to the generation edge function, occasion/relation fields, or the previously fixed cross-cake context leak.
-- No change to placeholder examples or label.
-
-## Verification
-
-- Type "Love you Dad" in the name field → no red warning appears, submit button stays enabled.
-- Type a plain name like "Aarav" → still works as before.
+No other files are touched.
