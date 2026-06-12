@@ -60,8 +60,9 @@ serve(async (req) => {
     // Validate JWT token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      logStage('2_auth_missing', { error: 'no authorization header' });
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Missing authorization header', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -70,37 +71,43 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    logStage('2_before_auth_getuser');
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      logStage('2_auth_failed', { error: userError?.message || 'no user' });
       console.error('Auth error:', userError);
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ error: 'Invalid or expired token', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('Authenticated user:', user.id);
+    traceUserId = user.id;
+    logStage('3_auth_validated', { meta: { user_id: user.id } });
 
     // Parse body early (can only call req.json() once)
     const rawInput = await req.json();
+    logStage('4_body_parsed', { meta: { has_photo: !!rawInput?.userPhotoBase64, quality: rawInput?.quality, specificView: rawInput?.specificView ?? null } });
 
     // Server-side generation limit check (skip for single-view regenerations)
     const isRegenerating = !!rawInput?.specificView;
     if (!isRegenerating) {
-      const { data: profile } = await supabase
+      logStage('5_before_profile_query');
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_premium')
         .eq('id', user.id)
         .maybeSingle();
+      logStage('5_profile_loaded', { error: profileError?.message, meta: { is_premium: profile?.is_premium ?? null } });
 
       if (!profile?.is_premium) {
-        const FREE_TOTAL_LIMIT = 5;
-        const { data: trackingRows } = await supabase
+        logStage('6_before_tracking_query');
+        const { data: trackingRows, error: trackingError } = await supabase
           .from('generation_tracking')
           .select('count')
           .eq('user_id', user.id);
+        logStage('6_tracking_loaded', { error: trackingError?.message, meta: { row_count: trackingRows?.length ?? 0 } });
 
         const totalGenerations = (trackingRows ?? []).reduce(
           (sum: number, row: { count: number | null }) => sum + (row.count ?? 0),
@@ -108,9 +115,10 @@ serve(async (req) => {
         );
 
         if (totalGenerations >= FREE_TOTAL_LIMIT) {
+          logStage('6_limit_reached', { meta: { totalGenerations } });
           console.log(`Generation limit reached for user ${user.id}: ${totalGenerations}/${FREE_TOTAL_LIMIT}`);
           return new Response(
-            JSON.stringify({ error: 'generation_limit_reached' }),
+            JSON.stringify({ error: 'generation_limit_reached', requestId }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
