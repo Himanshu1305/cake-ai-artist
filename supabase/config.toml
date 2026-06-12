@@ -83,3 +83,6 @@ verify_jwt = true
 
 [functions.generate-invite-artwork]
 verify_jwt = true
+
+[functions.cake-generation-watchdog]
+verify_jwt = false

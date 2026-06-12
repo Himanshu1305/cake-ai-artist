@@ -1282,6 +1282,27 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alert_log: {
+        Row: {
+          alert_type: string
+          details: Json | null
+          id: string
+          sent_at: string
+        }
+        Insert: {
+          alert_type: string
+          details?: Json | null
+          id?: string
+          sent_at?: string
+        }
+        Update: {
+          alert_type?: string
+          details?: Json | null
+          id?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       upgrade_nudge_logs: {
         Row: {
           created_at: string
