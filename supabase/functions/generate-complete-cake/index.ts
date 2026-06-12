@@ -698,16 +698,19 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           greeting_message: greetingMessage,
           view_count: allViewNames.length,
         };
+        logStage('7_before_job_insert');
         const { data: jobRow, error: jobErr } = await supabase
           .from('cake_generation_jobs')
           .insert(jobInsert)
           .select('id')
           .single();
         if (jobErr || !jobRow) {
+          logStage('7_job_insert_failed', { error: jobErr?.message });
           console.error('[gen job] Failed to create job row:', jobErr);
           throw new Error('Could not start cake generation job');
         }
         jobId = jobRow.id;
+        logStage('8_job_inserted', { meta: { jobId } });
         console.log(`[gen job] job row ${jobId} created in ${Date.now() - tStart}ms — responding now`);
 
         const responseImages: (string | null)[] = viewsToRun.map(() => null);
