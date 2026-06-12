@@ -779,6 +779,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           }
         }
 
+        logStage('9_response_sent', { meta: { jobId, status: 202 } });
         return new Response(
           JSON.stringify({
             success: true,
@@ -788,6 +789,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             failedViews: responseFailed,
             greetingMessage,
             jobId,
+            requestId,
             viewOrder: allViewNames,
             heroView: heroView.name,
             backgroundViews: backgroundViews.map(v => v.name),
@@ -797,15 +799,16 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       }
     } catch (error) {
       const m = error instanceof Error ? error.message : String(error);
+      logStage('X_inner_catch', { error: m });
       if (m === 'RATE_LIMIT') {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.', requestId }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (m === 'CREDITS_EXHAUSTED') {
         return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.' }),
+          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.', requestId }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -815,11 +818,14 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
     // (Unreachable — progressive flow always returns inside the try block.)
 
   } catch (error) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logStage('X_outer_catch', { error: errMsg });
     console.error('Error in generate-complete-cake:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false 
+      JSON.stringify({
+        error: errMsg,
+        success: false,
+        requestId,
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
