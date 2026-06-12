@@ -29,7 +29,34 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ---- Stage tracing: writes a row per stage to public.cake_generation_events ----
+  // Uses service role so RLS can't silently swallow logs. Fire-and-forget so
+  // logging latency never blocks the actual request.
+  const requestId = crypto.randomUUID();
+  const reqStart = Date.now();
+  const traceUrl = Deno.env.get('SUPABASE_URL')!;
+  const traceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const traceClient = createClient(traceUrl, traceKey);
+  let traceUserId: string | null = null;
+  const logStage = (stage: string, extra?: { error?: string; meta?: Record<string, unknown> }) => {
+    const elapsed = Date.now() - reqStart;
+    console.log(`[trace ${requestId}] ${stage} @${elapsed}ms${extra?.error ? ' ERR=' + extra.error : ''}`);
+    traceClient
+      .from('cake_generation_events')
+      .insert({
+        request_id: requestId,
+        user_id: traceUserId,
+        stage,
+        elapsed_ms: elapsed,
+        error_message: extra?.error?.slice(0, 500),
+        meta: extra?.meta ?? null,
+      })
+      .then(({ error }) => { if (error) console.warn(`[trace ${requestId}] log insert failed:`, error.message); });
+  };
+
   try {
+    logStage('1_request_received', { meta: { method: req.method, ua: req.headers.get('user-agent')?.slice(0, 120) } });
+
     // Validate JWT token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
