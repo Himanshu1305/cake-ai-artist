@@ -114,9 +114,9 @@ serve(async (req) => {
           0
         );
 
+        const FREE_TOTAL_LIMIT = 5;
         if (totalGenerations >= FREE_TOTAL_LIMIT) {
           logStage('6_limit_reached', { meta: { totalGenerations } });
-          console.log(`Generation limit reached for user ${user.id}: ${totalGenerations}/${FREE_TOTAL_LIMIT}`);
           return new Response(
             JSON.stringify({ error: 'generation_limit_reached', requestId }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
