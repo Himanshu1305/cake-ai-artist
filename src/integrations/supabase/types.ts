@@ -207,6 +207,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cake_generation_events: {
+        Row: {
+          created_at: string
+          elapsed_ms: number | null
+          error_message: string | null
+          id: number
+          meta: Json | null
+          request_id: string
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          elapsed_ms?: number | null
+          error_message?: string | null
+          id?: number
+          meta?: Json | null
+          request_id: string
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          elapsed_ms?: number | null
+          error_message?: string | null
+          id?: number
+          meta?: Json | null
+          request_id?: string
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cake_generation_jobs: {
         Row: {
           cake_style: string

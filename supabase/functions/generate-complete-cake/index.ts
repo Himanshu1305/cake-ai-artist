@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
@@ -30,12 +29,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ---- Stage tracing: writes a row per stage to public.cake_generation_events ----
+  // Uses service role so RLS can't silently swallow logs. Fire-and-forget so
+  // logging latency never blocks the actual request.
+  const requestId = crypto.randomUUID();
+  const reqStart = Date.now();
+  const traceUrl = Deno.env.get('SUPABASE_URL')!;
+  const traceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const traceClient = createClient(traceUrl, traceKey);
+  let traceUserId: string | null = null;
+  const logStage = (stage: string, extra?: { error?: string; meta?: Record<string, unknown> }) => {
+    const elapsed = Date.now() - reqStart;
+    console.log(`[trace ${requestId}] ${stage} @${elapsed}ms${extra?.error ? ' ERR=' + extra.error : ''}`);
+    traceClient
+      .from('cake_generation_events')
+      .insert({
+        request_id: requestId,
+        user_id: traceUserId,
+        stage,
+        elapsed_ms: elapsed,
+        error_message: extra?.error?.slice(0, 500),
+        meta: extra?.meta ?? null,
+      })
+      .then(({ error }) => { if (error) console.warn(`[trace ${requestId}] log insert failed:`, error.message); });
+  };
+
   try {
+    logStage('1_request_received', { meta: { method: req.method, ua: req.headers.get('user-agent')?.slice(0, 120) } });
+
     // Validate JWT token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      logStage('2_auth_missing', { error: 'no authorization header' });
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Missing authorization header', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -44,47 +71,54 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    logStage('2_before_auth_getuser');
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      logStage('2_auth_failed', { error: userError?.message || 'no user' });
       console.error('Auth error:', userError);
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ error: 'Invalid or expired token', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('Authenticated user:', user.id);
+    traceUserId = user.id;
+    logStage('3_auth_validated', { meta: { user_id: user.id } });
 
     // Parse body early (can only call req.json() once)
     const rawInput = await req.json();
+    logStage('4_body_parsed', { meta: { has_photo: !!rawInput?.userPhotoBase64, quality: rawInput?.quality, specificView: rawInput?.specificView ?? null } });
 
     // Server-side generation limit check (skip for single-view regenerations)
     const isRegenerating = !!rawInput?.specificView;
     if (!isRegenerating) {
-      const { data: profile } = await supabase
+      logStage('5_before_profile_query');
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_premium')
         .eq('id', user.id)
         .maybeSingle();
+      logStage('5_profile_loaded', { error: profileError?.message, meta: { is_premium: profile?.is_premium ?? null } });
 
       if (!profile?.is_premium) {
-        const FREE_TOTAL_LIMIT = 5;
-        const { data: trackingRows } = await supabase
+        logStage('6_before_tracking_query');
+        const { data: trackingRows, error: trackingError } = await supabase
           .from('generation_tracking')
           .select('count')
           .eq('user_id', user.id);
+        logStage('6_tracking_loaded', { error: trackingError?.message, meta: { row_count: trackingRows?.length ?? 0 } });
 
         const totalGenerations = (trackingRows ?? []).reduce(
           (sum: number, row: { count: number | null }) => sum + (row.count ?? 0),
           0
         );
 
+        const FREE_TOTAL_LIMIT = 5;
         if (totalGenerations >= FREE_TOTAL_LIMIT) {
-          console.log(`Generation limit reached for user ${user.id}: ${totalGenerations}/${FREE_TOTAL_LIMIT}`);
+          logStage('6_limit_reached', { meta: { totalGenerations } });
           return new Response(
-            JSON.stringify({ error: 'generation_limit_reached' }),
+            JSON.stringify({ error: 'generation_limit_reached', requestId }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -664,16 +698,19 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           greeting_message: greetingMessage,
           view_count: allViewNames.length,
         };
+        logStage('7_before_job_insert');
         const { data: jobRow, error: jobErr } = await supabase
           .from('cake_generation_jobs')
           .insert(jobInsert)
           .select('id')
           .single();
         if (jobErr || !jobRow) {
+          logStage('7_job_insert_failed', { error: jobErr?.message });
           console.error('[gen job] Failed to create job row:', jobErr);
           throw new Error('Could not start cake generation job');
         }
         jobId = jobRow.id;
+        logStage('8_job_inserted', { meta: { jobId } });
         console.log(`[gen job] job row ${jobId} created in ${Date.now() - tStart}ms — responding now`);
 
         const responseImages: (string | null)[] = viewsToRun.map(() => null);
@@ -742,6 +779,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           }
         }
 
+        logStage('9_response_sent', { meta: { jobId, status: 202 } });
         return new Response(
           JSON.stringify({
             success: true,
@@ -751,6 +789,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             failedViews: responseFailed,
             greetingMessage,
             jobId,
+            requestId,
             viewOrder: allViewNames,
             heroView: heroView.name,
             backgroundViews: backgroundViews.map(v => v.name),
@@ -760,15 +799,16 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
       }
     } catch (error) {
       const m = error instanceof Error ? error.message : String(error);
+      logStage('X_inner_catch', { error: m });
       if (m === 'RATE_LIMIT') {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.' }),
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.', requestId }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (m === 'CREDITS_EXHAUSTED') {
         return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.' }),
+          JSON.stringify({ error: 'AI credits exhausted. Please add credits and try again.', requestId }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -778,11 +818,14 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
     // (Unreachable — progressive flow always returns inside the try block.)
 
   } catch (error) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logStage('X_outer_catch', { error: errMsg });
     console.error('Error in generate-complete-cake:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false 
+      JSON.stringify({
+        error: errMsg,
+        success: false,
+        requestId,
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
