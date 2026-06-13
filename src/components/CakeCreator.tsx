@@ -88,6 +88,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [originalImages, setOriginalImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [shareTargetIndex, setShareTargetIndex] = useState<number | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState<string>("");
   const [useCustomMessage, setUseCustomMessage] = useState<boolean>(false);
@@ -1493,9 +1494,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     }
     
     try {
-      // Use first selected image for sharing
-      const firstSelected = Array.from(selectedImages)[0];
-      const imageUrl = generatedImages[firstSelected];
+      // Use explicit share target if set, otherwise first selected image
+      const selectedArr = Array.from(selectedImages);
+      const targetIndex =
+        shareTargetIndex !== null && selectedImages.has(shareTargetIndex)
+          ? shareTargetIndex
+          : selectedArr[0];
+      const imageUrl = generatedImages[targetIndex];
       
       // Create composite (no fallback message - only user/AI generated messages)
       const compositeUrl = await createShareableImage(
@@ -2583,9 +2588,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                       {["Front View", "Side View", "Top-Down View"][index] || `View ${index + 1}`}
                     </div>
 
-                    {/* Share-target indicator / picker — only on saved images */}
-                    {savedImageIdByIndex[index] && (
-                      savedCakeImageId === savedImageIdByIndex[index] ? (
+                    {/* Share-target picker — always available on real (non-placeholder) views */}
+                    {imageUrl && imageUrl !== '/placeholder.svg' && (
+                      (shareTargetIndex ?? Array.from(selectedImages)[0] ?? -1) === index ? (
                         <div className="absolute bottom-2 right-2 bg-gradient-to-r from-party-pink to-party-purple text-white px-2 py-1 rounded text-[11px] font-semibold shadow-lg flex items-center gap-1">
                           <Share2 className="w-3 h-3" />
                           Sharing this
@@ -2595,20 +2600,30 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const newId = savedImageIdByIndex[index];
-                            setSavedCakeImageId(newId);
-                            setAudioUrl(null);
-                            setAudioDuration(null);
                             haptic.light();
+                            // Ensure tile is selected so download/share stay consistent
+                            if (!selectedImages.has(index)) {
+                              const next = new Set(selectedImages);
+                              next.add(index);
+                              setSelectedImages(next);
+                            }
+                            setShareTargetIndex(index);
+                            // Keep magic-link target in sync if this view is already saved
+                            const savedId = savedImageIdByIndex[index];
+                            if (savedId) {
+                              setSavedCakeImageId(savedId);
+                              setAudioUrl(null);
+                              setAudioDuration(null);
+                            }
                             toast({
-                              title: "Share target updated",
-                              description: "Your share link now points to this view.",
+                              title: `Sharing View ${index + 1}`,
+                              description: "Share buttons will now use this view.",
                             });
                           }}
                           className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-foreground px-2 py-1 rounded text-[11px] font-semibold shadow-lg flex items-center gap-1 transition-all"
                         >
                           <Share2 className="w-3 h-3" />
-                          Share this
+                          Share this view
                         </button>
                       )
                     )}
@@ -2643,7 +2658,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                Click images to preview • Click checkmark to select for download/share
+                Click images to preview • Click checkmark to select for download • Click "Share this view" to choose which one is shared
               </p>
             </div>
           </Card>

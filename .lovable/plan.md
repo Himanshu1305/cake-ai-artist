@@ -1,50 +1,46 @@
-## The bug
+# Fix: "Choose which cake to share" not working
 
-The animated share link (`/cake/:id`) — the page that plays the staged 3-image reveal + birthday jingle on the receiver's side — still works fine. The SharedCake route, animation, candles, jingle and OG meta are all intact.
+## Problem
 
-What's actually broken is **discoverability**: the only button in the UI that copies the magic `/cake/:id` link is hidden inside the "Voice message" panel and is gated on `audioUrl` being present (CakeCreator.tsx line ~2860, label *"Copy share link with voice message"*). If the sender doesn't record a voice note, that button never renders, so there's no way to copy/share the animated link.
+On the result screen there are 3 generated cake views. The social share buttons (Facebook / X / WhatsApp / Instagram and the Web Share sheet behind them) always share the **first** image, no matter which tile the user picked. That's because `handleShare` in `src/components/CakeCreator.tsx` does:
 
-All other "Share" buttons on the result screen (Facebook, X, WhatsApp, Instagram, the Web Share API in `handleShare`, and `SuccessCelebration` → `onShare`) share the **downloaded JPG composite**, not the `/cake/:id` URL. So from the sender's perspective the magic-link feature has effectively disappeared.
+```ts
+const firstSelected = Array.from(selectedImages)[0];
+const imageUrl = generatedImages[firstSelected];
+```
+
+`selectedImages` is a `Set<number>`; `Array.from(...)[0]` returns the lowest index in insertion order, which in practice is always View 1. The per-tile "Share this" button only updates the **magic link** target (`savedCakeImageId`) and only appears after a save, so it doesn't help here either.
 
 ## Fix
 
-Add a prominent, always-visible "Magic Link" block in `CakeCreator.tsx`, shown as soon as `savedCakeImageId` exists (independent of voice message). It will be placed right above the existing "Share Your Cake Card 🎉" social row, so it's the first share affordance the sender sees.
+Introduce a single source of truth for "which view am I sharing right now" and surface it clearly.
 
-### Block contents
+1. **New state** in `CakeCreator.tsx`: `shareTargetIndex: number | null` (defaults to `null`, auto-promotes to the first selected index whenever selection changes and current target is no longer selected).
+2. **Per-tile "Share this view" pill** (replaces the current hover-only "Share this" that's gated on saved images). Always visible on every non-placeholder tile. Clicking it:
+   - Ensures that tile is also in `selectedImages` (so download/save remain consistent).
+   - Sets `shareTargetIndex` to that index.
+   - If the tile has a saved image id (`savedImageIdByIndex[index]`), also updates `savedCakeImageId` so the Magic Link share stays in sync (existing behavior preserved).
+   - Shows a haptic tap + small toast: "Sharing View N".
+3. **Visual indicator**: the tile matching `shareTargetIndex` shows a solid pink "Sharing this" badge (reuse existing styling at lines 2587-2613); other selected tiles show the neutral "Share this view" pill.
+4. **`handleShare` change**: use `shareTargetIndex ?? Array.from(selectedImages)[0]` instead of always `Array.from(selectedImages)[0]`. Same fix for the composite image used in the Web Share API path.
+5. **Helper text** under the grid updated to: "Click a checkmark to select • Click 'Share this view' to choose which one is shared".
 
-```text
-┌───────────────────────────────────────────────────────┐
-│ ✨ Magic share link                                   │
-│ Recipients see an animated reveal + birthday song     │
-│                                                       │
-│ https://cakeaiartist.com/cake/<id>      [ Copy ]      │
-│                                                       │
-│ [ 📱 WhatsApp ]  [ 🔗 Share… ]  [ 👁 Preview ]        │
-│                                                       │
-│ 💡 Tip: Record a voice message above and it plays    │
-│    inside the link too.                               │
-└───────────────────────────────────────────────────────┘
-```
+No backend, RLS, or edge-function changes. No change to the reveal animation, jingle, magic link route, or generation pipeline.
 
-- **Copy** — `navigator.clipboard.writeText(url)` + toast (same pattern as the existing voice-link button).
-- **WhatsApp** — opens `https://wa.me/?text=<encoded message + url>`.
-- **Share…** — uses `navigator.share({ title, text, url })` when available, otherwise falls back to copy.
-- **Preview** — opens `/cake/<id>` in a new tab so the sender can verify the reveal/jingle themselves.
+## Files touched
 
-### Secondary touch-ups
-
-1. Rename the existing in-voice-panel button from *"Copy share link with voice message"* to *"Copy link (includes voice message)"* so it's clearly the same link, just enriched.
-2. In `SuccessCelebration`, change the primary **"Share Your Creation"** button so that when a `savedCakeImageId` is available the parent passes a handler that shares the `/cake/:id` URL via the Web Share API (falling back to copy), instead of running the image-file `handleShare` flow. The image-file social buttons stay where they are on the result screen for users who want a static image post.
-
-### Out of scope
-
-- No backend / RLS / RPC changes (the `get_public_cake` RPC + SharedCake page already work).
-- No changes to the reveal animation, jingle, or `BirthdayJingle` utility.
-- No changes to the cake-generation pipeline or the watchdog/monitoring system from the previous turn.
+- `src/components/CakeCreator.tsx`
+  - Add `shareTargetIndex` state + small effect to keep it valid.
+  - Update tile JSX (~lines 2557–2614) so the share-picker pill is always available and reflects `shareTargetIndex`.
+  - Update `handleShare` (~line 1497) to read from `shareTargetIndex` first.
+  - Update the helper caption (~line 2645).
 
 ## Verification
 
-1. Generate a cake → save → confirm the new "Magic share link" block appears immediately (no voice recording needed).
-2. Click Copy → paste into a new tab → confirm the SharedCake page loads with the 3-image reveal and the jingle starts on first click.
-3. Repeat with a voice message recorded → confirm the same link now also plays the voice note.
-4. On mobile, confirm the WhatsApp button opens WhatsApp with the URL prefilled and the Web Share sheet appears on "Share…".
+1. Generate 3 cake views.
+2. Select all three with the checkmarks.
+3. Click "Share this view" on View 2 → badge moves to View 2.
+4. Click WhatsApp / Facebook / X / Instagram → downloaded composite + Web Share file is View 2 (filename and preview confirm).
+5. Click "Share this view" on View 3 → repeat, confirm View 3 is shared.
+6. Without picking any target, click a share button → falls back to first selected (current behavior, no regression).
+7. After save, confirm the magic share link (`/cake/:id`) still points to the chosen view.
