@@ -12,8 +12,9 @@ interface CakeConvergeRevealProps {
   cacheKey?: string;
 }
 
-const PER_IMAGE_MS = 2000;
+const PER_IMAGE_MS = 2600;
 const MERGE_MS = 900;
+const FADE_S = 0.35;
 
 /**
  * Simple, clear reveal: shows each cake view full-size for 2 seconds,
@@ -121,7 +122,7 @@ export const CakeConvergeReveal = ({
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.04 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
+            transition={{ duration: FADE_S, ease: "easeOut" }}
             className="absolute inset-0 w-full h-full object-cover rounded-3xl shadow-[0_20px_50px_-15px_hsl(var(--party-purple)/0.55)] ring-2 ring-white/70"
           />
         )}

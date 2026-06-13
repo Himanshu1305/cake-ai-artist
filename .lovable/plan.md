@@ -1,46 +1,44 @@
-# Fix: "Choose which cake to share" not working
+# Fix: shared-link reveal too fast + confirm jingle for all occasions
 
-## Problem
+## What's happening today
 
-On the result screen there are 3 generated cake views. The social share buttons (Facebook / X / WhatsApp / Instagram and the Web Share sheet behind them) always share the **first** image, no matter which tile the user picked. That's because `handleShare` in `src/components/CakeCreator.tsx` does:
+**Reveal animation** (`src/components/CakeConvergeReveal.tsx`):
+- `PER_IMAGE_MS = 2000` — each image is *scheduled* every 2s.
+- But each image also has a 0.55s enter + 0.55s exit transition (`framer-motion`, `mode="wait"`). With `mode="wait"` the next image waits for the previous to exit, so the visible "settled" time per image is closer to ~0.9s, not 2s. That's why the first two views feel like a flash.
 
-```ts
-const firstSelected = Array.from(selectedImages)[0];
-const imageUrl = generatedImages[firstSelected];
-```
-
-`selectedImages` is a `Set<number>`; `Array.from(...)[0]` returns the lowest index in insertion order, which in practice is always View 1. The per-tile "Share this" button only updates the **magic link** target (`savedCakeImageId`) and only appears after a save, so it doesn't help here either.
+**Jingle** (`src/pages/SharedCake.tsx` lines 115–125):
+- Already branches: `birthday` → Happy Birthday melody, all other occasions → `celebration` fanfare. Mute button is wired. This part is actually working — I'll just double-check the occasion detection covers empty/unknown cases.
 
 ## Fix
 
-Introduce a single source of truth for "which view am I sharing right now" and surface it clearly.
+### 1. Slow the reveal so each early image is clearly visible ≥2s
 
-1. **New state** in `CakeCreator.tsx`: `shareTargetIndex: number | null` (defaults to `null`, auto-promotes to the first selected index whenever selection changes and current target is no longer selected).
-2. **Per-tile "Share this view" pill** (replaces the current hover-only "Share this" that's gated on saved images). Always visible on every non-placeholder tile. Clicking it:
-   - Ensures that tile is also in `selectedImages` (so download/save remain consistent).
-   - Sets `shareTargetIndex` to that index.
-   - If the tile has a saved image id (`savedImageIdByIndex[index]`), also updates `savedCakeImageId` so the Magic Link share stays in sync (existing behavior preserved).
-   - Shows a haptic tap + small toast: "Sharing View N".
-3. **Visual indicator**: the tile matching `shareTargetIndex` shows a solid pink "Sharing this" badge (reuse existing styling at lines 2587-2613); other selected tiles show the neutral "Share this view" pill.
-4. **`handleShare` change**: use `shareTargetIndex ?? Array.from(selectedImages)[0]` instead of always `Array.from(selectedImages)[0]`. Same fix for the composite image used in the Web Share API path.
-5. **Helper text** under the grid updated to: "Click a checkmark to select • Click 'Share this view' to choose which one is shared".
+In `src/components/CakeConvergeReveal.tsx`:
 
-No backend, RLS, or edge-function changes. No change to the reveal animation, jingle, magic link route, or generation pipeline.
+- Bump `PER_IMAGE_MS` from `2000` → `2600` so that even after the 0.55s cross-fade, each image sits fully opaque for ~2s.
+- Shorten the enter/exit transitions from `0.55` → `0.35` so the image reaches full opacity faster and the perceived "hold" time grows.
+- Keep the existing "Skip →" button so impatient viewers aren't punished.
+
+Net effect per image: ~0.35s fade-in + ~1.9s hold + ~0.35s fade-out, which the user reads as "shown for about 2 seconds".
+
+Final merge timing (`MERGE_MS = 900`) and the floating animation on the final image stay unchanged.
+
+### 2. Jingle coverage (verify only, no behavior change unless needed)
+
+In `src/pages/SharedCake.tsx` `startJingleIfNeeded`:
+- Current rule: `isBirthday = occ.includes("birth") || occ === "bday" || occ === ""` → birthday melody; everything else → celebration fanfare.
+- This already covers anniversary, wedding, graduation, eid, etc. with the celebration tune. No code change needed.
+- If you'd like a different default for unknown/empty occasion (e.g. celebration instead of birthday), say so and I'll flip that one line.
 
 ## Files touched
 
-- `src/components/CakeCreator.tsx`
-  - Add `shareTargetIndex` state + small effect to keep it valid.
-  - Update tile JSX (~lines 2557–2614) so the share-picker pill is always available and reflects `shareTargetIndex`.
-  - Update `handleShare` (~line 1497) to read from `shareTargetIndex` first.
-  - Update the helper caption (~line 2645).
+- `src/components/CakeConvergeReveal.tsx` — change `PER_IMAGE_MS` constant and the two `transition={{ duration: 0.55, ... }}` values on the sequence `motion.img`.
+
+No backend, route, share-link, or jingle-engine changes.
 
 ## Verification
 
-1. Generate 3 cake views.
-2. Select all three with the checkmarks.
-3. Click "Share this view" on View 2 → badge moves to View 2.
-4. Click WhatsApp / Facebook / X / Instagram → downloaded composite + Web Share file is View 2 (filename and preview confirm).
-5. Click "Share this view" on View 3 → repeat, confirm View 3 is shared.
-6. Without picking any target, click a share button → falls back to first selected (current behavior, no regression).
-7. After save, confirm the magic share link (`/cake/:id`) still points to the chosen view.
+1. Open a shared cake link with 3 generated views → first image fully visible ~2s, then second ~2s, then final image lands and floats.
+2. Skip button still works mid-sequence.
+3. Birthday cake → Happy Birthday plays after first tap; mute toggles silence.
+4. Non-birthday cake (e.g. anniversary) → celebration fanfare plays; mute toggles silence.
