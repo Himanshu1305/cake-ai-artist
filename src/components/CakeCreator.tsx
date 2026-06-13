@@ -132,6 +132,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const SHARE_BASE_URL = "https://cakeaiartist.com";
   const audioSectionRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(true);
+  // Per-generation attempt id. Bumped on every new submit AND on Cancel so
+  // stale async callbacks (polling, realtime, watchdog timers) from a
+  // previous attempt cannot overwrite the new run's UI state.
+  const generationAttemptRef = useRef(0);
+  // Cleanup fn for the currently-active job subscription/polling. Stored in a
+  // ref so the Cancel button can tear it down explicitly.
+  const activeJobCleanupRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (savedCakeImageId && audioSectionRef.current) {
       audioSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -615,6 +622,15 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       return;
     }
 
+    // Tear down any previous attempt's job watcher + bump attempt id so any
+    // stale realtime/poll callbacks from the prior run are ignored.
+    if (activeJobCleanupRef.current) {
+      try { activeJobCleanupRef.current(); } catch {}
+      activeJobCleanupRef.current = null;
+    }
+    generationAttemptRef.current += 1;
+    const myAttempt = generationAttemptRef.current;
+
     setIsLoading(true);
     setGeneratedImages([]);
     setOriginalImages([]);
@@ -833,6 +849,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           const latestImages: (string | null)[] = viewOrder.map((_, i) => (rawImages[i] as string | null) || null);
 
           const applyRow = (row: any) => {
+            // Drop callbacks from a stale generation attempt — prevents an
+            // earlier (cancelled) job from overwriting the current run.
+            if (generationAttemptRef.current !== myAttempt) return;
             // Swap any URL columns into their slot indices.
             const swap = (prev: string[]) => {
               const next = prev.length >= viewOrder.length
@@ -951,6 +970,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           // emitted and missed. This initial fetch picks up that completed state.
           const fetchOnce = async () => {
             if (finished) return;
+            if (generationAttemptRef.current !== myAttempt) { cleanup(); return; }
             const { data: row, error: pollError } = await supabase
               .from('cake_generation_jobs')
                 .select('hero_url, side_url, top_url, hero_error, side_error, top_error, error_message, status, view_count, greeting_message, updated_at')
@@ -986,7 +1006,12 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             if (pollTimer) clearInterval(pollTimer);
             fastPollTimers.forEach((t) => clearTimeout(t));
             if (watchdog) clearTimeout(watchdog);
+            if (activeJobCleanupRef.current === cleanup) {
+              activeJobCleanupRef.current = null;
+            }
           };
+          // Expose to Cancel button so the user can fully tear this down.
+          activeJobCleanupRef.current = cleanup;
 
           // Fire immediately, then again rapidly to catch races where the bg
           // task finishes before the client subscribes to realtime.
@@ -1000,6 +1025,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
           // Watchdog: 4-min hard ceiling.
           watchdog = setTimeout(() => {
+            if (generationAttemptRef.current !== myAttempt) { cleanup(); return; }
             if (!finished) {
               finished = true;
               cleanup();
@@ -2366,9 +2392,18 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    // Bump attempt id so any in-flight polling/realtime/watchdog
+                    // callbacks from this run are ignored, then explicitly tear
+                    // down the active job watcher.
+                    generationAttemptRef.current += 1;
+                    if (activeJobCleanupRef.current) {
+                      try { activeJobCleanupRef.current(); } catch {}
+                      activeJobCleanupRef.current = null;
+                    }
                     setIsLoading(false);
                     setGenerationProgress(0);
                     setGenerationStep("");
+                    setBgPending(new Set());
                     setShowSlowRetry(false);
                     toast({
                       title: "Cancelled",
@@ -2628,17 +2663,25 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                       )
                     )}
 
-                    {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only */}
+                    {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only.
+                        CRITICAL: when hidden (opacity-0) we MUST also set pointer-events-none,
+                        otherwise touch/click events on the image tile (e.g. tapping "Share this view"
+                        or opening preview) can land on this invisible button and silently fire a
+                        single-view regeneration. */}
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRegenerateView(index);
                       }}
-                      disabled={regeneratingView !== null}
+                      disabled={regeneratingView !== null || (!bgFailed.has(index) && imageUrl !== '/placeholder.svg' ? false : false)}
                       size="sm"
                       variant="secondary"
+                      aria-hidden={!bgFailed.has(index)}
+                      tabIndex={bgFailed.has(index) ? 0 : -1}
                       className={`absolute top-2 left-2 transition-opacity ${
-                        bgFailed.has(index) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        bgFailed.has(index)
+                          ? "opacity-100 pointer-events-auto"
+                          : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
                       }`}
                     >
                       {regeneratingView === index ? (

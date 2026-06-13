@@ -1,44 +1,142 @@
-# Fix: shared-link reveal too fast + confirm jingle for all occasions
+## Corrected finding
 
-## What's happening today
+You are right to reject the previous interpretation. Based on your description and the code/database evidence, the full High Quality/Fast generation path is not the only issue, and the backend jobs that did get queued were actually completing.
 
-**Reveal animation** (`src/components/CakeConvergeReveal.tsx`):
-- `PER_IMAGE_MS = 2000` — each image is *scheduled* every 2s.
-- But each image also has a 0.55s enter + 0.55s exit transition (`framer-motion`, `mode="wait"`). With `mode="wait"` the next image waits for the previous to exit, so the visible "settled" time per image is closer to ~0.9s, not 2s. That's why the first two views feel like a flash.
+The real issue appears to be a frontend/control-flow bug around the generated image tiles and retry/cancel state.
 
-**Jingle** (`src/pages/SharedCake.tsx` lines 115–125):
-- Already branches: `birthday` → Happy Birthday melody, all other occasions → `celebration` fanfare. Mute button is wired. This part is actually working — I'll just double-check the occasion detection covers empty/unknown cases.
+## Evidence
 
-## Fix
+### 1. Full generation jobs are completing
+Recent full generation requests with `specificView: null` created job rows and completed with all 3 URLs:
 
-### 1. Slow the reveal so each early image is clearly visible ≥2s
+- High Quality + photo full jobs completed in about 20 seconds.
+- Latest Fast + photo full job completed in about 27 seconds.
+- Those jobs reached `9_response_sent`, inserted `cake_generation_jobs`, and ended as `completed`.
 
-In `src/components/CakeConvergeReveal.tsx`:
+So the backend was not always failing to create cakes. In several cases, it finished successfully but the user experience still looked broken.
 
-- Bump `PER_IMAGE_MS` from `2000` → `2600` so that even after the 0.55s cross-fade, each image sits fully opaque for ~2s.
-- Shorten the enter/exit transitions from `0.55` → `0.35` so the image reaches full opacity faster and the perceived "hold" time grows.
-- Keep the existing "Skip →" button so impatient viewers aren't punished.
+### 2. A hidden Regenerate button can be clicked accidentally
+In the image tile UI, the Regenerate button is rendered on every image:
 
-Net effect per image: ~0.35s fade-in + ~1.9s hold + ~0.35s fade-out, which the user reads as "shown for about 2 seconds".
+```tsx
+className={bgFailed.has(index) ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+```
 
-Final merge timing (`MERGE_MS = 900`) and the floating animation on the final image stay unchanged.
+`opacity-0` only makes it invisible. It does not disable pointer/touch events.
 
-### 2. Jingle coverage (verify only, no behavior change unless needed)
+That means an invisible Regenerate button is still sitting on top of the image tile at `top-left`. On mobile/touch, a user can tap the image/share area and accidentally hit the invisible Regenerate button even though they never saw or intended to press “Regenerate”.
 
-In `src/pages/SharedCake.tsx` `startJingleIfNeeded`:
-- Current rule: `isBirthday = occ.includes("birth") || occ === "bday" || occ === ""` → birthday melody; everything else → celebration fanfare.
-- This already covers anniversary, wedding, graduation, eid, etc. with the celebration tune. No code change needed.
-- If you'd like a different default for unknown/empty occasion (e.g. celebration instead of birthday), say so and I'll flip that one line.
+This matches the database evidence:
 
-## Files touched
+- The affected user had 3 full generation requests.
+- But there were also 11 `specificView` requests for `front` / `side` afterward.
+- Those `specificView` requests can only come from `handleRegenerateView()`.
+- Since you did not intentionally click Regenerate, the invisible clickable button is the likely trigger.
 
-- `src/components/CakeConvergeReveal.tsx` — change `PER_IMAGE_MS` constant and the two `transition={{ duration: 0.55, ... }}` values on the sequence `motion.img`.
+### 3. Cancel/retry does not clean up the active job watchers
+The “Cancel & try again” button only does this:
 
-No backend, route, share-link, or jingle-engine changes.
+```tsx
+setIsLoading(false);
+setGenerationProgress(0);
+setGenerationStep("");
+setShowSlowRetry(false);
+```
 
-## Verification
+It does not cancel or invalidate:
 
-1. Open a shared cake link with 3 generated views → first image fully visible ~2s, then second ~2s, then final image lands and floats.
-2. Skip button still works mid-sequence.
-3. Birthday cake → Happy Birthday plays after first tap; mute toggles silence.
-4. Non-birthday cake (e.g. anniversary) → celebration fanfare plays; mute toggles silence.
+- the active polling interval,
+- the Realtime channel,
+- the 4-minute frontend watchdog,
+- old `fetchOnce()` calls,
+- old `applyRow()` callbacks.
+
+So after a user cancels High Quality and immediately starts Fast, the previous High Quality job can still complete and update the UI, or its old timeout/watchdog can still fire later and overwrite the new Fast generation state.
+
+That explains why the next Fast attempt can feel like it “does not reach that stage” even when backend jobs are completing: the UI has stale background callbacks from the previous attempt.
+
+## Why the cron job did not identify it
+
+The cron job missed this because it is monitoring the wrong failure surface.
+
+### 1. It only monitors `cake_generation_jobs`
+The accidental hidden Regenerate calls use the `specificView` path. That path does not insert a `cake_generation_jobs` row before doing image generation.
+
+So those failures are invisible to the cron job.
+
+### 2. It watches `processing`, but current jobs use `in_progress`
+The watchdog code auto-fails only:
+
+```ts
+.eq("status", "processing")
+```
+
+But the current generation function inserts jobs with:
+
+```ts
+status: "in_progress"
+```
+
+So even if a full job got stuck, this watchdog would not catch it.
+
+### 3. It fails jobs; it does not recover UI state
+Even when cron runs, it can only update backend rows. It cannot clean up a user’s stale frontend polling intervals or old cancelled generation callbacks.
+
+### 4. It has alert thresholds that hide small user-impacting failures
+It only alerts after at least 5 stuck jobs or a high failed-job rate. One user can have a badly broken experience without crossing that threshold.
+
+## Fix plan
+
+### 1. Make invisible Regenerate impossible to tap
+Change the Regenerate button so it has `pointer-events-none` when hidden, and only becomes clickable when visible/failed/hovered.
+
+Expected result: tapping a generated image or selecting it for sharing will not accidentally start single-view regeneration.
+
+### 2. Restrict Regenerate visibility
+Only show the Regenerate button when a slot has actually failed, or make it a deliberate visible action separate from the image tap/share controls.
+
+Expected result: no accidental `specificView` calls from normal image/share interactions.
+
+### 3. Add generation attempt isolation
+Create a per-generation attempt id/ref in `CakeCreator`.
+
+Every async callback should check that it still belongs to the latest generation before updating UI state.
+
+Expected result: an old High Quality job cannot overwrite a new Fast retry.
+
+### 4. Properly clean up on cancel
+When the user taps “Cancel & try again”, clean up:
+
+- active Realtime channel,
+- polling interval,
+- fast poll timers,
+- frontend watchdog timer,
+- pending job callbacks for that attempt.
+
+Expected result: cancel really cancels the UI listeners, not just the loading spinner.
+
+### 5. Fix watchdog status mismatch
+Update the backend watchdog to check stale `in_progress` jobs as well as `processing`.
+
+Expected result: stuck queued jobs become visible to the watchdog.
+
+### 6. Add monitoring for request-level failures
+Track requests that reach `4_body_parsed` but never reach `9_response_sent` or a terminal error stage.
+
+Expected result: the exact failure pattern seen here would be detectable next time.
+
+### 7. Verify the exact user scenario
+Test this sequence:
+
+1. Generate Anniversary + photo in Fast.
+2. Select/click one image for sharing.
+3. Switch to High Quality and generate again.
+4. Cancel while waiting.
+5. Switch back to Fast and generate again.
+
+Success means:
+
+- no accidental `specificView` requests are created,
+- old cancelled jobs do not overwrite the new run,
+- Fast retry starts cleanly,
+- completed backend jobs always appear in the UI.
