@@ -2392,9 +2392,18 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    // Bump attempt id so any in-flight polling/realtime/watchdog
+                    // callbacks from this run are ignored, then explicitly tear
+                    // down the active job watcher.
+                    generationAttemptRef.current += 1;
+                    if (activeJobCleanupRef.current) {
+                      try { activeJobCleanupRef.current(); } catch {}
+                      activeJobCleanupRef.current = null;
+                    }
                     setIsLoading(false);
                     setGenerationProgress(0);
                     setGenerationStep("");
+                    setBgPending(new Set());
                     setShowSlowRetry(false);
                     toast({
                       title: "Cancelled",
