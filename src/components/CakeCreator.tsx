@@ -1025,6 +1025,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
           // Watchdog: 4-min hard ceiling.
           watchdog = setTimeout(() => {
+            if (generationAttemptRef.current !== myAttempt) { cleanup(); return; }
             if (!finished) {
               finished = true;
               cleanup();
