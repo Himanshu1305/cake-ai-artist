@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface CakeConvergeRevealProps {
   /** All sibling images, primary first. 1–3 URLs. */
   images: string[];
-  /** Final image shown after the reveal — the sender's selected view. */
+  /** Sender's selected view — shown first in the reveal sequence. */
   primary: string;
+  /** Image to settle on at the end. Defaults to primary. */
+  finale?: string;
   alt?: string;
   className?: string;
   /** Storage key namespace so the same recipient doesn't see reveal twice. */
@@ -24,13 +26,18 @@ const FADE_S = 0.35;
 export const CakeConvergeReveal = ({
   images,
   primary,
+  finale,
   alt = "Personalized cake",
   className = "",
   cacheKey,
 }: CakeConvergeRevealProps) => {
-  // Primary first, then up to 2 other distinct angles
-  const others = images.filter((u) => u && u !== primary).slice(0, 2);
-  const sequence = Array.from(new Set([primary, ...others])).slice(0, 3);
+  const finalImage = finale && images.includes(finale) ? finale : primary;
+  // Primary first, then other distinct angles, ending on finale.
+  const middle = images.filter((u) => u && u !== primary && u !== finalImage).slice(0, 1);
+  const seqRaw = primary === finalImage
+    ? [primary, ...images.filter((u) => u && u !== primary).slice(0, 2)]
+    : [primary, ...middle, finalImage];
+  const sequence = Array.from(new Set(seqRaw)).slice(0, 3);
   const hasMultiple = sequence.length >= 2;
 
   // -1 = idle/preloading, 0..n-1 = showing image i, n = merging/final
@@ -157,7 +164,7 @@ export const CakeConvergeReveal = ({
             className="absolute inset-0"
           >
             <img
-              src={primary}
+              src={finalImage}
               alt={alt}
               draggable={false}
               className="w-full h-full object-cover rounded-3xl shadow-[0_30px_60px_-20px_hsl(var(--party-pink)/0.55)] ring-1 ring-white/50"
