@@ -36,7 +36,9 @@ serve(async (req) => {
         error_message: `Auto-timeout: generation exceeded ${STUCK_THRESHOLD_MINUTES} minutes`,
         updated_at: new Date().toISOString(),
       })
-      .eq("status", "processing")
+      // Cover both legacy "processing" and the current "in_progress" status
+      // the generate-complete-cake edge function inserts jobs with.
+      .in("status", ["processing", "in_progress"])
       .lt("created_at", stuckCutoff)
       .select("id");
 
