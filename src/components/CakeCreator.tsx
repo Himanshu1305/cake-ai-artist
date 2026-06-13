@@ -132,6 +132,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const SHARE_BASE_URL = "https://cakeaiartist.com";
   const audioSectionRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(true);
+  // Per-generation attempt id. Bumped on every new submit AND on Cancel so
+  // stale async callbacks (polling, realtime, watchdog timers) from a
+  // previous attempt cannot overwrite the new run's UI state.
+  const generationAttemptRef = useRef(0);
+  // Cleanup fn for the currently-active job subscription/polling. Stored in a
+  // ref so the Cancel button can tear it down explicitly.
+  const activeJobCleanupRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (savedCakeImageId && audioSectionRef.current) {
       audioSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
