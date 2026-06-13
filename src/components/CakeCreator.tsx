@@ -970,6 +970,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           // emitted and missed. This initial fetch picks up that completed state.
           const fetchOnce = async () => {
             if (finished) return;
+            if (generationAttemptRef.current !== myAttempt) { cleanup(); return; }
             const { data: row, error: pollError } = await supabase
               .from('cake_generation_jobs')
                 .select('hero_url, side_url, top_url, hero_error, side_error, top_error, error_message, status, view_count, greeting_message, updated_at')
