@@ -2658,7 +2658,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                Click images to preview • Click checkmark to select for download/share
+                Click images to preview • Click checkmark to select for download • Click "Share this view" to choose which one is shared
               </p>
             </div>
           </Card>
