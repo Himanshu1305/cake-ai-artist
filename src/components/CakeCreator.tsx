@@ -849,6 +849,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           const latestImages: (string | null)[] = viewOrder.map((_, i) => (rawImages[i] as string | null) || null);
 
           const applyRow = (row: any) => {
+            // Drop callbacks from a stale generation attempt — prevents an
+            // earlier (cancelled) job from overwriting the current run.
+            if (generationAttemptRef.current !== myAttempt) return;
             // Swap any URL columns into their slot indices.
             const swap = (prev: string[]) => {
               const next = prev.length >= viewOrder.length
