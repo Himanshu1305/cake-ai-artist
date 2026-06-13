@@ -1494,9 +1494,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     }
     
     try {
-      // Use first selected image for sharing
-      const firstSelected = Array.from(selectedImages)[0];
-      const imageUrl = generatedImages[firstSelected];
+      // Use explicit share target if set, otherwise first selected image
+      const selectedArr = Array.from(selectedImages);
+      const targetIndex =
+        shareTargetIndex !== null && selectedImages.has(shareTargetIndex)
+          ? shareTargetIndex
+          : selectedArr[0];
+      const imageUrl = generatedImages[targetIndex];
       
       // Create composite (no fallback message - only user/AI generated messages)
       const compositeUrl = await createShareableImage(
