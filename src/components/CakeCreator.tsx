@@ -259,9 +259,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       if (error) throw error;
 
       if (data.regeneratedImage) {
-        const newImages = [...generatedImages];
-        newImages[viewIndex] = data.regeneratedImage;
-        setGeneratedImages(newImages);
+        // Use functional updater so concurrent background applyRow updates to
+        // other slots are not clobbered by a stale closure snapshot.
+        setGeneratedImages((prev) => {
+          const next = [...prev];
+          next[viewIndex] = data.regeneratedImage;
+          return next;
+        });
         setBgPending((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
         setBgFailed((prev) => { const n = new Set(prev); n.delete(viewIndex); return n; });
 
@@ -367,6 +371,10 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     return () => {
       isMountedRef.current = false;
       subscription.unsubscribe();
+      // Tear down any in-flight job watcher (realtime channel + poll timers)
+      // so they don't keep firing after the component unmounts.
+      try { activeJobCleanupRef.current?.(); } catch {}
+      activeJobCleanupRef.current = null;
     };
   }, []);
 
@@ -550,6 +558,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Guard against double-submit (Enter key or programmatic submit firing
+    // before React flushes the disabled state on the button).
+    if (isLoading) return;
     haptic.medium(); // Haptic feedback on form submission
     
     // SECURITY: Validate all inputs with zod schema
@@ -737,10 +748,11 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
         if (data?.success === false) {
           const message = data.error || 'The cake generator could not create the main view. Please try again.';
-          if (data.recoverable || data.errorCode === 'HERO_VIEW_GENERATION_FAILED') {
-            setGenerationProgress(0);
-            setGenerationStep('');
-          }
+          // Always reset spinner/progress on a known failure so the UI does
+          // not show "loading at 0%" while the error toast appears.
+          setIsLoading(false);
+          setGenerationProgress(0);
+          setGenerationStep('');
           throw new Error(message);
         }
 
@@ -1305,6 +1317,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       setTotalGenerations(totalGenerations + 1);
     } catch (error) {
       console.error("Error saving image:", error);
+      // Rethrow so the caller's catch can surface a failure toast — otherwise
+      // the user sees the spinner stop but no indication the save failed.
+      throw error;
     }
   };
 
@@ -1464,6 +1479,16 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       
       for (const index of Array.from(selectedImages)) {
         const imageUrl = generatedImages[index];
+        // Guard against placeholder slots — the user may have a still-rendering
+        // tile selected. Skip it with a toast rather than producing a placeholder.
+        if (!imageUrl || imageUrl === '/placeholder.svg') {
+          toast({
+            title: "Still rendering",
+            description: `View ${index + 1} is not ready yet. Please wait for it to finish.`,
+            variant: "destructive",
+          });
+          continue;
+        }
         
         // Create composite image (no fallback message - only user/AI generated messages)
         const compositeUrl = await createShareableImage(
@@ -1486,6 +1511,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         // Clean up
         URL.revokeObjectURL(compositeUrl);
       }
+      if (fileNames.length === 0) return;
       
       toast({
         title: "✅ Download complete!",
@@ -1520,13 +1546,25 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     }
     
     try {
-      // Use explicit share target if set, otherwise first selected image
+      // Use explicit share target if set, otherwise the LOWEST selected index
+      // (Set iteration is insertion-order, so Array.from(...)[0] is unreliable —
+      // selecting view 2 then 0 would silently share view 2).
       const selectedArr = Array.from(selectedImages);
       const targetIndex =
         shareTargetIndex !== null && selectedImages.has(shareTargetIndex)
           ? shareTargetIndex
-          : selectedArr[0];
+          : Math.min(...selectedArr);
       const imageUrl = generatedImages[targetIndex];
+
+      // Guard against placeholder slot — don't share a placeholder image.
+      if (!imageUrl || imageUrl === '/placeholder.svg') {
+        toast({
+          title: "Still rendering",
+          description: `View ${targetIndex + 1} is not ready yet. Please wait for it to finish.`,
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Create composite (no fallback message - only user/AI generated messages)
       const compositeUrl = await createShareableImage(
@@ -2625,7 +2663,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
                     {/* Share-target picker — always available on real (non-placeholder) views */}
                     {imageUrl && imageUrl !== '/placeholder.svg' && (
-                      (shareTargetIndex ?? Array.from(selectedImages)[0] ?? -1) === index ? (
+                      (shareTargetIndex ?? (selectedImages.size > 0 ? Math.min(...Array.from(selectedImages)) : -1)) === index ? (
                         <div className="absolute bottom-2 right-2 bg-gradient-to-r from-party-pink to-party-purple text-white px-2 py-1 rounded text-[11px] font-semibold shadow-lg flex items-center gap-1">
                           <Share2 className="w-3 h-3" />
                           Sharing this
@@ -2673,7 +2711,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                         e.stopPropagation();
                         handleRegenerateView(index);
                       }}
-                      disabled={regeneratingView !== null || (!bgFailed.has(index) && imageUrl !== '/placeholder.svg' ? false : false)}
+                      disabled={regeneratingView !== null}
                       size="sm"
                       variant="secondary"
                       aria-hidden={!bgFailed.has(index)}
