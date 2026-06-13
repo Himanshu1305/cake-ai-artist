@@ -164,7 +164,7 @@ export const CakeConvergeReveal = ({
             className="absolute inset-0"
           >
             <img
-              src={primary}
+              src={finalImage}
               alt={alt}
               draggable={false}
               className="w-full h-full object-cover rounded-3xl shadow-[0_30px_60px_-20px_hsl(var(--party-pink)/0.55)] ring-1 ring-white/50"
