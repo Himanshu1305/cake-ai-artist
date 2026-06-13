@@ -2635,17 +2635,25 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                       )
                     )}
 
-                    {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only */}
+                    {/* Regenerate View Button — always visible if this slot failed, otherwise hover-only.
+                        CRITICAL: when hidden (opacity-0) we MUST also set pointer-events-none,
+                        otherwise touch/click events on the image tile (e.g. tapping "Share this view"
+                        or opening preview) can land on this invisible button and silently fire a
+                        single-view regeneration. */}
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRegenerateView(index);
                       }}
-                      disabled={regeneratingView !== null}
+                      disabled={regeneratingView !== null || (!bgFailed.has(index) && imageUrl !== '/placeholder.svg' ? false : false)}
                       size="sm"
                       variant="secondary"
+                      aria-hidden={!bgFailed.has(index)}
+                      tabIndex={bgFailed.has(index) ? 0 : -1}
                       className={`absolute top-2 left-2 transition-opacity ${
-                        bgFailed.has(index) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        bgFailed.has(index)
+                          ? "opacity-100 pointer-events-auto"
+                          : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
                       }`}
                     >
                       {regeneratingView === index ? (
