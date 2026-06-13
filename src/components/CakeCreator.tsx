@@ -1002,7 +1002,12 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             if (pollTimer) clearInterval(pollTimer);
             fastPollTimers.forEach((t) => clearTimeout(t));
             if (watchdog) clearTimeout(watchdog);
+            if (activeJobCleanupRef.current === cleanup) {
+              activeJobCleanupRef.current = null;
+            }
           };
+          // Expose to Cancel button so the user can fully tear this down.
+          activeJobCleanupRef.current = cleanup;
 
           // Fire immediately, then again rapidly to catch races where the bg
           // task finishes before the client subscribes to realtime.
