@@ -12,8 +12,9 @@ interface CakeConvergeRevealProps {
   cacheKey?: string;
 }
 
-const PER_IMAGE_MS = 2000;
+const PER_IMAGE_MS = 2600;
 const MERGE_MS = 900;
+const FADE_S = 0.35;
 
 /**
  * Simple, clear reveal: shows each cake view full-size for 2 seconds,
