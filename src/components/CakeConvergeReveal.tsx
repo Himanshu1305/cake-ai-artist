@@ -12,13 +12,14 @@ interface CakeConvergeRevealProps {
   cacheKey?: string;
 }
 
-const PER_IMAGE_MS = 2600;
+const PER_IMAGE_MS = 2000;
 const MERGE_MS = 900;
 const FADE_S = 0.35;
 
 /**
- * Simple, clear reveal: shows each cake view full-size for 2 seconds,
- * then merges into the final selected image.
+ * Simple, clear reveal: shows the sender's selected (primary) view first,
+ * then the other angles, then settles on primary. Always plays — no
+ * sessionStorage skip, because the reveal IS the share-link payoff.
  */
 export const CakeConvergeReveal = ({
   images,
@@ -27,17 +28,14 @@ export const CakeConvergeReveal = ({
   className = "",
   cacheKey,
 }: CakeConvergeRevealProps) => {
-  // Dedupe + cap at 3, ensure primary is included as the final image
+  // Primary first, then up to 2 other distinct angles
   const others = images.filter((u) => u && u !== primary).slice(0, 2);
-  const sequence = Array.from(new Set([...others, primary])).slice(0, 3);
+  const sequence = Array.from(new Set([primary, ...others])).slice(0, 3);
   const hasMultiple = sequence.length >= 2;
 
   // -1 = idle/preloading, 0..n-1 = showing image i, n = merging/final
   const [step, setStep] = useState<number>(-1);
   const [ready, setReady] = useState(false);
-
-  const skipKey = cacheKey ? `cake_reveal_seen_${cacheKey}` : null;
-  const alreadySeen = !!(skipKey && sessionStorage.getItem(skipKey));
 
   // Stable hash of sequence URLs so preload re-runs when images themselves
   // change (e.g., a sibling slot fills in after mount).
@@ -65,22 +63,20 @@ export const CakeConvergeReveal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, sequenceKey]);
 
-  // Run sequence
+  // Run sequence — always plays (no skip cache)
   useEffect(() => {
     if (!ready) return;
-    if (!hasMultiple || alreadySeen) {
-      setStep(sequence.length); // jump to final
+    if (!hasMultiple) {
+      setStep(sequence.length);
       return;
     }
-    if (skipKey) sessionStorage.setItem(skipKey, "1");
-
     setStep(0);
     const timers: number[] = [];
     for (let i = 1; i <= sequence.length; i++) {
       timers.push(window.setTimeout(() => setStep(i), i * PER_IMAGE_MS));
     }
     return () => { timers.forEach(clearTimeout); };
-  }, [ready, hasMultiple, alreadySeen, sequence.length, skipKey]);
+  }, [ready, hasMultiple, sequence.length]);
 
   const handleSkip = () => setStep(sequence.length);
   const inSequence = step >= 0 && step < sequence.length;
