@@ -2970,6 +2970,104 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                 )}
               </div>
 
+              {/* Magic Share Link — animated reveal + jingle on the receiver's side */}
+              {savedCakeImageId && (() => {
+                const magicUrl = `${SHARE_BASE_URL}/cake/${savedCakeImageId}`;
+                const waText = `${name ? `A cake for ${name} 🎂` : "A cake just for you 🎂"} — open your surprise: ${magicUrl}`;
+                return (
+                  <div className="space-y-3 p-4 rounded-xl border-2 border-party-purple/30 bg-gradient-to-br from-party-pink/10 via-white to-party-purple/10 shadow-sm">
+                    <div className="text-center space-y-1">
+                      <p className="text-sm font-semibold bg-gradient-to-r from-party-pink to-party-purple bg-clip-text text-transparent">
+                        ✨ Magic share link
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Recipients see an animated cake reveal + birthday song when they open it
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-party-purple/20">
+                      <code className="flex-1 text-xs truncate text-foreground/70 px-1">
+                        {magicUrl}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="shrink-0 bg-party-purple/15 hover:bg-party-purple/25 text-party-purple border border-party-purple/30"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(magicUrl);
+                            toast({ title: "Link copied! 🔗", description: "Paste it into WhatsApp, Messages, or anywhere." });
+                          } catch {
+                            toast({ title: "Link", description: magicUrl });
+                          }
+                        }}
+                      >
+                        <Link2 className="h-3.5 w-3.5 mr-1" />
+                        Copy
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-brand-whatsapp/40 hover:bg-brand-whatsapp/10"
+                        onClick={() => {
+                          window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1 text-brand-whatsapp" />
+                        WhatsApp
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-party-purple/40 hover:bg-party-purple/10"
+                        onClick={async () => {
+                          const shareData = {
+                            title: name ? `A cake for ${name} 🎂` : "A cake just for you 🎂",
+                            text: "Open your surprise cake — with an animated reveal!",
+                            url: magicUrl,
+                          };
+                          if (typeof navigator !== "undefined" && (navigator as any).share) {
+                            try {
+                              await (navigator as any).share(shareData);
+                              return;
+                            } catch {
+                              /* user cancelled — fall through to copy */
+                            }
+                          }
+                          try {
+                            await navigator.clipboard.writeText(magicUrl);
+                            toast({ title: "Link copied! 🔗", description: "Share menu unavailable — link is on your clipboard." });
+                          } catch {
+                            toast({ title: "Link", description: magicUrl });
+                          }
+                        }}
+                      >
+                        <Share2 className="h-4 w-4 mr-1 text-party-purple" />
+                        Share…
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-party-pink/40 hover:bg-party-pink/10"
+                        onClick={() => {
+                          window.open(magicUrl, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        <Sparkles className="h-4 w-4 mr-1 text-party-pink" />
+                        Preview
+                      </Button>
+                    </div>
+
+                    <p className="text-[11px] text-center text-muted-foreground">
+                      💡 Tip: Record a voice message above and it plays inside the link too.
+                    </p>
+                  </div>
+                );
+              })()}
+
               {/* Share Buttons */}
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2">
