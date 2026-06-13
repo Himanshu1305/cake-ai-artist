@@ -405,6 +405,11 @@ export default function SharedCake() {
                     key={revealKey}
                     images={cake.sibling_image_urls ?? [cake.image_url]}
                     primary={cake.image_url}
+                    finale={
+                      cake.sibling_image_urls && cake.sibling_image_urls.length > 0
+                        ? cake.sibling_image_urls[cake.sibling_image_urls.length - 1]
+                        : cake.image_url
+                    }
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
                     cacheKey={`${cake.id}_${revealKey}`}
                   />
