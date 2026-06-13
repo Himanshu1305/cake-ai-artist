@@ -26,13 +26,18 @@ const FADE_S = 0.35;
 export const CakeConvergeReveal = ({
   images,
   primary,
+  finale,
   alt = "Personalized cake",
   className = "",
   cacheKey,
 }: CakeConvergeRevealProps) => {
-  // Primary first, then up to 2 other distinct angles
-  const others = images.filter((u) => u && u !== primary).slice(0, 2);
-  const sequence = Array.from(new Set([primary, ...others])).slice(0, 3);
+  const finalImage = finale && images.includes(finale) ? finale : primary;
+  // Primary first, then other distinct angles, ending on finale.
+  const middle = images.filter((u) => u && u !== primary && u !== finalImage).slice(0, 1);
+  const seqRaw = primary === finalImage
+    ? [primary, ...images.filter((u) => u && u !== primary).slice(0, 2)]
+    : [primary, ...middle, finalImage];
+  const sequence = Array.from(new Set(seqRaw)).slice(0, 3);
   const hasMultiple = sequence.length >= 2;
 
   // -1 = idle/preloading, 0..n-1 = showing image i, n = merging/final
