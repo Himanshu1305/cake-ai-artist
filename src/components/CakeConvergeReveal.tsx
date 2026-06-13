@@ -39,10 +39,15 @@ export const CakeConvergeReveal = ({
   const skipKey = cacheKey ? `cake_reveal_seen_${cacheKey}` : null;
   const alreadySeen = !!(skipKey && sessionStorage.getItem(skipKey));
 
+  // Stable hash of sequence URLs so preload re-runs when images themselves
+  // change (e.g., a sibling slot fills in after mount).
+  const sequenceKey = sequence.join("|");
+
   // Preload images
   useEffect(() => {
     let cancelled = false;
     if (sequence.length === 0) return;
+    setReady(false);
     let loaded = 0;
     sequence.forEach((src) => {
       const img = new Image();
@@ -58,7 +63,7 @@ export const CakeConvergeReveal = ({
     const safety = setTimeout(() => { if (!cancelled) setReady(true); }, 2500);
     return () => { cancelled = true; clearTimeout(safety); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey]);
+  }, [cacheKey, sequenceKey]);
 
   // Run sequence
   useEffect(() => {

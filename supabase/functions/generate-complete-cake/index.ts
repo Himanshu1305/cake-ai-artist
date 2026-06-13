@@ -732,6 +732,14 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
               .catch((e) => console.warn(`[bg ${bgJobId}] greeting message fallback used:`, e?.message || String(e)));
             // Do not let greeting-message generation hold the image job open.
             messageTask.catch(() => {});
+            // Track per-slot completion locally so we can write the terminal
+            // `completed` status optimistically as soon as the final expected
+            // slot is filled — otherwise the watchdog (2 min threshold) can
+            // auto-fail the job row WHILE this background task is still
+            // writing the slowest slot's URL.
+            const expectedNow = allViewNames.length;
+            let filledNow = 0;
+            let completedWritten = false;
             await Promise.all(viewsToRun.map(async (v, i) => {
               const slot = slotForIndex(i);
               const tv = Date.now();
@@ -740,7 +748,19 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
                 await supabase.from('cake_generation_jobs')
                   .update({ [slot.url]: url })
                   .eq('id', bgJobId);
+                filledNow += 1;
                 console.log(`[bg ${bgJobId}] ${v.name} ok in ${Date.now() - tv}ms`);
+                if (!completedWritten && filledNow >= expectedNow) {
+                  completedWritten = true;
+                  await supabase.from('cake_generation_jobs')
+                    .update({
+                      status: 'completed',
+                      completed_at: new Date().toISOString(),
+                      error_message: null,
+                    })
+                    .eq('id', bgJobId);
+                  console.log(`[bg ${bgJobId}] optimistic completed write (${filledNow}/${expectedNow})`);
+                }
               } catch (e: any) {
                 const errMsg = (e?.message || String(e)).slice(0, 200);
                 console.error(`[bg ${bgJobId}] ${v.name} failed in ${Date.now() - tv}ms:`, errMsg);
@@ -749,25 +769,31 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
                   .eq('id', bgJobId);
               }
             }));
-            const { data: finalRow } = await supabase
-              .from('cake_generation_jobs')
-              .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
-              .eq('id', bgJobId)
-              .single();
-            const expected = finalRow?.view_count ?? allViewNames.length;
-            const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
-            const errors = [finalRow?.hero_error, finalRow?.side_error, finalRow?.top_error].filter(Boolean);
-            const status = filled >= expected ? 'completed' : 'partial_failed';
-            await supabase.from('cake_generation_jobs')
-              .update({
-                status,
-                completed_at: new Date().toISOString(),
-                error_message: status === 'completed'
-                  ? null
-                  : (errors.length > 0 ? errors.join('; ').slice(0, 500) : 'Some cake views did not finish in time'),
-              })
-              .eq('id', bgJobId);
-            console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
+            // Safety net — if not all slots filled, write a terminal status
+            // based on the final row contents.
+            if (!completedWritten) {
+              const { data: finalRow } = await supabase
+                .from('cake_generation_jobs')
+                .select('hero_url, side_url, top_url, hero_error, side_error, top_error, view_count')
+                .eq('id', bgJobId)
+                .single();
+              const expected = finalRow?.view_count ?? allViewNames.length;
+              const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
+              const errors = [finalRow?.hero_error, finalRow?.side_error, finalRow?.top_error].filter(Boolean);
+              const status = filled >= expected ? 'completed' : 'partial_failed';
+              await supabase.from('cake_generation_jobs')
+                .update({
+                  status,
+                  completed_at: new Date().toISOString(),
+                  error_message: status === 'completed'
+                    ? null
+                    : (errors.length > 0 ? errors.join('; ').slice(0, 500) : 'Some cake views did not finish in time'),
+                })
+                .eq('id', bgJobId);
+              console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=${status}, filled=${filled}/${expected}`);
+            } else {
+              console.log(`[bg ${bgJobId}] done in ${Date.now() - tBg}ms — status=completed (optimistic)`);
+            }
           });
 
           // @ts-ignore — EdgeRuntime is provided by Supabase Edge Functions runtime.
@@ -775,7 +801,22 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
             // @ts-ignore
             EdgeRuntime.waitUntil(bgTask);
           } else {
-            bgTask.catch(() => {});
+            // Fallback (non-EdgeRuntime path) — make sure a crashing bgTask
+            // still writes a terminal `failed` row instead of leaving it
+            // `in_progress` until the watchdog auto-fails it.
+            bgTask.catch(async (e) => {
+              const errMsg = (e instanceof Error ? e.message : String(e)).slice(0, 300);
+              console.error(`[bg ${bgJobId}] fatal in fallback path:`, errMsg);
+              try {
+                await supabase.from('cake_generation_jobs')
+                  .update({
+                    status: 'failed',
+                    completed_at: new Date().toISOString(),
+                    error_message: `Background task crashed: ${errMsg}`,
+                  })
+                  .eq('id', bgJobId);
+              } catch {}
+            });
           }
         }
 

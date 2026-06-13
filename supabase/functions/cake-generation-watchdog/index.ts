@@ -62,7 +62,9 @@ serve(async (req) => {
     }
 
     const total = recent?.length ?? 0;
-    const failed = (recent ?? []).filter((r) => r.status === "failed").length;
+    // Count partial_failed as a degraded outcome alongside failed — a day full
+    // of partial_failed jobs is unhealthy even if no row was outright "failed".
+    const failed = (recent ?? []).filter((r) => r.status === "failed" || r.status === "partial_failed").length;
     const completed = (recent ?? []).filter((r) => r.status === "completed").length;
     const failureRate = total > 0 ? failed / total : 0;
 

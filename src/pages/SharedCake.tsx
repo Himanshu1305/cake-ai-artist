@@ -115,8 +115,11 @@ export default function SharedCake() {
   const startJingleIfNeeded = () => {
     if (!jingleRef.current || jinglePlaying) return;
     const hasVoice = !!cake?.audio_url;
-    const occ = (cake?.occasion_type || "").toLowerCase();
-    const isBirthday = occ.includes("birth") || occ === "bday" || occ === "";
+    const occ = (cake?.occasion_type || "").toLowerCase().trim();
+    // Only play the birthday jingle for actual birthday cakes — empty/null
+    // occasion (sender didn't set one) should fall back to the generic
+    // celebration variant, not the birthday tune.
+    const isBirthday = occ.includes("birth") || occ === "bday";
     const variant: "birthday" | "celebration" = isBirthday ? "birthday" : "celebration";
     // Loop softly if there's a voice message (so it can duck under voice); otherwise play once.
     jingleRef.current.play({ loop: hasVoice, volume: hasVoice ? 0.1 : 0.18, variant }).then(() => {
@@ -192,16 +195,33 @@ export default function SharedCake() {
     }
   };
 
+  // Track replay timers so a second click (or unmount) doesn't leave stale
+  // setTimeouts that flip revealStage on an unrelated render.
+  const replayTimersRef = useRef<number[]>([]);
+  useEffect(() => () => { replayTimersRef.current.forEach(clearTimeout); }, []);
+
   const handleReplay = () => {
-    if (id) sessionStorage.removeItem(`cake_reveal_seen_${id}`);
+    // Clear the convergeReveal skip key — its key format is
+    // `cake_reveal_seen_${cake.id}_${revealKey}`, so removing
+    // `cake_reveal_seen_${id}` alone misses it. Bumping revealKey produces a
+    // fresh cacheKey anyway, but clear both for safety.
+    if (id) {
+      sessionStorage.removeItem(`cake_reveal_seen_${id}`);
+      sessionStorage.removeItem(`cake_reveal_seen_${id}_${revealKey}`);
+    }
+    // Cancel any pending replay timers from a previous click.
+    replayTimersRef.current.forEach(clearTimeout);
+    replayTimersRef.current = [];
     setRevealStage(0);
     setRevealKey((k) => k + 1);
     setCandlesBlown(false);
     // Restart staged reveal — same timing as initial
-    setTimeout(() => setRevealStage(1), 300);
-    setTimeout(() => setRevealStage(2), 700);
-    setTimeout(() => setRevealStage(3), 6800);
-    setTimeout(() => setRevealStage(4), 7400);
+    replayTimersRef.current.push(
+      window.setTimeout(() => setRevealStage(1), 300),
+      window.setTimeout(() => setRevealStage(2), 700),
+      window.setTimeout(() => setRevealStage(3), 6800),
+      window.setTimeout(() => setRevealStage(4), 7400),
+    );
   };
 
   const handleEmailCapture = async (e: React.FormEvent) => {
