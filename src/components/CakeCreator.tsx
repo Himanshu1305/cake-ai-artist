@@ -88,6 +88,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [originalImages, setOriginalImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [shareTargetIndex, setShareTargetIndex] = useState<number | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState<string>("");
   const [useCustomMessage, setUseCustomMessage] = useState<boolean>(false);
