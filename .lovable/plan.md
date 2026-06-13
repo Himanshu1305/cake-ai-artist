@@ -1,51 +1,50 @@
-## Goal
-Make cake generation self-healing and notify you the moment things break at scale, with zero recurring AI cost.
+## The bug
 
-## What gets built
+The animated share link (`/cake/:id`) — the page that plays the staged 3-image reveal + birthday jingle on the receiver's side — still works fine. The SharedCake route, animation, candles, jingle and OG meta are all intact.
 
-### 1. Auto-watchdog cron (every 10 minutes, free)
-A new edge function `cake-generation-watchdog` runs on a schedule and does two things:
+What's actually broken is **discoverability**: the only button in the UI that copies the magic `/cake/:id` link is hidden inside the "Voice message" panel and is gated on `audioUrl` being present (CakeCreator.tsx line ~2860, label *"Copy share link with voice message"*). If the sender doesn't record a voice note, that button never renders, so there's no way to copy/share the animated link.
 
-**a) Auto-fix stuck jobs**
-- Finds any `cake_generation_jobs` row with `status = 'processing'` and `created_at` older than 2 minutes.
-- Updates them to `status = 'failed'`, `error_message = 'Auto-timeout: generation exceeded 2 minutes'`.
-- Result: users never see the "stuck at 75% forever" symptom again — the UI's polling sees `failed` and shows a clean retry button.
+All other "Share" buttons on the result screen (Facebook, X, WhatsApp, Instagram, the Web Share API in `handleShare`, and `SuccessCelebration` → `onShare`) share the **downloaded JPG composite**, not the `/cake/:id` URL. So from the sender's perspective the magic-link feature has effectively disappeared.
 
-**b) Detect outages and alert**
-Queries the last hour of `cake_generation_jobs`:
-- If total attempts ≥ 5 **and** failure rate > 50% → trigger alert.
-- If ≥ 5 jobs were just auto-timed-out in this run → trigger alert.
+## Fix
 
-When an alert triggers, send **one** email to `himanshu1305@gmail.com` with:
-- Subject: `🚨 Cake AI Artist — Generation degraded`
-- Body: failure count, success count, failure rate %, most common error message, link to admin panel.
+Add a prominent, always-visible "Magic Link" block in `CakeCreator.tsx`, shown as soon as `savedCakeImageId` exists (independent of voice message). It will be placed right above the existing "Share Your Cake Card 🎉" social row, so it's the first share affordance the sender sees.
 
-**Anti-spam:** A new tiny table `system_alert_log` records each alert sent. The watchdog will not send another email for the same alert type within 60 minutes. So at worst you get 1 email/hour during a real incident, not 6.
+### Block contents
 
-### 2. Legacy `xhr` import sweep
-Remove the deprecated `https://deno.land/x/xhr@0.1.0/mod.ts` import from every edge function that still has it (this was the actual root cause of the original hang). I'll grep all functions and clean them in one pass.
+```text
+┌───────────────────────────────────────────────────────┐
+│ ✨ Magic share link                                   │
+│ Recipients see an animated reveal + birthday song     │
+│                                                       │
+│ https://cakeaiartist.com/cake/<id>      [ Copy ]      │
+│                                                       │
+│ [ 📱 WhatsApp ]  [ 🔗 Share… ]  [ 👁 Preview ]        │
+│                                                       │
+│ 💡 Tip: Record a voice message above and it plays    │
+│    inside the link too.                               │
+└───────────────────────────────────────────────────────┘
+```
 
-### 3. Hardening summary (already shipped earlier, listed for completeness)
-- Early response pattern in `generate-complete-cake` (returns jobId in ~1.7s, AI work runs in background via `EdgeRuntime.waitUntil`).
-- Permanent stage tracing in `cake_generation_events` for future forensics.
+- **Copy** — `navigator.clipboard.writeText(url)` + toast (same pattern as the existing voice-link button).
+- **WhatsApp** — opens `https://wa.me/?text=<encoded message + url>`.
+- **Share…** — uses `navigator.share({ title, text, url })` when available, otherwise falls back to copy.
+- **Preview** — opens `/cake/<id>` in a new tab so the sender can verify the reveal/jingle themselves.
 
-## Technical details
+### Secondary touch-ups
 
-**New table:** `system_alert_log(id, alert_type text, sent_at timestamptz, details jsonb)` — RLS: service_role only.
+1. Rename the existing in-voice-panel button from *"Copy share link with voice message"* to *"Copy link (includes voice message)"* so it's clearly the same link, just enriched.
+2. In `SuccessCelebration`, change the primary **"Share Your Creation"** button so that when a `savedCakeImageId` is available the parent passes a handler that shares the `/cake/:id` URL via the Web Share API (falling back to copy), instead of running the image-file `handleShare` flow. The image-file social buttons stay where they are on the result screen for users who want a static image post.
 
-**New edge function:** `supabase/functions/cake-generation-watchdog/index.ts` — uses service role, no JWT (cron-invoked), uses existing Resend setup (`RESEND_API_KEY` already configured) to send the alert email to `himanshu1305@gmail.com`.
+### Out of scope
 
-**Cron:** pg_cron schedule `*/10 * * * *` calls the watchdog via `net.http_post` with the project anon key (inserted via `supabase--insert`, not migration, since it contains the project URL).
+- No backend / RLS / RPC changes (the `get_public_cake` RPC + SharedCake page already work).
+- No changes to the reveal animation, jingle, or `BirthdayJingle` utility.
+- No changes to the cake-generation pipeline or the watchdog/monitoring system from the previous turn.
 
-**No frontend changes.** No changes to cake generation flow itself.
+## Verification
 
-## Out of scope
-- No synthetic test cakes (zero AI cost confirmed).
-- No admin UI banner (you chose email only).
-- No SMS / Slack / push notifications.
-- No changes to user-facing UX beyond the cleaner failure message that already lands when watchdog flips a stuck job.
-
-## What you'll experience
-- 99% of the time: nothing. No emails, watchdog runs silently.
-- During a real outage: one email within 10 min, then at most one per hour until fixed.
-- Users during an outage: see a clean "Failed, try again" within 2 minutes instead of spinning forever.
+1. Generate a cake → save → confirm the new "Magic share link" block appears immediately (no voice recording needed).
+2. Click Copy → paste into a new tab → confirm the SharedCake page loads with the 3-image reveal and the jingle starts on first click.
+3. Repeat with a voice message recorded → confirm the same link now also plays the voice note.
+4. On mobile, confirm the WhatsApp button opens WhatsApp with the URL prefilled and the Web Share sheet appears on "Share…".
