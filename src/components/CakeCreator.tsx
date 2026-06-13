@@ -2874,7 +2874,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                           }}
                         >
                           <Link2 className="h-4 w-4 mr-2" />
-                          Copy share link with voice message
+                          Copy link (includes voice message)
                         </Button>
                       </div>
                     ) : (
