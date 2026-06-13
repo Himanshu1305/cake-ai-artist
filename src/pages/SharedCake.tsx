@@ -57,7 +57,10 @@ export default function SharedCake() {
     if (!id) return;
     (async () => {
       const { data, error } = await supabase.rpc("get_public_cake", { p_id: id });
-      if (error || !data || (Array.isArray(data) && data.length === 0)) {
+      if (error) {
+        console.error("get_public_cake failed:", error);
+        setNotFound(true);
+      } else if (!data || (Array.isArray(data) && data.length === 0)) {
         setNotFound(true);
       } else {
         const row = Array.isArray(data) ? data[0] : data;
@@ -75,22 +78,40 @@ export default function SharedCake() {
     }
   }, [id]);
 
-  // Staged reveal — kicker + card appear quickly so the inner 3-image reveal is visible
+  // Staged reveal — always plays so recipients see the kicker + card animate
+  // in, and the inner 3-image reveal is always visible. No sessionStorage
+  // skip: the reveal is the share-link payoff.
   useEffect(() => {
     if (!cake || !id) return;
-    const seenKey = `reveal_seen_${id}`;
-    if (sessionStorage.getItem(seenKey)) {
-      setRevealStage(4);
-      return;
-    }
-    sessionStorage.setItem(seenKey, "1");
     const t1 = setTimeout(() => setRevealStage(1), 300);
     const t2 = setTimeout(() => setRevealStage(2), 700);
     // Hold message + CTA until after the 3-image reveal (~6s) completes
     const t3 = setTimeout(() => setRevealStage(3), 6800);
     const t4 = setTimeout(() => setRevealStage(4), 7400);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    // Hard safety: if anything (Chrome timer throttling, background tab, etc.)
+    // prevents the first timer from firing, force the overlay off after 1.5s.
+    const safety = setTimeout(() => {
+      setRevealStage((s) => (s === 0 ? 1 : s));
+    }, 1500);
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+      clearTimeout(safety);
+    };
   }, [cake, id]);
+
+  // If the tab was hidden when the initial timers fired (Chrome throttles
+  // background tabs aggressively), bump the stage as soon as it's visible
+  // again so the recipient never lands on a stuck black overlay.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        setRevealStage((s) => (s === 0 ? 1 : s));
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
 
   // Confetti fires at stage 4, not on load
   useEffect(() => {
