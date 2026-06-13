@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface CakeConvergeRevealProps {
   /** All sibling images, primary first. 1–3 URLs. */
   images: string[];
-  /** Final image shown after the reveal — the sender's selected view. */
+  /** Sender's selected view — shown first in the reveal sequence. */
   primary: string;
+  /** Image to settle on at the end. Defaults to primary. */
+  finale?: string;
   alt?: string;
   className?: string;
   /** Storage key namespace so the same recipient doesn't see reveal twice. */
