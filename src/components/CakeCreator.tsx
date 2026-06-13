@@ -622,6 +622,15 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       return;
     }
 
+    // Tear down any previous attempt's job watcher + bump attempt id so any
+    // stale realtime/poll callbacks from the prior run are ignored.
+    if (activeJobCleanupRef.current) {
+      try { activeJobCleanupRef.current(); } catch {}
+      activeJobCleanupRef.current = null;
+    }
+    generationAttemptRef.current += 1;
+    const myAttempt = generationAttemptRef.current;
+
     setIsLoading(true);
     setGeneratedImages([]);
     setOriginalImages([]);
