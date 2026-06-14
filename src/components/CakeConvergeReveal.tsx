@@ -32,6 +32,7 @@ export const CakeConvergeReveal = ({
   alt = "Personalized cake",
   className = "",
   cacheKey,
+  enabled = true,
 }: CakeConvergeRevealProps) => {
   const finalImage = finale && images.includes(finale) ? finale : primary;
   // Primary first, then other distinct angles, ending on finale.
