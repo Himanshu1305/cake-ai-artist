@@ -12,6 +12,8 @@ interface CakeConvergeRevealProps {
   className?: string;
   /** Storage key namespace so the same recipient doesn't see reveal twice. */
   cacheKey?: string;
+  /** When false, holds at primary and does not run the sequence. */
+  enabled?: boolean;
 }
 
 const PER_IMAGE_MS = 2000;
