@@ -41,6 +41,7 @@ export default function SharedCake() {
   const [candlesBlown, setCandlesBlown] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [revealStage, setRevealStage] = useState(0);
+  const [opened, setOpened] = useState(false);
   const [emailValue, setEmailValue] = useState("");
   const [emailSubmitting, setEmailSubmitting] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
@@ -50,7 +51,6 @@ export default function SharedCake() {
   const [jingleMuted, setJingleMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const jingleRef = useRef<BirthdayJingle | null>(null);
-  const interactedRef = useRef(false);
 
 
   useEffect(() => {
