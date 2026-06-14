@@ -310,21 +310,57 @@ export default function SharedCake() {
         <link rel="canonical" href={shareUrl} />
       </Helmet>
 
-      {/* Stage 0 overlay — fades out when stage advances to 1 */}
+      {/* Splash — tap to unlock audio + start the reveal */}
       <AnimatePresence>
-        {revealStage === 0 && (
-          <motion.div
-            key="reveal-overlay"
+        {!opened && (
+          <motion.button
+            key="reveal-splash"
+            type="button"
+            onClick={handleOpen}
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black"
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center cursor-pointer bg-gradient-to-br from-party-pink/95 via-party-purple/95 to-party-mint/95 backdrop-blur-sm"
+            aria-label="Tap to open your cake"
           >
-            <div className="text-6xl mb-4 animate-pulse">🎂</div>
-            <p className="text-white text-lg font-semibold tracking-wide">Opening your cake...</p>
-          </motion.div>
+            {/* Soft floating blobs */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white/20 blur-3xl animate-pulse" />
+              <div className="absolute bottom-0 -right-24 w-96 h-96 rounded-full bg-white/15 blur-3xl animate-pulse [animation-delay:1.5s]" />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center">
+              {cake?.sender_name && cake.sender_name.trim().length > 0 && (
+                <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-white/50 shadow-sm">
+                  <Gift className="h-4 w-4 text-party-pink" />
+                  <span className="text-sm font-semibold bg-gradient-to-r from-party-pink to-party-purple bg-clip-text text-transparent">
+                    {cake.sender_name.trim()} made this just for you 💝
+                  </span>
+                </div>
+              )}
+
+              <div className="text-8xl mb-6 drop-shadow-lg animate-bounce">🎂</div>
+
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md mb-3">
+                You've got a cake!
+              </h1>
+              <p className="text-white/90 text-base mb-8 max-w-xs">
+                Turn up your volume <span className="inline-block">🔊</span> and tap below to open it.
+              </p>
+
+              <span
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-foreground text-lg font-bold shadow-2xl ring-4 ring-white/40 animate-pulse"
+              >
+                <Sparkles className="h-5 w-5 text-party-pink" />
+                Tap to open your cake 🎂
+              </span>
+
+              <p className="mt-6 text-xs text-white/70">(tap anywhere)</p>
+            </div>
+          </motion.button>
         )}
       </AnimatePresence>
+
 
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-party-pink/30 via-party-purple/20 to-party-mint/30 py-8 px-4">
         {/* Ambient celebration */}
