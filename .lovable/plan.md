@@ -1,59 +1,38 @@
-## Issue 1 — Sequence plays while splash is up
+## Problem
 
-The fix is to delay the reveal until the recipient taps the splash.
+Generation is now job-based, but the UI still behaves like the first function call should return images. The backend returns a job quickly with all image slots empty, then fills `cake_generation_jobs` in the background. The frontend reaches 75%, waits, and can show a slow/error state even though the job may still be running or already completed. Retry also starts a new request without reliably cleaning the previous job state.
 
-**`src/pages/SharedCake.tsx`**
-- Add `enabled={opened}` to the `CakeConvergeReveal` usage.
+I also found a backend access problem: `cake_generation_jobs` has policies but no explicit Data API grants, so the browser can fail to read job progress in some environments. That makes the UI think retry/progress is broken.
 
-**`src/components/CakeConvergeReveal.tsx`**
-- Accept `enabled?: boolean` (default `true`).
-- Both effects (preload + sequencing) become no-ops when `enabled === false`. While disabled, render a placeholder showing only the `primary` image so the card visual stays consistent.
-- When `enabled` flips to `true`, the preload effect kicks off, then the sequencing effect starts at step 0. This guarantees the recipient watches all 3 images from the start.
+## Plan
 
-## Issue 2 — Top view sometimes isn't last
+1. **Fix database access for job progress**
+   - Add explicit permissions for authenticated users to read their own `cake_generation_jobs` rows.
+   - Keep service-role access for the background generator/watchdog.
+   - Do not expose jobs publicly.
 
-Root cause: parallel generation → non-deterministic `created_at` order. We need a stable view tag.
+2. **Make the frontend treat 202 as “job queued”, not “failed/empty result”**
+   - When `generate-complete-cake` returns a `jobId`, immediately render the 3 placeholders and start polling/subscribing.
+   - Do not show “taking too long” as a failure while the job row is still `in_progress`.
+   - Keep progress at a clear “rendering views” state until either images arrive or the backend records a real failure.
 
-### Step A — Add `view_type` to `generated_images` (migration)
+3. **Fix retry behavior**
+   - Before retrying, cancel the old realtime subscription/timers and bump the generation attempt id.
+   - Clear previous `bgPending`, `bgFailed`, saved IDs, and old images so stale callbacks cannot overwrite the retry.
+   - Retry should start a fresh job and resume polling from that job only.
 
-- Add nullable `view_type text` column (values: `front`, `side`, `top`, `main`, `angle`, or `null` for legacy). No CHECK constraint — keep it flexible.
-- Index not required (table is small and we filter by `share_group_id` anyway).
-- Backfill best-effort: for each `share_group_id`, set the *latest* `created_at` row to `view_type = 'top'`, the earliest to `front`/`main`, and the middle to `side`/`angle`. Imperfect for old data but matches the current "usually-correct" behavior, so old shares don't regress.
+4. **Make timeout handling less destructive**
+   - Frontend timeout should mark only missing slots as retryable, not fail the entire generation if some images are still arriving.
+   - Backend watchdog should not auto-fail jobs too aggressively while image generation is still reasonably within the advertised High Quality window.
 
-### Step B — Save `view_type` on insert
+5. **Verify with backend data and preview flow**
+   - Confirm recent jobs move from `in_progress` to `completed` with all 3 URLs.
+   - Test Fast and High Quality from the preview: progress should move past 75%, placeholders should fill, and retry should create a fresh working job.
 
-**`src/components/CakeCreator.tsx`** — in the persist loop (around line 1215), map the `index` to a view tag based on `cakeStyle`:
-- decorated: `0 → front`, `1 → side`, `2 → top`
-- sculpted:  `0 → main`,  `1 → angle`, `2 → top`
+## Files / backend touched
 
-Include `view_type` in the insert payload.
+- `src/components/CakeCreator.tsx`
+- `supabase/functions/cake-generation-watchdog/index.ts`
+- Database migration for `cake_generation_jobs` permissions
 
-### Step C — Deterministic ordering in `get_public_cake`
-
-Replace the `ORDER BY (s.id = gi.id) DESC, s.created_at ASC` with:
-
-```sql
-ORDER BY
-  (s.id = gi.id) DESC,                                -- sender's selected view first
-  (s.view_type = 'top') ASC,                          -- top view LAST
-  COALESCE(s.view_type, '~') ASC,                     -- stable secondary
-  s.created_at ASC
-```
-
-`ASC` on a boolean puts `false` before `true`, so the `top` row sinks to the end. `~` keeps null `view_type` rows from jumping ahead of tagged ones.
-
-### Step D — Verify
-
-1. Open the existing share link on the preview → splash shows; tap → all 3 images animate from front → side → **top**.
-2. Hit Replay → same order.
-3. Generate a fresh cake, share it, open the link → top still lands last regardless of which view finished first in generation.
-4. Confirm old shares (legacy rows where backfill best-effort placed top last) still look reasonable.
-
-## Files / migrations touched
-
-- Migration: add column + backfill + replace `get_public_cake` body.
-- `src/components/CakeCreator.tsx` — include `view_type` in the insert.
-- `src/components/CakeConvergeReveal.tsx` — `enabled` prop + gated effects + placeholder.
-- `src/pages/SharedCake.tsx` — pass `enabled={opened}`.
-
-No other components, edge functions, or schemas affected. After merge, **Publish → Update** to push to `cakeaiartist.com`.
+No changes to public share pages or image ordering are needed for this issue.
