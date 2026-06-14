@@ -1,38 +1,53 @@
-## Issue 1 — Top view not last
+## Goal
 
-**No code change needed.** Database confirms `sibling_image_urls` already returns `[primary, ...siblings by created_at]`, so the `finale = last sibling` logic in `SharedCake.tsx` correctly settles on the top view. The reason `cakeaiartist.com` still shows the old behavior is that the last frontend change hasn't been published. After this plan ships, click **Publish → Update** so the custom domain serves the new build. No need to recreate the cake.
+Fix the share link "made this just for you" line so it shows the sender's real name instead of the email prefix, both for you and for everyone else.
 
-## Issue 2 — Sound doesn't auto-start
+## Step 1 — Update your two profiles
 
-Chrome, Safari and iOS block Web Audio until a user gesture. The current page waits silently for any tap/scroll, so most recipients never hear the jingle. We'll replace the silent black "Opening your cake..." overlay with a **big tappable splash** — the tap is the gesture that unlocks audio AND kicks off the reveal, so sound and animation truly start together.
+Use the data tool to set:
+- `himanshu1305@gmail.com` → first_name=`Himanshu`, last_name=`Dixit`
+- `himanshu1305.author@gmail.com` → first_name=`Himanshu`, last_name=`Dixit`
 
-### Changes to `src/pages/SharedCake.tsx`
+Your shared cakes (and all future ones) will then say "Himanshu made this just for you 💝".
 
-1. **Gate the reveal on a tap.** Add `const [opened, setOpened] = useState(false)`. The existing staged-reveal effect (lines 84–100) and the visibility/safety fallbacks only run once `opened === true`. Until then, `revealStage` stays `0` and the page sits on the splash.
+## Step 2 — Backfill all other users from auth metadata
 
-2. **Redesign the stage-0 overlay** (lines 320–334) into a celebratory splash:
-   - Warm gradient (party-pink / party-purple / party-mint) instead of black-to-gray, matching the brand.
-   - Large bouncing 🎂 emoji, sender's name chip ("Chanchal made this just for you 💝") if available.
-   - Prominent pulsing CTA button: **"Tap to open your cake 🎂"**.
-   - Subtext: *"Turn up your volume 🔊"*.
-   - Clicking anywhere on the overlay (or the button) calls `handleOpen()`:
-     - `setOpened(true)` → triggers the staged reveal effect.
-     - `startJingleIfNeeded()` synchronously inside the click handler — this is the gesture that unlocks `AudioContext`.
-     - Also pre-resumes `jingleRef.current` audio context before scheduling notes (already handled in `BirthdayJingle.play`).
+47 of 63 profiles have no `first_name`, but 61 of 63 `auth.users` rows have a name in `raw_user_meta_data` (Google OAuth stores it as `full_name` / `name`). Backfill via a one-shot update:
 
-3. **Remove the now-redundant first-interaction listener** (lines 152–165) since the splash button is the guaranteed first interaction. Keep `startJingleIfNeeded` for the mute-toggle and replay paths.
+```sql
+UPDATE public.profiles p
+SET first_name = COALESCE(
+      NULLIF(u.raw_user_meta_data->>'first_name',''),
+      NULLIF(u.raw_user_meta_data->>'given_name',''),
+      split_part(COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name',''), ' ', 1)
+    ),
+    last_name = COALESCE(
+      NULLIF(u.raw_user_meta_data->>'last_name',''),
+      NULLIF(u.raw_user_meta_data->>'family_name',''),
+      NULLIF(NULLIF(regexp_replace(COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name',''), '^\S+\s*', ''), ''), ' ')
+    )
+FROM auth.users u
+WHERE u.id = p.id
+  AND (p.first_name IS NULL OR TRIM(p.first_name) = '');
+```
 
-4. **Replay button** continues to work — it already calls into the same `startJingleIfNeeded` chain and the audio context is unlocked after the initial splash tap.
+Existing populated profiles stay untouched.
 
-### Verification
+## Step 3 — Fix `handle_new_user` for future Google sign-ups
 
-- Preview: open `/cake/dd6956a2-...` → see splash → tap → cake card animates in, jingle plays immediately, sequence shows front → side → **top** as the final image.
-- Replay button still restarts the 3-view sequence cleanly.
-- Mute icon still works.
-- After merging, hit **Publish → Update** so `cakeaiartist.com` serves the fix.
+The current trigger only reads `first_name`/`last_name` from metadata. Update it to also fall back to Google's `given_name` / `family_name` / `full_name` / `name`, so new Google sign-ups land in `profiles` with a real name and the share-card kicker works out of the box.
 
-### Files touched
+Migration replaces the function body — no schema/permissions change, no other tables touched.
 
-- `src/pages/SharedCake.tsx` — splash overlay, opened state, gesture-driven jingle start.
+## Step 4 — Verify
 
-No backend, schema, or other component changes.
+- Re-open the existing share link → "Himanshu made this just for you 💝".
+- Spot-check 3 other recently-active users' profiles → first_name populated.
+- New Google sign-up (or manual test of trigger) → first_name set from metadata.
+
+No UI changes, no edge-function changes, no frontend code changes. Then **Publish → Update** is **not** required (this is data + trigger only, takes effect immediately).
+
+## Files / tools touched
+
+- Data update via insert tool — your 2 profiles + backfill.
+- Migration — updated `handle_new_user` function.
