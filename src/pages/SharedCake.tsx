@@ -41,6 +41,7 @@ export default function SharedCake() {
   const [candlesBlown, setCandlesBlown] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [revealStage, setRevealStage] = useState(0);
+  const [opened, setOpened] = useState(false);
   const [emailValue, setEmailValue] = useState("");
   const [emailSubmitting, setEmailSubmitting] = useState(false);
   const [emailSubmitted, setEmailSubmitted] = useState(false);
@@ -50,7 +51,6 @@ export default function SharedCake() {
   const [jingleMuted, setJingleMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const jingleRef = useRef<BirthdayJingle | null>(null);
-  const interactedRef = useRef(false);
 
 
   useEffect(() => {
@@ -78,18 +78,17 @@ export default function SharedCake() {
     }
   }, [id]);
 
-  // Staged reveal — always plays so recipients see the kicker + card animate
-  // in, and the inner 3-image reveal is always visible. No sessionStorage
-  // skip: the reveal is the share-link payoff.
+  // Staged reveal — only runs after the recipient taps the splash. That tap
+  // is the user gesture that unlocks Web Audio so the jingle can play with
+  // the animation (browsers block autoplay otherwise).
   useEffect(() => {
-    if (!cake || !id) return;
+    if (!cake || !id || !opened) return;
     const t1 = setTimeout(() => setRevealStage(1), 300);
     const t2 = setTimeout(() => setRevealStage(2), 700);
     // Hold message + CTA until after the 3-image reveal (~6s) completes
     const t3 = setTimeout(() => setRevealStage(3), 6800);
     const t4 = setTimeout(() => setRevealStage(4), 7400);
-    // Hard safety: if anything (Chrome timer throttling, background tab, etc.)
-    // prevents the first timer from firing, force the overlay off after 1.5s.
+    // Hard safety: force overlay off after 1.5s if a timer is throttled.
     const safety = setTimeout(() => {
       setRevealStage((s) => (s === 0 ? 1 : s));
     }, 1500);
@@ -97,20 +96,20 @@ export default function SharedCake() {
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
       clearTimeout(safety);
     };
-  }, [cake, id]);
+  }, [cake, id, opened]);
 
   // If the tab was hidden when the initial timers fired (Chrome throttles
   // background tabs aggressively), bump the stage as soon as it's visible
   // again so the recipient never lands on a stuck black overlay.
   useEffect(() => {
     const onVis = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState === "visible" && opened) {
         setRevealStage((s) => (s === 0 ? 1 : s));
       }
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, []);
+  }, [opened]);
 
 
   // Confetti fires at stage 4, not on load
@@ -148,21 +147,15 @@ export default function SharedCake() {
     }).catch(() => {});
   };
 
-  // Auto-start jingle on first interaction anywhere on the page
-  useEffect(() => {
-    if (!cake) return;
-    const onFirstInteract = () => {
-      if (interactedRef.current) return;
-      interactedRef.current = true;
-      startJingleIfNeeded();
-    };
-    window.addEventListener("pointerdown", onFirstInteract, { once: true });
-    window.addEventListener("keydown", onFirstInteract, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", onFirstInteract);
-      window.removeEventListener("keydown", onFirstInteract);
-    };
-  }, [cake]);
+  // Splash tap — the gesture that unlocks audio and kicks off the reveal.
+  const handleOpen = () => {
+    if (opened) return;
+    setOpened(true);
+    // Call synchronously inside the click handler so the AudioContext is
+    // created/resumed within the user gesture (required by Chrome/Safari/iOS).
+    startJingleIfNeeded();
+  };
+
 
   const toggleJingleMute = () => {
     const next = !jingleMuted;
@@ -317,21 +310,57 @@ export default function SharedCake() {
         <link rel="canonical" href={shareUrl} />
       </Helmet>
 
-      {/* Stage 0 overlay — fades out when stage advances to 1 */}
+      {/* Splash — tap to unlock audio + start the reveal */}
       <AnimatePresence>
-        {revealStage === 0 && (
-          <motion.div
-            key="reveal-overlay"
+        {!opened && (
+          <motion.button
+            key="reveal-splash"
+            type="button"
+            onClick={handleOpen}
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black"
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center cursor-pointer bg-gradient-to-br from-party-pink/95 via-party-purple/95 to-party-mint/95 backdrop-blur-sm"
+            aria-label="Tap to open your cake"
           >
-            <div className="text-6xl mb-4 animate-pulse">🎂</div>
-            <p className="text-white text-lg font-semibold tracking-wide">Opening your cake...</p>
-          </motion.div>
+            {/* Soft floating blobs */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white/20 blur-3xl animate-pulse" />
+              <div className="absolute bottom-0 -right-24 w-96 h-96 rounded-full bg-white/15 blur-3xl animate-pulse [animation-delay:1.5s]" />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center">
+              {cake?.sender_name && cake.sender_name.trim().length > 0 && (
+                <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-white/50 shadow-sm">
+                  <Gift className="h-4 w-4 text-party-pink" />
+                  <span className="text-sm font-semibold bg-gradient-to-r from-party-pink to-party-purple bg-clip-text text-transparent">
+                    {cake.sender_name.trim()} made this just for you 💝
+                  </span>
+                </div>
+              )}
+
+              <div className="text-8xl mb-6 drop-shadow-lg animate-bounce">🎂</div>
+
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md mb-3">
+                You've got a cake!
+              </h1>
+              <p className="text-white/90 text-base mb-8 max-w-xs">
+                Turn up your volume <span className="inline-block">🔊</span> and tap below to open it.
+              </p>
+
+              <span
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-foreground text-lg font-bold shadow-2xl ring-4 ring-white/40 animate-pulse"
+              >
+                <Sparkles className="h-5 w-5 text-party-pink" />
+                Tap to open your cake 🎂
+              </span>
+
+              <p className="mt-6 text-xs text-white/70">(tap anywhere)</p>
+            </div>
+          </motion.button>
         )}
       </AnimatePresence>
+
 
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-party-pink/30 via-party-purple/20 to-party-mint/30 py-8 px-4">
         {/* Ambient celebration */}
@@ -507,7 +536,7 @@ export default function SharedCake() {
                       onEnded={() => {
                         setIsPlaying(false);
                         // Resume background music if user hasn't muted it
-                        if (!jingleMuted && interactedRef.current) startJingleIfNeeded();
+                        if (!jingleMuted && opened) startJingleIfNeeded();
                       }}
                       onPause={() => {
                         setIsPlaying(false);
