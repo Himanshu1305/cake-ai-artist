@@ -78,18 +78,17 @@ export default function SharedCake() {
     }
   }, [id]);
 
-  // Staged reveal — always plays so recipients see the kicker + card animate
-  // in, and the inner 3-image reveal is always visible. No sessionStorage
-  // skip: the reveal is the share-link payoff.
+  // Staged reveal — only runs after the recipient taps the splash. That tap
+  // is the user gesture that unlocks Web Audio so the jingle can play with
+  // the animation (browsers block autoplay otherwise).
   useEffect(() => {
-    if (!cake || !id) return;
+    if (!cake || !id || !opened) return;
     const t1 = setTimeout(() => setRevealStage(1), 300);
     const t2 = setTimeout(() => setRevealStage(2), 700);
     // Hold message + CTA until after the 3-image reveal (~6s) completes
     const t3 = setTimeout(() => setRevealStage(3), 6800);
     const t4 = setTimeout(() => setRevealStage(4), 7400);
-    // Hard safety: if anything (Chrome timer throttling, background tab, etc.)
-    // prevents the first timer from firing, force the overlay off after 1.5s.
+    // Hard safety: force overlay off after 1.5s if a timer is throttled.
     const safety = setTimeout(() => {
       setRevealStage((s) => (s === 0 ? 1 : s));
     }, 1500);
@@ -97,20 +96,20 @@ export default function SharedCake() {
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
       clearTimeout(safety);
     };
-  }, [cake, id]);
+  }, [cake, id, opened]);
 
   // If the tab was hidden when the initial timers fired (Chrome throttles
   // background tabs aggressively), bump the stage as soon as it's visible
   // again so the recipient never lands on a stuck black overlay.
   useEffect(() => {
     const onVis = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState === "visible" && opened) {
         setRevealStage((s) => (s === 0 ? 1 : s));
       }
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, []);
+  }, [opened]);
 
 
   // Confetti fires at stage 4, not on load
@@ -148,21 +147,15 @@ export default function SharedCake() {
     }).catch(() => {});
   };
 
-  // Auto-start jingle on first interaction anywhere on the page
-  useEffect(() => {
-    if (!cake) return;
-    const onFirstInteract = () => {
-      if (interactedRef.current) return;
-      interactedRef.current = true;
-      startJingleIfNeeded();
-    };
-    window.addEventListener("pointerdown", onFirstInteract, { once: true });
-    window.addEventListener("keydown", onFirstInteract, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", onFirstInteract);
-      window.removeEventListener("keydown", onFirstInteract);
-    };
-  }, [cake]);
+  // Splash tap — the gesture that unlocks audio and kicks off the reveal.
+  const handleOpen = () => {
+    if (opened) return;
+    setOpened(true);
+    // Call synchronously inside the click handler so the AudioContext is
+    // created/resumed within the user gesture (required by Chrome/Safari/iOS).
+    startJingleIfNeeded();
+  };
+
 
   const toggleJingleMute = () => {
     const next = !jingleMuted;
