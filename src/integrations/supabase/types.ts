@@ -553,6 +553,7 @@ export type Database = {
           recipient_name: string | null
           share_group_id: string | null
           user_id: string
+          view_type: string | null
         }
         Insert: {
           audio_duration_seconds?: number | null
@@ -572,6 +573,7 @@ export type Database = {
           recipient_name?: string | null
           share_group_id?: string | null
           user_id: string
+          view_type?: string | null
         }
         Update: {
           audio_duration_seconds?: number | null
@@ -591,6 +593,7 @@ export type Database = {
           recipient_name?: string | null
           share_group_id?: string | null
           user_id?: string
+          view_type?: string | null
         }
         Relationships: [
           {

@@ -1224,6 +1224,10 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             occasion_type: occasion || null,
             occasion_date: occasionDate || new Date().toISOString().split('T')[0],
             share_group_id: shareGroupId,
+            // View slot tag — index 2 is always the top-down view in both
+            // decorated and sculpted pipelines. Used by get_public_cake to
+            // order siblings so the top view always lands last in the reveal.
+            view_type: index === 0 ? 'front' : index === 1 ? 'side' : index === 2 ? 'top' : null,
           })
           .select()
           .single();

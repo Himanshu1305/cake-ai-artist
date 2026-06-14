@@ -12,6 +12,8 @@ interface CakeConvergeRevealProps {
   className?: string;
   /** Storage key namespace so the same recipient doesn't see reveal twice. */
   cacheKey?: string;
+  /** When false, holds at primary and does not run the sequence. */
+  enabled?: boolean;
 }
 
 const PER_IMAGE_MS = 2000;
@@ -30,6 +32,7 @@ export const CakeConvergeReveal = ({
   alt = "Personalized cake",
   className = "",
   cacheKey,
+  enabled = true,
 }: CakeConvergeRevealProps) => {
   const finalImage = finale && images.includes(finale) ? finale : primary;
   // Primary first, then other distinct angles, ending on finale.
@@ -48,8 +51,9 @@ export const CakeConvergeReveal = ({
   // change (e.g., a sibling slot fills in after mount).
   const sequenceKey = sequence.join("|");
 
-  // Preload images
+  // Preload images — only once enabled (e.g., after recipient taps splash)
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     if (sequence.length === 0) return;
     setReady(false);
@@ -68,10 +72,11 @@ export const CakeConvergeReveal = ({
     const safety = setTimeout(() => { if (!cancelled) setReady(true); }, 2500);
     return () => { cancelled = true; clearTimeout(safety); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, sequenceKey]);
+  }, [enabled, cacheKey, sequenceKey]);
 
-  // Run sequence — always plays (no skip cache)
+  // Run sequence — only once enabled and preload finished
   useEffect(() => {
+    if (!enabled) return;
     if (!ready) return;
     if (!hasMultiple) {
       setStep(sequence.length);
@@ -83,7 +88,7 @@ export const CakeConvergeReveal = ({
       timers.push(window.setTimeout(() => setStep(i), i * PER_IMAGE_MS));
     }
     return () => { timers.forEach(clearTimeout); };
-  }, [ready, hasMultiple, sequence.length]);
+  }, [enabled, ready, hasMultiple, sequence.length]);
 
   const handleSkip = () => setStep(sequence.length);
   const inSequence = step >= 0 && step < sequence.length;

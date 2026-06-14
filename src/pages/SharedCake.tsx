@@ -441,6 +441,7 @@ export default function SharedCake() {
                     }
                     alt={cake.recipient_name ? `Cake for ${cake.recipient_name}` : "Personalized cake"}
                     cacheKey={`${cake.id}_${revealKey}`}
+                    enabled={opened}
                   />
                   <div className="absolute bottom-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded pointer-events-none select-none">
                     🎂 cakeaiartist.com
