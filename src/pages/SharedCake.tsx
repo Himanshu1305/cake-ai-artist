@@ -500,7 +500,7 @@ export default function SharedCake() {
                       onEnded={() => {
                         setIsPlaying(false);
                         // Resume background music if user hasn't muted it
-                        if (!jingleMuted && interactedRef.current) startJingleIfNeeded();
+                        if (!jingleMuted && opened) startJingleIfNeeded();
                       }}
                       onPause={() => {
                         setIsPlaying(false);
