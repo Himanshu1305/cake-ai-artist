@@ -1,50 +1,51 @@
-## Fix cake generation failures — two layers
+# Fix: "Sign-in successful" toast appears but page never navigates
 
-### Layer 1: Remove the harmful 90s client-side startup timeout (proven regression)
+## What's happening (evidence)
 
-In `src/components/CakeCreator.tsx`:
-- Delete `CAKE_JOB_START_TIMEOUT_MS` and the `withTimeout()` wrapper around `supabase.functions.invoke('generate-complete-cake', ...)`.
-- Restore the pre-Jun 8 behavior: let the function call resolve naturally. The backend already returns a `jobId` quickly and the rest streams in via realtime/poll — there is no need for a client-side race timer.
-- Keep the existing 4-minute safety watchdog that runs after `jobId` is received; that one is harmless and only kicks in if the job row truly stalls.
-- Adjust the progress UI so it does not pretend to climb to 75% during startup. Show honest status text ("Starting cake generation…", "Uploading photo…") and only advance the bar once a real `jobId` or first image arrives.
+Your auth logs show that on `cakeaiartist.com` between 12:31 and 12:35 you successfully completed sign-in **six times in a row** (each `/token` returned 200). The toast said "Logged in successfully!" each time, but the Auth page never navigated, so you kept clicking sign-in. The session was actually being created every time — the UI just refused to leave `/auth`.
 
-This alone eliminates the exact failure mode where slow mobile + photo + High Quality requests were being killed at 90s by the client and shown as "failed to generate cake".
+The cause is in `src/pages/Auth.tsx`. Navigation after login is delegated **entirely** to the `onAuthStateChange` `SIGNED_IN` handler. That handler has two ways to silently fail:
 
-### Layer 2: Durable client-side attempt log (so failures can never hide again)
+1. **`mountedRef` bug (lines 45–54).** A separate `useEffect` with `[]` deps owns `mountedRef`, and its cleanup sets `mountedRef.current = false`. Under React StrictMode (and in any case where the Auth component remounts), the second mount never resets it back to `true`. Every subsequent `if (!mountedRef.current) return;` inside the SIGNED_IN handler then short-circuits before `navigate(...)` is called — so login succeeds but the page stays put.
+2. **Listener-only navigation is fragile.** Even setting (1) aside, depending on a deferred `setTimeout(... navigate ...)` inside an event listener for a *primary* user action ("I clicked Sign In") is brittle. Any thrown error, slow `profiles` query, or unmount cancels navigation with no visible feedback.
 
-New table `public.cake_generation_attempts`:
-- `id` uuid pk
-- `user_id` uuid (nullable for safety)
-- `client_attempt_id` text (unique per click)
-- `quality` text (`fast` | `high`)
-- `has_photo` boolean
-- `photo_bytes` integer
-- `client_started_at` timestamptz default now()
-- `client_finished_at` timestamptz
-- `outcome` text (`started` | `function_returned` | `startup_failed` | `function_error`)
-- `job_id` uuid (when returned)
-- `error_message` text
-- `user_agent` text
-- `created_at` timestamptz default now()
+## Fix (two small changes, frontend only)
 
-Grants + RLS:
-- `GRANT SELECT, INSERT, UPDATE ON public.cake_generation_attempts TO authenticated`
-- `GRANT ALL ON public.cake_generation_attempts TO service_role`
-- RLS: users can insert/select/update their own rows (`auth.uid() = user_id`); service role full access.
+### Change 1 — Navigate directly inside `handleAuth` after `signInWithPassword` succeeds
+File: `src/pages/Auth.tsx` (around line 254–262)
 
-`CakeCreator.tsx` wiring:
-- Generate a `client_attempt_id` on every Generate click.
-- Insert an `outcome = 'started'` row **before** calling `generate-complete-cake`, with quality, `has_photo`, `photo_bytes`, and `user_agent`.
-- After the call resolves: update the row to `function_returned` (with `job_id`) or `startup_failed` / `function_error` (with `error_message` truncated to ~500 chars) and `client_finished_at = now()`.
-- All logging is fire-and-forget; logging failures must never block or fail generation.
+- After `signInWithPassword` resolves without error, immediately:
+  - Read `profiles.country` for `data.user.id`.
+  - If country is missing → `navigate('/complete-profile')`.
+  - Otherwise → `navigate(getCountryHomePath(detectedCountry))`.
+- Keep the toast.
+- Remove the comment "Navigation is handled by onAuthStateChange listener".
 
-This guarantees that even if a future request never reaches the edge function, we still have a permanent forensic record of exactly what happened in the browser — quality, photo size, error string, timing — so we never have to guess again.
+This makes password login deterministic: the same function that started the sign-in finishes it.
 
-### Verification
-- Reproduce on mobile with a photo: Fast → share → High Quality → retry Fast.
-- Confirm: no client-side abort at 90s; every click produces a `cake_generation_attempts` row; successful runs additionally produce a `cake_generation_jobs` row; failed runs preserve a real error message.
+### Change 2 — Fix the `mountedRef` lifecycle
+File: `src/pages/Auth.tsx` (lines 45–54)
 
-### Out of scope (intentionally)
-- No changes to the edge function generation logic, prompts, or model.
-- No changes to Razorpay, gallery, sharing, or any other unrelated flow.
-- No client-side photo compression in this pass — keeping changes minimal and reversible; we can add it later if Layer 2 logs show oversized photos are a real factor.
+- Initialize `mountedRef` with `useRef(true)`.
+- Inside the **same** `useEffect` that uses it (the big one starting line 90), set `mountedRef.current = true;` at the top of the effect body, and `mountedRef.current = false;` in its cleanup.
+- Delete the redundant cleanup in the small `[]`-deps `useEffect` at lines 47–54 (keep only the `?mode=reset` logic there).
+
+This guarantees `mountedRef` reflects the real mount state on every (re)mount, so the OAuth/SIGNED_IN path (still needed for Google login) keeps working.
+
+### What stays the same
+- `onAuthStateChange` listener stays — Google OAuth still needs it (OAuth flow returns via redirect, not via `handleAuth`).
+- Password-recovery branch unchanged.
+- `getSession()` "already logged in" redirect unchanged.
+- No backend, RLS, or edge-function changes.
+- No changes to the cake-generation work from earlier today.
+
+## Verification
+1. Hard reload `cakeaiartist.com/auth` on mobile.
+2. Enter email + password, tap Sign In once.
+3. Expected: toast appears **and** the page leaves `/auth` to either the country landing page or `/complete-profile` on the first attempt.
+4. Repeat with Google sign-in to confirm OAuth path still navigates (it goes through the listener; the `mountedRef` fix is what protects it).
+
+## Out of scope
+- No changes to the cake generator, attempt-logging table, or watchdog.
+- No header/profile UI changes.
+- No auth provider configuration changes.

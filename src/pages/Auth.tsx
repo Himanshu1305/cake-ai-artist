@@ -50,8 +50,8 @@ const Auth = () => {
     if (params.get('mode') === 'reset' || sessionStorage.getItem('password_reset_in_progress')) {
       setIsResetMode(true);
     }
-    return () => { mountedRef.current = false; };
   }, []);
+
 
   // Set default country from geo-detection
   useEffect(() => {
