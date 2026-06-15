@@ -386,12 +386,15 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     checkUser();
     
     // Listen for auth state changes (login/logout/token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event);
       if (session) {
         setUser(session.user);
         setIsLoggedIn(true);
-        await loadUserData(session.user.id);
+        const userId = session.user.id;
+        setTimeout(() => {
+          if (isMountedRef.current) loadUserData(userId);
+        }, 0);
       } else {
         setUser(null);
         setIsLoggedIn(false);
