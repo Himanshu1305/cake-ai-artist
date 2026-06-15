@@ -1,39 +1,50 @@
-## Goal
-Stop the "stuck at 75% / taking too long / retry doesn't work" failure mode for cake generation, permanently. The GRANT migration already shipped — this plan layers the four remaining fixes on top so healthy jobs finish cleanly and unhealthy ones surface a real error.
+## Fix cake generation failures — two layers
 
-## Changes
+### Layer 1: Remove the harmful 90s client-side startup timeout (proven regression)
 
-### 1. `src/components/CakeCreator.tsx` — robust progress + retry
-- Track a `generationAttemptId` ref. Every new generation (initial + retry) bumps it; all async callbacks (realtime, polling, timers, image-load handlers, `bgPending` resolves) check the current id and bail if stale.
-- On retry, before kicking off a new job:
-  - `supabase.removeChannel(channel)` for any existing realtime channel and null the ref
-  - `clearTimeout` / `clearInterval` for all progress, watchdog, and poll timers
-  - reset `bgPending`, `bgFailed`, `savedImageIds`, partial image URLs, error state
-  - bump `generationAttemptId`
-- Treat the job row as the source of truth:
-  - While `cake_generation_jobs.status = 'in_progress'`, keep showing "Polishing your cake views… almost done" — never show a failure/timeout copy.
-  - Only show the "taking longer than usual" CTA after a soft threshold (e.g. 90s) AND status is still `in_progress`; offer "Keep waiting" (default) and "Cancel & retry" (explicit).
-  - Only show a true error when the job row flips to `status = 'failed'` — surface `error_message` if present.
-- Add a 1-shot fallback poll: if realtime hasn't delivered an update in 10s, `select * from cake_generation_jobs where id = ?` directly; this also makes us resilient to dropped sockets.
+In `src/components/CakeCreator.tsx`:
+- Delete `CAKE_JOB_START_TIMEOUT_MS` and the `withTimeout()` wrapper around `supabase.functions.invoke('generate-complete-cake', ...)`.
+- Restore the pre-Jun 8 behavior: let the function call resolve naturally. The backend already returns a `jobId` quickly and the rest streams in via realtime/poll — there is no need for a client-side race timer.
+- Keep the existing 4-minute safety watchdog that runs after `jobId` is received; that one is harmless and only kicks in if the job row truly stalls.
+- Adjust the progress UI so it does not pretend to climb to 75% during startup. Show honest status text ("Starting cake generation…", "Uploading photo…") and only advance the bar once a real `jobId` or first image arrives.
 
-### 2. `supabase/functions/cake-generation-watchdog/index.ts` — stop killing healthy jobs
-- Raise the auto-fail threshold from 2 min to 5 min for `quality = 'high'` and keep 3 min for `fast`.
-- Only mark a job `failed` if **zero** image URLs have landed AND it's past threshold. If 1–2 slots filled, mark it `partial` with the slots that are still missing flagged for retry, instead of failing the whole job.
-- Log a clear `error_message` ("watchdog timeout after Xs, missing: top/side/angle") so the UI can show it.
+This alone eliminates the exact failure mode where slow mobile + photo + High Quality requests were being killed at 90s by the client and shown as "failed to generate cake".
 
-### 3. `src/components/CakeCreator.tsx` — partial-result handling
-- If a job ends `partial`, render the slots we have and offer "Retry missing views" that only re-requests the missing view_types, not the whole cake. Re-uses the same `share_group_id` so the gallery/share flow stays intact.
+### Layer 2: Durable client-side attempt log (so failures can never hide again)
 
-### 4. Verification
-- Run Fast and High Quality from preview end-to-end; confirm `cake_generation_jobs` rows move `in_progress → completed` with 3 URLs.
-- Force a failure (temporarily throw in `generate-complete-cake`) and confirm the UI shows the real error message, retry cleans state, and a second attempt succeeds.
-- Confirm no duplicate realtime channels in console after 3 back-to-back retries.
+New table `public.cake_generation_attempts`:
+- `id` uuid pk
+- `user_id` uuid (nullable for safety)
+- `client_attempt_id` text (unique per click)
+- `quality` text (`fast` | `high`)
+- `has_photo` boolean
+- `photo_bytes` integer
+- `client_started_at` timestamptz default now()
+- `client_finished_at` timestamptz
+- `outcome` text (`started` | `function_returned` | `startup_failed` | `function_error`)
+- `job_id` uuid (when returned)
+- `error_message` text
+- `user_agent` text
+- `created_at` timestamptz default now()
 
-## Files touched
-- `src/components/CakeCreator.tsx` (retry cleanup, attempt-id guard, status-driven UI, fallback poll, partial retry)
-- `supabase/functions/cake-generation-watchdog/index.ts` (thresholds, partial status, error_message)
-- No DB migration needed — `cake_generation_jobs` already has a `status` column and the GRANTs from the previous migration.
+Grants + RLS:
+- `GRANT SELECT, INSERT, UPDATE ON public.cake_generation_attempts TO authenticated`
+- `GRANT ALL ON public.cake_generation_attempts TO service_role`
+- RLS: users can insert/select/update their own rows (`auth.uid() = user_id`); service role full access.
 
-## Out of scope
-- Changing the image-generation provider or prompts.
-- Any pricing/quota changes.
+`CakeCreator.tsx` wiring:
+- Generate a `client_attempt_id` on every Generate click.
+- Insert an `outcome = 'started'` row **before** calling `generate-complete-cake`, with quality, `has_photo`, `photo_bytes`, and `user_agent`.
+- After the call resolves: update the row to `function_returned` (with `job_id`) or `startup_failed` / `function_error` (with `error_message` truncated to ~500 chars) and `client_finished_at = now()`.
+- All logging is fire-and-forget; logging failures must never block or fail generation.
+
+This guarantees that even if a future request never reaches the edge function, we still have a permanent forensic record of exactly what happened in the browser — quality, photo size, error string, timing — so we never have to guess again.
+
+### Verification
+- Reproduce on mobile with a photo: Fast → share → High Quality → retry Fast.
+- Confirm: no client-side abort at 90s; every click produces a `cake_generation_attempts` row; successful runs additionally produce a `cake_generation_jobs` row; failed runs preserve a real error message.
+
+### Out of scope (intentionally)
+- No changes to the edge function generation logic, prompts, or model.
+- No changes to Razorpay, gallery, sharing, or any other unrelated flow.
+- No client-side photo compression in this pass — keeping changes minimal and reversible; we can add it later if Layer 2 logs show oversized photos are a real factor.
