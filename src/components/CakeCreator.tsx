@@ -220,8 +220,10 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       timers.push(timer);
     });
 
-    // Surface a "Try again" affordance if 60s pass with nothing filled yet.
-    const slowTimer = setTimeout(() => setShowSlowRetry(true), 60000);
+    // Surface a "Try again" affordance only after 90s — healthy High Quality
+    // jobs can legitimately take 60-75s, so a 60s prompt was alarming users
+    // while their cake was actually still rendering normally.
+    const slowTimer = setTimeout(() => setShowSlowRetry(true), 90000);
     timers.push(slowTimer);
 
     return () => {
