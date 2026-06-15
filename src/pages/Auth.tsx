@@ -32,7 +32,7 @@ const PROFILE_LOOKUP_TIMEOUT_MS = 2500;
 const withTimeout = <T,>(promise: PromiseLike<T>, timeoutMs: number): Promise<T | null> =>
   new Promise((resolve) => {
     const timeoutId = window.setTimeout(() => resolve(null), timeoutMs);
-    promise
+    Promise.resolve(promise)
       .then((value) => resolve(value))
       .catch(() => resolve(null))
       .finally(() => window.clearTimeout(timeoutId));
