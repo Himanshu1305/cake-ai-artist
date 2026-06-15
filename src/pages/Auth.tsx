@@ -161,7 +161,7 @@ const Auth = () => {
             }
           }
 
-          // Check if user has country set (deferred to avoid deadlock)
+          // Check if user has country set after the auth event finishes.
           timeoutIds.push(setTimeout(async () => {
             if (!mountedRef.current) return;
             const path = await getPostLoginPath(user.id, detectedCountry);
@@ -263,7 +263,7 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -271,9 +271,9 @@ const Auth = () => {
         if (error) throw error;
         toast.success("Logged in successfully!");
 
-        // Navigate directly; don't let a slow profile lookup keep the button stuck on Loading.
-        const path = await getPostLoginPath(signInData.user?.id, detectedCountry);
-        navigate(path, { replace: true });
+        // Navigate immediately after the session is stored. Do not wait on profile reads here;
+        // auth listeners will refresh the signed-in UI, and country can be completed later.
+        navigate(getCountryHomePath(detectedCountry), { replace: true });
 
       } else {
         const { data, error } = await supabase.auth.signUp({
