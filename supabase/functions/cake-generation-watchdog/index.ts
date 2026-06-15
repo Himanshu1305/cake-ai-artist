@@ -11,7 +11,9 @@ const corsHeaders = {
 };
 
 const ALERT_EMAIL = "himanshu1305@gmail.com";
-const STUCK_THRESHOLD_MINUTES = 2;
+// 5 min covers High Quality jobs that legitimately take 60-90s. We previously
+// killed healthy jobs at 2 min which surfaced as "stuck at 75%" in the UI.
+const STUCK_THRESHOLD_MINUTES = 5;
 const ALERT_COOLDOWN_MINUTES = 60;
 const MIN_SAMPLE_SIZE = 5;
 const FAILURE_RATE_THRESHOLD = 0.5;
@@ -27,24 +29,41 @@ serve(async (req) => {
   const result: Record<string, unknown> = { ranAt: new Date().toISOString() };
 
   try {
-    // ---- 1) Auto-fail stuck jobs ----
+    // ---- 1) Auto-fail / partial-fail stuck jobs ----
+    // Jobs with at least one filled slot are marked 'partial_failed' so the
+    // UI can render what we have and offer a per-slot retry. Only jobs with
+    // ZERO slots filled get the terminal 'failed' status.
     const stuckCutoff = new Date(Date.now() - STUCK_THRESHOLD_MINUTES * 60 * 1000).toISOString();
-    const { data: stuckJobs, error: stuckErr } = await supabase
+    const { data: stuckCandidates, error: stuckSelErr } = await supabase
       .from("cake_generation_jobs")
-      .update({
-        status: "failed",
-        error_message: `Auto-timeout: generation exceeded ${STUCK_THRESHOLD_MINUTES} minutes`,
-        updated_at: new Date().toISOString(),
-      })
-      // Cover both legacy "processing" and the current "in_progress" status
-      // the generate-complete-cake edge function inserts jobs with.
+      .select("id, hero_url, side_url, top_url")
       .in("status", ["processing", "in_progress"])
-      .lt("created_at", stuckCutoff)
-      .select("id");
+      .lt("created_at", stuckCutoff);
 
-    if (stuckErr) console.error("[watchdog] stuck update error", stuckErr);
-    const stuckCount = stuckJobs?.length ?? 0;
+    if (stuckSelErr) console.error("[watchdog] stuck select error", stuckSelErr);
+
+    let stuckCount = 0;
+    let partialCount = 0;
+    for (const j of stuckCandidates ?? []) {
+      const filled = [j.hero_url, j.side_url, j.top_url].filter(Boolean).length;
+      const nextStatus = filled > 0 ? "partial_failed" : "failed";
+      const { error: upErr } = await supabase
+        .from("cake_generation_jobs")
+        .update({
+          status: nextStatus,
+          error_message: `Auto-timeout: generation exceeded ${STUCK_THRESHOLD_MINUTES} minutes (filled ${filled}/3 views)`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", j.id);
+      if (upErr) {
+        console.error("[watchdog] stuck update error", j.id, upErr);
+        continue;
+      }
+      if (nextStatus === "failed") stuckCount += 1;
+      else partialCount += 1;
+    }
     result.autoFailedStuckJobs = stuckCount;
+    result.autoPartialStuckJobs = partialCount;
 
     // ---- 2) Compute last-hour health ----
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
