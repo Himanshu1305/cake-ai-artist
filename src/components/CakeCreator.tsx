@@ -745,6 +745,23 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         });
 
         setGenerationStep('Starting secure cake generation...');
+
+        // Layer 2: durable attempt log — write BEFORE invoking so we have a
+        // permanent record even if the POST never reaches the function.
+        const clientAttemptId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const photoBase64Body = userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined;
+        const photoBytes = photoBase64Body ? photoBase64Body.length : 0;
+        void logAttemptStart({
+          user_id: user?.id ?? null,
+          client_attempt_id: clientAttemptId,
+          quality: generationQuality,
+          has_photo: !!photoBase64Body,
+          photo_bytes: photoBytes,
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : '',
+        });
+
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -755,13 +772,17 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           layers: layers || undefined,
           theme: theme || undefined,
           colors: colors || undefined,
-          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
+          userPhotoBase64: photoBase64Body,
           quality: generationQuality,
         });
 
         if (error) {
           setGenerationProgress(0);
           setGenerationStep('');
+          void logAttemptFinish(clientAttemptId, {
+            outcome: 'startup_failed',
+            error_message: (error as any)?.message || String(error),
+          });
           if (data?.error === 'generation_limit_reached') {
             toast({
               title: "Free generations used up",
@@ -774,6 +795,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           console.error('Native generation error:', error);
           throw new Error((error as any).message || 'Failed to generate cake images');
         }
+
+        // Successful response from function — log it. jobId may be undefined for legacy paths.
+        void logAttemptFinish(clientAttemptId, {
+          outcome: data?.success === false ? 'function_error' : 'function_returned',
+          job_id: data?.jobId ?? null,
+          error_message: data?.success === false ? (data?.error || null) : null,
+        });
 
         if (data?.success === false) {
           const message = data.error || 'The cake generator could not create the main view. Please try again.';
