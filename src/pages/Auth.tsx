@@ -179,10 +179,12 @@ const Auth = () => {
     });
 
     return () => {
+      mountedRef.current = false;
       subscription.unsubscribe();
       timeoutIds.forEach(clearTimeout);
     };
   }, [navigate]);
+
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
