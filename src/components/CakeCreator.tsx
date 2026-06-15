@@ -51,20 +51,50 @@ const cakeFormSchema = z.object({
 });
 
 
-const CAKE_JOB_START_TIMEOUT_MS = 90000;
+// NOTE: A 90s client-side startup timeout used to wrap the function invoke
+// here. It was killing legitimately-slow mobile + photo + High Quality
+// requests at exactly 90s and surfacing them as "failed to generate cake".
+// Removed on 2026-06-15. The backend returns a jobId quickly and the rest
+// streams in via realtime/poll, so no client-side race timer is needed.
+// A separate 4-minute watchdog (handleSubmit) still catches truly stalled jobs.
 
-const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`${label} timed out after ${Math.round(timeoutMs / 1000)}s`));
-    }, timeoutMs);
-  });
-
+// Fire-and-forget attempt logger — every Generate click writes a row to
+// `cake_generation_attempts` BEFORE invoking the edge function, then updates
+// it after. Guarantees a permanent forensic trail even if the POST never
+// reaches Supabase. Never blocks or throws into the generation flow.
+const logAttemptStart = async (row: {
+  user_id: string | null;
+  client_attempt_id: string;
+  quality: string;
+  has_photo: boolean;
+  photo_bytes: number;
+  user_agent: string;
+}) => {
   try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
+    await supabase.from('cake_generation_attempts' as any).insert({
+      ...row,
+      outcome: 'started',
+    });
+  } catch (e) {
+    console.warn('[cake] attempt log insert failed (non-fatal):', e);
+  }
+};
+
+const logAttemptFinish = async (
+  client_attempt_id: string,
+  patch: { outcome: string; job_id?: string | null; error_message?: string | null },
+) => {
+  try {
+    await supabase
+      .from('cake_generation_attempts' as any)
+      .update({
+        ...patch,
+        error_message: patch.error_message ? String(patch.error_message).slice(0, 500) : null,
+        client_finished_at: new Date().toISOString(),
+      })
+      .eq('client_attempt_id', client_attempt_id);
+  } catch (e) {
+    console.warn('[cake] attempt log update failed (non-fatal):', e);
   }
 };
 
@@ -528,17 +558,14 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     });
   };
 
-  // Single-attempt invoke. The backend should return a jobId quickly; if that
-  // startup request hangs, fail clearly instead of leaving the progress bar at 75%.
+  // Single-attempt invoke. No client-side race timer — the backend returns a
+  // jobId quickly and the rest streams in. A client timer can only do harm
+  // (kill a successful job and show a confusing "timed out" toast).
   const invokeWithRetry = async (functionName: string, body: any, _maxRetries = 0) => {
     const startedAt = Date.now();
     console.info('[cake] invoking function', { functionName, quality: body?.quality });
     try {
-      const result = await withTimeout(
-        supabase.functions.invoke(functionName, { body }),
-        CAKE_JOB_START_TIMEOUT_MS,
-        'Cake generation startup request',
-      );
+      const result = await supabase.functions.invoke(functionName, { body });
       console.info('[cake] function invoke resolved', {
         functionName,
         elapsedMs: Date.now() - startedAt,
@@ -718,6 +745,23 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         });
 
         setGenerationStep('Starting secure cake generation...');
+
+        // Layer 2: durable attempt log — write BEFORE invoking so we have a
+        // permanent record even if the POST never reaches the function.
+        const clientAttemptId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const photoBase64Body = userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined;
+        const photoBytes = photoBase64Body ? photoBase64Body.length : 0;
+        void logAttemptStart({
+          user_id: user?.id ?? null,
+          client_attempt_id: clientAttemptId,
+          quality: generationQuality,
+          has_photo: !!photoBase64Body,
+          photo_bytes: photoBytes,
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : '',
+        });
+
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -728,13 +772,17 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           layers: layers || undefined,
           theme: theme || undefined,
           colors: colors || undefined,
-          userPhotoBase64: userPhotoPreview ? userPhotoPreview.split(',')[1] : undefined,
+          userPhotoBase64: photoBase64Body,
           quality: generationQuality,
         });
 
         if (error) {
           setGenerationProgress(0);
           setGenerationStep('');
+          void logAttemptFinish(clientAttemptId, {
+            outcome: 'startup_failed',
+            error_message: (error as any)?.message || String(error),
+          });
           if (data?.error === 'generation_limit_reached') {
             toast({
               title: "Free generations used up",
@@ -747,6 +795,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           console.error('Native generation error:', error);
           throw new Error((error as any).message || 'Failed to generate cake images');
         }
+
+        // Successful response from function — log it. jobId may be undefined for legacy paths.
+        void logAttemptFinish(clientAttemptId, {
+          outcome: data?.success === false ? 'function_error' : 'function_returned',
+          job_id: data?.jobId ?? null,
+          error_message: data?.success === false ? (data?.error || null) : null,
+        });
 
         if (data?.success === false) {
           const message = data.error || 'The cake generator could not create the main view. Please try again.';

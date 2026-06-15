@@ -207,6 +207,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cake_generation_attempts: {
+        Row: {
+          client_attempt_id: string
+          client_finished_at: string | null
+          client_started_at: string
+          created_at: string
+          error_message: string | null
+          has_photo: boolean | null
+          id: string
+          job_id: string | null
+          outcome: string
+          photo_bytes: number | null
+          quality: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          client_attempt_id: string
+          client_finished_at?: string | null
+          client_started_at?: string
+          created_at?: string
+          error_message?: string | null
+          has_photo?: boolean | null
+          id?: string
+          job_id?: string | null
+          outcome?: string
+          photo_bytes?: number | null
+          quality?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          client_attempt_id?: string
+          client_finished_at?: string | null
+          client_started_at?: string
+          created_at?: string
+          error_message?: string | null
+          has_photo?: boolean | null
+          id?: string
+          job_id?: string | null
+          outcome?: string
+          photo_bytes?: number | null
+          quality?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cake_generation_events: {
         Row: {
           created_at: string
