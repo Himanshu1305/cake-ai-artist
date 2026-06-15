@@ -27,6 +27,33 @@ const signupSchema = z.object({
   ageConfirmed: z.literal(true, { errorMap: () => ({ message: "You must confirm you are at least 13 years old" }) }),
 });
 
+const PROFILE_LOOKUP_TIMEOUT_MS = 2500;
+
+const withTimeout = <T,>(promise: PromiseLike<T>, timeoutMs: number): Promise<T | null> =>
+  new Promise((resolve) => {
+    const timeoutId = window.setTimeout(() => resolve(null), timeoutMs);
+    Promise.resolve(promise)
+      .then((value) => resolve(value))
+      .catch(() => resolve(null))
+      .finally(() => window.clearTimeout(timeoutId));
+  });
+
+const getPostLoginPath = async (userId: string | undefined, detectedCountry?: string | null) => {
+  if (!userId) return getCountryHomePath(detectedCountry);
+
+  const result = await withTimeout(
+    supabase
+      .from('profiles')
+      .select('country')
+      .eq('id', userId)
+      .maybeSingle(),
+    PROFILE_LOOKUP_TIMEOUT_MS
+  );
+
+  if (!result || result.error) return getCountryHomePath(detectedCountry);
+  return result.data?.country ? getCountryHomePath(detectedCountry) : '/complete-profile';
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const { detectedCountry } = useGeoContext();
@@ -137,18 +164,8 @@ const Auth = () => {
           // Check if user has country set (deferred to avoid deadlock)
           timeoutIds.push(setTimeout(async () => {
             if (!mountedRef.current) return;
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('country')
-              .eq('id', user.id)
-              .single();
-
-            if (!profile?.country) {
-              // OAuth user without country - redirect to complete profile
-              navigate("/complete-profile");
-            } else {
-              navigate(getCountryHomePath(detectedCountry));
-            }
+            const path = await getPostLoginPath(user.id, detectedCountry);
+            if (mountedRef.current) navigate(path, { replace: true });
           }, 0));
         }
       }
@@ -163,18 +180,8 @@ const Auth = () => {
       if (params.get('mode') === 'reset') return;
 
       if (session) {
-        // Check if country is set
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('country')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!profile?.country) {
-          navigate("/complete-profile");
-        } else {
-          navigate(getCountryHomePath(detectedCountry));
-        }
+        const path = await getPostLoginPath(session.user.id, detectedCountry);
+        if (mountedRef.current) navigate(path, { replace: true });
       }
     });
 
@@ -183,7 +190,7 @@ const Auth = () => {
       subscription.unsubscribe();
       timeoutIds.forEach(clearTimeout);
     };
-  }, [navigate]);
+  }, [navigate, detectedCountry]);
 
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -264,24 +271,9 @@ const Auth = () => {
         if (error) throw error;
         toast.success("Logged in successfully!");
 
-        // Navigate directly — don't rely on onAuthStateChange listener
-        const userId = signInData.user?.id;
-        if (userId) {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('country')
-              .eq('id', userId)
-              .single();
-            if (!profile?.country) {
-              navigate('/complete-profile');
-            } else {
-              navigate(getCountryHomePath(detectedCountry));
-            }
-          } catch {
-            navigate(getCountryHomePath(detectedCountry));
-          }
-        }
+        // Navigate directly; don't let a slow profile lookup keep the button stuck on Loading.
+        const path = await getPostLoginPath(signInData.user?.id, detectedCountry);
+        navigate(path, { replace: true });
 
       } else {
         const { data, error } = await supabase.auth.signUp({
