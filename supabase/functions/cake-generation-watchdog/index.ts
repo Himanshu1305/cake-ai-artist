@@ -11,7 +11,9 @@ const corsHeaders = {
 };
 
 const ALERT_EMAIL = "himanshu1305@gmail.com";
-const STUCK_THRESHOLD_MINUTES = 2;
+// 5 min covers High Quality jobs that legitimately take 60-90s. We previously
+// killed healthy jobs at 2 min which surfaced as "stuck at 75%" in the UI.
+const STUCK_THRESHOLD_MINUTES = 5;
 const ALERT_COOLDOWN_MINUTES = 60;
 const MIN_SAMPLE_SIZE = 5;
 const FAILURE_RATE_THRESHOLD = 0.5;
