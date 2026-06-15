@@ -1,38 +1,39 @@
-## Problem
+## Goal
+Stop the "stuck at 75% / taking too long / retry doesn't work" failure mode for cake generation, permanently. The GRANT migration already shipped — this plan layers the four remaining fixes on top so healthy jobs finish cleanly and unhealthy ones surface a real error.
 
-Generation is now job-based, but the UI still behaves like the first function call should return images. The backend returns a job quickly with all image slots empty, then fills `cake_generation_jobs` in the background. The frontend reaches 75%, waits, and can show a slow/error state even though the job may still be running or already completed. Retry also starts a new request without reliably cleaning the previous job state.
+## Changes
 
-I also found a backend access problem: `cake_generation_jobs` has policies but no explicit Data API grants, so the browser can fail to read job progress in some environments. That makes the UI think retry/progress is broken.
+### 1. `src/components/CakeCreator.tsx` — robust progress + retry
+- Track a `generationAttemptId` ref. Every new generation (initial + retry) bumps it; all async callbacks (realtime, polling, timers, image-load handlers, `bgPending` resolves) check the current id and bail if stale.
+- On retry, before kicking off a new job:
+  - `supabase.removeChannel(channel)` for any existing realtime channel and null the ref
+  - `clearTimeout` / `clearInterval` for all progress, watchdog, and poll timers
+  - reset `bgPending`, `bgFailed`, `savedImageIds`, partial image URLs, error state
+  - bump `generationAttemptId`
+- Treat the job row as the source of truth:
+  - While `cake_generation_jobs.status = 'in_progress'`, keep showing "Polishing your cake views… almost done" — never show a failure/timeout copy.
+  - Only show the "taking longer than usual" CTA after a soft threshold (e.g. 90s) AND status is still `in_progress`; offer "Keep waiting" (default) and "Cancel & retry" (explicit).
+  - Only show a true error when the job row flips to `status = 'failed'` — surface `error_message` if present.
+- Add a 1-shot fallback poll: if realtime hasn't delivered an update in 10s, `select * from cake_generation_jobs where id = ?` directly; this also makes us resilient to dropped sockets.
 
-## Plan
+### 2. `supabase/functions/cake-generation-watchdog/index.ts` — stop killing healthy jobs
+- Raise the auto-fail threshold from 2 min to 5 min for `quality = 'high'` and keep 3 min for `fast`.
+- Only mark a job `failed` if **zero** image URLs have landed AND it's past threshold. If 1–2 slots filled, mark it `partial` with the slots that are still missing flagged for retry, instead of failing the whole job.
+- Log a clear `error_message` ("watchdog timeout after Xs, missing: top/side/angle") so the UI can show it.
 
-1. **Fix database access for job progress**
-   - Add explicit permissions for authenticated users to read their own `cake_generation_jobs` rows.
-   - Keep service-role access for the background generator/watchdog.
-   - Do not expose jobs publicly.
+### 3. `src/components/CakeCreator.tsx` — partial-result handling
+- If a job ends `partial`, render the slots we have and offer "Retry missing views" that only re-requests the missing view_types, not the whole cake. Re-uses the same `share_group_id` so the gallery/share flow stays intact.
 
-2. **Make the frontend treat 202 as “job queued”, not “failed/empty result”**
-   - When `generate-complete-cake` returns a `jobId`, immediately render the 3 placeholders and start polling/subscribing.
-   - Do not show “taking too long” as a failure while the job row is still `in_progress`.
-   - Keep progress at a clear “rendering views” state until either images arrive or the backend records a real failure.
+### 4. Verification
+- Run Fast and High Quality from preview end-to-end; confirm `cake_generation_jobs` rows move `in_progress → completed` with 3 URLs.
+- Force a failure (temporarily throw in `generate-complete-cake`) and confirm the UI shows the real error message, retry cleans state, and a second attempt succeeds.
+- Confirm no duplicate realtime channels in console after 3 back-to-back retries.
 
-3. **Fix retry behavior**
-   - Before retrying, cancel the old realtime subscription/timers and bump the generation attempt id.
-   - Clear previous `bgPending`, `bgFailed`, saved IDs, and old images so stale callbacks cannot overwrite the retry.
-   - Retry should start a fresh job and resume polling from that job only.
+## Files touched
+- `src/components/CakeCreator.tsx` (retry cleanup, attempt-id guard, status-driven UI, fallback poll, partial retry)
+- `supabase/functions/cake-generation-watchdog/index.ts` (thresholds, partial status, error_message)
+- No DB migration needed — `cake_generation_jobs` already has a `status` column and the GRANTs from the previous migration.
 
-4. **Make timeout handling less destructive**
-   - Frontend timeout should mark only missing slots as retryable, not fail the entire generation if some images are still arriving.
-   - Backend watchdog should not auto-fail jobs too aggressively while image generation is still reasonably within the advertised High Quality window.
-
-5. **Verify with backend data and preview flow**
-   - Confirm recent jobs move from `in_progress` to `completed` with all 3 URLs.
-   - Test Fast and High Quality from the preview: progress should move past 75%, placeholders should fill, and retry should create a fresh working job.
-
-## Files / backend touched
-
-- `src/components/CakeCreator.tsx`
-- `supabase/functions/cake-generation-watchdog/index.ts`
-- Database migration for `cake_generation_jobs` permissions
-
-No changes to public share pages or image ordering are needed for this issue.
+## Out of scope
+- Changing the image-generation provider or prompts.
+- Any pricing/quota changes.
