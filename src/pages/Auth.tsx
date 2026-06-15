@@ -256,14 +256,33 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
         toast.success("Logged in successfully!");
-        // Navigation is handled by onAuthStateChange listener
+
+        // Navigate directly — don't rely on onAuthStateChange listener
+        const userId = signInData.user?.id;
+        if (userId) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('country')
+              .eq('id', userId)
+              .single();
+            if (!profile?.country) {
+              navigate('/complete-profile');
+            } else {
+              navigate(getCountryHomePath(detectedCountry));
+            }
+          } catch {
+            navigate(getCountryHomePath(detectedCountry));
+          }
+        }
+
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
