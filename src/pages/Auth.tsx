@@ -50,8 +50,8 @@ const Auth = () => {
     if (params.get('mode') === 'reset' || sessionStorage.getItem('password_reset_in_progress')) {
       setIsResetMode(true);
     }
-    return () => { mountedRef.current = false; };
   }, []);
+
 
   // Set default country from geo-detection
   useEffect(() => {
@@ -88,10 +88,12 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     const timeoutIds: ReturnType<typeof setTimeout>[] = [];
 
     // Set up auth state listener for OAuth signups and password reset
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
+
       (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           // User clicked password reset email link — store flag and show reset form
@@ -177,10 +179,12 @@ const Auth = () => {
     });
 
     return () => {
+      mountedRef.current = false;
       subscription.unsubscribe();
       timeoutIds.forEach(clearTimeout);
     };
   }, [navigate]);
+
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,14 +256,33 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
         toast.success("Logged in successfully!");
-        // Navigation is handled by onAuthStateChange listener
+
+        // Navigate directly — don't rely on onAuthStateChange listener
+        const userId = signInData.user?.id;
+        if (userId) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('country')
+              .eq('id', userId)
+              .single();
+            if (!profile?.country) {
+              navigate('/complete-profile');
+            } else {
+              navigate(getCountryHomePath(detectedCountry));
+            }
+          } catch {
+            navigate(getCountryHomePath(detectedCountry));
+          }
+        }
+
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
