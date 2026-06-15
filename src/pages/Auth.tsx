@@ -88,10 +88,12 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     const timeoutIds: ReturnType<typeof setTimeout>[] = [];
 
     // Set up auth state listener for OAuth signups and password reset
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
+
       (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           // User clicked password reset email link — store flag and show reset form
