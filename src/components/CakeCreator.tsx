@@ -976,7 +976,8 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error || row.error_message || row.status === 'partial_failed');
 
             // Real progress: each filled slot bumps the bar.
-            if (row.greeting_message) {
+            // Don't let the AI-generated greeting clobber a user-typed custom message.
+            if (row.greeting_message && !(useCustomMessage && customMessage.trim())) {
               setGeneratedMessage(row.greeting_message);
               setDisplayedMessage(row.greeting_message);
             }
