@@ -730,11 +730,15 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           const bgTask = Promise.resolve().then(async () => {
             const tBg = Date.now();
             console.log(`[bg ${bgJobId}] starting ${viewsToRun.length} queued views`);
-            const messageTask = generateMessageAsync()
-              .then((msg) => supabase.from('cake_generation_jobs').update({ greeting_message: msg }).eq('id', bgJobId))
-              .catch((e) => console.warn(`[bg ${bgJobId}] greeting message fallback used:`, e?.message || String(e)));
-            // Do not let greeting-message generation hold the image job open.
-            messageTask.catch(() => {});
+            if (!customMessageClean) {
+              const messageTask = generateMessageAsync()
+                .then((msg) => supabase.from('cake_generation_jobs').update({ greeting_message: msg }).eq('id', bgJobId))
+                .catch((e) => console.warn(`[bg ${bgJobId}] greeting message fallback used:`, e?.message || String(e)));
+              // Do not let greeting-message generation hold the image job open.
+              messageTask.catch(() => {});
+            } else {
+              console.log(`[bg ${bgJobId}] skipping AI greeting — using user-supplied custom message`);
+            }
             // Track per-slot completion locally so we can write the terminal
             // `completed` status optimistically as soon as the final expected
             // slot is filled — otherwise the watchdog (2 min threshold) can
