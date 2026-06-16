@@ -153,8 +153,10 @@ serve(async (req) => {
       colors, 
       userPhotoBase64,
       specificView,
-      quality
+      quality,
+      customMessage,
     } = validationResult.data;
+    const customMessageClean = (customMessage || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 250);
 
     // Defensive: strip newlines and clamp length so a message accidentally
     // entered as a name can't bake an unwanted phrase onto the cake.
