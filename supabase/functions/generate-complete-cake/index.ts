@@ -22,6 +22,7 @@ const cakeRequestSchema = z.object({
   userPhotoBase64: z.string().max(5000000).optional().nullable(), // ~3.75MB base64
   specificView: z.enum(['front', 'side', 'top', 'main']).optional().nullable(),
   quality: z.enum(['fast', 'high']).optional().default('fast'),
+  customMessage: z.string().max(500).optional().nullable(),
 });
 
 serve(async (req) => {
