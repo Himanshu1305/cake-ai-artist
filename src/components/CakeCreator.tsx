@@ -765,6 +765,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : '',
         });
 
+        const customMessageTrimmed = useCustomMessage ? customMessage.trim() : '';
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -777,6 +778,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           colors: colors || undefined,
           userPhotoBase64: photoBase64Body,
           quality: generationQuality,
+          customMessage: customMessageTrimmed || undefined,
         });
 
         if (error) {
