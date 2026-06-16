@@ -1,51 +1,43 @@
-# Fix: "Sign-in successful" toast appears but page never navigates
+## Issue 1 — Custom message overwritten by AI message on the share page
 
-## What's happening (evidence)
+**Root cause:** In `src/components/CakeCreator.tsx`, the realtime/polling handler for `cake_generation_jobs` (around lines 977-980) unconditionally overwrites the on-screen message with the AI-generated `greeting_message` from the job row:
 
-Your auth logs show that on `cakeaiartist.com` between 12:31 and 12:35 you successfully completed sign-in **six times in a row** (each `/token` returned 200). The toast said "Logged in successfully!" each time, but the Auth page never navigated, so you kept clicking sign-in. The session was actually being created every time — the UI just refused to leave `/auth`.
+```ts
+if (row.greeting_message) {
+  setGeneratedMessage(row.greeting_message);
+  setDisplayedMessage(row.greeting_message);   // ← clobbers user's custom text
+}
+```
 
-The cause is in `src/pages/Auth.tsx`. Navigation after login is delegated **entirely** to the `onAuthStateChange` `SIGNED_IN` handler. That handler has two ways to silently fail:
+The user picks "✍️ Custom" and types text → `displayedMessage` is correctly set to the custom message during submit. But moments later the background job finishes generating its own AI greeting and writes it back to `cake_generation_jobs.greeting_message`. The subscriber overwrites `displayedMessage`, so by the time the user clicks "Save to Gallery", the row is persisted with the AI message — and that's what `get_public_cake` returns on `/cake/:id`. Also the edge function (`generate-complete-cake/index.ts`, line 731) generates an AI greeting on every run even when the user supplied a custom one — wasted credits.
 
-1. **`mountedRef` bug (lines 45–54).** A separate `useEffect` with `[]` deps owns `mountedRef`, and its cleanup sets `mountedRef.current = false`. Under React StrictMode (and in any case where the Auth component remounts), the second mount never resets it back to `true`. Every subsequent `if (!mountedRef.current) return;` inside the SIGNED_IN handler then short-circuits before `navigate(...)` is called — so login succeeds but the page stays put.
-2. **Listener-only navigation is fragile.** Even setting (1) aside, depending on a deferred `setTimeout(... navigate ...)` inside an event listener for a *primary* user action ("I clicked Sign In") is brittle. Any thrown error, slow `profiles` query, or unmount cancels navigation with no visible feedback.
+**Fix:**
 
-## Fix (two small changes, frontend only)
+1. `src/components/CakeCreator.tsx` — guard the realtime update:
+   ```ts
+   if (row.greeting_message && !(useCustomMessage && customMessage.trim())) {
+     setGeneratedMessage(row.greeting_message);
+     setDisplayedMessage(row.greeting_message);
+   }
+   ```
+2. `src/components/CakeCreator.tsx` — pass the custom message to the edge function in the request body when `useCustomMessage && customMessage.trim()` is true (new field `customMessage`).
+3. `supabase/functions/generate-complete-cake/index.ts` — when `customMessage` is present:
+   - seed `greeting_message` in the initial job-row insert with the custom text,
+   - skip the `generateMessageAsync()` call entirely (no AI message, no credits spent),
+   - return `greetingMessage: customMessage` in the response payload.
 
-### Change 1 — Navigate directly inside `handleAuth` after `signInWithPassword` succeeds
-File: `src/pages/Auth.tsx` (around line 254–262)
+This guarantees the custom text survives all the way to `generated_images.message` and therefore to the public share page.
 
-- After `signInWithPassword` resolves without error, immediately:
-  - Read `profiles.country` for `data.user.id`.
-  - If country is missing → `navigate('/complete-profile')`.
-  - Otherwise → `navigate(getCountryHomePath(detectedCountry))`.
-- Keep the toast.
-- Remove the comment "Navigation is handled by onAuthStateChange listener".
+## Issue 2 — Fast vs High Quality share URL difference
 
-This makes password login deterministic: the same function that started the sign-in finishes it.
+I need one detail before fixing this one. From your earlier reply: "Fast has got an image as part of URL but High Quality does not." Could you confirm which of these you mean (I'll ask again in chat after the plan):
 
-### Change 2 — Fix the `mountedRef` lifecycle
-File: `src/pages/Auth.tsx` (lines 45–54)
+- **WhatsApp link preview**: Fast cake shows a thumbnail card, HQ shows only text — i.e. the Open Graph image is missing for HQ.
+- **The text WhatsApp pastes**: Fast pastes an image URL alongside the link, HQ pastes only the link.
+- **The Magic Share Link string itself** looks different between the two modes.
 
-- Initialize `mountedRef` with `useRef(true)`.
-- Inside the **same** `useEffect` that uses it (the big one starting line 90), set `mountedRef.current = true;` at the top of the effect body, and `mountedRef.current = false;` in its cleanup.
-- Delete the redundant cleanup in the small `[]`-deps `useEffect` at lines 47–54 (keep only the `?mode=reset` logic there).
+Most likely it's the first one: HQ saves a row whose `image_url` is a still-rendering placeholder (or hero hadn't finished when "Save to Gallery" fired), so the share page has no OG image. Once you confirm, the fix is either:
+- block "Save to Gallery" until the hero view is ready, or
+- on the SharedCake page, fall back to a sibling image when `image_url` is a placeholder.
 
-This guarantees `mountedRef` reflects the real mount state on every (re)mount, so the OAuth/SIGNED_IN path (still needed for Google login) keeps working.
-
-### What stays the same
-- `onAuthStateChange` listener stays — Google OAuth still needs it (OAuth flow returns via redirect, not via `handleAuth`).
-- Password-recovery branch unchanged.
-- `getSession()` "already logged in" redirect unchanged.
-- No backend, RLS, or edge-function changes.
-- No changes to the cake-generation work from earlier today.
-
-## Verification
-1. Hard reload `cakeaiartist.com/auth` on mobile.
-2. Enter email + password, tap Sign In once.
-3. Expected: toast appears **and** the page leaves `/auth` to either the country landing page or `/complete-profile` on the first attempt.
-4. Repeat with Google sign-in to confirm OAuth path still navigates (it goes through the listener; the `mountedRef` fix is what protects it).
-
-## Out of scope
-- No changes to the cake generator, attempt-logging table, or watchdog.
-- No header/profile UI changes.
-- No auth provider configuration changes.
+I'll lock down Issue 2's fix after your confirmation, but Issue 1 is unambiguous and can be implemented now.
