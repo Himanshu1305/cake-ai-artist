@@ -691,7 +691,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         console.log(`[gen job] queued hero=${heroView.name}, views=[${allViewNames.join(',')}]`);
 
         let jobId: string | null = null;
-        greetingMessage = `Happy ${occasion || 'Birthday'}, ${name}!`;
+        greetingMessage = customMessageClean || `Happy ${occasion || 'Birthday'}, ${name}!`;
         const backgroundViews = viewsToRun.slice(1);
         const jobInsert: Record<string, unknown> = {
           user_id: user.id,
