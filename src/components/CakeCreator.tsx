@@ -765,6 +765,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 300) : '',
         });
 
+        const customMessageTrimmed = useCustomMessage ? customMessage.trim() : '';
         const { data, error } = await invokeWithRetry('generate-complete-cake', {
           name: name.trim(),
           character: character || undefined,
@@ -777,6 +778,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           colors: colors || undefined,
           userPhotoBase64: photoBase64Body,
           quality: generationQuality,
+          customMessage: customMessageTrimmed || undefined,
         });
 
         if (error) {
@@ -974,7 +976,8 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             const hasRealError = !!(row.hero_error || row.side_error || row.top_error || row.error_message || row.status === 'partial_failed');
 
             // Real progress: each filled slot bumps the bar.
-            if (row.greeting_message) {
+            // Don't let the AI-generated greeting clobber a user-typed custom message.
+            if (row.greeting_message && !(useCustomMessage && customMessage.trim())) {
               setGeneratedMessage(row.greeting_message);
               setDisplayedMessage(row.greeting_message);
             }
