@@ -184,9 +184,30 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       // the access token can silently expire while the user is recording,
       // which then triggers an RLS failure on upload.
       step = "session";
-      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      let { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (sessionErr) throw sessionErr;
-      const session = sessionData?.session;
+      let session = sessionData?.session;
+
+      const nowSec = Math.floor(Date.now() / 1000);
+      const expiresAt = session?.expires_at ?? 0;
+      const secondsToExpiry = expiresAt - nowSec;
+      console.info("[AudioRecorder] pre-upload session", {
+        hasSession: !!session,
+        sessionUserId: session?.user?.id ?? null,
+        propUserId: userId,
+        expiresAt,
+        secondsToExpiry,
+      });
+      if (!session || secondsToExpiry < 60) {
+        console.info("[AudioRecorder] refreshing session (expiring/none)");
+        const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+        if (refreshErr) {
+          console.error("[AudioRecorder] refreshSession error", refreshErr);
+        } else {
+          session = refreshed.session ?? session;
+        }
+      }
+
       if (!session?.user?.id) {
         toast({
           title: "Please sign in again",
@@ -197,9 +218,10 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
         return;
       }
       if (session.user.id !== userId) {
+        console.warn("[AudioRecorder] uid mismatch", { sessionUid: session.user.id, propUserId: userId });
         toast({
           title: "Account mismatch",
-          description: "Please refresh the page and try again.",
+          description: `Session uid ${session.user.id.slice(0, 8)}… vs prop ${userId.slice(0, 8)}…. Refresh and retry.`,
           variant: "destructive",
         });
         setPhase("preview");
@@ -208,7 +230,17 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
 
       const blob = new Blob(chunksRef.current, { type: mimeRef.current });
       const ext = extFromMime(mimeRef.current);
-      const path = `${userId}/${cakeImageId}.${ext}`;
+      // Use a unique filename per recording so any stale object/owner
+      // can't block a new upload. Still scoped to {userId}/ for the policy.
+      const path = `${userId}/${cakeImageId}-${Date.now()}.${ext}`;
+
+      console.info("[AudioRecorder] uploading", {
+        path,
+        size: blob.size,
+        mime: mimeRef.current,
+        sessionUid: session.user.id,
+        tokenLen: session.access_token?.length ?? 0,
+      });
 
       // Best-effort delete previous file (ignore errors)
       try {
