@@ -178,7 +178,34 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
   const saveAudio = async () => {
     if (chunksRef.current.length === 0) return;
     setPhase("uploading");
+    let step = "init";
     try {
+      // Step 0: ensure we have a fresh authenticated session. On mobile,
+      // the access token can silently expire while the user is recording,
+      // which then triggers an RLS failure on upload.
+      step = "session";
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      if (sessionErr) throw sessionErr;
+      const session = sessionData?.session;
+      if (!session?.user?.id) {
+        toast({
+          title: "Please sign in again",
+          description: "Your session expired. Sign in and re-record your voice message.",
+          variant: "destructive",
+        });
+        setPhase("preview");
+        return;
+      }
+      if (session.user.id !== userId) {
+        toast({
+          title: "Account mismatch",
+          description: "Please refresh the page and try again.",
+          variant: "destructive",
+        });
+        setPhase("preview");
+        return;
+      }
+
       const blob = new Blob(chunksRef.current, { type: mimeRef.current });
       const ext = extFromMime(mimeRef.current);
       const path = `${userId}/${cakeImageId}.${ext}`;
@@ -192,6 +219,7 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
         ]);
       } catch {}
 
+      step = "upload";
       const { error: upErr } = await supabase.storage
         .from("cake-audio")
         .upload(path, blob, {
@@ -207,25 +235,31 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       // Look up share_group_id so we can attach this audio to ALL sibling
       // images saved in the same batch — recipients hear the voice message
       // no matter which view's link was shared.
-      const { data: currentRow } = await supabase
+      step = "lookup-group";
+      const { data: currentRow, error: lookupErr } = await supabase
         .from("generated_images")
         .select("share_group_id")
         .eq("id", cakeImageId)
         .maybeSingle();
+      if (lookupErr) throw lookupErr;
 
       const groupId = currentRow?.share_group_id ?? null;
 
       if (groupId) {
+        step = "update-group";
         const { error: groupUpdErr } = await supabase
           .from("generated_images")
           .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
-          .eq("share_group_id", groupId);
+          .eq("share_group_id", groupId)
+          .eq("user_id", userId); // scope to current user's rows so a stray sibling can't fail RLS
         if (groupUpdErr) throw groupUpdErr;
       } else {
+        step = "update-single";
         const { error: updErr } = await supabase
           .from("generated_images")
           .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
-          .eq("id", cakeImageId);
+          .eq("id", cakeImageId)
+          .eq("user_id", userId);
         if (updErr) throw updErr;
       }
 
@@ -233,9 +267,17 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
       onSaved(publicUrl, seconds);
       onOpenChange(false);
     } catch (e: any) {
-      console.error("Save audio error", e);
+      console.error(`Save audio error [${step}]`, e);
+      const stepLabel: Record<string, string> = {
+        session: "Session check",
+        upload: "Audio upload",
+        "lookup-group": "Cake lookup",
+        "update-group": "Saving to cake",
+        "update-single": "Saving to cake",
+      };
+      const prefix = stepLabel[step] ?? "Save";
       toast({
-        title: "Couldn't save voice message",
+        title: `Couldn't save voice message (${prefix})`,
         description: e?.message ?? "Please try again.",
         variant: "destructive",
       });
