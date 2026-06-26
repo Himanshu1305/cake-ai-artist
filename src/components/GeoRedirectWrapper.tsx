@@ -12,8 +12,6 @@ import {
 
 const GEO_CHECKED_KEY = 'geo_detection_done';
 
-// Routes where a country mismatch should trigger a redirect for humans.
-const REDIRECTABLE_ROUTES = ['/', '/usa', '/uk', '/india', '/canada', '/australia'];
 
 const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
   const controller = new AbortController();
