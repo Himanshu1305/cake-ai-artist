@@ -83,7 +83,10 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const mime = typeof mimeType === "string" && mimeType ? mimeType : "audio/webm";
+    const rawMime = typeof mimeType === "string" && mimeType ? mimeType : "audio/webm";
+    // Strip ";codecs=..." — Storage's allowed_mime_types rejects codec-suffixed
+    // variants (iOS Safari sends audio/mp4;codecs=mp4a.40.2 → 415).
+    const mime = (rawMime.split(";")[0].trim().toLowerCase()) || "audio/webm";
     if (!mime.startsWith("audio/")) {
       return new Response(JSON.stringify({ error: "Invalid mime type" }), {
         status: 400,

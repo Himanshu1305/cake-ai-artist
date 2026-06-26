@@ -1,32 +1,24 @@
-## Approach: diagnose first, then fix
+## Root cause (confirmed from edge function logs)
 
-You're right that the policy worked before — I won't rewrite it. Instead I'll add a small one-time diagnostic to the upload path so the next failed attempt tells us exactly what's wrong. No policy changes yet.
+The backend function is now being reached successfully, but Supabase Storage rejects the upload with:
 
-## What I'll add (diagnostic only)
+```
+StorageApiError: mime type audio/mp4;codecs=mp4a.40.2 is not supported (status 415)
+```
 
-In `src/components/AudioRecorder.tsx`, right before calling `supabase.storage.from('cake-audio').upload(...)`:
+iOS Safari records audio as `audio/mp4;codecs=mp4a.40.2`. The `cake-audio` bucket's `allowed_mime_types` list contains `audio/mp4` but NOT the variant with the `;codecs=...` parameter, so Storage treats them as different types and rejects it. This is the entire remaining blocker — RLS is no longer involved.
 
-1. Read the current session and log (to browser console + a toast on failure):
-   - `auth.uid()` as seen by the client (`session.user.id`).
-   - The `userId` prop being used to build the path.
-   - The full storage path the upload will use.
-   - Token expiry (`session.expires_at`) and seconds-to-expiry.
-   - Blob size and mime type.
-2. Force a session refresh (`supabase.auth.refreshSession()`) if the token expires in under 60s, then re-read the session.
-3. On RLS failure, surface a debug-friendly toast: "RLS failed. uid=… path=… expires_in=…s" so you can screenshot it on mobile and share.
+## Fix
 
-No storage policy, no database, no business-logic changes.
+Two small, safe changes in `supabase/functions/save-cake-audio/index.ts`:
 
-## Why this is the right next step
+1. **Normalize the MIME type before uploading** — strip any `;codecs=...` parameter so `audio/mp4;codecs=mp4a.40.2` becomes `audio/mp4`, `audio/webm;codecs=opus` becomes `audio/webm`, etc. The actual audio bytes are unchanged; only the declared `contentType` passed to Storage is cleaned.
+2. **Map the normalized MIME to a safe file extension** (`.m4a` for `audio/mp4`, `.webm` for `audio/webm`, `.mp3`, `.wav`, `.ogg`) instead of relying on the raw subtype, so iOS recordings get a `.m4a` extension that plays everywhere.
 
-The same three possibilities all produce the identical "new row violates row-level security policy" message:
+Also widen the bucket's `allowed_mime_types` as a belt-and-suspenders measure to include `audio/mp4`, `audio/m4a`, `audio/x-m4a`, `audio/webm`, `audio/ogg`, `audio/mpeg`, `audio/wav` (the normalized list — no codec params).
 
-- Stale/expired JWT → `auth.uid()` is null at the storage edge.
-- `userId` prop drifted from the actual logged-in user → folder check fails.
-- A different user/session is uploading into someone else's folder (e.g. after re-login on the same page).
+No client/UI changes needed. After this, iOS voice recordings save successfully.
 
-The diagnostic distinguishes them in one failed attempt. After we see the values, the fix is either a one-line session refresh, a path correction, or — only if neither — a policy review.
+## Why this will work
 
-## After we see the diagnostic output
-
-I'll come back with a targeted fix (likely a single line change) and remove the extra logging. No migrations needed at this stage.
+The edge function log is unambiguous: upload reaches Storage, Storage returns 415 specifically because of the codec-suffixed MIME. Removing the suffix is the documented Supabase-recommended fix for this exact error, and it also matches what the bucket already permits.
