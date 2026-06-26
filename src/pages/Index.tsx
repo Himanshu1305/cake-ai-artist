@@ -1,9 +1,17 @@
 import React, { Suspense, lazy, useEffect, useState, useMemo } from "react";
 import { useGeoContext } from "@/contexts/GeoContext";
 import { DeferredMount } from "@/components/DeferredMount";
+import { normalizeRegion } from "@/utils/countryRouting";
 
 // Lazy load CakeCreator for better initial page performance
 const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
+
+// Country landings — rendered in-place on `/` when geo says non-US.
+// Lazy so US visitors and bots never pay the cost.
+const IndiaLanding = lazy(() => import("@/pages/IndiaLanding"));
+const UKLanding = lazy(() => import("@/pages/UKLanding"));
+const CanadaLanding = lazy(() => import("@/pages/CanadaLanding"));
+const AustraliaLanding = lazy(() => import("@/pages/AustraliaLanding"));
 
 // Defer non-critical widgets — they don't need to block first paint / LCP
 const ExitIntentModal = lazy(() => import("@/components/ExitIntentModal").then(m => ({ default: m.ExitIntentModal })));
