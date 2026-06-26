@@ -145,9 +145,10 @@ const USALanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Free AI Cake Generator USA — Design Custom Birthday Cakes in Seconds</title>
-        <meta name="description" content="America's best free AI cake generator. Create stunning birthday, 4th of July, Thanksgiving, Halloween and wedding cakes with AI. No signup needed for your first cake." />
-        <meta name="keywords" content="ai cake generator usa, ai cake usa, ai birthday cake generator, free ai cake generator usa, best ai cake designer usa, personalized birthday cake usa, 4th of july cake, thanksgiving cake design, halloween cake ai, christmas cake ai, wedding cake ai usa, baby shower cake generator, graduation cake design, american cake designer, ai cake maker usa, super bowl cake" />
+        <title>Birthday Cake With Name & Photo — Free AI Cake Maker (Better Than ChatGPT)</title>
+        <meta name="description" content="Create a personalized birthday cake with name & photo in 30 seconds. Free US AI cake generator with 50+ themes — sharper, faster and more realistic than ChatGPT or Gemini." />
+        <meta name="keywords" content="birthday cake with name, birthday cake with name and photo, personalized birthday cake usa, photo cake maker, name cake generator, ai cake generator usa, free ai cake generator, ai cake vs chatgpt, ai cake vs gemini, ai cake vs midjourney, best ai cake designer usa, 4th of july cake, thanksgiving cake design, halloween cake ai, wedding cake ai usa, baby shower cake generator, graduation cake design" />
+
         <link rel="canonical" href="https://cakeaiartist.com/usa" />
         <link rel="alternate" hrefLang="en-US" href="https://cakeaiartist.com/usa" />
         <link rel="alternate" hrefLang="en-GB" href="https://cakeaiartist.com/uk" />
