@@ -3002,13 +3002,17 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                   </div>
                 )}
 
-                {/* Voice Message Teaser - shown before save */}
+                {/* Voice Message Teaser - shown while auto-save is in flight */}
                 {generatedImages.length > 0 && !savedCakeImageId && (
                   <div className="mt-4 p-3 rounded-lg border border-party-pink/30 bg-party-pink/5 text-sm text-center">
-                    🎙️ <strong>Want to add a voice message?</strong>{" "}
-                    {isLoggedIn
-                      ? "Save to gallery first — then record up to 30s for the recipient."
-                      : "Sign in & save your cake to record a 30s voice message for the recipient."}
+                    {isLoggedIn ? (
+                      <>
+                        <span className="inline-block w-3 h-3 mr-2 align-[-1px] border-2 border-party-pink border-t-transparent rounded-full animate-spin" />
+                        Preparing your share link &amp; voice option…
+                      </>
+                    ) : (
+                      <>🎙️ <strong>Want to add a voice message?</strong> Sign in to record a 30s message and get your magic share link.</>
+                    )}
                   </div>
                 )}
 
