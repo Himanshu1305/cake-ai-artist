@@ -321,6 +321,44 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     }
   };
 
+  // Auto-save the share bundle as soon as the first real cake view is ready.
+  // Users should not need to click "Save to Gallery" before they can attach a
+  // voice message or copy a magic share link.
+  const autoSaveRef = useRef(false);
+  useEffect(() => {
+    if (!isLoggedIn || !user?.id) return;
+    if (isLoading) return;
+    if (savedCakeImageId) return;
+    if (isSavingToGallery) return;
+    if (autoSaveRef.current) return;
+
+    const realItems = generatedImages
+      .map((url, index) => ({ index, url }))
+      .filter((it): it is { index: number; url: string } => !!it.url && it.url !== '/placeholder.svg');
+    if (realItems.length === 0) return;
+
+    autoSaveRef.current = true;
+    (async () => {
+      try {
+        setIsSavingToGallery(true);
+        await saveGeneratedImage(realItems);
+      } catch (e) {
+        console.warn('[cake] auto-save failed (user can retry via Save to Gallery):', e);
+        autoSaveRef.current = false; // allow manual retry
+      } finally {
+        setIsSavingToGallery(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.id, isLoading, generatedImages, savedCakeImageId]);
+
+  // Reset auto-save guard when a new generation starts
+  useEffect(() => {
+    if (isLoading) {
+      autoSaveRef.current = false;
+    }
+  }, [isLoading]);
+
   // Image compression utility
   const compressImage = async (file: File, maxWidth = 1024, quality = 0.75): Promise<string> => {
     return new Promise((resolve, reject) => {
