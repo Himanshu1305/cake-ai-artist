@@ -12,8 +12,6 @@ import {
 
 const GEO_CHECKED_KEY = 'geo_detection_done';
 
-// Routes where a country mismatch should trigger a redirect for humans.
-const REDIRECTABLE_ROUTES = ['/', '/usa', '/uk', '/india', '/canada', '/australia'];
 
 const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
   const controller = new AbortController();
@@ -28,22 +26,24 @@ const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Respons
   }
 };
 
-const detectCountryClient = async (): Promise<string | null> => {
-  try {
-    const response = await fetchWithTimeout('https://ipapi.co/json/', 3000);
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.country_code || null;
-  } catch {
-    return null;
-  }
-};
-
+// Server-side multi-provider detection (primary)
 const detectCountryServer = async (): Promise<string | null> => {
   try {
     const { data, error } = await supabase.functions.invoke('detect-country');
     if (error) return null;
     return data?.country_code || null;
+  } catch {
+    return null;
+  }
+};
+
+// ipapi.co fallback (1.5s timeout)
+const detectCountryClient = async (): Promise<string | null> => {
+  try {
+    const response = await fetchWithTimeout('https://ipapi.co/json/', 1500);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.country_code || null;
   } catch {
     return null;
   }
@@ -75,46 +75,33 @@ export const GeoRedirectWrapper = () => {
     if (!adminChecked) return;
     if (isSearchBot()) return;
     if (hasNoRedirectParam()) return;
-    if (isAdmin) {
-      console.log('[GeoRedirect] Admin user detected, skipping geo-redirect');
-      return;
-    }
+    if (isAdmin) return;
     if (hasRedirected) return;
 
-    // Only act on routes where region matters.
-    const isRedirectable =
-      REDIRECTABLE_ROUTES.includes(location.pathname) ||
-      regionFromPathname(location.pathname) !== null;
-    if (!isRedirectable) return;
+    // We only correct mismatches on EXPLICIT country landing pages now.
+    // `/` is rendered dynamically by Index.tsx — no redirect needed there.
+    const currentRegion = regionFromPathname(location.pathname);
+    if (currentRegion === null) return;
 
     const run = async () => {
       try {
-        // Explicit manual selection takes precedence — never override.
         const explicit = getExplicitRegion();
 
-        // Get live geo (cached per session).
         let iso = safeGetItem(GEO_CHECKED_KEY, 'session');
         if (!iso) {
-          iso = (await detectCountryClient()) || (await detectCountryServer());
+          iso = (await detectCountryServer()) || (await detectCountryClient());
           if (iso) safeSetItem(GEO_CHECKED_KEY, iso, 'session');
         }
 
         const targetRegion = explicit || normalizeRegion(iso);
         if (!targetRegion) return;
+        if (targetRegion === currentRegion) return;
 
         const targetPath = landingPathForRegion(targetRegion);
-        const currentRegion = regionFromPathname(location.pathname);
+        if (targetPath === location.pathname) return;
 
-        // On `/`, redirect to localized landing if not US.
-        // On any localized landing page, redirect to the correct one if mismatched.
-        const shouldRedirect =
-          (location.pathname === '/' && targetRegion !== 'US') ||
-          (currentRegion !== null && currentRegion !== targetRegion);
-
-        if (shouldRedirect && targetPath !== location.pathname) {
-          setHasRedirected(true);
-          setTimeout(() => navigate(targetPath, { replace: true }), 0);
-        }
+        setHasRedirected(true);
+        setTimeout(() => navigate(targetPath, { replace: true }), 0);
       } catch (error) {
         console.error('GeoRedirect error:', error);
       }

@@ -26,26 +26,11 @@ const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Respons
   }
 };
 
-// Primary: Client-side geo detection via ipapi.co
-const detectCountryClient = async (): Promise<string | null> => {
-  try {
-    const response = await fetchWithTimeout('https://ipapi.co/json/', 3000);
-    if (!response.ok) throw new Error('ipapi.co failed');
-    const data = await response.json();
-    console.log('[GeoContext] ipapi.co response:', data.country_code);
-    return data.country_code || null;
-  } catch (error) {
-    console.log('[GeoContext] ipapi.co failed:', error);
-    return null;
-  }
-};
-
-// Fallback: Server-side geo detection via Edge Function
+// Primary: server-side edge function (multi-provider chain + cache, no quota issues)
 const detectCountryServer = async (): Promise<string | null> => {
   try {
     const { data, error } = await supabase.functions.invoke('detect-country');
     if (error) throw error;
-    console.log('[GeoContext] Edge function response:', data);
     return data?.country_code || null;
   } catch (error) {
     console.log('[GeoContext] Edge function failed:', error);
@@ -53,17 +38,22 @@ const detectCountryServer = async (): Promise<string | null> => {
   }
 };
 
-// Combined detection with fallback
-const detectCountry = async (): Promise<string | null> => {
-  // Try client-side first (faster, no server cost)
-  let country = await detectCountryClient();
-  
-  // Fallback to server-side if client fails
-  if (!country) {
-    console.log('[GeoContext] Trying server-side fallback...');
-    country = await detectCountryServer();
+// Fallback: direct ipapi.co (only used if server detection fails)
+const detectCountryClient = async (): Promise<string | null> => {
+  try {
+    const response = await fetchWithTimeout('https://ipapi.co/json/', 1500);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.country_code || null;
+  } catch {
+    return null;
   }
-  
+};
+
+// Server first, ipapi.co fallback.
+const detectCountry = async (): Promise<string | null> => {
+  let country = await detectCountryServer();
+  if (!country) country = await detectCountryClient();
   return country;
 };
 
