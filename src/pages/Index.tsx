@@ -217,6 +217,26 @@ const Index = () => {
     }
   };
 
+  // Dynamic country render: if geo says non-US, render that country's landing
+  // in-place (no redirect → analytics correctly attributes the first hit,
+  // first paint is localized). US and bots fall through to the original homepage.
+  const resolvedRegion = normalizeRegion(detectedCountry);
+  if (resolvedRegion && resolvedRegion !== 'US') {
+    const LocalizedLanding =
+      resolvedRegion === 'IN' ? IndiaLanding
+      : resolvedRegion === 'GB' ? UKLanding
+      : resolvedRegion === 'CA' ? CanadaLanding
+      : resolvedRegion === 'AU' ? AustraliaLanding
+      : null;
+    if (LocalizedLanding) {
+      return (
+        <Suspense fallback={<div className="min-h-screen bg-gradient-celebration" />}>
+          <LocalizedLanding />
+        </Suspense>
+      );
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
