@@ -321,6 +321,44 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
     }
   };
 
+  // Auto-save the share bundle as soon as the first real cake view is ready.
+  // Users should not need to click "Save to Gallery" before they can attach a
+  // voice message or copy a magic share link.
+  const autoSaveRef = useRef(false);
+  useEffect(() => {
+    if (!isLoggedIn || !user?.id) return;
+    if (isLoading) return;
+    if (savedCakeImageId) return;
+    if (isSavingToGallery) return;
+    if (autoSaveRef.current) return;
+
+    const realItems = generatedImages
+      .map((url, index) => ({ index, url }))
+      .filter((it): it is { index: number; url: string } => !!it.url && it.url !== '/placeholder.svg');
+    if (realItems.length === 0) return;
+
+    autoSaveRef.current = true;
+    (async () => {
+      try {
+        setIsSavingToGallery(true);
+        await saveGeneratedImage(realItems);
+      } catch (e) {
+        console.warn('[cake] auto-save failed (user can retry via Save to Gallery):', e);
+        autoSaveRef.current = false; // allow manual retry
+      } finally {
+        setIsSavingToGallery(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.id, isLoading, generatedImages, savedCakeImageId]);
+
+  // Reset auto-save guard when a new generation starts
+  useEffect(() => {
+    if (isLoading) {
+      autoSaveRef.current = false;
+    }
+  }, [isLoading]);
+
   // Image compression utility
   const compressImage = async (file: File, maxWidth = 1024, quality = 0.75): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -2964,13 +3002,17 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                   </div>
                 )}
 
-                {/* Voice Message Teaser - shown before save */}
+                {/* Voice Message Teaser - shown while auto-save is in flight */}
                 {generatedImages.length > 0 && !savedCakeImageId && (
                   <div className="mt-4 p-3 rounded-lg border border-party-pink/30 bg-party-pink/5 text-sm text-center">
-                    🎙️ <strong>Want to add a voice message?</strong>{" "}
-                    {isLoggedIn
-                      ? "Save to gallery first — then record up to 30s for the recipient."
-                      : "Sign in & save your cake to record a 30s voice message for the recipient."}
+                    {isLoggedIn ? (
+                      <>
+                        <span className="inline-block w-3 h-3 mr-2 align-[-1px] border-2 border-party-pink border-t-transparent rounded-full animate-spin" />
+                        Preparing your share link &amp; voice option…
+                      </>
+                    ) : (
+                      <>🎙️ <strong>Want to add a voice message?</strong> Sign in to record a 30s message and get your magic share link.</>
+                    )}
                   </div>
                 )}
 
