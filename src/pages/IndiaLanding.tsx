@@ -260,13 +260,22 @@ const IndiaLanding = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center"
             >
               <Button
                 size="lg"
                 className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow"
+                onClick={() => navigate('/free-ai-cake-designer?ref=india')}
+              >
+                🎂 Create Your Free Cake →
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/90 text-foreground text-lg px-8 py-6 font-bold border-2"
                 onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                See Plans →
+                See Plans
               </Button>
             </motion.div>
           </div>

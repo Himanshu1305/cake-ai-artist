@@ -38,8 +38,12 @@ const withTimeout = <T,>(promise: PromiseLike<T>, timeoutMs: number): Promise<T 
       .finally(() => window.clearTimeout(timeoutId));
   });
 
+// After login, always land users on the cake creator so the primary CTA is obvious.
+// Country landing pages are SEO entry points, not the post-login destination.
+const POST_LOGIN_DESTINATION = '/free-ai-cake-designer';
+
 const getPostLoginPath = async (userId: string | undefined, detectedCountry?: string | null) => {
-  if (!userId) return getCountryHomePath(detectedCountry);
+  if (!userId) return POST_LOGIN_DESTINATION;
 
   const result = await withTimeout(
     supabase
@@ -50,8 +54,8 @@ const getPostLoginPath = async (userId: string | undefined, detectedCountry?: st
     PROFILE_LOOKUP_TIMEOUT_MS
   );
 
-  if (!result || result.error) return getCountryHomePath(detectedCountry);
-  return result.data?.country ? getCountryHomePath(detectedCountry) : '/complete-profile';
+  if (!result || result.error) return POST_LOGIN_DESTINATION;
+  return result.data?.country ? POST_LOGIN_DESTINATION : '/complete-profile';
 };
 
 const Auth = () => {
