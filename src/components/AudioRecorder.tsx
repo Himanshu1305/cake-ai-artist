@@ -175,39 +175,32 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
     }
   };
 
+  const blobToBase64 = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const comma = result.indexOf(",");
+        resolve(comma >= 0 ? result.slice(comma + 1) : result);
+      };
+      reader.onerror = () => reject(reader.error ?? new Error("Read failed"));
+      reader.readAsDataURL(blob);
+    });
+
   const saveAudio = async () => {
     if (chunksRef.current.length === 0) return;
     setPhase("uploading");
-    let step = "init";
     try {
-      // Step 0: ensure we have a fresh authenticated session. On mobile,
-      // the access token can silently expire while the user is recording,
-      // which then triggers an RLS failure on upload.
-      step = "session";
-      let { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
-      if (sessionErr) throw sessionErr;
-      let session = sessionData?.session;
-
+      // Make sure we have a valid token before invoking the function. On mobile,
+      // the access token can silently expire while the user is recording.
+      let { data: sessionData } = await supabase.auth.getSession();
+      let session = sessionData?.session ?? null;
       const nowSec = Math.floor(Date.now() / 1000);
-      const expiresAt = session?.expires_at ?? 0;
-      const secondsToExpiry = expiresAt - nowSec;
-      console.info("[AudioRecorder] pre-upload session", {
-        hasSession: !!session,
-        sessionUserId: session?.user?.id ?? null,
-        propUserId: userId,
-        expiresAt,
-        secondsToExpiry,
-      });
+      const secondsToExpiry = (session?.expires_at ?? 0) - nowSec;
       if (!session || secondsToExpiry < 60) {
-        console.info("[AudioRecorder] refreshing session (expiring/none)");
-        const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
-        if (refreshErr) {
-          console.error("[AudioRecorder] refreshSession error", refreshErr);
-        } else {
-          session = refreshed.session ?? session;
-        }
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        session = refreshed.session ?? session;
       }
-
       if (!session?.user?.id) {
         toast({
           title: "Please sign in again",
@@ -217,99 +210,31 @@ export const AudioRecorder = ({ open, onOpenChange, cakeImageId, userId, existin
         setPhase("preview");
         return;
       }
-      if (session.user.id !== userId) {
-        console.warn("[AudioRecorder] uid mismatch", { sessionUid: session.user.id, propUserId: userId });
-        toast({
-          title: "Account mismatch",
-          description: `Session uid ${session.user.id.slice(0, 8)}… vs prop ${userId.slice(0, 8)}…. Refresh and retry.`,
-          variant: "destructive",
-        });
-        setPhase("preview");
-        return;
-      }
 
       const blob = new Blob(chunksRef.current, { type: mimeRef.current });
-      const ext = extFromMime(mimeRef.current);
-      // Use a unique filename per recording so any stale object/owner
-      // can't block a new upload. Still scoped to {userId}/ for the policy.
-      const path = `${userId}/${cakeImageId}-${Date.now()}.${ext}`;
+      const audioBase64 = await blobToBase64(blob);
 
-      console.info("[AudioRecorder] uploading", {
-        path,
-        size: blob.size,
-        mime: mimeRef.current,
-        sessionUid: session.user.id,
-        tokenLen: session.access_token?.length ?? 0,
+      // Backend handles storage upload using trusted credentials, so flaky
+      // mobile Storage RLS evaluation can't block the user anymore.
+      const { data, error } = await supabase.functions.invoke("save-cake-audio", {
+        body: {
+          cakeImageId,
+          audioBase64,
+          mimeType: mimeRef.current,
+          durationSeconds: seconds,
+        },
       });
 
-      // Best-effort delete previous file (ignore errors)
-      try {
-        await supabase.storage.from("cake-audio").remove([
-          `${userId}/${cakeImageId}.webm`,
-          `${userId}/${cakeImageId}.m4a`,
-          `${userId}/${cakeImageId}.mp3`,
-        ]);
-      } catch {}
-
-      step = "upload";
-      const { error: upErr } = await supabase.storage
-        .from("cake-audio")
-        .upload(path, blob, {
-          contentType: mimeRef.current,
-          upsert: true,
-        });
-      if (upErr) throw upErr;
-
-      const { data: pub } = supabase.storage.from("cake-audio").getPublicUrl(path);
-      // Cache-bust so the new audio plays even after re-record
-      const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
-
-      // Look up share_group_id so we can attach this audio to ALL sibling
-      // images saved in the same batch — recipients hear the voice message
-      // no matter which view's link was shared.
-      step = "lookup-group";
-      const { data: currentRow, error: lookupErr } = await supabase
-        .from("generated_images")
-        .select("share_group_id")
-        .eq("id", cakeImageId)
-        .maybeSingle();
-      if (lookupErr) throw lookupErr;
-
-      const groupId = currentRow?.share_group_id ?? null;
-
-      if (groupId) {
-        step = "update-group";
-        const { error: groupUpdErr } = await supabase
-          .from("generated_images")
-          .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
-          .eq("share_group_id", groupId)
-          .eq("user_id", userId); // scope to current user's rows so a stray sibling can't fail RLS
-        if (groupUpdErr) throw groupUpdErr;
-      } else {
-        step = "update-single";
-        const { error: updErr } = await supabase
-          .from("generated_images")
-          .update({ audio_url: publicUrl, audio_duration_seconds: seconds, audio_mime_type: mimeRef.current })
-          .eq("id", cakeImageId)
-          .eq("user_id", userId);
-        if (updErr) throw updErr;
-      }
+      if (error) throw error;
+      if (!data?.publicUrl) throw new Error(data?.error || "Upload failed");
 
       toast({ title: "🎙️ Voice message saved!", description: "It will play on the cake's share link." });
-      onSaved(publicUrl, seconds);
+      onSaved(data.publicUrl, seconds);
       onOpenChange(false);
     } catch (e: any) {
-      console.error(`Save audio error [${step}]`, e);
-      const stepLabel: Record<string, string> = {
-        session: "Session check",
-        upload: "Audio upload",
-        "lookup-group": "Cake lookup",
-        "update-group": "Saving to cake",
-        "update-single": "Saving to cake",
-      };
-      const prefix = stepLabel[step] ?? "Save";
+      console.error("Save audio error", e);
       toast({
-        title: `Couldn't save voice message (${prefix})`,
+        title: "Couldn't save voice message",
         description: e?.message ?? "Please try again.",
         variant: "destructive",
       });
