@@ -1,43 +1,40 @@
-## Issue 1 — Custom message overwritten by AI message on the share page
+## Problem
+Mobile users get `Couldn't save voice message — new row violates RLS policy` when recording a voice note. Two possible failing writes:
 
-**Root cause:** In `src/components/CakeCreator.tsx`, the realtime/polling handler for `cake_generation_jobs` (around lines 977-980) unconditionally overwrites the on-screen message with the AI-generated `greeting_message` from the job row:
+1. **Storage upload** to `cake-audio` bucket (INSERT on `storage.objects`)
+2. **DB update** on `generated_images` (UPDATE with `WITH CHECK auth.uid() = user_id`)
+
+## Diagnosis findings
+- `cake-audio` policies look correct: INSERT/UPDATE/DELETE all require `auth.uid()::text = foldername[1]`.
+- `generated_images` UPDATE policy correct: `auth.uid() = user_id`.
+- The bulk update path uses `.eq("share_group_id", groupId)`. If **any** sibling row in that group has a `user_id` not equal to `auth.uid()` (e.g. legacy admin-granted row, or a row created by a service-role process with a different user_id), PostgREST returns "new row violates row-level security policy" for the whole batch — even if only one row mismatches.
+- On mobile Safari, session refresh can race with the upload. If the access token expired mid-recording, `auth.uid()` becomes null and the storage INSERT WITH CHECK fails.
+
+## Fix plan
+
+### 1. Make the DB update RLS-safe (highest-value fix)
+In `src/components/AudioRecorder.tsx`, scope the sibling update to **only rows the current user owns**:
 
 ```ts
-if (row.greeting_message) {
-  setGeneratedMessage(row.greeting_message);
-  setDisplayedMessage(row.greeting_message);   // ← clobbers user's custom text
-}
+.update({ audio_url, audio_duration_seconds, audio_mime_type })
+.eq("share_group_id", groupId)
+.eq("user_id", userId)   // ← add this
 ```
 
-The user picks "✍️ Custom" and types text → `displayedMessage` is correctly set to the custom message during submit. But moments later the background job finishes generating its own AI greeting and writes it back to `cake_generation_jobs.greeting_message`. The subscriber overwrites `displayedMessage`, so by the time the user clicks "Save to Gallery", the row is persisted with the AI message — and that's what `get_public_cake` returns on `/cake/:id`. Also the edge function (`generate-complete-cake/index.ts`, line 731) generates an AI greeting on every run even when the user supplied a custom one — wasted credits.
+This prevents one stray sibling row from poisoning the whole batch.
 
-**Fix:**
+### 2. Refresh the session right before save
+At the top of `saveAudio()`, call `await supabase.auth.getSession()` and abort with a clear "Please sign in again" toast if there's no session. This eliminates the expired-token failure mode on mobile.
 
-1. `src/components/CakeCreator.tsx` — guard the realtime update:
-   ```ts
-   if (row.greeting_message && !(useCustomMessage && customMessage.trim())) {
-     setGeneratedMessage(row.greeting_message);
-     setDisplayedMessage(row.greeting_message);
-   }
-   ```
-2. `src/components/CakeCreator.tsx` — pass the custom message to the edge function in the request body when `useCustomMessage && customMessage.trim()` is true (new field `customMessage`).
-3. `supabase/functions/generate-complete-cake/index.ts` — when `customMessage` is present:
-   - seed `greeting_message` in the initial job-row insert with the custom text,
-   - skip the `generateMessageAsync()` call entirely (no AI message, no credits spent),
-   - return `greetingMessage: customMessage` in the response payload.
+### 3. Surface the exact failing step to the user
+Right now the toast just shows `e.message`. Wrap each step (storage upload, sibling lookup, group update, single update) with its own try/catch and prefix the toast with the failing step (e.g. `Storage upload failed: …`). That makes future mobile reports diagnosable without a console.
 
-This guarantees the custom text survives all the way to `generated_images.message` and therefore to the public share page.
+### 4. Audit sibling ownership (one-time read)
+Run a quick query to confirm whether any `share_group_id` groups contain rows with mixed `user_id`. If yes, this confirms the root cause and we add a one-time backfill.
 
-## Issue 2 — Fast vs High Quality share URL difference
+### 5. Verify
+After deploy, ask the user to re-test on the same cake. The toast will now name the exact step that fails if anything still breaks.
 
-I need one detail before fixing this one. From your earlier reply: "Fast has got an image as part of URL but High Quality does not." Could you confirm which of these you mean (I'll ask again in chat after the plan):
-
-- **WhatsApp link preview**: Fast cake shows a thumbnail card, HQ shows only text — i.e. the Open Graph image is missing for HQ.
-- **The text WhatsApp pastes**: Fast pastes an image URL alongside the link, HQ pastes only the link.
-- **The Magic Share Link string itself** looks different between the two modes.
-
-Most likely it's the first one: HQ saves a row whose `image_url` is a still-rendering placeholder (or hero hadn't finished when "Save to Gallery" fired), so the share page has no OG image. Once you confirm, the fix is either:
-- block "Save to Gallery" until the hero view is ready, or
-- on the SharedCake page, fall back to a sibling image when `image_url` is a placeholder.
-
-I'll lock down Issue 2's fix after your confirmation, but Issue 1 is unambiguous and can be implemented now.
+## Out of scope
+- No changes to storage policies (they're correct).
+- No schema migration needed unless the audit in step 4 reveals mixed ownership.
