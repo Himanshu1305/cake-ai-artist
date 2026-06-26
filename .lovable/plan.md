@@ -1,82 +1,47 @@
-## Goal
-Hit $100+/month within 90 days via two revenue streams: **AdSense** (free traffic) + **Lifetime/subscription upgrades** (intent traffic).
+# Fix Geo-Routing: Server-Side + Dynamic Home + Resilient Fallbacks
 
-Current blockers: ~2-3 visitors/day, zero paid users, articles published but not indexed/ranking yet, no remarketing.
+Goal: Every visitor lands on country-localized content on their **first** pageview (no client redirect flicker, accurate analytics, no ipapi.co rate-limit failures).
 
----
+## The 3 layers (all combined)
 
-## Month 1 — Traffic Foundation (Weeks 1–4)
+### Layer 1 — Server-side geo via Edge Function (source of truth)
+Upgrade `supabase/functions/detect-country` so it is the **single trusted source**:
+- Read `CF-IPCountry` (Cloudflare) and `X-Vercel-IP-Country` headers first.
+- If absent, call `ipapi.co` server-side, then fall back to `ip-api.com` (no key, 45 req/min/IP) and `ipwho.is` (free, no key). Chained fallbacks remove the 1k/day single-provider failure.
+- Cache result in-memory per IP for 1 hour to cut quota usage.
+- Return `{ country_code, region, source, fallback }`.
 
-**1. Get the 3 comparison articles indexed & ranked**
-- Submit all 3 article URLs + sitemap to Google Search Console (you do this).
-- Add internal links: every landing page (USA/UK/IN/CA/AU) links to the 3 comparison articles in a "Why we're better than ChatGPT/Canva/Etsy" section.
-- Add 3 more comparison articles (cheap to produce, same format): **vs DALL-E**, **vs Midjourney**, **vs Local Bakery**. These target frustrated AI users who already search comparison queries.
+### Layer 2 — Dynamic `/` (no redirect)
+Make `src/pages/Index.tsx` render **country-specific content in place** instead of redirecting:
+- On first paint, render a neutral hero skeleton (works for any country, no layout shift).
+- `GeoProvider` resolves region (server function → cached session value).
+- Once resolved, swap hero copy / pricing / CTAs to the localized version inline (use the existing `USALanding`/`IndiaLanding`/etc. content extracted into a shared `<LocalizedHome region={...} />` component).
+- Country-specific URLs (`/india`, `/usa`, …) keep working for SEO/direct links and ads; they render the same `<LocalizedHome>` with region forced.
+- **No more redirect from `/`** → analytics now correctly attributes the first hit.
 
-**2. Programmatic SEO — the volume play**
-The biggest unlock. Build two templated page types:
-- `/birthday-cake-for-{name}` — 200 top first names (Aarav, Priya, Emma, Liam, Sophia…). Each page: H1 with name, 3 pre-generated sample cakes for that name, CTA to create your own. Targets "birthday cake with name {X}" (22k/mo IN volume splits across names).
-- `/birthday-cake-{theme}` — 30 themes (unicorn, spiderman, frozen, football, etc.). Same template.
+### Layer 3 — Resilient client wrapper (only for `/usa`, `/india`, etc.)
+Trim `GeoRedirectWrapper` down so it **only** corrects mismatches between an explicit country landing page and the user's real region (e.g. an Indian user landing on `/usa` from a stale link):
+- Drop the redirect-from-`/` logic (Layer 2 handles it).
+- Shorten ipapi.co timeout 3s → 1.5s.
+- Use the new edge function as primary, ipapi.co as secondary, default to `US` after both fail.
+- Respect explicit user choice and admin bypass (unchanged).
 
-That's 230 new indexable pages, all targeting real search demand. Generated once via script, stored in DB, rendered by existing React routes + Helmet metadata.
+## Files touched
+- `supabase/functions/detect-country/index.ts` — multi-provider chain + in-memory cache.
+- `src/contexts/GeoContext.tsx` — call edge function first, ipapi.co as fallback, 1.5s timeout.
+- `src/components/GeoRedirectWrapper.tsx` — remove `/` redirect branch, keep mismatch correction only.
+- `src/pages/Index.tsx` — render `<LocalizedHome region={resolvedRegion} />` instead of static US hero.
+- `src/components/LocalizedHome.tsx` *(new)* — shared region-aware home (extracts the common structure used by `USALanding`/`IndiaLanding`/`UKLanding`/`CanadaLanding`/`AustraliaLanding`).
+- `src/pages/USALanding.tsx`, `IndiaLanding.tsx`, `UKLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx` — thin wrappers passing `region` prop (preserves existing SEO meta & unique copy via per-region content map).
 
-**3. AdSense placement audit**
-- Confirm ads render on: blog list, all 6 comparison articles, all 5 country landings, all programmatic pages.
-- Add one in-content ad after the H2 on every article (highest RPM slot).
-- Verify `ads.txt` is live.
+## SEO impact
+- `/` becomes locale-adaptive but keeps a single canonical (`https://cakeaiartist.com/`) — Googlebot (US IP) sees US content (correct).
+- Per-country pages keep unique titles/H1/canonicals → no cannibalization.
+- No client-side redirects from `/` → bots index it without redirect chain warnings.
+- Search Console "Page" report will now correctly show `/india`, `/usa`, etc. as distinct landing entries.
 
-**Month 1 target:** 100 visitors/day, first AdSense $5-15.
+## Out of scope
+- Cloudflare hosting migration (separate effort; CF-IPCountry header will start populating automatically once we move, no code change needed).
+- Renaming/consolidating the 5 country landing pages.
 
----
-
-## Month 2 — Conversion (Weeks 5–8)
-
-**4. Fix the funnel for paid conversions**
-Current free→paid conversion is 0%. Likely causes:
-- Free tier (5 cakes) is generous enough that nobody hits the wall.
-- Upgrade prompts aren't shown at peak emotional moments.
-
-Changes:
-- Show "Upgrade to Lifetime" modal **right after** a successful cake share (peak dopamine), not on a separate pricing page.
-- Add "🎁 First-week discount" — ₹999 / $19 lifetime for users in their first 7 days only. Test if low entry price unlocks the first 5-10 buyers.
-- Add social proof to checkout: "Member #1247 just joined" live ticker (data already exists).
-
-**5. WhatsApp/Instagram organic loop**
-Every shared cake link has "Make yours free" CTA. Verify:
-- OG preview image is the user's cake (not generic).
-- CTA button visible above the fold on `/cake/{id}`.
-- Track share→signup conversion. If <5%, redesign the shared page.
-
-**6. One viral attempt**
-Post the "AI Cake Generator vs ChatGPT" article on:
-- r/ChatGPT, r/singularity, r/ArtificialIntelligence (organic, value-first comment)
-- Hacker News (Show HN)
-- Product Hunt (free launch)
-- Indian parenting Facebook groups (for IN traffic)
-
-**Month 2 target:** 300 visitors/day, 1-3 paid users ($20-150), AdSense $20-40.
-
----
-
-## Month 3 — Scale What Works (Weeks 9–12)
-
-**7. Double down based on data**
-By week 9 you'll know which channel (SEO / social / programmatic) is driving signups. Kill the rest, 10x the winner.
-
-**8. Paid acquisition test ($50)**
-Only if organic shows a clear winning page with >2% signup rate. Google Ads on "birthday cake with name [name]" exact match, sending to the matching programmatic page.
-
-**9. Email recapture**
-We have 63 profiles. Send a single broadcast: "We added voice messages + 3D animations. Come make one free." Drives return visits + share loop.
-
-**Month 3 target:** 500+ visitors/day, $100+ MRR (ads + upgrades combined).
-
----
-
-## What I need from you to start
-Pick the first sprint (I'd recommend #2 — programmatic SEO — it's the highest-leverage):
-- **A.** Build the programmatic SEO system (#2) — name pages + theme pages. ~1 day of work, 230 pages live.
-- **B.** Fix the conversion funnel first (#4) — post-share upgrade modal + first-week discount.
-- **C.** Write 3 more comparison articles (#1) — vs DALL-E, vs Midjourney, vs Local Bakery.
-- **D.** Do A + C in parallel (most aggressive path).
-
-Which one?
+Approve to implement.
