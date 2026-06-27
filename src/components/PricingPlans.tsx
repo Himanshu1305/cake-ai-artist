@@ -109,13 +109,13 @@ export const PricingPlans = ({ country = "US" }: PricingPlansProps) => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <Card className={`h-full relative transition-all duration-300 ${highlight ? "border-4 border-gold shadow-gold" : "border-2 border-border hover:shadow-elegant"}`}>
         {badge && (
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-            <Badge className={highlight ? "bg-gradient-gold text-white px-6 py-2 text-sm font-bold shadow-lg" : "bg-gradient-party text-white px-6 py-2 text-sm font-bold shadow-lg"}>
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+            <Badge className={highlight ? "bg-gradient-gold text-white px-4 py-1 text-xs font-bold shadow-lg rounded-full" : "bg-gradient-party text-white px-4 py-1 text-xs font-bold shadow-lg rounded-full"}>
               {badge}
             </Badge>
           </div>
         )}
-        <CardHeader className="pt-8 text-center">
+        <CardHeader className="pt-10 text-center">
           <CardTitle className="text-2xl flex items-center justify-center gap-2">
             {icon}
             {title}
