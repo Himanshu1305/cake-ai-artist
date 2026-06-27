@@ -283,6 +283,7 @@ export const useRazorpayPayment = (country: string = "US") => {
                   tier: tier,
                   amount: orderData.amount,
                   currency: orderData.currency,
+                  first_week_discount_applied: !!orderData.first_week_discount_applied,
                 },
               }
             );
@@ -294,15 +295,20 @@ export const useRazorpayPayment = (country: string = "US") => {
 
             // Success!
             setCurrentOrderId(null);
-            toast.success("🎉 Welcome to the Lifetime Club!", {
-              description: `You're member #${verifyData.member_number}! Check your email for details.`,
-              duration: 10000,
-            });
 
-            // Redirect to home after success
-            setTimeout(() => {
-              navigate("/");
-            }, 2000);
+            if (verifyData.product_kind === "partypack") {
+              toast.success("🎁 Party Pack unlocked!", {
+                description: "Permanent access — generate decorations, banners & invites anytime.",
+                duration: 10000,
+              });
+              setTimeout(() => navigate("/party-pack-generator"), 1500);
+            } else {
+              toast.success("🎉 Welcome to the Lifetime Club!", {
+                description: `You're member #${verifyData.member_number}! Check your email for details.`,
+                duration: 10000,
+              });
+              setTimeout(() => navigate("/"), 2000);
+            }
 
           } catch (verifyErr: any) {
             console.error("Verification error:", verifyErr);
