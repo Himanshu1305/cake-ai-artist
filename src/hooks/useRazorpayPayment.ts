@@ -9,7 +9,9 @@ export type PaymentTier =
   // New 3-tier model
   | "lifetime_in" | "lifetime_gb" | "lifetime_ca" | "lifetime_au" | "lifetime_us"
   | "monthly_in" | "monthly_gb" | "monthly_ca" | "monthly_au" | "monthly_us"
-  | "yearly_in"  | "yearly_gb"  | "yearly_ca"  | "yearly_au"  | "yearly_us";
+  | "yearly_in"  | "yearly_gb"  | "yearly_ca"  | "yearly_au"  | "yearly_us"
+  // Party Pack one-time, permanent
+  | "partypack_in" | "partypack_gb" | "partypack_ca" | "partypack_au" | "partypack_us";
 
 declare global {
   interface Window {
