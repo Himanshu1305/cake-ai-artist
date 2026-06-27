@@ -1701,6 +1701,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             description: "Your cake card has been shared",
           });
           URL.revokeObjectURL(compositeUrl);
+          if (!isPremium) {
+            setTimeout(() => setShowUpgradeModal(true), 3000);
+          }
           return;
         } catch (shareError) {
           // User cancelled or share failed, continue to platform-specific sharing
