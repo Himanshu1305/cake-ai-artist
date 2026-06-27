@@ -13,9 +13,10 @@ const requestSchema = z.object({
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
-  tier: z.string().min(1), // accepts lifetime_<cc> and legacy tier_1_49 / tier_2_99
+  tier: z.string().min(1), // accepts lifetime_<cc>, partypack_<cc>, and legacy tier_1_49 / tier_2_99
   amount: z.number(),
   currency: z.string(),
+  first_week_discount_applied: z.boolean().optional().default(false),
 });
 
 // HMAC SHA256 signature verification

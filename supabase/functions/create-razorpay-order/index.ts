@@ -11,10 +11,10 @@ const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") ?? "";
 const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
 
 const requestSchema = z.object({
-  // Accept new lifetime tier or legacy values for backwards compatibility
   tier: z.enum([
     "lifetime",
     "lifetime_in", "lifetime_gb", "lifetime_ca", "lifetime_au", "lifetime_us",
+    "partypack_in", "partypack_gb", "partypack_ca", "partypack_au", "partypack_us",
     "tier_1_49", "tier_2_99",
   ]),
   country: z.string().optional().default("US"),
@@ -28,6 +28,17 @@ const LIFETIME_PRICING: Record<string, { amount: number; currency: string }> = {
   AU: { amount: 7900,   currency: "AUD" }, // A$79
   US: { amount: 4900,   currency: "USD" }, // $49
 };
+
+// Party Pack one-time pricing (smallest currency unit)
+const PARTYPACK_PRICING: Record<string, { amount: number; currency: string }> = {
+  IN: { amount: 29900, currency: "INR" }, // ₹299
+  GB: { amount: 400,   currency: "GBP" }, // £4
+  CA: { amount: 700,   currency: "CAD" }, // C$7
+  AU: { amount: 800,   currency: "AUD" }, // A$8
+  US: { amount: 500,   currency: "USD" }, // $5
+};
+
+const FIRST_WEEK_DISCOUNT = 0.7; // 30% off
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -61,30 +72,59 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { country } = parseResult.data;
+    const { tier, country } = parseResult.data;
     const countryCode = country.toUpperCase();
-    const pricing = LIFETIME_PRICING[countryCode] || LIFETIME_PRICING.US;
-    const normalizedTier = `lifetime_${countryCode.toLowerCase()}`;
 
-    // Block re-purchase for active lifetime members
     const supabaseServiceRole = createClient(
       supabaseUrl,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data: existingMember } = await supabaseServiceRole
-      .from("founding_members")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const isPartyPack = tier.startsWith("partypack_");
+    const productKind = isPartyPack ? "partypack" : "lifetime";
 
-    if (existingMember) {
-      return new Response(JSON.stringify({ error: "You already have lifetime access" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let pricing = isPartyPack
+      ? (PARTYPACK_PRICING[countryCode] || PARTYPACK_PRICING.US)
+      : (LIFETIME_PRICING[countryCode] || LIFETIME_PRICING.US);
+
+    const normalizedTier = `${productKind}_${countryCode.toLowerCase()}`;
+
+    // Block re-purchase for active lifetime members (lifetime only)
+    if (!isPartyPack) {
+      const { data: existingMember } = await supabaseServiceRole
+        .from("founding_members")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingMember) {
+        return new Response(JSON.stringify({ error: "You already have lifetime access" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    console.log(`Creating lifetime order: ${countryCode} ${pricing.amount} ${pricing.currency}`);
+    // First-week discount: server-validated against profiles.created_at
+    let firstWeekDiscountApplied = false;
+    const { data: profile } = await supabaseServiceRole
+      .from("profiles")
+      .select("created_at")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.created_at) {
+      const ageMs = Date.now() - new Date(profile.created_at as string).getTime();
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      if (ageMs < sevenDaysMs) {
+        firstWeekDiscountApplied = true;
+        pricing = {
+          ...pricing,
+          amount: Math.round(pricing.amount * FIRST_WEEK_DISCOUNT),
+        };
+      }
+    }
+
+    console.log(`Creating ${productKind} order: ${countryCode} ${pricing.amount} ${pricing.currency} (discount=${firstWeekDiscountApplied})`);
 
     const razorpayAuth = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
     const orderResponse = await fetch("https://api.razorpay.com/v1/orders", {
@@ -102,6 +142,8 @@ const handler = async (req: Request): Promise<Response> => {
           user_email: user.email,
           tier: normalizedTier,
           country: countryCode,
+          product_kind: productKind,
+          first_week_discount: firstWeekDiscountApplied ? "yes" : "no",
         },
       }),
     });
@@ -124,6 +166,8 @@ const handler = async (req: Request): Promise<Response> => {
       user_email: user.email,
       user_name: user.user_metadata?.first_name || "",
       tier: normalizedTier,
+      product_kind: productKind,
+      first_week_discount_applied: firstWeekDiscountApplied,
     }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
