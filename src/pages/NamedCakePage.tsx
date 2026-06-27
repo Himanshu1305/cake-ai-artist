@@ -31,6 +31,7 @@ const NamedCakePage = () => {
   if (!entry) return <Navigate to="/ai-birthday-cake-with-name" replace />;
 
   const { name } = entry;
+  const hasDeepMeaning = !!NAME_MEANINGS[entry.slug];
   const meaning = NAME_MEANINGS[entry.slug] || fallbackMeaning(name, entry.origin);
   const url = `https://cakeaiartist.com/birthday-cake-for/${entry.slug}`;
   const title = `Birthday Cake with Name "${name}" — Meaning, Designs & Free AI Maker`;
@@ -87,6 +88,7 @@ const NamedCakePage = () => {
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={url} />
+        {!hasDeepMeaning && <meta name="robots" content="noindex, follow" />}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={url} />

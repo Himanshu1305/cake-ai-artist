@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, Download, Loader2, Calendar, Clock, MapPin } from "lucide-react";
+import { Gift, Download, Loader2, Calendar, Clock, MapPin, Lock } from "lucide-react";
 import { PartyPackPreview } from "./PartyPackPreview";
 import { generatePartyPackPDF } from "@/utils/partyPackPDF";
+import { usePartyPackAccess } from "@/hooks/usePartyPackAccess";
 
 interface PartyPackGeneratorProps {
   cakeImageId: string;
@@ -40,7 +42,10 @@ export function PartyPackGenerator({
   const [showPreview, setShowPreview] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
-  
+
+  // Access gate: lifetime/premium OR a one-time Party Pack purchase
+  const { loading: accessLoading, hasAccess } = usePartyPackAccess();
+
   // Event details state
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
@@ -190,24 +195,46 @@ export function PartyPackGenerator({
         )}
 
         {!partyPack && (
-          <Button
-            onClick={generatePartyPack}
-            disabled={isGenerating}
-            className="w-full bg-gradient-to-r from-party-purple to-party-pink hover:from-party-purple/90 hover:to-party-pink/90 text-white font-bold"
-            size="lg"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Generating Party Pack...
-              </>
-            ) : (
-              <>
-                <Gift className="mr-2 h-5 w-5" />
-                Generate Party Pack
-              </>
-            )}
-          </Button>
+          hasAccess ? (
+            <Button
+              onClick={generatePartyPack}
+              disabled={isGenerating || accessLoading}
+              className="w-full bg-gradient-to-r from-party-purple to-party-pink hover:from-party-purple/90 hover:to-party-pink/90 text-white font-bold"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Generating Party Pack...
+                </>
+              ) : (
+                <>
+                  <Gift className="mr-2 h-5 w-5" />
+                  Generate Party Pack
+                </>
+              )}
+            </Button>
+          ) : (
+            <div className="rounded-xl border-2 border-party-pink/40 bg-gradient-to-br from-party-pink/5 to-party-purple/5 p-5 text-center space-y-3">
+              <div className="inline-flex items-center gap-2 text-party-purple font-semibold">
+                <Lock className="w-4 h-4" />
+                Party Pack — premium feature
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Unlock invitation cards, thank-you notes, cake toppers and banners — generated in your cake's exact style. One-time payment, permanent access.
+              </p>
+              <Button
+                asChild
+                size="lg"
+                className="w-full bg-gradient-to-r from-party-purple to-party-pink text-white font-bold"
+              >
+                <Link to="/pricing">
+                  <Gift className="mr-2 h-5 w-5" />
+                  Unlock Party Pack
+                </Link>
+              </Button>
+            </div>
+          )
         )}
 
         {isGenerating && (

@@ -9,7 +9,9 @@ export type PaymentTier =
   // New 3-tier model
   | "lifetime_in" | "lifetime_gb" | "lifetime_ca" | "lifetime_au" | "lifetime_us"
   | "monthly_in" | "monthly_gb" | "monthly_ca" | "monthly_au" | "monthly_us"
-  | "yearly_in"  | "yearly_gb"  | "yearly_ca"  | "yearly_au"  | "yearly_us";
+  | "yearly_in"  | "yearly_gb"  | "yearly_ca"  | "yearly_au"  | "yearly_us"
+  // Party Pack one-time, permanent
+  | "partypack_in" | "partypack_gb" | "partypack_ca" | "partypack_au" | "partypack_us";
 
 declare global {
   interface Window {
@@ -281,6 +283,7 @@ export const useRazorpayPayment = (country: string = "US") => {
                   tier: tier,
                   amount: orderData.amount,
                   currency: orderData.currency,
+                  first_week_discount_applied: !!orderData.first_week_discount_applied,
                 },
               }
             );
@@ -292,15 +295,20 @@ export const useRazorpayPayment = (country: string = "US") => {
 
             // Success!
             setCurrentOrderId(null);
-            toast.success("🎉 Welcome to the Lifetime Club!", {
-              description: `You're member #${verifyData.member_number}! Check your email for details.`,
-              duration: 10000,
-            });
 
-            // Redirect to home after success
-            setTimeout(() => {
-              navigate("/");
-            }, 2000);
+            if (verifyData.product_kind === "partypack") {
+              toast.success("🎁 Party Pack unlocked!", {
+                description: "Permanent access — generate decorations, banners & invites anytime.",
+                duration: 10000,
+              });
+              setTimeout(() => navigate("/party-pack-generator"), 1500);
+            } else {
+              toast.success("🎉 Welcome to the Lifetime Club!", {
+                description: `You're member #${verifyData.member_number}! Check your email for details.`,
+                duration: 10000,
+              });
+              setTimeout(() => navigate("/"), 2000);
+            }
 
           } catch (verifyErr: any) {
             console.error("Verification error:", verifyErr);

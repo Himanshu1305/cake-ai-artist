@@ -947,6 +947,56 @@ export type Database = {
           },
         ]
       }
+      party_pack_purchases: {
+        Row: {
+          amount_paid: number
+          country: string
+          created_at: string
+          currency: string
+          first_week_discount_applied: boolean
+          id: string
+          party_pack_id: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          country: string
+          created_at?: string
+          currency: string
+          first_week_discount_applied?: boolean
+          id?: string
+          party_pack_id?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          tier: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          country?: string
+          created_at?: string
+          currency?: string
+          first_week_discount_applied?: boolean
+          id?: string
+          party_pack_id?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          tier?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_pack_purchases_party_pack_id_fkey"
+            columns: ["party_pack_id"]
+            isOneToOne: false
+            referencedRelation: "party_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       party_packs: {
         Row: {
           banner_url: string

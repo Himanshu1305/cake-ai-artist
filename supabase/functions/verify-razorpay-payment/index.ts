@@ -13,9 +13,10 @@ const requestSchema = z.object({
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
-  tier: z.string().min(1), // accepts lifetime_<cc> and legacy tier_1_49 / tier_2_99
+  tier: z.string().min(1), // accepts lifetime_<cc>, partypack_<cc>, and legacy tier_1_49 / tier_2_99
   amount: z.number(),
   currency: z.string(),
+  first_week_discount_applied: z.boolean().optional().default(false),
 });
 
 // HMAC SHA256 signature verification
@@ -86,7 +87,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tier, amount, currency } = parseResult.data;
+    const {
+      razorpay_order_id, razorpay_payment_id, razorpay_signature,
+      tier, amount, currency, first_week_discount_applied,
+    } = parseResult.data;
 
     // Verify payment signature
     const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
@@ -106,7 +110,50 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check if user is already a founding member
+    const pricePaid = amount / 100;
+    const isPartyPack = tier.startsWith("partypack_");
+    const countryCode = (tier.split("_")[1] || "us").toUpperCase();
+
+    // === PARTY PACK BRANCH (one-time, permanent access to Party Pack feature) ===
+    if (isPartyPack) {
+      const { error: ppError } = await supabaseServiceRole
+        .from("party_pack_purchases")
+        .insert({
+          user_id: user.id,
+          country: countryCode,
+          amount_paid: pricePaid,
+          currency,
+          tier,
+          razorpay_order_id,
+          razorpay_payment_id,
+          first_week_discount_applied,
+        });
+
+      if (ppError && (ppError as any).code !== '23505') {
+        console.error("Failed to insert party pack purchase:", ppError);
+        return new Response(JSON.stringify({ error: "Failed to activate Party Pack" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      await supabaseServiceRole.rpc("add_activity_feed", {
+        p_activity_type: "purchase",
+        p_message: `🎁 Someone just unlocked the Party Pack!`,
+      }).then(() => {}, () => {});
+
+      console.log(`Party Pack purchase recorded for user ${user.id}`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        product_kind: "partypack",
+        tier,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === LIFETIME BRANCH (existing behavior) ===
     const { data: existingMember } = await supabaseServiceRole
       .from("founding_members")
       .select("id")
@@ -120,23 +167,17 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Generate LTA member number (e.g., 2025-LTA-1000)
     const currentYear = new Date().getFullYear();
-    
-    // Count existing LTA members (legacy + new lifetime_*)
     const { count } = await supabaseServiceRole
       .from("founding_members")
       .select("*", { count: "exact", head: true })
       .or("tier.like.%_49,tier.like.%_99,tier.like.lifetime%");
 
     const memberNumber = `${currentYear}-LTA-${1000 + (count || 0)}`;
-    
-    const pricePaid = amount / 100;
     const specialBadge = tier === "tier_1_49" ? "gold"
       : tier === "tier_2_99" ? "silver"
       : "lifetime";
 
-    // Insert founding member record
     const { error: insertError } = await supabaseServiceRole
       .from("founding_members")
       .insert({
@@ -150,7 +191,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (insertError) {
       if ((insertError as any).code === '23505') {
-        // Unique constraint violation — concurrent request already inserted this row; treat as success
         console.log("Founding member already exists (concurrent insert), proceeding");
       } else {
         console.error("Failed to insert founding member:", insertError);
@@ -161,7 +201,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Update profile to premium
     const { error: profileError } = await supabaseServiceRole
       .from("profiles")
       .update({
@@ -174,18 +213,13 @@ const handler = async (req: Request): Promise<Response> => {
       })
       .eq("id", user.id);
 
-    if (profileError) {
-      console.error("Failed to update profile:", profileError);
-      // Don't fail the request, member is already created
-    }
+    if (profileError) console.error("Failed to update profile:", profileError);
 
-    // Add activity feed entry
     await supabaseServiceRole.rpc("add_activity_feed", {
       p_activity_type: "purchase",
       p_message: `🎉 Member #${memberNumber} just joined with a Lifetime Deal!`,
     });
 
-    // Send premium emails (welcome + payment confirmation) via Brevo Transactional API
     try {
       await supabaseServiceRole.functions.invoke("send-premium-emails", {
         body: {
@@ -200,13 +234,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     } catch (emailError) {
       console.error("Failed to send premium emails:", emailError);
-      // Don't fail the request
     }
 
     console.log(`Successfully processed payment for user ${user.id}, member #${memberNumber}`);
 
     return new Response(JSON.stringify({
       success: true,
+      product_kind: "lifetime",
       member_number: memberNumber,
       tier: tier,
       badge: specialBadge,
