@@ -1768,6 +1768,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       });
       
       URL.revokeObjectURL(compositeUrl);
+      if (!isPremium) {
+        setTimeout(() => setShowUpgradeModal(true), 3000);
+      }
     } catch (error) {
       console.error('Share error:', error);
       toast({
