@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, Download, Loader2, Calendar, Clock, MapPin } from "lucide-react";
+import { Gift, Download, Loader2, Calendar, Clock, MapPin, Lock } from "lucide-react";
 import { PartyPackPreview } from "./PartyPackPreview";
 import { generatePartyPackPDF } from "@/utils/partyPackPDF";
+import { usePartyPackAccess } from "@/hooks/usePartyPackAccess";
 
 interface PartyPackGeneratorProps {
   cakeImageId: string;
@@ -40,7 +42,10 @@ export function PartyPackGenerator({
   const [showPreview, setShowPreview] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
-  
+
+  // Access gate: lifetime/premium OR a one-time Party Pack purchase
+  const { loading: accessLoading, hasAccess } = usePartyPackAccess();
+
   // Event details state
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
