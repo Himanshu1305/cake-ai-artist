@@ -3462,6 +3462,14 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
         onOpenChange={setShowShareInstructions}
       />
 
+      {/* Post-share Upgrade Modal (only for non-premium users, fires 3s after share) */}
+      <PostShareUpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        country={detectedCountry || "US"}
+      />
+
+
       {/* Text Editor Modal */}
       {editingImageIndex !== null && (
         <TextEditor
