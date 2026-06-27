@@ -33,6 +33,8 @@ import { PartyPackGenerator } from "@/components/PartyPackGenerator";
 import { AudioRecorder } from "@/components/AudioRecorder";
 import { Mic, Volume2, Link2, Trash2, Rotate3D } from "lucide-react";
 import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
+import { PostShareUpgradeModal } from "@/components/PostShareUpgradeModal";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 // Input validation schema
 const cakeFormSchema = z.object({
@@ -138,6 +140,8 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [occasionDate, setOccasionDate] = useState<string>("");
   const [recipientName, setRecipientName] = useState<string>("");
   const [showShareInstructions, setShowShareInstructions] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { detectedCountry } = useGeoContext();
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
