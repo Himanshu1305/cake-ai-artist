@@ -1,131 +1,60 @@
+## Root cause analysis
 
-# Phase 1 — Revenue Sprint (2 weeks)
+I queried the database and inspected the auth flow. The country field is blank for **31 of 145 profiles (21%)**, and **every single one is a Google OAuth signup** (`provider = 'google'`, `raw_user_meta_data->>'country'` is null).
 
-Goal: ship the conversion funnel so the first dollars start flowing while traffic builds. AdSense is deferred 30 days per your call — we'll prep it now so approval is one-click later.
+There are 4 compounding bugs, none of them in geo-detection itself (that works fine — proven by users being redirected to `/uk` etc.).
 
----
-
-## 1. Party Pack launch pricing — ₹299 / $5 (permanent access)
-
-New low-friction tier sitting BELOW Lifetime, designed as the first "yes" from a free user. **One-time payment = permanent access to that Party Pack forever** (simpler to support, no refund disputes).
-
-**Pricing matrix** (purchasing-power adjusted, all one-time):
-| Country | Price | Razorpay tier code |
-|---|---|---|
-| IN | ₹299 | `partypack_in` |
-| US | $5 | `partypack_us` |
-| GB | £4 | `partypack_gb` |
-| CA | C$7 | `partypack_ca` |
-| AU | A$8 | `partypack_au` |
-
-**What's included:**
-- 1 Party Pack (invites + thank-you cards + games + menu)
-- Unlimited regenerations for that one event
-- HD downloads, no watermark
-- **Permanent access** — re-download anytime
-
-**Implementation:**
-- Add `partypack_*` tiers to `useRazorpayPayment.ts` + `create-razorpay-order` edge function
-- New `party_pack_purchases` table (user_id, country, amount, razorpay_payment_id, party_pack_id nullable, created_at) with GRANTs + RLS — no `expires_at`
-- Update `verify-razorpay-payment` to branch on tier prefix: `lifetime_*` → founding_members flow; `partypack_*` → party_pack_purchases flow
-- New "Party Pack" card in `PricingPlans.tsx` (4-column layout: Party Pack / Monthly / Yearly / Lifetime)
-- Gate Party Pack downloads in `PartyPackGenerator.tsx` on having ≥1 row in `party_pack_purchases` OR `is_premium=true`
-
----
-
-## 2. Post-share upgrade modal
-
-The single highest-leverage change. Right now after a user shares a cake, nothing happens. We catch them at peak excitement.
-
-**Trigger:** Fires once per session, 3 seconds after the share dialog opens in `CakeCreator.tsx`.
-
-**Modal content** (country-aware copy + price):
-- Headline: "🎉 Loved it? Plan the whole party in 5 min"
-- 3-bullet value (invites, games, thank-yous)
-- Primary CTA: "Get Party Pack — ₹299" (opens Razorpay directly, skips pricing page)
-- Secondary CTA: "Maybe later"
-- Tertiary text link: "See all plans →" (goes to /pricing)
-
-**Implementation:**
-- New `PostShareUpgradeModal.tsx`
-- Frequency cap: localStorage flag `lastShareModalShown` — max once per 48h per user
-- Skip if user already has lifetime or any Party Pack purchase
-- Variant key in localStorage for future A/B testing
-
----
-
-## 3. First-week discount
-
-Urgency hook for new signups. Active for the user's first 7 days only.
-
-**Mechanic:**
-- 30% off Lifetime + Party Pack during first week (₹2,099 lifetime IN / $34 US; ₹209 party pack IN / $3.5 US)
-- Visible countdown timer on /pricing and in post-share modal
-- **Server-validated** in `create-razorpay-order` (check `profiles.created_at < 7 days ago`) — no client trust
-
-**Implementation:**
-- Edge function reads `profiles.created_at` and applies 0.7x when eligible
-- New `FirstWeekBadge.tsx` component using existing `CountdownTimer`
-- Show on: /pricing hero, post-share modal, exit-intent modal
-
----
-
-## 4. AdSense readiness checklist (no submission yet)
-
-You're right to wait — submitting too early = rejection + 6-month cooldown. We prep everything so submission in 30 days is clean.
-
-**Best practice (Google's actual approval criteria):**
-1. **Min 30+ pages of unique, deep content** — we have ~200 programmatic pages, but Google may flag thin ones. Action: audit weakest pages, deepen or noindex.
-2. **Privacy Policy + Terms + Contact + About** — already shipped ✓
-3. **ads.txt** — already shipped ✓
-4. **Traffic origin** — needs organic > 0. Currently ~14 US visits/mo. Wait until ≥500/mo organic.
-5. **Site age** — 6+ months helps. We qualify.
-6. **No copyright/prohibited content** — clean ✓
-
-**What I'll do this sprint:**
-- Audit name/theme pages with thin content flags (manual review of 10 samples)
-- Add `noindex` to name pages where the name has very low global search volume (low-value index bloat)
-- Verify `ads.txt`, `sitemap.xml`, `llms.txt` are current
-- Create `ADSENSE_READINESS.md` tracking doc with go/no-go gates for submission in 30 days
-
-**Recommendation:** Submit when you hit BOTH (a) 500+ organic monthly visitors AND (b) 30 days of consistent traffic.
-
----
-
-## Technical summary
-
-```text
-DB migrations:
-  + party_pack_purchases table (with GRANTs + RLS)
-
-Edge functions:
-  ~ create-razorpay-order   (add partypack_* tiers + first-week 30% discount)
-  ~ verify-razorpay-payment (branch on tier prefix; insert into party_pack_purchases for partypack_*)
-
-New components:
-  + PostShareUpgradeModal.tsx
-  + FirstWeekBadge.tsx
-
-Modified:
-  ~ PricingPlans.tsx          (4-column layout, add Party Pack card)
-  ~ useRazorpayPayment.ts     (new tier codes)
-  ~ CakeCreator.tsx           (trigger PostShareUpgradeModal after share)
-  ~ Pricing.tsx               (FirstWeekBadge in hero)
-  ~ PartyPackGenerator.tsx    (gate download on purchase OR premium)
-
-Audit deliverable:
-  + ADSENSE_READINESS.md
+### Bug 1 — OAuth bypasses the country-capture form entirely
+Email signup collects country in the form and passes it as `options.data.country`, which `handle_new_user` trigger stores. But the Google button calls:
+```ts
+supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${origin}/` } })
 ```
+Google returns the user to `/` (home), **not** `/auth`. The `SIGNED_IN` listener that would redirect them to `/complete-profile` lives inside `Auth.tsx` — it never fires because the user isn't on that page. So OAuth users land on home with no country prompt, ever.
+
+### Bug 2 — `useRequireCountry` guard is only on 3 low-traffic pages
+It's wired into `Gallery`, `Pricing`, and `Settings`. It is NOT on `Index`, `/free-ai-cake-designer`, `/party-planner`, `CakeCreator`, or any country landing page — the actual high-traffic surfaces. So OAuth users can browse, create cakes, and even purchase without ever hitting the guard. This is why admin sees "user created 3 cakes, country blank".
+
+### Bug 3 — `handle_new_user` has no fallback for OAuth
+The trigger only reads `raw_user_meta_data->>'country'`. Google never sends that field. No `locale` fallback, no IP-based fallback. Nothing writes country at signup for OAuth.
+
+### Bug 4 — Client-side geo is detected but never persisted
+`GeoContext` successfully detects country on every visit (that's what powers the `/uk` redirect the admin sees in page_visits). But that detected value is only used for routing — it's never written back to `profiles.country`. So we already know these users' countries; we just throw the data away.
+
+### Why admin sees `/` and `/uk` for the same blank-country user
+`/` is home. `/uk` is where `GeoRedirectWrapper` sent them because their IP resolved to GB. Both got tracked in `page_visits` with a `country_code`. But `profiles.country` remained null because nothing links the two.
 
 ---
 
-## Sequencing
+## Fix plan
 
-1. **Day 1-2:** Party Pack pricing (DB + edge functions + 4th plan card + gating)
-2. **Day 3-4:** Post-share upgrade modal (highest-conversion lever)
-3. **Day 5-6:** First-week discount (server-validated)
-4. **Day 7:** AdSense audit + checklist doc
+### 1. Silent auto-fill on every sign-in (primary fix)
+Add a top-level `AuthCountrySync` effect in `App.tsx` (runs regardless of route). On every `SIGNED_IN` event and on initial session load:
+- Read `profiles.country` for the user.
+- If blank AND `GeoContext.detectedCountry` is available, `UPDATE profiles SET country = <detected>` (mapping `GB → UK`).
+- No modal, no redirect — invisible to the user.
 
-After Phase 1 ships, we measure for 7 days, then decide Phase 2.
+This closes Bug 1 and Bug 4 for all future OAuth signups. No forced `/complete-profile` interruption, which would hurt OAuth conversion.
 
-Approve to switch to build mode.
+### 2. Trigger-level fallback for future OAuth signups
+Update `handle_new_user` to also try `raw_user_meta_data->>'locale'` (e.g. `en-GB` → `GB`) as a secondary source before falling back to null. Keeps signup row consistent even before the client-side sync runs.
+
+### 3. One-time backfill of the 31 existing blank users
+Migration that, for each `profiles.country IS NULL` user, sets country to the most-frequent `page_visits.country_code` for their `user_id` (fallback: their most recent visit's country_code). Users who never had a page visit stay null and will be filled by fix #1 on their next login.
+
+### 4. Optional safety net (do only if #1 proves insufficient)
+Add `useRequireCountry` to `Index` and `/free-ai-cake-designer` so cake creation can't happen with a blank profile. Keeping this optional because the silent sync in #1 should make it unnecessary and forced redirects hurt UX.
+
+---
+
+## Technical details
+
+**Files to change**
+- `src/App.tsx` — mount a new `<AuthCountrySync />` component inside providers.
+- `src/components/AuthCountrySync.tsx` — new; listens to auth + geo context, writes profile country if blank.
+- Migration — updates `handle_new_user` to add locale fallback; backfills existing 31 rows from `page_visits.country_code`.
+
+**No change** to `GeoContext`, `GeoRedirectWrapper`, `CompleteProfile`, or Google OAuth `redirectTo` — those work correctly for their scope.
+
+**Verification after ship**
+- Re-run the blank-country query: should drop from 31 to ~0 (only users with no page_visits history remain).
+- Sign in fresh with a Google account, confirm `profiles.country` populates within seconds without any UI prompt.
