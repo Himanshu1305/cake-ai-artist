@@ -8,6 +8,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GeoRedirectWrapper } from "@/components/GeoRedirectWrapper";
 import { GeoProvider } from "@/contexts/GeoContext";
+import { AuthCountrySync } from "@/components/AuthCountrySync";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
@@ -85,6 +86,7 @@ const App = () => {
               <ScrollToTop />
               {!/^\/cake\//.test(window.location.pathname) && <CookieConsent />}
               <GeoRedirectWrapper />
+              <AuthCountrySync />
               <Suspense fallback={
                 <div className="fixed inset-0 flex items-center justify-center bg-background">
                   <div className="w-8 h-8 border-4 border-party-pink border-t-transparent rounded-full animate-spin" />
