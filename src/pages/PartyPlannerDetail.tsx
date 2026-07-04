@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PageSeo } from "@/components/PageSeo";
 
 // Themes grouped for the Select UI. Order within group matters; flatten preserves order.
 const THEME_GROUPS: Array<{ label: string; themes: string[] }> = [
@@ -1043,6 +1044,12 @@ export default function PartyPlannerDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        path={`/party-planner/${party.id}`}
+        title={`${party.title} — Party Planner | Cake AI Artist`}
+        description="Private party planner dashboard. Manage guests, tasks, invites and RSVPs for your event."
+        noindex
+      />
       <SiteHeader />
       <div className="max-w-5xl mx-auto px-4 py-6">
         <Link to="/party-planner" className="text-sm text-muted-foreground hover:underline">
