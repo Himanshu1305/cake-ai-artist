@@ -1,60 +1,159 @@
-## Root cause analysis
+## Scope
 
-I queried the database and inspected the auth flow. The country field is blank for **31 of 145 profiles (21%)**, and **every single one is a Google OAuth signup** (`provider = 'google'`, `raw_user_meta_data->>'country'` is null).
+Pricing is parked. This is a pure execution plan for the SEO/AEO growth work: programmatic pages, editorial articles (including data-driven and "vs" pieces), AEO schema, backlinks, and distribution. Everything below is a discrete ship — small enough that each day ends with something live.
 
-There are 4 compounding bugs, none of them in geo-detection itself (that works fine — proven by users being redirected to `/uk` etc.).
+## New editorial angle you asked for
 
-### Bug 1 — OAuth bypasses the country-capture form entirely
-Email signup collects country in the form and passes it as `options.data.country`, which `handle_new_user` trigger stores. But the Google button calls:
-```ts
-supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${origin}/` } })
-```
-Google returns the user to `/` (home), **not** `/auth`. The `SIGNED_IN` listener that would redirect them to `/complete-profile` lives inside `Auth.tsx` — it never fires because the user isn't on that page. So OAuth users land on home with no country prompt, ever.
+Adding a new content pillar — "curated, thought-provoking" pieces that also build authority and earn links naturally:
 
-### Bug 2 — `useRequireCountry` guard is only on 3 low-traffic pages
-It's wired into `Gallery`, `Pricing`, and `Settings`. It is NOT on `Index`, `/free-ai-cake-designer`, `/party-planner`, `CakeCreator`, or any country landing page — the actual high-traffic surfaces. So OAuth users can browse, create cakes, and even purchase without ever hitting the guard. This is why admin sees "user created 3 cakes, country blank".
+- **The History of Birthday Cakes** — 3,000 words, ancient Egypt → Rome → Germany's Kinderfest → modern candles. Original illustrations, timeline component. Targets "history of birthday cake" (720/mo), "who invented birthday cake" (390/mo).
+- **The World Cake Report 2026** — data-driven page. Countries where most cakes are bought/searched (Google Trends data), average spend, most popular flavors by region, "which country celebrates birthdays biggest". Highly link-worthy — journalists cite data pages.
+- **Birthday Cake Traditions Around the World** — Mexico's *mordida*, Japan's Christmas cake, Korea's *tteok*, Netherlands' *taart*, India's black-forest obsession, UK trifle heritage. Each with an AI-generated cake for that tradition.
+- **The Meaning Behind Candles, Icing, and Cake Colors** — folklore + symbolism. Great for AEO because it answers "why do we put candles on birthday cake" type questions.
+- **Cake vs the AI giants — head-to-head battles** (a whole series):
+  - Cake AI Artist vs ChatGPT (DALL-E 3) — birthday cake generation
+  - Cake AI Artist vs Google Gemini — name spelling accuracy test
+  - Cake AI Artist vs Midjourney — 10 prompts, side-by-side
+  - Cake AI Artist vs Canva Birthday Templates (already have one — expand)
+  - Cake AI Artist vs Adobe Firefly — photo-cake test
+  Each is a real test with screenshots, scoring rubric (spelling, aesthetics, personalization, speed, cost). Massively shareable on Reddit/X.
 
-### Bug 3 — `handle_new_user` has no fallback for OAuth
-The trigger only reads `raw_user_meta_data->>'country'`. Google never sends that field. No `locale` fallback, no IP-based fallback. Nothing writes country at signup for OAuth.
-
-### Bug 4 — Client-side geo is detected but never persisted
-`GeoContext` successfully detects country on every visit (that's what powers the `/uk` redirect the admin sees in page_visits). But that detected value is only used for routing — it's never written back to `profiles.country`. So we already know these users' countries; we just throw the data away.
-
-### Why admin sees `/` and `/uk` for the same blank-country user
-`/` is home. `/uk` is where `GeoRedirectWrapper` sent them because their IP resolved to GB. Both got tracked in `page_visits` with a `country_code`. But `profiles.country` remained null because nothing links the two.
+These slot into Pillar 2 (content cluster) below.
 
 ---
 
-## Fix plan
+## Week 1 — Foundation + first programmatic batch
 
-### 1. Silent auto-fill on every sign-in (primary fix)
-Add a top-level `AuthCountrySync` effect in `App.tsx` (runs regardless of route). On every `SIGNED_IN` event and on initial session load:
-- Read `profiles.country` for the user.
-- If blank AND `GeoContext.detectedCountry` is available, `UPDATE profiles SET country = <detected>` (mapping `GB → UK`).
-- No modal, no redirect — invisible to the user.
+**Day 1 (Mon)**
+- Install `react-helmet-async`, wire `HelmetProvider` in `main.tsx`.
+- Build reusable `<PageSeo />` component (title, description, canonical, og:*, JSON-LD slot).
+- Convert `Index`, `NamedCakePage`, `ThemedCakePage`, `FreeAiCakeDesigner`, `PhotoCakeMaker`, `WeddingCakeDesigner` to use it. Self-referencing canonicals everywhere.
 
-This closes Bug 1 and Bug 4 for all future OAuth signups. No forced `/complete-profile` interruption, which would hurt OAuth conversion.
+**Day 2 (Tue)**
+- Add `SoftwareApplication` + `Organization` + `WebSite` JSON-LD to homepage.
+- Add `FAQPage` schema to `/faq`, homepage, and top 3 generator pages.
+- Add `HowTo` schema to `/how-it-works` and every generator page.
+- Rewrite homepage H2 section: "How our AI cake generator works" targeting how-to long-tails.
 
-### 2. Trigger-level fallback for future OAuth signups
-Update `handle_new_user` to also try `raw_user_meta_data->>'locale'` (e.g. `en-GB` → `GB`) as a secondary source before falling back to null. Keeps signup row consistent even before the client-side sync runs.
+**Day 3 (Wed)**
+- Build `scripts/generate-programmatic-pages.ts` — reads `data/nameMeanings.ts`, `data/cakeThemes.ts`, generates rich metadata + FAQ pairs + sample-cake JSON per slug at build time.
+- Curate top 200 names list (mix US/UK/IN/global — 60/40/60/40).
+- Curate top 60 themes list.
 
-### 3. One-time backfill of the 31 existing blank users
-Migration that, for each `profiles.country IS NULL` user, sets country to the most-frequent `page_visits.country_code` for their `user_id` (fallback: their most recent visit's country_code). Users who never had a page visit stay null and will be filled by fix #1 on their next login.
+**Day 4 (Thu)**
+- Ship `NamedCakePage` template v2: 800+ words per page (name meaning, cake ideas for this name, 3 AI variants embedded, 5 message ideas, related-names sidebar, FAQ, breadcrumb schema, `Article` + `FAQPage` JSON-LD).
+- Remove `noindex` from top 50 names.
 
-### 4. Optional safety net (do only if #1 proves insufficient)
-Add `useRequireCountry` to `Index` and `/free-ai-cake-designer` so cake creation can't happen with a blank profile. Keeping this optional because the silent sync in #1 should make it unnecessary and forced redirects hurt UX.
+**Day 5 (Fri)**
+- Ship `ThemedCakePage` template v2 with same depth.
+- Remove `noindex` from top 20 themes.
+- Rebuild sitemap generator to include all 70 newly-indexed pages with correct `lastmod`.
+
+**Day 6 (Sat)**
+- Rewrite `/ai-birthday-cake-with-name` to 1,500 words with real user examples, FAQ block, internal links to 20 named pages. This is our #10 ranker — push it to page 1 top-5.
+- Submit updated sitemap to Google Search Console + Bing IndexNow.
+
+**Day 7 (Sun)**
+- QA: Lighthouse audit on 10 sample pages. Fix CLS / LCP issues.
+- Screenshot the "before" state of key rankings for measurement.
 
 ---
 
-## Technical details
+## Week 2 — Scale + AEO groundwork
 
-**Files to change**
-- `src/App.tsx` — mount a new `<AuthCountrySync />` component inside providers.
-- `src/components/AuthCountrySync.tsx` — new; listens to auth + geo context, writes profile country if blank.
-- Migration — updates `handle_new_user` to add locale fallback; backfills existing 31 rows from `page_visits.country_code`.
+**Day 8 (Mon)** — Ship 50 more named pages (running total: 100).
+**Day 9 (Tue)** — Build & ship 10 age-milestone pages (`/birthday-cake-for-1st-birthday` … `/birthday-cake-for-80th-birthday`). Each 1,000 words + FAQ + 3 age-appropriate AI cake samples.
+**Day 10 (Wed)** — Ship 10 relationship pages (`/birthday-cake-for-mom`, `-dad`, `-husband`, `-wife`, `-best-friend`, `-sister`, `-brother`, `-daughter`, `-son`, `-boss`).
+**Day 11 (Thu)** — Expand `public/llms.txt` with a curated topic tree, "when to cite" hints, and a `/api/cake-facts.json` static endpoint (structured knowledge for LLMs to ingest).
+**Day 12 (Fri)** — Ship 40 more named pages (running total: 140) + 20 more themes (running total: 40).
+**Day 13 (Sat)** — Kill dead-weight pages: 301-redirect `/community`, `/use-cases`, `/photo-cake-maker` (thin variants) to their strongest sibling. Consolidates link equity.
+**Day 14 (Sun)** — Register with Bing Webmaster Tools, verify Yandex (India traffic), verify Naver.
 
-**No change** to `GeoContext`, `GeoRedirectWrapper`, `CompleteProfile`, or Google OAuth `redirectTo` — those work correctly for their scope.
+---
 
-**Verification after ship**
-- Re-run the blank-country query: should drop from 31 to ~0 (only users with no page_visits history remain).
-- Sign in fresh with a Google account, confirm `profiles.country` populates within seconds without any UI prompt.
+## Week 3 — Content cluster launch (curated articles)
+
+**Day 15 (Mon)** — Ship **pillar hub**: `/blog/complete-guide-to-birthday-cakes-with-names` (3,000 words). Internal-links to every relevant name/theme/age page. This is the authority anchor.
+**Day 16 (Tue)** — **The History of Birthday Cakes** (editorial pillar #1). Custom timeline component. 3,000 words. Rich `Article` + `ImageObject` schema.
+**Day 17 (Wed)** — **The World Cake Report 2026** (data page). Pull Google Trends CSV for "birthday cake" by country, top flavors from public survey data, average cake spend estimates. Interactive world-map component. This is the link-magnet piece.
+**Day 18 (Thu)** — **Birthday Cake Traditions Around the World** — 10 countries, one AI-generated tradition-cake per country, cultural notes, JSON-LD `Article`.
+**Day 19 (Fri)** — **Cake AI Artist vs ChatGPT (DALL-E 3)** — real head-to-head with 5 prompts, screenshots, scoring table. Publish + push to r/ChatGPT, r/OpenAI, HN Show.
+**Day 20 (Sat)** — **Cake AI Artist vs Google Gemini** — name spelling accuracy test (Gemini is famously bad at this — we win obviously). Push to r/Bard.
+**Day 21 (Sun)** — **The Meaning Behind Candles, Icing & Cake Colors** — folklore + symbolism piece. AEO-optimized Q→A structure.
+
+---
+
+## Week 4 — More scale + more editorial + activate loops
+
+**Day 22 (Mon)** — Ship 60 more named pages (running total: 200 = full first cohort done).
+**Day 23 (Tue)** — **Cake AI Artist vs Midjourney** head-to-head + **50 Birthday Cake Ideas by Age** (spoke, links to age pages).
+**Day 24 (Wed)** — **Cake AI Artist vs Adobe Firefly** + **How AI Cake Generators Actually Work** (technical explainer — link-bait for tech readers).
+**Day 25 (Thu)** — Activate `ReferralSystem.tsx` end-to-end. Test invite flow. Add "Invite a friend, get 3 free cakes" banner on Index + post-generation.
+**Day 26 (Fri)** — Build Pinterest auto-upload script: cron job pushes top-liked gallery images to Pinterest boards ("Birthday Cake Ideas", "Wedding Cakes", "Kids Party Cakes") with keyword-rich captions.
+**Day 27 (Sat)** — **Cultural Birthday Cake Traditions: India, US, UK, Japan** (deeper spoke).
+**Day 28 (Sun)** — **Cake Message Ideas for Every Relationship** (spoke, links to 10 relationship pages).
+
+---
+
+## Week 5 — Distribution burst
+
+**Day 29 (Mon)** — Product Hunt launch prep: hunter lined up, 10 upvoter friends briefed, demo GIF ready, first-comment written.
+**Day 30 (Tue)** — **Product Hunt LAUNCH DAY.** All-hands on comments + support. Post-launch write-up scheduled.
+**Day 31 (Wed)** — Build & ship **embeddable "Cake of the Day" widget** — copy-paste `<script>` snippet mom-blogs can drop in. Each embed = a backlink to us.
+**Day 32 (Thu)** — Reddit distribution round: 3 helpful answers each in r/Baking, r/birthdaygifts, r/HelpMeFind, r/Parenting, r/DIY, r/artificial. Link only when genuinely helpful.
+**Day 33 (Fri)** — **Best Photo Cake Ideas — real user examples** (spoke, drives Photo Cake feature).
+**Day 34 (Sat)** — **Seasonal cake ideas: Eid, Diwali, Christmas, Chinese New Year** (evergreen, republish yearly with new date).
+**Day 35 (Sun)** — **Cake AI Artist vs Canva** — expand the existing post with 2026 template comparison.
+
+---
+
+## Week 6 — Outreach + measure + iterate
+
+**Day 36 (Mon)** — Guest post outreach: identify 15 mommy-blogs / party-planning sites. Send personalized pitches offering a free Party Pack for a guest post spot.
+**Day 37 (Tue)** — **Wedding Cake Trends 2026** (spoke, drives Wedding page).
+**Day 38 (Wed)** — **Party Planning Checklist** (funnels to Party Pack).
+**Day 39 (Thu)** — Ship second batch: 100 more named pages (running total: 300) + 20 more themes (running total: 60 = complete).
+**Day 40 (Fri)** — Full SEO re-scan. Compare against Day 7 baseline. Identify pages sitting at position 11–20 for one-more-push rewrites.
+**Day 41 (Sat)** — Fix the top 10 pages that are "almost ranking" — inject more content, more internal links, richer schema.
+**Day 42 (Sun)** — Retro: what worked, what didn't, plan the next 6 weeks.
+
+---
+
+## Definition of done (per page / per article)
+
+Every page shipped in this plan must have:
+
+- Self-referencing canonical + og:url via `<PageSeo />`
+- Real title (< 60 chars) with primary keyword
+- Real meta description (< 160 chars) with hook
+- H1 with primary keyword, H2/H3 with secondary keywords
+- 800+ words (programmatic) or 1,500+ words (editorial)
+- At least 3 internal links to related pages + 2 links to a conversion page (Index or a generator)
+- FAQ block (3–5 Q&As) + `FAQPage` JSON-LD
+- `BreadcrumbList` JSON-LD
+- Lighthouse mobile score ≥ 90 for Performance + SEO
+- Added to `sitemap.xml` via the generator
+
+---
+
+## Total shipping count (6 weeks)
+
+- 300 named cake pages
+- 60 themed cake pages
+- 10 age-milestone pages
+- 10 relationship pages
+- 1 pillar hub post
+- 4 editorial pillar pieces (history, world report, traditions, meanings)
+- 5 head-to-head "vs" posts
+- 10 spoke posts
+- = **400 indexable pages** live vs today's ~15
+
+## Measurement checkpoints
+
+- **End of Week 2**: Search Console crawl stats should show 200+ new URLs discovered.
+- **End of Week 4**: Semrush keyword count should hit ~200 (from 39 today).
+- **End of Week 6**: Estimated traffic should sit in the 300–800/mo range. Any named page in top 20 counts as a win.
+
+## What I need from you before starting
+
+Nothing — you approved the direction. On approval I start Day 1 immediately: install helmet, wire `<PageSeo />`, and ship the first pass. I'll ping you at the end of each week with what shipped and what's next.
