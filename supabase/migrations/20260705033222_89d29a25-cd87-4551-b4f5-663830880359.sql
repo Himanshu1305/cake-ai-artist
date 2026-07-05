@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET image_alt = title WHERE is_published = true AND (image_alt IS NULL OR image_alt = '');
