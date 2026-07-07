@@ -15,6 +15,8 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { CAKE_NAMES } from "@/data/cakeNames";
 import { NAME_MEANINGS, fallbackMeaning } from "@/data/nameMeanings";
 import { cakeMessagesFor } from "@/data/cakeMessages";
+import { CAKE_THEMES } from "@/data/cakeThemes";
+import { themesForName } from "@/data/nameThemeMap";
 
 const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
 
@@ -38,6 +40,12 @@ const NamedCakePage = () => {
   const description = `Design a birthday cake with the name ${name} in 30 seconds. ${name} means "${meaning.meaning.split(' — ')[0]}" (${meaning.origin}). Free AI cake maker, 12+ ready-to-use messages, expert tips.`;
 
   const messages = cakeMessagesFor();
+
+  const themeSlugs = useMemo(() => themesForName(entry.slug, NAME_MEANINGS[entry.slug], entry), [entry]);
+  const suggestedThemes = useMemo(
+    () => themeSlugs.map((s) => CAKE_THEMES.find((t) => t.slug === s)).filter(Boolean) as typeof CAKE_THEMES,
+    [themeSlugs],
+  );
 
   const faqs = [
     {
