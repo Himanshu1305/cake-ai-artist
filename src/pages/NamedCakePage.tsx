@@ -15,6 +15,8 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { CAKE_NAMES } from "@/data/cakeNames";
 import { NAME_MEANINGS, fallbackMeaning } from "@/data/nameMeanings";
 import { cakeMessagesFor } from "@/data/cakeMessages";
+import { CAKE_THEMES } from "@/data/cakeThemes";
+import { themesForName } from "@/data/nameThemeMap";
 
 const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
 
@@ -38,6 +40,12 @@ const NamedCakePage = () => {
   const description = `Design a birthday cake with the name ${name} in 30 seconds. ${name} means "${meaning.meaning.split(' — ')[0]}" (${meaning.origin}). Free AI cake maker, 12+ ready-to-use messages, expert tips.`;
 
   const messages = cakeMessagesFor();
+
+  const themeSlugs = useMemo(() => themesForName(entry.slug, NAME_MEANINGS[entry.slug], entry), [entry]);
+  const suggestedThemes = useMemo(
+    () => themeSlugs.map((s) => CAKE_THEMES.find((t) => t.slug === s)).filter(Boolean) as typeof CAKE_THEMES,
+    [themeSlugs],
+  );
 
   const faqs = [
     {
@@ -193,6 +201,32 @@ const NamedCakePage = () => {
               Naming reference compiled from common etymological sources (Behind the Name, Social Security Administration, UK ONS).
             </p>
           </Card>
+        </section>
+
+        {/* Curated cake themes for this name */}
+        <section className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            Best cake themes for {name}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Hand-picked themes that pair well with the name {name} — based on its meaning, origin and typical age range.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {suggestedThemes.map((theme) => (
+              <Link
+                key={theme.slug}
+                to={`/birthday-cake-theme/${theme.slug}`}
+                className="block group"
+              >
+                <Card className="p-5 h-full hover:shadow-elegant hover:border-party-pink transition-all">
+                  <h3 className="font-bold text-base mb-2 text-party-pink group-hover:underline">
+                    {theme.title} cake for {name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-3">{theme.description}</p>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Sample gallery */}
