@@ -203,6 +203,32 @@ const NamedCakePage = () => {
           </Card>
         </section>
 
+        {/* Curated cake themes for this name */}
+        <section className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            Best cake themes for {name}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Hand-picked themes that pair well with the name {name} — based on its meaning, origin and typical age range.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {suggestedThemes.map((theme) => (
+              <Link
+                key={theme.slug}
+                to={`/birthday-cake-theme/${theme.slug}`}
+                className="block group"
+              >
+                <Card className="p-5 h-full hover:shadow-elegant hover:border-party-pink transition-all">
+                  <h3 className="font-bold text-base mb-2 text-party-pink group-hover:underline">
+                    {theme.title} cake for {name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-3">{theme.description}</p>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* Sample gallery */}
         <section className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">
