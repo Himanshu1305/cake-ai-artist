@@ -1,97 +1,75 @@
-## Approved parameters
-- **Image tier:** `imagegen` fast
-- **Cadence:** one continuous batch — all 27 rewrites + DB audit + 6 pillars, shipped back-to-back
+# Plan: Expand & deepen name pages
 
-## Audit summary (what needs fixing)
+## Goal
+Grow `/birthday-cake-for/{name}` cluster from ~130 → ~200 pages, targeting underserved high-volume audiences, AND make every page substantive enough that Google treats them as real content (not templated doorways).
 
-**Hardcoded posts (`src/pages/BlogPost.tsx`) — 27 total, all failing:**
+## Part 1 — Add ~70 strategic names
 
-| Word count | Alt text | Hero image |
-|---|---|---|
-| 27/27 under 1,200 words (avg ~430) | 26/27 missing `imageAlt` | 27/27 generic Unsplash stock — root cause of the "image doesn't match content" complaint |
+Focus on gaps in the current list. No more generic English names — pick underserved segments with real search demand.
 
-**DB-driven posts (`blog_posts` table):** need runtime audit — will query for rows where body word count < 1,200, `image_alt IS NULL`, or `image_url` is an unsplash.com URL.
+**Muslim / Arabic (~20 names)**
+Muhammad, Ahmed, Ali, Omar, Yusuf, Ibrahim, Hassan, Hussain, Zayn, Bilal, Fatima, Aisha (dup — skip), Zainab, Maryam, Khadija, Layla, Noor, Amina, Yasmin, Hafsa
 
-## Execution — one continuous batch
+**Hispanic / Latino (~20 names)**
+Mateo (dup — skip), Diego, Santiago, Sebastián, Emiliano, Nicolás, Javier, Carlos, Miguel, Andrés, Sofía (variant), Valentina, Isabella (dup — skip), Camila, Valeria, Lucía, Martina, Renata, Ximena, Gabriela
 
-### Batch 1 — Content + images for the 27 hardcoded posts
-For each of the 27 slugs:
-- Expand body to **≥1,200 words**: add history/context, step-by-step, named examples, 3–5 Q&A FAQ block, closing CTA linking to 2–3 relevant `/birthday-cake/{name}` or `/birthday-cake-theme/{theme}` pages.
-- Generate a **topical hero image** with `imagegen` (fast, 1200×630 jpg), save to `public/blog/{slug}-hero.jpg`, replace `featuredImage`.
-- Add descriptive **`imageAlt`** field to each post record.
-- Add **2 in-body images** per post (also fast tier, saved under `public/blog/{slug}-{n}.jpg`), each with keyword-rich alt.
-- Add per-post **`FAQPage` JSON-LD** via existing `<FAQSchema>` component.
+**African-American popular (~15 names)**
+Jaylen, Malachi, Amari, Kingston, Jayden, Zion, Messiah, Xavier, Nia, Zuri, Aaliyah, Amirah, Kehlani, Journee, Legend
 
-Total imagegen calls for this batch: 27 × 3 = **81 fast-tier calls**.
+**2026 trending / Gen Alpha (~15 names)**
+Kai, Ezra, Milo, Atlas, Rowan, Silas, Wren, Nova, Aurora, Sage, River, Sloane, Ottilie, Cove, Bodhi
 
-### Batch 2 — DB-driven post audit + fix
-- `SELECT slug, title, image_url, image_alt, LENGTH(content) FROM blog_posts` — identify failing rows.
-- For each failing row: rewrite content to ≥1,200 words, regenerate hero + set `image_alt` via `supabase--insert`/update migration.
-- If count is large, will report list first and confirm before regenerating images.
+Dedupe against existing `CAKE_NAMES` before adding. Final add = ~70 unique.
 
-### Batch 3 — 6 editorial pillars (fresh)
-Each authored to 1,500+ words with topical hero + 3 in-body images + FAQ + `ArticleSchema` + `BreadcrumbSchema`:
-1. `/blog/history-of-birthday-cakes`
-2. `/blog/world-cake-report-2026`
-3. `/blog/birthday-cake-traditions-around-the-world`
-4. `/blog/cake-ai-artist-vs-chatgpt`
-5. `/blog/cake-ai-artist-vs-gemini`
-6. `/blog/meaning-behind-candles-icing-cake-colors`
+## Part 2 — Deepen ALL ~200 name pages
 
-Total imagegen calls for this batch: 6 × 4 = **24 fast-tier calls**.
+Every page currently renders a generic template. Add 2 unique blocks per name:
 
-### Batch 4 — Sitemap + delivery
-- Add the 6 new pillar slugs to `public/sitemap.xml` with today's `lastmod`; bump `<lastmod>` on the 27 rewritten slugs.
-- Print the **Google Search Console submission list** to chat, ready to paste:
+**Block A — Name meaning card**
+- Origin, meaning, cultural context (1 short paragraph, ~40 words)
+- Data source: extend existing `src/data/nameMeanings.ts` (already in project) to cover all ~200 names
+- Rendered as a styled card above the CTA
 
-```
-Updated (27):
-https://cakeaiartist.com/blog/creative-cake-ideas-birthday
-https://cakeaiartist.com/blog/cake-design-trends-2025
-https://cakeaiartist.com/blog/ai-vs-traditional-cake-design
-https://cakeaiartist.com/blog/perfect-birthday-messages
-https://cakeaiartist.com/blog/virtual-party-guide
-https://cakeaiartist.com/blog/last-minute-birthday-solutions
-https://cakeaiartist.com/blog/personalized-cakes-psychology
-https://cakeaiartist.com/blog/anniversary-cake-ideas
-https://cakeaiartist.com/blog/kids-birthday-cakes-guide
-https://cakeaiartist.com/blog/cake-message-writing-tips
-https://cakeaiartist.com/blog/first-birthday-cake-ideas
-https://cakeaiartist.com/blog/fourth-of-july-cake-ideas
-https://cakeaiartist.com/blog/british-jubilee-royal-cakes
-https://cakeaiartist.com/blog/canada-day-cake-ideas
-https://cakeaiartist.com/blog/australia-day-cake-ideas
-https://cakeaiartist.com/blog/american-christmas-cake-ideas
-https://cakeaiartist.com/blog/american-new-year-cake-ideas
-https://cakeaiartist.com/blog/british-christmas-cake-ideas
-https://cakeaiartist.com/blog/british-new-year-cake-ideas
-https://cakeaiartist.com/blog/canadian-christmas-cake-ideas
-https://cakeaiartist.com/blog/canadian-new-year-cake-ideas
-https://cakeaiartist.com/blog/australian-christmas-cake-ideas
-https://cakeaiartist.com/blog/australian-new-year-cake-ideas
-https://cakeaiartist.com/blog/diwali-cake-ideas
-https://cakeaiartist.com/blog/holi-cake-ideas
-https://cakeaiartist.com/blog/indian-christmas-cake-ideas
-https://cakeaiartist.com/blog/indian-new-year-cake-ideas
+**Block B — Suggested cake themes for this name**
+- 3–4 theme suggestions tied to the name's vibe (e.g. Aarav → cricket, superhero, blue-gold; Luna → moon, pastel, celestial)
+- Pull from existing `src/data/cakeThemes.ts`; add a `nameThemeMap` lookup so each name gets curated (not random) themes
+- Rendered as a 3–4 card grid with theme name + one-line description, each linking to `/birthday-cake-theme/{theme}`
 
-+ any DB-driven post updated in Batch 2
+Result: every name page has ~120–150 unique words + curated internal links → passes Google's "thin content" bar.
 
-New (6 pillars):
-https://cakeaiartist.com/blog/history-of-birthday-cakes
-https://cakeaiartist.com/blog/world-cake-report-2026
-https://cakeaiartist.com/blog/birthday-cake-traditions-around-the-world
-https://cakeaiartist.com/blog/cake-ai-artist-vs-chatgpt
-https://cakeaiartist.com/blog/cake-ai-artist-vs-gemini
-https://cakeaiartist.com/blog/meaning-behind-candles-icing-cake-colors
-```
+## Part 3 — Sitemap + internal linking
 
-## Definition of done per post
-- ≥1,200 words (hardcoded/DB) or ≥1,500 (pillar)
-- Topical hero image matching the H1 (no Unsplash mismatches)
-- Every `<img>` has descriptive keyword-relevant `alt`
-- `FAQPage` + `ArticleSchema` JSON-LD present
-- 3+ internal links to related name/theme pages
-- Sitemap `<lastmod>` bumped
+- Regenerate `public/sitemap.xml` to include all ~200 name URLs
+- On `NamedCakePage`, add "Other popular names" section (8 random names from same region cluster) for internal link equity
+- On homepage `PopularCakesSection`, surface a rotating strip of 12 name pages
 
-## Heads-up
-This is a large shipment — expect several long turns of file edits + imagegen calls in a row. I'll surface the final GSC URL list at the very end so you have one clean list to paste, and also flag any post where imagegen or content generation errored so you can decide whether to retry.
+## Technical details
+
+**Files to touch:**
+- `src/data/cakeNames.ts` — append 70 new entries with `origin` tags
+- `src/data/nameMeanings.ts` — extend to cover all ~200 names (bulk-generate via one AI call, not per-name)
+- `src/data/nameThemeMap.ts` — new file, `Record<slug, themeSlug[]>` with 3–4 themes per name
+- `src/pages/NamedCakePage.tsx` — render meaning card + theme grid + "other names" section
+- `public/sitemap.xml` — regenerate with new URLs
+- `src/components/PopularCakesSection.tsx` — add rotating name strip (optional, low risk)
+
+**No new routes, no new components beyond the data files.** Reuses `NamedCakePage` and existing theme cards.
+
+**Order of ops:**
+1. Extend `cakeNames.ts` (+70)
+2. Bulk-generate meanings for all 200 → `nameMeanings.ts`
+3. Build `nameThemeMap.ts` (grouped by origin — Indian names → certain themes, Muslim names → others, etc.)
+4. Update `NamedCakePage.tsx` to render new blocks
+5. Regenerate sitemap
+6. Verify build + spot-check 3 pages (1 existing, 1 new Muslim name, 1 new Hispanic name)
+
+## Out of scope (revisit later)
+- Name + age combo pages (`/birthday-cake-for/{name}/{age}`) — wait for Pinterest data first
+- Per-name hero image generation — reuse existing themed hero + name overlay, no new imagegen credits
+- Rewriting existing pages' meta titles/descriptions — current pattern is fine
+
+## Expected impact
+- ~70 new indexable pages targeting underserved high-intent queries (Muslim/Hispanic/African-American names have huge diaspora search volume + low competition)
+- ~200 pages upgraded from "thin" → "substantive," reducing risk of Google demoting the whole cluster
+- Stronger internal linking → better crawl depth for the name cluster
+- Timeline to results: 4–8 weeks for indexing, 8–12 weeks for ranking
