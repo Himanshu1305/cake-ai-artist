@@ -1499,6 +1499,27 @@ export type Database = {
           },
         ]
       }
+      vendor_search_usage: {
+        Row: {
+          count: number
+          date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_blog_stats: {
