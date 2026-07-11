@@ -1,75 +1,76 @@
-# Plan: Expand & deepen name pages
-
 ## Goal
-Grow `/birthday-cake-for/{name}` cluster from ~130 → ~200 pages, targeting underserved high-volume audiences, AND make every page substantive enough that Google treats them as real content (not templated doorways).
+Close the biggest Party Planner gap: users can already **track & message** vendors, but they have no way to **discover** them. Add Google Places-powered local vendor discovery gated behind Premium / Lifetime / Party Pack — so it's a real premium value driver, not a free-tier cost sink. Manual vendor entry stays fully available for everyone.
 
-## Part 1 — Add ~70 strategic names
+## Access model
+- **Premium, Lifetime, and Party Pack buyers** → full "Find local vendors" feature.
+- **Everyone else (free / logged-out)** → sees a **locked button with upgrade nudge** ("🔒 Find local vendors — Premium"), tooltip → `/pricing`. Manual vendor fields (name / email / phone / notes / message) stay untouched and fully usable.
+- Reuse existing `usePartyPackAccess` hook — it already returns `{ isPremium, hasPartyPackPurchase, hasAccess }` covering all three tiers.
 
-Focus on gaps in the current list. No more generic English names — pick underserved segments with real search demand.
+## Cost control (in scope, non-negotiable)
+Google Places `searchText` = ~$32 / 1000 calls, with Google's $200/mo free credit (~6.2k searches free). To stay predictably inside the free tier even at scale:
 
-**Muslim / Arabic (~20 names)**
-Muhammad, Ahmed, Ali, Omar, Yusuf, Ibrahim, Hassan, Hussain, Zayn, Bilal, Fatima, Aisha (dup — skip), Zainab, Maryam, Khadija, Layla, Noor, Amina, Yasmin, Hafsa
+1. **Gate at UI + server.** Edge function re-checks premium/party-pack status server-side — never trust the client. Non-eligible users get 403 before Google is called.
+2. **Per-user daily cap** (even for premium): 30 searches/user/day. Track in a lightweight `vendor_search_usage` table (`user_id, date, count`). Prevents one user or a bug from burning $$. Premium users almost never hit this; malicious/looping requests get stopped cold.
+3. **Debounce + cache in-component.** Same (task category × city) within a session doesn't refetch.
+4. **Party-level directory does NOT auto-load.** User clicks "Show local vendors for this party" — no background calls on page mount. Kills the 4-calls-per-page-view cost I originally planned.
+5. **Reasonable page size.** 8 results max per search.
 
-**Hispanic / Latino (~20 names)**
-Mateo (dup — skip), Diego, Santiago, Sebastián, Emiliano, Nicolás, Javier, Carlos, Miguel, Andrés, Sofía (variant), Valentina, Isabella (dup — skip), Camila, Valeria, Lucía, Martina, Renata, Ximena, Gabriela
+Expected steady-state cost with 500 premium users: well under 1000 calls/day = **$0** (inside free tier).
 
-**African-American popular (~15 names)**
-Jaylen, Malachi, Amari, Kingston, Jayden, Zion, Messiah, Xavier, Nia, Zuri, Aaliyah, Amirah, Kehlani, Journee, Legend
+## What we're building
 
-**2026 trending / Gen Alpha (~15 names)**
-Kai, Ezra, Milo, Atlas, Rowan, Silas, Wren, Nova, Aurora, Sage, River, Sloane, Ottilie, Cove, Bodhi
+### 1. Edge function: `search-local-vendors`
+- Auth: `verify_jwt = true` (default) + in-code re-check that the user is premium OR has a party pack purchase; else 403.
+- Rate limit: reject if `vendor_search_usage` for `(user_id, today)` ≥ 30.
+- Input: `{ query, city, country, lat?, lng?, taskCategory }` (zod-validated).
+- Maps task category → search query via `src/data/vendorSearchMap.ts` (mirrored server-side to prevent injection).
+- Calls Google Maps Platform connector: `POST /places/v1/places:searchText` through `connector-gateway.lovable.dev/google_maps/...` (per google_maps knowledge).
+- FieldMask limited to: `places.id,places.displayName,places.formattedAddress,places.internationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri` — keeps response small.
+- Returns 8 results max.
+- Bumps `vendor_search_usage` count on success only.
 
-Dedupe against existing `CAKE_NAMES` before adding. Final add = ~70 unique.
+### 2. New table: `vendor_search_usage`
+```
+user_id uuid, date date, count int, PRIMARY KEY (user_id, date)
+```
+Standard grants + RLS: users can read their own row; service_role writes.
 
-## Part 2 — Deepen ALL ~200 name pages
+### 3. Category mapping: `src/data/vendorSearchMap.ts`
+`Record<TaskCategory, { label, googleQuery, icon }>` covering: cake/baker, decorator, caterer, venue, photographer, entertainer, florist, DJ/music, cleanup. Task titles → category via keyword match with a sensible "other" fallback.
 
-Every page currently renders a generic template. Add 2 unique blocks per name:
+### 4. UI components (all frontend)
+- `src/components/party/LocalVendorResults.tsx` — inline results grid (name + rating + address + phone/website/Maps link + **"Use this vendor"** button that prefills `vendor_name`, `vendor_phone`, and appends website to `vendor_notes` via existing `updateTaskVendor`). Loading / empty / rate-limit / error states.
+- `src/components/party/PartyVendorDirectory.tsx` — collapsed by default; user clicks category chip to run search on demand.
+- `src/components/party/VendorSearchGate.tsx` — small component wrapping the search button; if user lacks access renders the locked variant with 🔒 icon, tooltip, and click → `navigate('/pricing')`.
 
-**Block A — Name meaning card**
-- Origin, meaning, cultural context (1 short paragraph, ~40 words)
-- Data source: extend existing `src/data/nameMeanings.ts` (already in project) to cover all ~200 names
-- Rendered as a styled card above the CTA
+### 5. Touch `src/pages/PartyPlannerDetail.tsx`
+- In each task's vendor panel: add `<VendorSearchGate>` above the current manual fields. Manual fields unchanged.
+- Below tasks list: mount `<PartyVendorDirectory>` for logged-in users.
+- No changes to existing vendor CRUD or message/email logic.
 
-**Block B — Suggested cake themes for this name**
-- 3–4 theme suggestions tied to the name's vibe (e.g. Aarav → cricket, superhero, blue-gold; Luna → moon, pastel, celestial)
-- Pull from existing `src/data/cakeThemes.ts`; add a `nameThemeMap` lookup so each name gets curated (not random) themes
-- Rendered as a 3–4 card grid with theme name + one-line description, each linking to `/birthday-cake-theme/{theme}`
+### 6. Pricing / feature messaging
+- Add one line to `src/components/PricingPlans.tsx` `COMMON_FEATURES`: `"Local vendor discovery — find bakers, decorators, caterers near you"`.
+- No visual redesign; just the copy addition.
 
-Result: every name page has ~120–150 unique words + curated internal links → passes Google's "thin content" bar.
+## What we're NOT doing
+- No storing places in our DB (Google ToS + freshness).
+- No affiliate/lead-gen wiring (future).
+- No email discovery (Places rarely returns email — user still uses existing WhatsApp/copy flow for those).
+- No auto-loading searches on party page mount (cost).
+- No favorites/saved vendors (future).
 
-## Part 3 — Sitemap + internal linking
-
-- Regenerate `public/sitemap.xml` to include all ~200 name URLs
-- On `NamedCakePage`, add "Other popular names" section (8 random names from same region cluster) for internal link equity
-- On homepage `PopularCakesSection`, surface a rotating strip of 12 name pages
-
-## Technical details
-
-**Files to touch:**
-- `src/data/cakeNames.ts` — append 70 new entries with `origin` tags
-- `src/data/nameMeanings.ts` — extend to cover all ~200 names (bulk-generate via one AI call, not per-name)
-- `src/data/nameThemeMap.ts` — new file, `Record<slug, themeSlug[]>` with 3–4 themes per name
-- `src/pages/NamedCakePage.tsx` — render meaning card + theme grid + "other names" section
-- `public/sitemap.xml` — regenerate with new URLs
-- `src/components/PopularCakesSection.tsx` — add rotating name strip (optional, low risk)
-
-**No new routes, no new components beyond the data files.** Reuses `NamedCakePage` and existing theme cards.
-
-**Order of ops:**
-1. Extend `cakeNames.ts` (+70)
-2. Bulk-generate meanings for all 200 → `nameMeanings.ts`
-3. Build `nameThemeMap.ts` (grouped by origin — Indian names → certain themes, Muslim names → others, etc.)
-4. Update `NamedCakePage.tsx` to render new blocks
-5. Regenerate sitemap
-6. Verify build + spot-check 3 pages (1 existing, 1 new Muslim name, 1 new Hispanic name)
-
-## Out of scope (revisit later)
-- Name + age combo pages (`/birthday-cake-for/{name}/{age}`) — wait for Pinterest data first
-- Per-name hero image generation — reuse existing themed hero + name overlay, no new imagegen credits
-- Rewriting existing pages' meta titles/descriptions — current pattern is fine
+## Order of work
+1. User approves + connects Google Maps Platform connector (`standard_connectors--connect`).
+2. Migration: create `vendor_search_usage` with grants + RLS.
+3. Build `vendorSearchMap.ts` + shared category resolver.
+4. Build `search-local-vendors` edge function (premium gate + rate limit + Places call).
+5. Build `VendorSearchGate` + `LocalVendorResults` + `PartyVendorDirectory`.
+6. Wire into `PartyPlannerDetail.tsx`.
+7. Add feature bullet to `PricingPlans.tsx`.
+8. QA: one Indian city (INR user) + one US city (USD user), one premium + one free user, verify gate + rate limit + prefill.
 
 ## Expected impact
-- ~70 new indexable pages targeting underserved high-intent queries (Muslim/Hispanic/African-American names have huge diaspora search volume + low competition)
-- ~200 pages upgraded from "thin" → "substantive," reducing risk of Google demoting the whole cluster
-- Stronger internal linking → better crawl depth for the name cluster
-- Timeline to results: 4–8 weeks for indexing, 8–12 weeks for ranking
+- Party Planner becomes complete: plan → **discover** → contact → track, all in-app.
+- Clear premium value driver: "Find real local bakers/decorators/caterers" is a stronger upsell than any existing free-tier feature.
+- Cost stays inside Google's $200/mo free credit at expected volume; rate limit prevents surprise bills even if usage spikes.
+- Foundation for future monetization: saved favorites, vendor lead-gen / affiliate deals.
