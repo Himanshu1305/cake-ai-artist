@@ -167,15 +167,15 @@ serve(async (req) => {
     // Both modes use Nano Banana 2 (fast, pro-level quality) as the PRIMARY
     // model so users always get 3 images quickly. High quality differs by
     // using a richer prompt + a longer timeout + a slower premium fallback
-    // (gemini-3-pro-image-preview) only when the primary fails.
+    // (gemini-3-pro-image) only when the primary fails.
     // For initial full generation we always use the fast pro-quality model.
     // High quality differs by: (a) richer prompt suffix, (b) only generating
     // the hero view initially so we don't blow the function timeout,
     // (c) reserving the slowest premium model strictly for manual single-view
     // regeneration (specificView) — never as automatic fallback in bulk.
-    const imageModel = 'google/gemini-3.1-flash-image-preview';
+    const imageModel = 'google/gemini-3.1-flash-image';
     const FALLBACK_MODEL = quality === 'high'
-      ? 'google/gemini-3-pro-image-preview'
+      ? 'google/gemini-3-pro-image'
       : 'google/gemini-2.5-flash-image';
     const PRIMARY_TIMEOUT_MS = quality === 'high' ? 55000 : 28000;
     const FALLBACK_TIMEOUT_MS = quality === 'high' ? 50000 : 15000;
