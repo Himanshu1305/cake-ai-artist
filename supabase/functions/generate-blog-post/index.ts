@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -290,7 +291,7 @@ Respond in this exact JSON format:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: CHAT_MODEL_DEFAULT,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
@@ -352,7 +353,7 @@ ${parsed.content}`;
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: CHAT_MODEL_DEFAULT,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: fixPrompt }

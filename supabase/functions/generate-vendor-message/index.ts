@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,7 +90,7 @@ Ask politely for: availability on the date, a price quote, and what's included. 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: CHAT_MODEL_DEFAULT,
         messages: [
           { role: "system", content: "You write short, warm, copy-paste-ready messages for party hosts to send to vendors. Output only the message body, no extra commentary." },
           { role: "user", content: userPrompt },

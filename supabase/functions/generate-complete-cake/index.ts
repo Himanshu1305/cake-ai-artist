@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { IMAGE_FALLBACK_CHAIN, CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -173,14 +174,10 @@ serve(async (req) => {
     // the hero view initially so we don't blow the function timeout,
     // (c) reserving the slowest premium model strictly for manual single-view
     // regeneration (specificView) — never as automatic fallback in bulk.
-    const imageModel = 'google/gemini-3.1-flash-image';
-    const FALLBACK_MODEL = quality === 'high'
-      ? 'google/gemini-3-pro-image'
-      : 'google/gemini-2.5-flash-image';
     const PRIMARY_TIMEOUT_MS = quality === 'high' ? 55000 : 28000;
     const FALLBACK_TIMEOUT_MS = quality === 'high' ? 50000 : 15000;
 
-    console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, imageModel });
+    console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, primaryModel: IMAGE_FALLBACK_CHAIN[0] });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -323,6 +320,8 @@ COMPOSITION RULES:
           if (resp.status === 429) throw new Error('RATE_LIMIT');
           if (resp.status === 402) throw new Error('CREDITS_EXHAUSTED');
           if (resp.status === 503) throw new Error('UPSTREAM_503');
+          if (resp.status === 403) throw new Error('MODEL_UNAVAILABLE');
+          if (resp.status === 400 && errText.toLowerCase().includes('model')) throw new Error('MODEL_ERROR_400');
           throw new Error(`Image generation failed: ${resp.status}`);
         }
         const data = await resp.json();
@@ -396,37 +395,41 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
       ];
     };
 
-    // Generate one view: primary model + timeout, fallback model on timeout/503.
-    // 429/402 still bubble up as RATE_LIMIT / CREDITS_EXHAUSTED.
+    // Generate one view: walk IMAGE_FALLBACK_CHAIN until a model succeeds.
+    // 429/402 are terminal — never retry. 403 and model-shaped 400 trigger chain advance.
     const generateView = async (view: typeof viewAngles[0]): Promise<string> => {
       const messages = buildMessages(view);
       const t0 = Date.now();
-      try {
-        const url = await callImageModel(messages, imageModel, PRIMARY_TIMEOUT_MS, view.name);
-        console.log(`⏱ ${view.name} ok in ${Date.now() - t0}ms (model=${imageModel})`);
-        return url;
-      } catch (err: any) {
-        const msg = err?.message || String(err);
-        if (msg === 'RATE_LIMIT' || msg === 'CREDITS_EXHAUSTED') throw err;
-        const isTimeout = err?.name === 'AbortError' || msg.includes('aborted');
-        const isFallbackable = isTimeout || msg === 'UPSTREAM_503' || msg === 'No image returned' || msg.startsWith('Image generation failed: 5');
-        if (!isFallbackable) {
-          console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
-          throw err;
-        }
-        console.log(`⏱ ${view.name} primary failed after ${Date.now() - t0}ms (${msg}) — falling back to ${FALLBACK_MODEL}`);
-        const tFb = Date.now();
+
+      for (let i = 0; i < IMAGE_FALLBACK_CHAIN.length; i++) {
+        const model = IMAGE_FALLBACK_CHAIN[i];
+        const timeoutMs = i === 0 ? PRIMARY_TIMEOUT_MS : FALLBACK_TIMEOUT_MS;
+        const label = i === 0 ? view.name : `${view.name}/fallback${i}`;
         try {
-          const url = await callImageModel(messages, FALLBACK_MODEL, FALLBACK_TIMEOUT_MS, `${view.name}/fallback`);
-          console.log(`⏱ ${view.name} ok via fallback in ${Date.now() - tFb}ms`);
+          const url = await callImageModel(messages, model, timeoutMs, label);
+          console.log(`⏱ ${view.name} ok in ${Date.now() - t0}ms (model=${model})`);
           return url;
-        } catch (err2: any) {
-          const msg2 = err2?.message || String(err2);
-          if (msg2 === 'RATE_LIMIT' || msg2 === 'CREDITS_EXHAUSTED') throw err2;
-          console.log(`⏱ ${view.name} fallback fail in ${Date.now() - tFb}ms — ${msg2}`);
-          throw err2;
+        } catch (err: any) {
+          const msg = err?.message || String(err);
+          if (msg === 'RATE_LIMIT' || msg === 'CREDITS_EXHAUSTED') throw err;
+          const isChainFallbackable =
+            err?.name === 'AbortError' ||
+            msg.includes('aborted') ||
+            msg === 'UPSTREAM_503' ||
+            msg === 'MODEL_UNAVAILABLE' ||
+            msg === 'MODEL_ERROR_400' ||
+            msg === 'No image returned' ||
+            msg.startsWith('Image generation failed: 5');
+          const isLast = i === IMAGE_FALLBACK_CHAIN.length - 1;
+          if (!isChainFallbackable || isLast) {
+            console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
+            throw err;
+          }
+          console.log(`⏱ ${view.name} failed with ${model} after ${Date.now() - t0}ms (${msg}) — trying ${IMAGE_FALLBACK_CHAIN[i + 1]}`);
         }
       }
+
+      throw new Error('IMAGE_FALLBACK_CHAIN_EXHAUSTED');
     };
 
     // Helper functions for message generation
@@ -602,7 +605,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: CHAT_MODEL_DEFAULT,
           messages: [{ role: 'user', content: messagePrompt }],
         }),
       });

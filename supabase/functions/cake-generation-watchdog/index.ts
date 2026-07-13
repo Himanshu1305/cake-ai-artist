@@ -15,7 +15,7 @@ const ALERT_EMAIL = "himanshu1305@gmail.com";
 // killed healthy jobs at 2 min which surfaced as "stuck at 75%" in the UI.
 const STUCK_THRESHOLD_MINUTES = 5;
 const ALERT_COOLDOWN_MINUTES = 60;
-const MIN_SAMPLE_SIZE = 5;
+const MIN_SAMPLE_SIZE = 3;
 const FAILURE_RATE_THRESHOLD = 0.5;
 
 serve(async (req) => {
@@ -69,7 +69,7 @@ serve(async (req) => {
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: recent, error: recentErr } = await supabase
       .from("cake_generation_jobs")
-      .select("status, error_message")
+      .select("status, error_message, hero_error")
       .gte("created_at", hourAgo);
 
     if (recentErr) {
@@ -89,7 +89,22 @@ serve(async (req) => {
 
     result.lastHour = { total, failed, completed, failureRate: Math.round(failureRate * 100) / 100 };
 
-    // ---- 3) Decide whether to alert ----
+    // ---- 3) Detect mass identical hero errors ----
+    const heroErrorCounts = new Map<string, number>();
+    for (const r of recent ?? []) {
+      if ((r.status === "failed" || r.status === "partial_failed") && r.hero_error) {
+        heroErrorCounts.set(r.hero_error, (heroErrorCounts.get(r.hero_error) ?? 0) + 1);
+      }
+    }
+    const dominantHeroError = [...heroErrorCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+    const massIdenticalError =
+      failed >= MIN_SAMPLE_SIZE &&
+      dominantHeroError &&
+      dominantHeroError[1] / failed > 0.8
+        ? dominantHeroError[0]
+        : null;
+
+    // ---- 4) Decide whether to alert ----
     let alertType: string | null = null;
     let alertReason = "";
 
@@ -97,7 +112,7 @@ serve(async (req) => {
       alertType = "mass_stuck_jobs";
       alertReason = `${stuckCount} cake jobs got stuck in 'processing' and were auto-failed in this run.`;
     } else if (total >= MIN_SAMPLE_SIZE && failureRate > FAILURE_RATE_THRESHOLD) {
-      alertType = "high_failure_rate";
+      alertType = massIdenticalError ? "high_failure_rate+mass_identical_error" : "high_failure_rate";
       alertReason = `Failure rate in the last hour is ${Math.round(failureRate * 100)}% (${failed} failed / ${total} attempts).`;
     }
 
@@ -108,12 +123,13 @@ serve(async (req) => {
       });
     }
 
-    // ---- 4) Rate-limit: skip if same alert sent in last hour ----
+    // ---- 5) Rate-limit: skip if same base alert type sent in last hour ----
+    const baseAlertType = alertType.split("+")[0];
     const cooldownCutoff = new Date(Date.now() - ALERT_COOLDOWN_MINUTES * 60 * 1000).toISOString();
     const { data: recentAlerts } = await supabase
       .from("system_alert_log")
       .select("id")
-      .eq("alert_type", alertType)
+      .like("alert_type", `${baseAlertType}%`)
       .gte("sent_at", cooldownCutoff)
       .limit(1);
 
@@ -125,7 +141,7 @@ serve(async (req) => {
       });
     }
 
-    // ---- 5) Build top error breakdown ----
+    // ---- 6) Build top error breakdown ----
     const errorCounts = new Map<string, number>();
     for (const r of recent ?? []) {
       if (r.status === "failed" && r.error_message) {
@@ -138,7 +154,9 @@ serve(async (req) => {
       .map(([msg, n]) => `<li><b>${n}×</b> ${escapeHtml(msg).slice(0, 200)}</li>`)
       .join("");
 
-    const subject = `🚨 Cake AI Artist — Generation degraded`;
+    const subject = massIdenticalError
+      ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
+      : `🚨 Cake AI Artist — Generation degraded`;
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;background:#fffaf3;border-radius:12px">
         <h2 style="color:#c0392b;margin-top:0">⚠️ Cake generation is degraded</h2>
@@ -155,7 +173,7 @@ serve(async (req) => {
         <p style="font-size:11px;color:#999;margin-top:20px">You'll receive at most one alert per hour while the issue persists. Watchdog runs every 10 min.</p>
       </div>`;
 
-    // ---- 6) Send email via Resend ----
+    // ---- 7) Send email via Resend ----
     const resendKey = Deno.env.get("RESEND_API_KEY");
     let emailOk = false;
     let emailError: string | null = null;
@@ -183,10 +201,10 @@ serve(async (req) => {
       emailError = "RESEND_API_KEY not set";
     }
 
-    // ---- 7) Log the alert ----
+    // ---- 8) Log the alert ----
     await supabase.from("system_alert_log").insert({
       alert_type: alertType,
-      details: { reason: alertReason, total, failed, completed, stuckCount, emailOk, emailError },
+      details: { reason: alertReason, total, failed, completed, stuckCount, emailOk, emailError, massIdenticalError },
     });
 
     result.alertSent = emailOk;
