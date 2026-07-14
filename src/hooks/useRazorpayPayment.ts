@@ -245,9 +245,21 @@ export const useRazorpayPayment = (country: string = "US") => {
       // Start polling for payment status (for QR code payments)
       startPolling(orderData.order_id);
 
+      // Server is source of truth for the key (prevents client/server mismatch).
+      const checkoutKey = orderData.key_id || RAZORPAY_KEY_ID;
+      if (RAZORPAY_KEY_ID && orderData.key_id && orderData.key_id !== RAZORPAY_KEY_ID) {
+        console.warn(
+          "Razorpay key mismatch — using server key.",
+          { client: RAZORPAY_KEY_ID, server: orderData.key_id }
+        );
+      }
+      if (!checkoutKey) {
+        throw new Error("Payment is temporarily unavailable. Please contact support@cakeaiartist.com");
+      }
+
       // Configure Razorpay checkout options
       const options = {
-        key: RAZORPAY_KEY_ID,
+        key: checkoutKey,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Cake AI Artist",
