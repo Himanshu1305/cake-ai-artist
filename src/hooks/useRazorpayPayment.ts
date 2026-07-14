@@ -245,9 +245,21 @@ export const useRazorpayPayment = (country: string = "US") => {
       // Start polling for payment status (for QR code payments)
       startPolling(orderData.order_id);
 
+      // Server is source of truth for the key (prevents client/server mismatch).
+      const checkoutKey = orderData.key_id || RAZORPAY_KEY_ID;
+      if (RAZORPAY_KEY_ID && orderData.key_id && orderData.key_id !== RAZORPAY_KEY_ID) {
+        console.warn(
+          "Razorpay key mismatch — using server key.",
+          { client: RAZORPAY_KEY_ID, server: orderData.key_id }
+        );
+      }
+      if (!checkoutKey) {
+        throw new Error("Payment is temporarily unavailable. Please contact support@cakeaiartist.com");
+      }
+
       // Configure Razorpay checkout options
       const options = {
-        key: RAZORPAY_KEY_ID,
+        key: checkoutKey,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Cake AI Artist",
@@ -333,14 +345,23 @@ export const useRazorpayPayment = (country: string = "US") => {
       // Open Razorpay checkout
       const razorpay = new window.Razorpay(options);
       razorpay.on("payment.failed", function (response: any) {
-        console.error("Payment failed:", response.error);
+        const err = response?.error || {};
+        console.error("Payment failed:", {
+          code: err.code,
+          description: err.description,
+          source: err.source,
+          step: err.step,
+          reason: err.reason,
+          metadata: err.metadata,
+        });
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
         setCurrentOrderId(null);
+        const detail = err.description || err.reason || "Please try again or use a different payment method.";
         toast.error("Payment failed", {
-          description: response.error.description || "Please try again or use a different payment method.",
+          description: err.code ? `${detail} (${err.code})` : detail,
         });
         setIsLoading(null);
       });
