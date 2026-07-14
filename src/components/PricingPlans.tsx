@@ -52,6 +52,7 @@ const COMMON_FEATURES = [
   "All characters & themes",
   "Party Pack Generator",
   "AI Party Planner — concierge, smart checklists & RSVP invites",
+  "Local vendor discovery — find nearby bakeries, caterers & decorators",
   "Private gallery",
   "Smart occasion reminders",
 ];

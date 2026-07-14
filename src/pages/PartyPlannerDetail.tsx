@@ -29,6 +29,7 @@ import {
   ChevronDown,
   ChevronUp,
   Phone,
+  MapPin,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PageSeo } from "@/components/PageSeo";
+import { PartyVendorDirectory } from "@/components/PartyVendorDirectory";
 
 // Themes grouped for the Select UI. Order within group matters; flatten preserves order.
 const THEME_GROUPS: Array<{ label: string; themes: string[] }> = [
@@ -549,6 +551,7 @@ export default function PartyPlannerDetail() {
   const [rsvpDeadline, setRsvpDeadline] = useState<Date | undefined>(undefined);
   const [customQuestions, setCustomQuestions] = useState<Array<{ id: string; question: string }>>([]);
   const [sendingReminder, setSendingReminder] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   const loadAll = async () => {
     const { data: p } = await supabase.from("parties").select("*").eq("id", id!).maybeSingle();
@@ -607,11 +610,16 @@ export default function PartyPlannerDetail() {
       }
     }
 
-    const [{ data: t }, { data: g }, { data: m }] = await Promise.all([
+    const [{ data: t }, { data: g }, { data: m }, { data: { user } }] = await Promise.all([
       supabase.from("party_tasks").select("*").eq("party_id", id!).order("due_date"),
       supabase.from("party_guests").select("*").eq("party_id", id!).order("created_at"),
       supabase.from("party_chat_messages").select("*").eq("party_id", id!).order("created_at"),
+      supabase.auth.getUser(),
     ]);
+    if (user) {
+      const { data: prof } = await supabase.from("profiles").select("is_premium").eq("id", user.id).maybeSingle();
+      setIsPremium(prof?.is_premium ?? false);
+    }
     setTasks(t || []);
     setGuests(g || []);
     setMessages(m || []);
@@ -1091,6 +1099,9 @@ export default function PartyPlannerDetail() {
             </TabsTrigger>
             <TabsTrigger value="invites">
               <Mail className="w-4 h-4 mr-1" /> Guests {guests.length > 0 && `(${guests.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="vendors">
+              <MapPin className="w-4 h-4 mr-1" /> Vendors
             </TabsTrigger>
           </TabsList>
 
@@ -1932,6 +1943,27 @@ export default function PartyPlannerDetail() {
                     })}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="vendors">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-party-pink" />
+                  Find Local Vendors
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Search for bakeries, caterers, decorators, and more in your area.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <PartyVendorDirectory
+                  isPremium={isPremium}
+                  occasion={party?.occasion}
+                  defaultLocation={city || ""}
+                />
               </CardContent>
             </Card>
           </TabsContent>
