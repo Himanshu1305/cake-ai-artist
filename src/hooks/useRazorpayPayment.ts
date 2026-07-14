@@ -345,14 +345,23 @@ export const useRazorpayPayment = (country: string = "US") => {
       // Open Razorpay checkout
       const razorpay = new window.Razorpay(options);
       razorpay.on("payment.failed", function (response: any) {
-        console.error("Payment failed:", response.error);
+        const err = response?.error || {};
+        console.error("Payment failed:", {
+          code: err.code,
+          description: err.description,
+          source: err.source,
+          step: err.step,
+          reason: err.reason,
+          metadata: err.metadata,
+        });
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
         setCurrentOrderId(null);
+        const detail = err.description || err.reason || "Please try again or use a different payment method.";
         toast.error("Payment failed", {
-          description: response.error.description || "Please try again or use a different payment method.",
+          description: err.code ? `${detail} (${err.code})` : detail,
         });
         setIsLoading(null);
       });
