@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState, useEffect } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 const FREE_TOTAL_LIMIT = 5; // keep in sync with CakeCreator.tsx
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,14 +188,16 @@ const FreeCakeDesigner = () => {
               </button>
             </div>
           )}
-          <Suspense fallback={
-            <Card className="max-w-4xl mx-auto p-8 text-center">
-              <Sparkles className="w-8 h-8 mx-auto mb-4 text-party-pink animate-pulse" />
-              <p className="text-muted-foreground">Loading cake designer...</p>
-            </Card>
-          }>
-            <CakeCreator onGenerate={() => setCakeGenerated(true)} />
-          </Suspense>
+          <ErrorBoundary component="CakeCreator">
+            <Suspense fallback={
+              <Card className="max-w-4xl mx-auto p-8 text-center">
+                <Sparkles className="w-8 h-8 mx-auto mb-4 text-party-pink animate-pulse" />
+                <p className="text-muted-foreground">Loading cake designer...</p>
+              </Card>
+            }>
+              <CakeCreator onGenerate={() => setCakeGenerated(true)} />
+            </Suspense>
+          </ErrorBoundary>
         </div>
 
         {cakeGenerated && (

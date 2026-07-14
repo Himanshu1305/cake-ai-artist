@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useRequireCountry } from "@/hooks/useRequireCountry";
@@ -745,11 +746,13 @@ const Gallery = () => {
                 />
               </div>
               
-              <PartyPackGenerator
-                cakeImageId={selectedCakeForPartyPack.id}
-                name={selectedCakeForPartyPack.recipient_name || 'Celebration'}
-                occasion={selectedCakeForPartyPack.occasion_type || 'celebration'}
-              />
+              <ErrorBoundary component="PartyPackGenerator">
+                <PartyPackGenerator
+                  cakeImageId={selectedCakeForPartyPack.id}
+                  name={selectedCakeForPartyPack.recipient_name || 'Celebration'}
+                  occasion={selectedCakeForPartyPack.occasion_type || 'celebration'}
+                />
+              </ErrorBoundary>
             </div>
           )}
         </DialogContent>

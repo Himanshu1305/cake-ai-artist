@@ -1,7 +1,9 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   children: ReactNode;
+  component?: string;
 }
 
 interface State {
@@ -47,6 +49,15 @@ class ErrorBoundary extends Component<Props, State> {
     }
     console.error("ErrorBoundary caught an error:", error, errorInfo);
     this.setState({ errorInfo });
+
+    supabase.from("client_errors").insert({
+      component: this.props.component ?? null,
+      error_name: error.name,
+      error_message: error.message?.slice(0, 500),
+      stack: error.stack?.slice(0, 2000),
+      component_stack: errorInfo.componentStack?.slice(0, 2000),
+      user_agent: navigator.userAgent?.slice(0, 300),
+    }).then();
   }
 
   public render() {

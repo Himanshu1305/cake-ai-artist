@@ -125,7 +125,7 @@ const App = () => {
                   <Route path="/blog/unsubscribe" element={<BlogUnsubscribe />} />
                   <Route path="/embed/gallery" element={<EmbedGalleryPage />} />
                   <Route path="/party-planner" element={<PartyPlanner />} />
-                  <Route path="/party-planner/:id" element={<PartyPlannerDetail />} />
+                  <Route path="/party-planner/:id" element={<ErrorBoundary component="PartyPlannerDetail"><PartyPlannerDetail /></ErrorBoundary>} />
                   <Route path="/rsvp/:token" element={<PartyRSVP />} />
                   <Route path="/party/:slug" element={<PublicParty />} />
                   <Route path="/cake/:id" element={<SharedCake />} />

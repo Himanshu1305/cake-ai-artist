@@ -127,6 +127,39 @@ serve(async (req) => {
       }
     }
 
+    // Rolling-window rate limit: max 10 requests per user per 5 minutes
+    {
+      const RATE_WINDOW_MS = 5 * 60 * 1000;
+      const RATE_LIMIT = 10;
+      const windowStart = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
+      const { data: rateRow } = await supabase
+        .from('generation_rate_limits')
+        .select('id, request_count')
+        .eq('user_id', user.id)
+        .gte('window_start', windowStart)
+        .order('window_start', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (rateRow) {
+        if (rateRow.request_count >= RATE_LIMIT) {
+          logStage('rate_limit_exceeded', { meta: { count: rateRow.request_count } });
+          return new Response(
+            JSON.stringify({ error: 'Too many requests. Please wait a few minutes.', requestId }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '300' } }
+          );
+        }
+        await supabase
+          .from('generation_rate_limits')
+          .update({ request_count: rateRow.request_count + 1 })
+          .eq('id', rateRow.id);
+      } else {
+        await supabase
+          .from('generation_rate_limits')
+          .insert({ user_id: user.id, request_count: 1, window_start: new Date().toISOString() });
+      }
+    }
+
     // Parse and validate input
     const validationResult = cakeRequestSchema.safeParse(rawInput);
 
@@ -696,26 +729,38 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
         let jobId: string | null = null;
         greetingMessage = customMessageClean || `Happy ${occasion || 'Birthday'}, ${name}!`;
         const backgroundViews = viewsToRun.slice(1);
-        const jobInsert: Record<string, unknown> = {
-          user_id: user.id,
-          status: 'in_progress',
-          cake_style: cakeStyle,
-          hero_view: heroView.name,
-          greeting_message: greetingMessage,
-          view_count: allViewNames.length,
-        };
-        logStage('7_before_job_insert');
-        const { data: jobRow, error: jobErr } = await supabase
+        // Idempotency: if client retries with same requestId, return the existing job
+        const { data: existingJob } = await supabase
           .from('cake_generation_jobs')
-          .insert(jobInsert)
-          .select('id')
-          .single();
-        if (jobErr || !jobRow) {
-          logStage('7_job_insert_failed', { error: jobErr?.message });
-          console.error('[gen job] Failed to create job row:', jobErr);
-          throw new Error('Could not start cake generation job');
+          .select('id, status')
+          .eq('request_id', requestId)
+          .maybeSingle();
+        if (existingJob) {
+          logStage('7_idempotent_hit', { meta: { jobId: existingJob.id, status: existingJob.status } });
+          jobId = existingJob.id;
+        } else {
+          const jobInsert: Record<string, unknown> = {
+            request_id: requestId,
+            user_id: user.id,
+            status: 'in_progress',
+            cake_style: cakeStyle,
+            hero_view: heroView.name,
+            greeting_message: greetingMessage,
+            view_count: allViewNames.length,
+          };
+          logStage('7_before_job_insert');
+          const { data: jobRow, error: jobErr } = await supabase
+            .from('cake_generation_jobs')
+            .insert(jobInsert)
+            .select('id')
+            .single();
+          if (jobErr || !jobRow) {
+            logStage('7_job_insert_failed', { error: jobErr?.message });
+            console.error('[gen job] Failed to create job row:', jobErr);
+            throw new Error('Could not start cake generation job');
+          }
+          jobId = jobRow.id;
         }
-        jobId = jobRow.id;
         logStage('8_job_inserted', { meta: { jobId } });
         console.log(`[gen job] job row ${jobId} created in ${Date.now() - tStart}ms — responding now`);
 
