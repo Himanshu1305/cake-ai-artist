@@ -696,7 +696,7 @@ const Gallery = () => {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => deleteImage(image.id)}
+                        onClick={() => setDeleteDialog({ open: true, imageId: image.id })}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
