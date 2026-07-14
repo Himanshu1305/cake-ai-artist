@@ -63,6 +63,7 @@ const PhotoCakeMaker = lazyWithRetry(() => import("./pages/PhotoCakeMaker"));
 const PersonalizedCakeOnline = lazyWithRetry(() => import("./pages/PersonalizedCakeOnline"));
 const NamedCakePage = lazyWithRetry(() => import("./pages/NamedCakePage"));
 const ThemedCakePage = lazyWithRetry(() => import("./pages/ThemedCakePage"));
+const Occasions = lazyWithRetry(() => import("./pages/Occasions"));
 
 
 const queryClient = new QueryClient();
@@ -139,6 +140,7 @@ const App = () => {
                   <Route path="/personalized-cake-online" element={<PersonalizedCakeOnline />} />
                   <Route path="/birthday-cake-for/:name" element={<NamedCakePage />} />
                   <Route path="/birthday-cake-theme/:theme" element={<ThemedCakePage />} />
+                  <Route path="/occasions" element={<Occasions />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

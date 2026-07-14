@@ -127,6 +127,9 @@ export const SiteHeader = ({ variant = "transparent" }: SiteHeaderProps) => {
               <Button onClick={() => navigate("/gallery")} variant="ghost" size="sm" className="px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>
             )}
             {isLoggedIn && (
+              <Button onClick={() => navigate("/occasions")} variant="ghost" size="sm" className="hidden lg:inline-flex px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Occasions</Button>
+            )}
+            {isLoggedIn && (
               <Button onClick={() => navigate("/settings")} variant="ghost" size="sm" className="hidden lg:inline-flex px-2 text-xs lg:text-sm text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>
             )}
             {isAdmin && (
@@ -175,6 +178,7 @@ export const SiteHeader = ({ variant = "transparent" }: SiteHeaderProps) => {
                   <>
                     <div className="border-t border-party-pink/20 my-2" />
                     <Button onClick={() => navigate("/gallery")} variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">My Gallery</Button>
+                    <Button onClick={() => navigate("/occasions")} variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Occasions</Button>
                     <Button onClick={() => navigate("/settings")} variant="ghost" className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-party-pink/10">Settings</Button>
                   </>
                 )}
