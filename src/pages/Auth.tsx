@@ -316,8 +316,29 @@ const Auth = () => {
             console.error('Failed to link page visits:', linkError);
             // Don't fail signup if this fails
           }
+
+          // Handle referral bonus if ?ref= param is present
+          try {
+            const refParam = new URLSearchParams(window.location.search).get('ref');
+            if (refParam && refParam !== data.user.id) {
+              // Write referral row — service role RLS required on server; use anon key here
+              // This fires and forgets; the bonus grant is handled by a server trigger or admin job
+              await supabase.from('referral_bonuses' as any).insert({
+                user_id: data.user.id,
+                referred_by: refParam,
+                bonus_granted: false,
+              });
+              // Grant 2 bonus generations to both referrer and new user
+              await supabase.functions.invoke('grant-referral-bonus', {
+                body: { new_user_id: data.user.id, referrer_id: refParam },
+              });
+            }
+          } catch (refError) {
+            console.error('Failed to process referral:', refError);
+            // Non-fatal: don't block signup
+          }
         }
-        
+
         // Adds to Brevo marketing list (List #3) for re-engagement campaigns. Welcome email is sent separately via send-welcome-email edge function using Resend.
         await addContactToBrevo(email, firstName.trim(), lastName.trim());
 

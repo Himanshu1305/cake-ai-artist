@@ -9,9 +9,10 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
-import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X, Crown } from "lucide-react";
+import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X, Crown, Gift, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import WelcomeModal from "@/components/WelcomeModal";
+import { toast } from "@/hooks/use-toast";
 
 const CakeCreator = lazy(() => import("@/components/CakeCreator").then(mod => ({ default: mod.CakeCreator })));
 
@@ -235,6 +236,39 @@ const FreeCakeDesigner = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Referral card — invite friends for bonus generations */}
+              {currentUserId && (
+                <div className="rounded-2xl border-2 border-party-purple/30 bg-gradient-to-br from-party-purple/10 to-party-pink/10 p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-party-purple/20 rounded-lg">
+                      <Gift className="w-5 h-5 text-party-purple" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-foreground">Love your cake? Share the love!</h3>
+                      <p className="text-sm text-muted-foreground">Give a friend 2 free bonus designs — and get 2 yourself!</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      readOnly
+                      value={`https://cakeaiartist.com/free-ai-cake-designer?ref=${currentUserId}`}
+                      className="flex-1 text-xs font-mono bg-background border border-border rounded-md px-3 py-2 text-foreground/70 truncate"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://cakeaiartist.com/free-ai-cake-designer?ref=${currentUserId}`);
+                        toast({ title: "Link copied!", description: "Share it with friends to earn 2 bonus designs." });
+                      }}
+                      className="shrink-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             )}
           </div>
         )}
