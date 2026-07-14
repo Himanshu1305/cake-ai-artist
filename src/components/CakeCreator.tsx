@@ -543,11 +543,14 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
       setDailyGenerations(dailyImages?.length || 0);
 
-      // Get total generation count (for free users display)
+      // Get total generation count (for free users display).
+      // Filter to annual rows only (month IS NULL) to avoid double-counting
+      // monthly tracking rows that exist alongside the yearly totals.
       const { data: allTracking } = await supabase
         .from("generation_tracking")
         .select("count")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .is("month", null);
 
       if (allTracking) {
         const total = allTracking.reduce((sum, record) => sum + (record.count || 0), 0);

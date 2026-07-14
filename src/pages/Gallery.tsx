@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Trash2, Download, Share2, Facebook, MessageCircle, Instagram, X as XIcon, Star, Calendar, Clock, Gift, Check } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import {
@@ -45,6 +55,8 @@ const Gallery = () => {
   const [user, setUser] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; imageId: string | null }>({ open: false, imageId: null });
+
   // Party Pack Mode states
   const [partyPackMode, setPartyPackMode] = useState(false);
   const [selectedCakeForPartyPack, setSelectedCakeForPartyPack] = useState<GeneratedImage | null>(null);
@@ -107,12 +119,14 @@ const Gallery = () => {
         .eq("id", imageId);
 
       if (error) throw error;
-      
+
       setImages(images.filter(img => img.id !== imageId));
       toast.success("Image deleted successfully");
     } catch (error: any) {
       console.error("Error deleting image:", error);
       toast.error("Failed to delete image");
+    } finally {
+      setDeleteDialog({ open: false, imageId: null });
     }
   };
 
@@ -502,7 +516,7 @@ const Gallery = () => {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => deleteImage(image.id)}
+                          onClick={() => setDeleteDialog({ open: true, imageId: image.id })}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -804,6 +818,26 @@ const Gallery = () => {
         </DialogContent>
       </Dialog>
       <Footer />
+
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, imageId: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this cake?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the image from your gallery. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteDialog.imageId && deleteImage(deleteDialog.imageId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -23,7 +23,7 @@ const signupSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
   country: z.string().min(2, "Please select your country"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   ageConfirmed: z.literal(true, { errorMap: () => ({ message: "You must confirm you are at least 13 years old" }) }),
 });
 
@@ -205,8 +205,8 @@ const Auth = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -375,7 +375,7 @@ const Auth = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
               <div className="space-y-2">
@@ -387,11 +387,11 @@ const Auth = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                Enter your new password. Must be at least 6 characters.
+                Enter your new password. Must be at least 8 characters.
               </p>
               <Button
                 type="submit"

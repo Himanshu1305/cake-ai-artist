@@ -147,6 +147,7 @@ export default function Admin() {
   const [activityPanel, setActivityPanel] = useState<{ open: boolean; userId: string | null; email: string | null }>({ open: false, userId: null, email: null });
   const [userCountryStats, setUserCountryStats] = useState<{ country: string; count: number }[]>([]);
   const [removePremiumDialog, setRemovePremiumDialog] = useState<{ open: boolean; userId: string | null }>({ open: false, userId: null });
+  const [deleteImageDialog, setDeleteImageDialog] = useState<{ open: boolean; imageId: string | null }>({ open: false, imageId: null });
   const [grantingPremium, setGrantingPremium] = useState<Set<string>>(new Set());
   const [selectedEmailType, setSelectedEmailType] = useState<'halted' | 'expired' | 'cancelled' | 'none'>('expired');
   const [sendingNudgeTest, setSendingNudgeTest] = useState(false);
@@ -424,9 +425,9 @@ export default function Admin() {
 
   const loadAnalytics = async () => {
     try {
-      const { data: profilesData } = await supabase.from('profiles').select('*').limit(500).order('created_at', { ascending: false });
-      const { data: imagesData } = await supabase.from('generated_images').select('*').limit(500).order('created_at', { ascending: false });
-      const { data: subscribersData } = await supabase.from('blog_subscribers').select('*').limit(500).order('subscribed_at', { ascending: false });
+      const { data: profilesData } = await supabase.from('profiles').select('id, email, is_premium, is_founding_member, created_at').limit(1000).order('created_at', { ascending: false });
+      const { data: imagesData } = await supabase.from('generated_images').select('id, user_id, created_at, occasion_type, prompt, featured, message_type').limit(1000).order('created_at', { ascending: false });
+      const { data: subscribersData } = await supabase.from('blog_subscribers').select('subscribed_at, is_active').limit(1000).order('subscribed_at', { ascending: false });
 
       const totalUsers = profilesData?.length || 0;
       const premiumUsers = profilesData?.filter(p => p.is_premium).length || 0;
@@ -613,8 +614,14 @@ export default function Admin() {
     loadAnalytics();
   };
 
-  const deleteImage = async (imageId: string) => {
-    if (!confirm('Are you sure you want to delete this image?')) return;
+  const deleteImage = (imageId: string) => {
+    setDeleteImageDialog({ open: true, imageId });
+  };
+
+  const confirmDeleteImage = async () => {
+    const imageId = deleteImageDialog.imageId;
+    setDeleteImageDialog({ open: false, imageId: null });
+    if (!imageId) return;
 
     const { error } = await supabase
       .from('generated_images')
@@ -1053,6 +1060,24 @@ export default function Admin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={deleteImageDialog.open} onOpenChange={(open) => setDeleteImageDialog({ ...deleteImageDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Image</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the image. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteImage} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Admin Dashboard - Cake AI Artist</title>

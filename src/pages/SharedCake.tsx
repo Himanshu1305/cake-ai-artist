@@ -244,15 +244,18 @@ export default function SharedCake() {
     if (!emailRegex.test(emailValue)) return;
     setEmailSubmitting(true);
     try {
-      await supabase.functions.invoke("add-contact-to-brevo", {
-        body: { email: emailValue, firstName: "", lastName: "" },
+      const { error } = await supabase.functions.invoke("add-contact-to-brevo", {
+        body: { email: emailValue, firstName: "", lastName: "", anonymous: true },
       });
+      if (error) throw error;
+      if (id) localStorage.setItem(`receiver_email_captured_${id}`, "1");
+      setEmailSubmitted(true);
     } catch (err) {
       console.error("Failed to capture email:", err);
+      toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setEmailSubmitting(false);
     }
-    if (id) localStorage.setItem(`receiver_email_captured_${id}`, "1");
-    setEmailSubmitted(true);
-    setEmailSubmitting(false);
   };
 
   const shareUrl = id ? `${SHARE_BASE_URL}/cake/${id}` : SHARE_BASE_URL;

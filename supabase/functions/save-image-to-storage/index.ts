@@ -6,6 +6,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+// Only allow fetching images from known AI model CDNs
+const ALLOWED_EXTERNAL_HOSTS = [
+  "openrouter.ai",
+  "cdn.openai.com",
+  "oaidalleapiprodscus.blob.core.windows.net",
+  "storage.googleapis.com",
+  "generativelanguage.googleapis.com",
+  "replicate.delivery",
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -83,8 +95,22 @@ serve(async (req) => {
         );
       }
       contentType = matches[1] || 'image/png';
+      if (!contentType.startsWith('image/')) {
+        return new Response(
+          JSON.stringify({ error: `Data URL content-type must be an image (got: ${contentType})` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const base64Data = matches[2];
-      
+
+      // ~33% overhead: base64 length * 0.75 ≈ decoded bytes
+      if (base64Data.length * 0.75 > MAX_IMAGE_BYTES) {
+        return new Response(
+          JSON.stringify({ error: 'Image exceeds 10 MB size limit' }),
+          { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Decode base64 to binary
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
@@ -93,15 +119,27 @@ serve(async (req) => {
       }
       imageBuffer = bytes.buffer;
     } else {
-      // Validate HTTPS URL format
+      // Validate HTTPS URL and domain allowlist
+      let parsedUrl: URL;
       try {
-        const url = new URL(imageUrl);
-        if (!url.protocol.startsWith('https')) {
+        parsedUrl = new URL(imageUrl);
+        if (parsedUrl.protocol !== 'https:') {
           throw new Error('URL must use HTTPS');
         }
       } catch {
         return new Response(
           JSON.stringify({ error: 'Invalid imageUrl format - must be a valid HTTPS URL or base64 data URL' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const host = parsedUrl.hostname;
+      const allowed = ALLOWED_EXTERNAL_HOSTS.some(
+        (h) => host === h || host.endsWith(`.${h}`)
+      );
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ error: `External host not permitted: ${host}` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -113,7 +151,23 @@ serve(async (req) => {
         throw new Error(`Failed to download image: ${imageResponse.statusText}`);
       }
 
+      // Enforce content-type must be an image
+      const remoteCT = imageResponse.headers.get('content-type') || '';
+      if (!remoteCT.startsWith('image/')) {
+        return new Response(
+          JSON.stringify({ error: `Remote URL did not return an image (got: ${remoteCT})` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      contentType = remoteCT.split(';')[0].trim();
+
       const imageBlob = await imageResponse.blob();
+      if (imageBlob.size > MAX_IMAGE_BYTES) {
+        return new Response(
+          JSON.stringify({ error: `Image exceeds 10 MB size limit (got ${imageBlob.size} bytes)` }),
+          { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       imageBuffer = await imageBlob.arrayBuffer();
     }
     

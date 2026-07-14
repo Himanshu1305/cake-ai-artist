@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState, useEffect } from "react";
+const FREE_TOTAL_LIMIT = 5; // keep in sync with CakeCreator.tsx
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -79,7 +80,7 @@ const FreeCakeDesigner = () => {
     { icon: Heart, title: "AI-Written Messages", description: "Personalized messages that sound like you" },
     { icon: Download, title: "High-Res Downloads", description: "Download print-ready images instantly" },
     { icon: Share2, title: "Easy Sharing", description: "Share directly to WhatsApp, Instagram & more" },
-    { icon: Star, title: "5 Free Designs", description: "No credit card required, use forever" },
+    { icon: Star, title: `${FREE_TOTAL_LIMIT} Free Designs`, description: "No credit card required, use forever" },
   ];
 
   return (
@@ -156,7 +157,7 @@ const FreeCakeDesigner = () => {
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="w-4 h-4 text-party-mint" />
-                <span>5 free designs to get started</span>
+                <span>{FREE_TOTAL_LIMIT} free designs to get started</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="w-4 h-4 text-party-mint" />
@@ -175,7 +176,7 @@ const FreeCakeDesigner = () => {
           {showStartBanner && (
             <div className="max-w-4xl mx-auto mb-4 bg-party-pink/10 border border-party-pink/30 rounded-xl px-5 py-3 flex items-center justify-between gap-4">
               <p className="text-sm text-foreground">
-                👋 <strong>First time here?</strong> You have 5 free cake designs. Fill in the name and occasion below to get started!
+                👋 <strong>First time here?</strong> You have {FREE_TOTAL_LIMIT} free cake designs. Fill in the name and occasion below to get started!
               </p>
               <button
                 onClick={handleDismissBanner}
@@ -213,7 +214,7 @@ const FreeCakeDesigner = () => {
             ) : (
               <div className="rounded-2xl border-2 border-party-gold/30 bg-gradient-to-br from-party-gold/10 to-party-orange/10 p-6 text-center">
                 <h3 className="text-xl font-bold mb-2">✨ Love your cake? Unlock unlimited designs</h3>
-                <p className="text-muted-foreground mb-2">You have used 1 of your 5 free designs. Premium unlocks unlimited cakes, Party Pack Generator, and AI Party Planner.</p>
+                <p className="text-muted-foreground mb-2">You have used 1 of your {FREE_TOTAL_LIMIT} free designs. Premium unlocks unlimited cakes, Party Pack Generator, and AI Party Planner.</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
                   <Button
                     onClick={() => navigate('/pricing')}
