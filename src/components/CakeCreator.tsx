@@ -130,6 +130,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
   const [generationCount, setGenerationCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userCountry, setUserCountry] = useState<string>('');
   const [totalGenerations, setTotalGenerations] = useState(0);
   const [dailyGenerations, setDailyGenerations] = useState(0);
   const [monthlyGenerations, setMonthlyGenerations] = useState(0);
@@ -480,10 +481,10 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
   const loadUserData = async (userId: string) => {
     try {
-      // Get profile to check premium status
+      // Get profile to check premium status and country
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("is_premium")
+        .select("is_premium, country")
         .eq("id", userId)
         .maybeSingle();
 
@@ -493,6 +494,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
       if (profile) {
         setIsPremium(profile.is_premium || false);
+        setUserCountry((profile as any).country || '');
         console.log("Premium status set to:", profile.is_premium);
       }
 
@@ -3279,6 +3281,17 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
               {/* Share Buttons */}
               <div className="space-y-3">
+                {/* WhatsApp primary CTA for Indian users */}
+                {userCountry === 'IN' && (
+                  <Button
+                    onClick={() => handleShare('whatsapp')}
+                    disabled={selectedImages.size === 0}
+                    className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold text-lg rounded-xl shadow-md"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Share on WhatsApp 🎉
+                  </Button>
+                )}
                 <div className="flex items-center justify-center gap-2">
                   <p className="text-sm font-medium text-foreground">Share Your Cake Card 🎉</p>
                   <TooltipProvider>
