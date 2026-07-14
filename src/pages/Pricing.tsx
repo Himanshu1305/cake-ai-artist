@@ -12,7 +12,7 @@ import { useGeoContext } from "@/contexts/GeoContext";
 import { useRequireCountry } from "@/hooks/useRequireCountry";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveRegion, SupportedRegion } from "@/utils/countryRouting";
-import { ShieldCheck, Star, Lock, RefreshCw } from "lucide-react";
+import { ShieldCheck, Star, Lock, RefreshCw, X } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -26,6 +26,12 @@ const Pricing = () => {
   const location = useLocation();
   const [profileCountry, setProfileCountry] = useState<string | null>(null);
   const [userCountry, setUserCountry] = useState<SupportedRegion>("US");
+  const [showLimitBanner, setShowLimitBanner] = useState(false);
+
+  useEffect(() => {
+    const reason = new URLSearchParams(location.search).get('reason');
+    if (reason === 'limit_reached') setShowLimitBanner(true);
+  }, [location.search]);
 
   useEffect(() => {
     (async () => {
@@ -108,6 +114,21 @@ const Pricing = () => {
       <FAQSchema faqs={faqItems} />
 
       <SiteHeader />
+
+      {showLimitBanner && (
+        <div className="bg-party-pink text-white px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-sm font-semibold text-center flex-1">
+            🎂 You've used your 5 free designs — upgrade to keep creating!
+          </p>
+          <button
+            onClick={() => setShowLimitBanner(false)}
+            aria-label="Dismiss"
+            className="shrink-0 hover:opacity-80 transition-opacity"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <section className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-6xl">

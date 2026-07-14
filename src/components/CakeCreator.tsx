@@ -688,13 +688,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           return;
         }
       } else {
-        // Check total lifetime limit for free users
+        // Check total lifetime limit for free users — hard redirect to pricing
         if (totalGenerations >= FREE_TOTAL_LIMIT) {
-          toast({
-            title: "Free generations used up",
-            description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
-            variant: "destructive",
-          });
+          navigate('/pricing?reason=limit_reached');
           return;
         }
       }
@@ -834,12 +830,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             error_message: (error as any)?.message || String(error),
           });
           if (data?.error === 'generation_limit_reached') {
-            toast({
-              title: "Free generations used up",
-              description: `You've used all ${FREE_TOTAL_LIMIT} free generations. Upgrade to Premium for ${PREMIUM_GENERATION_LIMIT} generations/year!`,
-              variant: "destructive",
-            });
-            navigate('/pricing');
+            navigate('/pricing?reason=limit_reached');
             return;
           }
           console.error('Native generation error:', error);
