@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,17 +22,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareInstructions } from "@/components/ShareInstructions";
 import { processImageArray } from "@/utils/cakeTextOverlay";
-import { TextEditor } from "@/components/TextEditor";
-import { PhotoEditor } from "@/components/PhotoEditor";
-import { SwipeableImagePreview } from "@/components/SwipeableImagePreview";
+const TextEditor = lazy(() => import("@/components/TextEditor").then(m => ({ default: m.TextEditor })));
+const PhotoEditor = lazy(() => import("@/components/PhotoEditor").then(m => ({ default: m.PhotoEditor })));
+const SwipeableImagePreview = lazy(() => import("@/components/SwipeableImagePreview").then(m => ({ default: m.SwipeableImagePreview })));
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { processCakeWithPhoto, FALLBACK_PHOTO_POSITIONS } from "@/utils/cakePhotoOverlay";
 import type { PhotoPosition } from "@/utils/cakePhotoOverlay";
 import { z } from "zod";
-import { PartyPackGenerator } from "@/components/PartyPackGenerator";
-import { AudioRecorder } from "@/components/AudioRecorder";
+const PartyPackGenerator = lazy(() => import("@/components/PartyPackGenerator").then(m => ({ default: m.PartyPackGenerator })));
+const AudioRecorder = lazy(() => import("@/components/AudioRecorder").then(m => ({ default: m.AudioRecorder })));
 import { Mic, Volume2, Link2, Trash2, Rotate3D } from "lucide-react";
-import { CakeSpinShowcase } from "@/components/CakeSpinShowcase";
+const CakeSpinShowcase = lazy(() => import("@/components/CakeSpinShowcase").then(m => ({ default: m.CakeSpinShowcase })));
 import { PostShareUpgradeModal } from "@/components/PostShareUpgradeModal";
 import { useGeoContext } from "@/contexts/GeoContext";
 
@@ -3098,17 +3098,19 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                       </Button>
                     )}
 
-                    <AudioRecorder
-                      open={showAudioRecorder}
-                      onOpenChange={setShowAudioRecorder}
-                      cakeImageId={savedCakeImageId}
-                      userId={user.id}
-                      existingAudioUrl={audioUrl}
-                      onSaved={(url, dur) => {
-                        setAudioUrl(url);
-                        setAudioDuration(dur);
-                      }}
-                    />
+                    <Suspense fallback={null}>
+                      <AudioRecorder
+                        open={showAudioRecorder}
+                        onOpenChange={setShowAudioRecorder}
+                        cakeImageId={savedCakeImageId}
+                        userId={user.id}
+                        existingAudioUrl={audioUrl}
+                        onSaved={(url, dur) => {
+                          setAudioUrl(url);
+                          setAudioDuration(dur);
+                        }}
+                      />
+                    </Suspense>
                   </div>
                 )}
 
@@ -3124,14 +3126,16 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
                       </p>
                     </div>
                     {savedCakeImageId ? (
-                      <PartyPackGenerator
-                        cakeImageId={savedCakeImageId}
-                        name={name}
-                        occasion={occasion}
-                        theme={theme}
-                        colors={colors}
-                        character={character}
-                      />
+                      <Suspense fallback={<div className="h-12 flex items-center justify-center text-sm text-muted-foreground">Loading party pack…</div>}>
+                        <PartyPackGenerator
+                          cakeImageId={savedCakeImageId}
+                          name={name}
+                          occasion={occasion}
+                          theme={theme}
+                          colors={colors}
+                          character={character}
+                        />
+                      </Suspense>
                     ) : (
                       <div className="rounded-lg border border-party-pink/30 bg-party-pink/5 p-4 text-center">
                         <p className="text-sm text-muted-foreground mb-3">Save your cake first to generate matching party items →</p>
@@ -3441,11 +3445,13 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
       <Dialog open={previewImageIndex !== null} onOpenChange={(open) => !open && setPreviewImageIndex(null)}>
         <DialogContent className="max-w-4xl w-full p-0 h-[90vh]">
           {previewImageIndex !== null && (
-            <SwipeableImagePreview
-              images={generatedImages}
-              initialIndex={previewImageIndex}
-              onClose={() => setPreviewImageIndex(null)}
-            />
+            <Suspense fallback={null}>
+              <SwipeableImagePreview
+                images={generatedImages}
+                initialIndex={previewImageIndex}
+                onClose={() => setPreviewImageIndex(null)}
+              />
+            </Suspense>
           )}
         </DialogContent>
       </Dialog>
@@ -3457,7 +3463,9 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
             <div className="py-4">
               <h3 className="text-center text-lg font-bold text-party-purple mb-1">360° Spin View</h3>
               <p className="text-center text-xs text-muted-foreground mb-5">Hover or tap to pause</p>
-              <CakeSpinShowcase src={spinImageUrl} duration={9} />
+              <Suspense fallback={null}>
+                <CakeSpinShowcase src={spinImageUrl} duration={9} />
+              </Suspense>
             </div>
           )}
         </DialogContent>
@@ -3479,41 +3487,45 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
 
       {/* Text Editor Modal */}
       {editingImageIndex !== null && (
-        <TextEditor
-          imageUrl={originalImages[editingImageIndex]}
-          recipientName={name}
-          onSave={(editedImageUrl) => {
-            const newImages = [...generatedImages];
-            newImages[editingImageIndex] = editedImageUrl;
-            setGeneratedImages(newImages);
-            setEditingImageIndex(null);
-            toast({
-              title: "Text updated!",
-              description: "Your cake text has been customized successfully.",
-            });
-          }}
-          onCancel={() => setEditingImageIndex(null)}
-        />
+        <Suspense fallback={null}>
+          <TextEditor
+            imageUrl={originalImages[editingImageIndex]}
+            recipientName={name}
+            onSave={(editedImageUrl) => {
+              const newImages = [...generatedImages];
+              newImages[editingImageIndex] = editedImageUrl;
+              setGeneratedImages(newImages);
+              setEditingImageIndex(null);
+              toast({
+                title: "Text updated!",
+                description: "Your cake text has been customized successfully.",
+              });
+            }}
+            onCancel={() => setEditingImageIndex(null)}
+          />
+        </Suspense>
       )}
 
       {/* Photo Editor Modal */}
       {editingPhotoOnCakeIndex !== null && userPhotoPreview && (
-        <PhotoEditor
-          cakeImageUrl={originalImages[editingPhotoOnCakeIndex] || generatedImages[editingPhotoOnCakeIndex]}
-          userPhotoUrl={userPhotoPreview}
-          initialPosition={photoPosition || FALLBACK_PHOTO_POSITIONS.top}
-          onSave={(processedImageUrl) => {
-            const newImages = [...generatedImages];
-            newImages[editingPhotoOnCakeIndex] = processedImageUrl;
-            setGeneratedImages(newImages);
-            setEditingPhotoOnCakeIndex(null);
-            toast({
-              title: "Photo updated!",
-              description: "Your photo placement has been updated.",
-            });
-          }}
-          onCancel={() => setEditingPhotoOnCakeIndex(null)}
-        />
+        <Suspense fallback={null}>
+          <PhotoEditor
+            cakeImageUrl={originalImages[editingPhotoOnCakeIndex] || generatedImages[editingPhotoOnCakeIndex]}
+            userPhotoUrl={userPhotoPreview}
+            initialPosition={photoPosition || FALLBACK_PHOTO_POSITIONS.top}
+            onSave={(processedImageUrl) => {
+              const newImages = [...generatedImages];
+              newImages[editingPhotoOnCakeIndex] = processedImageUrl;
+              setGeneratedImages(newImages);
+              setEditingPhotoOnCakeIndex(null);
+              toast({
+                title: "Photo updated!",
+                description: "Your photo placement has been updated.",
+              });
+            }}
+            onCancel={() => setEditingPhotoOnCakeIndex(null)}
+          />
+        </Suspense>
       )}
     </div>
   );
