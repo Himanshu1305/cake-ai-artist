@@ -207,6 +207,27 @@ export type Database = {
         }
         Relationships: []
       }
+      brevo_anon_rate_limits: {
+        Row: {
+          id: string
+          ip: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          ip: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          ip?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       cake_generation_attempts: {
         Row: {
           client_attempt_id: string
@@ -299,6 +320,7 @@ export type Database = {
           hero_url: string | null
           hero_view: string | null
           id: string
+          request_id: string | null
           side_error: string | null
           side_url: string | null
           status: string
@@ -318,6 +340,7 @@ export type Database = {
           hero_url?: string | null
           hero_view?: string | null
           id?: string
+          request_id?: string | null
           side_error?: string | null
           side_url?: string | null
           status?: string
@@ -337,6 +360,7 @@ export type Database = {
           hero_url?: string | null
           hero_view?: string | null
           id?: string
+          request_id?: string | null
           side_error?: string | null
           side_url?: string | null
           status?: string
@@ -411,6 +435,39 @@ export type Database = {
           story?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      client_errors: {
+        Row: {
+          component: string | null
+          component_stack: string | null
+          created_at: string
+          error_message: string | null
+          error_name: string | null
+          id: string
+          stack: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          component?: string | null
+          component_stack?: string | null
+          created_at?: string
+          error_message?: string | null
+          error_name?: string | null
+          id?: string
+          stack?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          component?: string | null
+          component_stack?: string | null
+          created_at?: string
+          error_message?: string | null
+          error_name?: string | null
+          id?: string
+          stack?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -652,6 +709,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      generation_rate_limits: {
+        Row: {
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
       }
       generation_tracking: {
         Row: {
@@ -1501,21 +1579,27 @@ export type Database = {
       }
       vendor_search_usage: {
         Row: {
-          count: number
-          date: string
-          updated_at: string
+          created_at: string
+          id: string
+          location: string | null
+          query: string
+          result_count: number | null
           user_id: string
         }
         Insert: {
-          count?: number
-          date?: string
-          updated_at?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          query: string
+          result_count?: number | null
           user_id: string
         }
         Update: {
-          count?: number
-          date?: string
-          updated_at?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          query?: string
+          result_count?: number | null
           user_id?: string
         }
         Relationships: []
