@@ -216,6 +216,8 @@ const FreeCakeDesigner = () => {
                 </Button>
               </div>
             ) : (
+              <>
+
               <div className="rounded-2xl border-2 border-party-gold/30 bg-gradient-to-br from-party-gold/10 to-party-orange/10 p-6 text-center">
                 <h3 className="text-xl font-bold mb-2">✨ Love your cake? Unlock unlimited designs</h3>
                 <p className="text-muted-foreground mb-2">You have used 1 of your {FREE_TOTAL_LIMIT} free designs. Premium unlocks unlimited cakes, Party Pack Generator, and AI Party Planner.</p>
@@ -269,6 +271,7 @@ const FreeCakeDesigner = () => {
                   </div>
                 </div>
               )}
+              </>
             )}
           </div>
         )}
