@@ -471,6 +471,27 @@ export type Database = {
         }
         Relationships: []
       }
+      email_sequence_log: {
+        Row: {
+          id: string
+          sent_at: string
+          sequence_type: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          sent_at?: string
+          sequence_type: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          sent_at?: string
+          sequence_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       engagement_email_logs: {
         Row: {
           created_at: string
@@ -1202,6 +1223,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bonus_generations: number
           country: string | null
           created_at: string | null
           current_streak: number | null
@@ -1222,6 +1244,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          bonus_generations?: number
           country?: string | null
           created_at?: string | null
           current_streak?: number | null
@@ -1242,6 +1265,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          bonus_generations?: number
           country?: string | null
           created_at?: string | null
           current_streak?: number | null
@@ -1260,6 +1284,30 @@ export type Database = {
           subscription_id?: string | null
           subscription_status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      referral_bonuses: {
+        Row: {
+          bonus_granted: boolean
+          created_at: string
+          id: string
+          referred_by: string | null
+          user_id: string
+        }
+        Insert: {
+          bonus_granted?: boolean
+          created_at?: string
+          id?: string
+          referred_by?: string | null
+          user_id: string
+        }
+        Update: {
+          bonus_granted?: boolean
+          created_at?: string
+          id?: string
+          referred_by?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1506,6 +1554,36 @@ export type Database = {
           template_variant?: number
           user_id?: string
           week_number?: number
+        }
+        Relationships: []
+      }
+      user_occasions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          occasion_date: string
+          occasion_type: string
+          person_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occasion_date: string
+          occasion_type?: string
+          person_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occasion_date?: string
+          occasion_type?: string
+          person_name?: string
+          user_id?: string
         }
         Relationships: []
       }
