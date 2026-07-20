@@ -84,7 +84,7 @@ const Occasions = () => {
       .select("*")
       .eq("user_id", uid)
       .order("occasion_date", { ascending: true });
-    if (!error && data) setOccasions(data as Occasion[]);
+    if (!error && data) setOccasions(data as unknown as Occasion[]);
     setLoading(false);
   };
 
