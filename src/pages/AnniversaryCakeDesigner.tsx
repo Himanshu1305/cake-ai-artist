@@ -10,6 +10,7 @@ import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { RelatedTools } from "@/components/RelatedTools";
 
 const ANNIVERSARY_FALLBACK = [
   "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
@@ -264,6 +265,7 @@ const AnniversaryCakeDesigner = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/anniversary-cake-designer" />
       <Footer />
     </div>
   );

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { RelatedTools } from "@/components/RelatedTools";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema } from "@/components/SEOSchema";
 import { Type, Sparkles, Heart, Star, Cake } from "lucide-react";
@@ -193,6 +194,7 @@ const AiBirthdayCakeWithName = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/ai-birthday-cake-with-name" />
       <Footer />
     </div>
   );

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { RelatedTools } from "@/components/RelatedTools";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema, FAQSchema } from "@/components/SEOSchema";
@@ -388,6 +389,7 @@ const FreeCakeDesigner = () => {
         </div>
       </section>
 
+      <RelatedTools exclude="/free-ai-cake-designer" />
       <Footer />
     </div>
   );

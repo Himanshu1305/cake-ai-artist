@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { RelatedTools } from "@/components/RelatedTools";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
@@ -255,6 +256,7 @@ const GraduationCakeDesigner = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/graduation-cake-ideas" />
       <Footer />
     </div>
   );

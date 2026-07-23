@@ -85,8 +85,8 @@ export const Footer = () => {
       {/* Dark overlay improves WCAG AA contrast for white text on warm gradients */}
       <div className="absolute inset-0 bg-foreground/15 pointer-events-none" aria-hidden="true" />
       <div className="container mx-auto px-4 relative">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
-        <div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-white">
+        <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <img loading="lazy" decoding="async" src="/logo.png" alt="Cake AI Artist" className="w-12 h-12 rounded-lg" />
               <h3 className="font-bold text-lg">Cake AI Artist</h3>
@@ -133,96 +133,72 @@ export const Footer = () => {
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
+            <h4 className="font-semibold mb-4">AI Cake Tools</h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/how-it-works" className="hover:underline opacity-90">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link to="/use-cases" className="hover:underline opacity-90">
-                  Use Cases
-                </Link>
-              </li>
-              <li>
-                <Link to="/free-ai-cake-designer" className="hover:underline opacity-90">
-                  Free AI Cake Designer
-                </Link>
-              </li>
-              <li>
-                <Link to={pricingHref} className="hover:underline opacity-90">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link to="/community" className="hover:underline opacity-90">
-                  Community Gallery
-                </Link>
-              </li>
+              <li><Link to="/free-ai-cake-designer" className="hover:underline opacity-90">Free AI Cake Designer</Link></li>
+              <li><Link to="/ai-cake-generator-free" className="hover:underline opacity-90">AI Cake Generator Free</Link></li>
+              <li><Link to="/3d-cake-designer" className="hover:underline opacity-90">3D Cake Designer</Link></li>
+              <li><Link to="/photo-cake-maker" className="hover:underline opacity-90">Photo Cake Maker</Link></li>
+              <li><Link to="/ai-birthday-cake-with-name" className="hover:underline opacity-90">Birthday Cake with Name</Link></li>
+              <li><Link to="/personalized-cake-online" className="hover:underline opacity-90">Personalised Cake Online</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Occasions</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/wedding-cake-designer" className="hover:underline opacity-90">Wedding Cake Designer</Link></li>
+              <li><Link to="/anniversary-cake-designer" className="hover:underline opacity-90">Anniversary Cake Designer</Link></li>
+              <li><Link to="/graduation-cake-ideas" className="hover:underline opacity-90">Graduation Cake Ideas</Link></li>
+              <li><Link to="/rakhi-cake-ideas" className="hover:underline opacity-90">Rakhi Cake Ideas</Link></li>
+              <li><Link to="/eid-cake-ideas" className="hover:underline opacity-90">Eid Cake Ideas</Link></li>
+              <li><Link to="/eggless-cake-design" className="hover:underline opacity-90">Eggless Cake Design</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Countries</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/usa" className="hover:underline opacity-90">United States</Link></li>
+              <li><Link to="/uk" className="hover:underline opacity-90">United Kingdom</Link></li>
+              <li><Link to="/canada" className="hover:underline opacity-90">Canada</Link></li>
+              <li><Link to="/australia" className="hover:underline opacity-90">Australia</Link></li>
+              <li><Link to="/india" className="hover:underline opacity-90">India</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Resources</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/how-it-works" className="hover:underline opacity-90">How It Works</Link></li>
+              <li><Link to="/use-cases" className="hover:underline opacity-90">Use Cases</Link></li>
+              <li><Link to="/blog" className="hover:underline opacity-90">Blog</Link></li>
+              <li><Link to="/faq" className="hover:underline opacity-90">FAQ</Link></li>
+              <li><Link to="/recipes" className="hover:underline opacity-90">Recipes</Link></li>
+              <li><Link to="/community" className="hover:underline opacity-90">Community Gallery</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
+              <li><Link to="/about" className="hover:underline opacity-90">About</Link></li>
+              <li><Link to="/contact" className="hover:underline opacity-90">Contact</Link></li>
+              <li><Link to={pricingHref} className="hover:underline opacity-90">Pricing</Link></li>
+              <li><Link to="/privacy" className="hover:underline opacity-90">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:underline opacity-90">Terms of Service</Link></li>
+              <li><Link to="/advertising" className="hover:underline opacity-90">Advertising</Link></li>
               <li>
-                <Link to="/about" className="hover:underline opacity-90">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" className="hover:underline opacity-90">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="hover:underline opacity-90">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:underline opacity-90">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/privacy" className="hover:underline opacity-90">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="hover:underline opacity-90">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/advertising" className="hover:underline opacity-90">
-                  Advertising
-                </Link>
-              </li>
-              <li>
-                <button
-                  onClick={handleCookieSettings}
-                  className="hover:underline opacity-90 text-left"
-                >
+                <button onClick={handleCookieSettings} className="hover:underline opacity-90 text-left">
                   Cookie Settings
                 </button>
               </li>
             </ul>
             <div className="mt-4">
               <p className="text-sm opacity-90">
-                Email: <a href="mailto:support@cakeaiartist.com" className="hover:underline">support@cakeaiartist.com</a>
+                <a href="mailto:support@cakeaiartist.com" className="hover:underline">support@cakeaiartist.com</a>
               </p>
             </div>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/20 text-center text-sm text-white opacity-90">
-          <p>&copy; 2025 Cake AI Artist. All rights reserved.</p>
+          <p>&copy; 2026 Cake AI Artist. All rights reserved.</p>
         </div>
       </div>
     </footer>

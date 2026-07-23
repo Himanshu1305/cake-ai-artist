@@ -1197,12 +1197,18 @@ const Index = () => {
         <h2 className="text-2xl font-bold text-center text-foreground mb-6">Explore Our AI Cake Designers</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl mx-auto text-center text-sm">
           {[
-            { to: "/wedding-cake-designer", label: "AI Wedding Cake Designer" },
+            { to: "/free-ai-cake-designer", label: "Free AI Cake Designer" },
+            { to: "/ai-cake-generator-free", label: "AI Cake Generator Free" },
+            { to: "/3d-cake-designer", label: "3D Cake Designer" },
             { to: "/photo-cake-maker", label: "Photo Cake Maker" },
-            { to: "/personalized-cake-online", label: "Personalised Cake Online" },
             { to: "/ai-birthday-cake-with-name", label: "AI Birthday Cake with Name" },
+            { to: "/personalized-cake-online", label: "Personalised Cake Online" },
+            { to: "/wedding-cake-designer", label: "AI Wedding Cake Designer" },
+            { to: "/anniversary-cake-designer", label: "Anniversary Cake Designer" },
             { to: "/graduation-cake-ideas", label: "Graduation Cake Ideas" },
+            { to: "/rakhi-cake-ideas", label: "Rakhi Cake Ideas" },
             { to: "/eid-cake-ideas", label: "Eid Cake Ideas" },
+            { to: "/eggless-cake-design", label: "Eggless Cake Design" },
           ].map(({ to, label }) => (
             <Link
               key={to}

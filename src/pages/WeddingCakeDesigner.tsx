@@ -10,6 +10,7 @@ import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { RelatedTools } from "@/components/RelatedTools";
 
 const WEDDING_FALLBACK = [
   "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
@@ -268,6 +269,7 @@ const WeddingCakeDesigner = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/wedding-cake-designer" />
       <Footer />
     </div>
   );

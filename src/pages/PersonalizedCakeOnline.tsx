@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { RelatedTools } from "@/components/RelatedTools";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
@@ -263,6 +264,7 @@ const PersonalizedCakeOnline = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/personalized-cake-online" />
       <Footer />
     </div>
   );

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
+import { RelatedTools } from "@/components/RelatedTools";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
@@ -228,6 +229,7 @@ const AiCakeGeneratorFree = () => {
       </section>
 
       {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      <RelatedTools exclude="/ai-cake-generator-free" />
       <Footer />
     </div>
   );
