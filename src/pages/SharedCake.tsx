@@ -300,6 +300,10 @@ export default function SharedCake() {
     <>
       <Helmet>
         <title>{ogTitle}</title>
+        {/* Shared cake pages are thin, personal and infinite in number — keep them out
+            of the index (they surfaced as "Crawled/Discovered - currently not indexed"
+            in Search Console). "follow" still lets Google reach the linked tool pages. */}
+        <meta name="robots" content="noindex, follow" />
         <meta name="description" content={ogDesc} />
         <meta property="og:title" content={ogTitle} />
         <meta property="og:description" content={ogDesc} />
