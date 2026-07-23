@@ -11,8 +11,8 @@ const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Helmet>
-        <title>How the AI Cake Generator Works — 30-Second Guide</title>
-        <meta name="description" content="Step-by-step guide to the best AI cake generator. Type a name, pick an occasion, and get 3 personalized AI birthday cakes in 30 seconds." />
+        <title>How to Design a Cake with AI — Step-by-Step (Free)</title>
+        <meta name="description" content="Learn how to design a cake with AI in 3 easy steps: type a name, pick an occasion, and get 3 personalized cake designs in 30 seconds. Free, no signup." />
         <meta name="keywords" content="how to create virtual cake, ai cake generator tutorial, ai cake designer guide, ai birthday cake generator tutorial, personalized cake design guide, cake ai how to" />
         <link rel="canonical" href="https://cakeaiartist.com/how-it-works" />
         <meta property="og:title" content="How to Design an AI Cake in 30 Seconds — Step Guide" />

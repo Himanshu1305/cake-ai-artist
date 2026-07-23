@@ -63,8 +63,8 @@ const AiBirthdayCakeWithName = () => {
   return (
     <div className="min-h-screen bg-gradient-surface">
       <Helmet>
-        <title>AI Birthday Cake with Name — Free Online Cake Designer</title>
-        <meta name="description" content="Design an AI birthday cake with any name in 30 seconds. Our AI spells names correctly — short, long and unusual spellings all work." />
+        <title>AI Birthday Cake with Name — Free &amp; Spelled Correctly</title>
+        <meta name="description" content="Add any name to a birthday cake with AI — spelled correctly, every time. Short, long or unusual names all work. Free in 30 seconds, no signup." />
         <link rel="canonical" href="https://cakeaiartist.com/ai-birthday-cake-with-name" />
         <meta property="og:title" content="AI Birthday Cake with Name | Cake AI Artist" />
         <meta property="og:description" content="Personalized AI birthday cake with any name — spelled correctly, every time. Free in 30 seconds." />
