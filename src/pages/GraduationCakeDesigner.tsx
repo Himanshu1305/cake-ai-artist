@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const GRADUATION_FALLBACK = [
   "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=400&h=400&fit=crop",
@@ -143,6 +144,10 @@ const GraduationCakeDesigner = () => {
             Celebrate their achievement with a cake as special as the moment. Type the graduate's name, year and theme — get a stunning design in 30 seconds.
           </p>
 
+          <AnswerBox stats={["~30 seconds","Class of 2026","5 free designs","3 views per cake"]}>
+            To design a graduation cake, describe the graduate's name, year and school colours in plain English and let the AI do the rest. Cake AI Artist turns your idea into photorealistic cap-and-gown or subject-themed designs in about 30 seconds, returning three views per cake. Your first 5 designs are free.
+          </AnswerBox>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
             <Button size="lg" onClick={() => navigate("/free-ai-cake-designer?occasion=graduation")} className="bg-gradient-gold text-base px-7 py-6 font-semibold">
               <Zap className="w-5 h-5 mr-2" /> Design My Graduation Cake →
@@ -217,6 +222,12 @@ const GraduationCakeDesigner = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="an AI graduation cake designer" definition={<>An AI graduation cake designer turns the graduate's name, year and school colours into photorealistic graduation cake designs — cap-and-gown, subject-themed or elegant. Cake AI Artist handles any level, from high school to PhD, and returns three views of each design in about 30 seconds, with your first 5 designs free.</>} />
         </div>
       </section>
 

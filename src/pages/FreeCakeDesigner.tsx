@@ -8,7 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
-import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema } from "@/components/SEOSchema";
+import { BreadcrumbSchema, HowToSchema, SoftwareApplicationSchema, FAQSchema } from "@/components/SEOSchema";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 import { Sparkles, Check, Star, Zap, Heart, Download, Share2, Palette, X, Crown, Gift, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import WelcomeModal from "@/components/WelcomeModal";
@@ -85,6 +86,33 @@ const FreeCakeDesigner = () => {
     { icon: Star, title: `${FREE_TOTAL_LIMIT} Free Designs`, description: "No credit card required, use forever" },
   ];
 
+  const faqs = [
+    {
+      question: "Is the AI cake designer really free?",
+      answer: "Yes, it is genuinely free. Your first 5 cake designs cost nothing and require no credit card. You can type a name, pick an occasion and generate a photorealistic cake at no charge. Only if you want unlimited designs do you need to upgrade to a paid plan.",
+    },
+    {
+      question: "Do I need to sign up?",
+      answer: "No signup is required to try it. You can start designing a cake right away without creating an account or entering payment details. Signing up simply lets you save your designs and keep track of your 5 free generations, but you can explore the tool first with zero commitment.",
+    },
+    {
+      question: "How long does it take?",
+      answer: "Each cake is generated in about 30 seconds. You describe the name, occasion and style, click generate, and the AI renders your finished design in roughly half a minute. There is no waiting queue and no manual design work, so you can create and compare several cakes in just a few minutes.",
+    },
+    {
+      question: "Can I add a name to the cake?",
+      answer: "Yes, you can add any name or short message to the cake. Just type it into the name field before generating, for example a person's name or a greeting like Happy Birthday Mom. The AI places your text onto the cake so it looks like real, professionally piped lettering.",
+    },
+    {
+      question: "What occasions can I design for?",
+      answer: "You can design cakes for more than 20 occasions. These include birthdays, weddings, anniversaries, graduations, baby showers, retirements and many other celebrations. Simply choose the occasion that fits your event and the AI tailors the style, colours and decorations to match the mood you want.",
+    },
+    {
+      question: "Can I download or share the cake?",
+      answer: "Yes, every cake can be downloaded and shared. The AI renders 3 views of each design so you see it front, side and top-down, and you can save a high-resolution image or send it directly to WhatsApp, Instagram and other apps to show your baker or friends.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-celebration">
       {showWelcome && (
@@ -135,6 +163,8 @@ const FreeCakeDesigner = () => {
         ]}
       />
 
+      <FAQSchema faqs={faqs} />
+
       {/* Header */}
       <SiteHeader />
 
@@ -156,6 +186,9 @@ const FreeCakeDesigner = () => {
               Create stunning personalized AI cakes in 30 seconds with the #1 free AI cake generator. No design skills required.
               Just type a name, pick an occasion, and let our birthday cake AI do the magic.
             </p>
+            <AnswerBox stats={["~30 seconds", "5 free designs", "No signup to try", "3 views per cake"]}>
+              A free AI cake designer turns a short description into a photorealistic cake in about 30 seconds. Just type a name, choose an occasion, and pick a style — the AI does the rest. Cake AI Artist gives you 5 free designs with no signup to try, rendering each cake from three angles so you can see it clearly.
+            </AnswerBox>
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="w-4 h-4 text-party-mint" />
@@ -331,6 +364,28 @@ const FreeCakeDesigner = () => {
             </div>
           </>
         )}
+      </section>
+
+      <DefinitionBox
+        term="a free AI cake designer"
+        definition={<>A free AI cake designer is an online tool that turns a short text description — a name, occasion and style — into a photorealistic cake design in about 30 seconds, at no cost. Cake AI Artist gives you 5 free designs with no signup, each rendered from three angles so you can visualise the cake before you bake or order it.</>}
+      />
+
+      {/* FAQ Section */}
+      <section className="container mx-auto px-4 pb-16">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-8">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-6">
+            {faqs.map((faq) => (
+              <div key={faq.question}>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{faq.question}</h3>
+                <p className="text-muted-foreground">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <Footer />

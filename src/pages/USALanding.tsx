@@ -31,6 +31,7 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const USALanding = () => {
   const navigate = useNavigate();
@@ -259,6 +260,9 @@ const USALanding = () => {
             >
               Design stunning birthday, holiday and celebration cakes in 30 seconds — free to try, no signup needed
             </motion.p>
+            <AnswerBox stats={["~30 seconds", "5 free designs", "Name + photo", "3 views per cake"]}>
+              Cake AI Artist is a free AI cake generator for the USA that designs a custom cake online from a short text prompt. Describe the occasion, name, flavor and style, and the AI returns three photorealistic views in about 30 seconds, spelling any name correctly. Your first 5 designs are free, no signup needed.
+            </AnswerBox>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -637,6 +641,8 @@ const USALanding = () => {
           <PricingPlans country="US" />
         </div>
       </section>
+
+      <DefinitionBox term="an AI cake generator" definition={<>An AI cake generator is a tool that creates a custom cake design image from a text prompt describing the occasion, name, flavor and style, letting you visualize a cake before you order or bake it. Cake AI Artist generates three views of each design in about 30 seconds, spells any name correctly, and your first 5 designs are free.</>} />
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-party-pink/20 via-party-purple/20 to-party-gold/20">

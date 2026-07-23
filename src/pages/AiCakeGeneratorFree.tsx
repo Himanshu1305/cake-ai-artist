@@ -14,6 +14,7 @@ import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const AiCakeGeneratorFree = () => {
   const navigate = useNavigate();
@@ -112,6 +113,10 @@ const AiCakeGeneratorFree = () => {
             Cake AI Artist is the free AI cake generator behind thousands of personalized birthday, anniversary, and celebration cakes. Type a name, pick the occasion, hit generate. Your AI cake is ready in about half a minute — no signup needed to explore, no credit card ever.
           </p>
 
+          <AnswerBox stats={["~30 seconds","5 free designs","No login to try","3 views per cake"]}>
+            An AI cake generator turns a short text prompt into a custom cake design image. Cake AI Artist is free to try: it produces three views of each cake in about 30 seconds, your first 5 designs cost nothing, and no login or signup is required to start exploring designs for any occasion.
+          </AnswerBox>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
             <Button size="lg" onClick={() => navigate("/")} className="bg-gradient-gold text-base px-7 py-6 font-semibold">
               <Zap className="w-5 h-5 mr-2" /> Design Your Free AI Cake →
@@ -190,6 +195,12 @@ const AiCakeGeneratorFree = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="an AI cake generator" definition={<>An AI cake generator is a tool that creates a custom cake design image from a text prompt describing the occasion, name, flavour and style, so you can visualise a cake before you order or bake it. Cake AI Artist generates three views of each design in about 30 seconds and your first 5 designs are free — no login required to try.</>} />
         </div>
       </section>
 

@@ -14,6 +14,7 @@ import featuredCake3 from "@/assets/featured-cake-3.jpg";
 import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const AiBirthdayCakeWithName = () => {
   const navigate = useNavigate();
@@ -97,6 +98,10 @@ const AiBirthdayCakeWithName = () => {
             The birthday cake AI that actually gets the name right. Most AI cake generators turn 'Sarah' into 'Saraah' or mangle anything longer than 5 letters. Cake AI Artist doesn't. Type the name, pick the style, hit generate — your personalized birthday cake AI design appears with the name rendered cleanly, every time. Free for your first 5 cakes.
           </p>
 
+          <AnswerBox stats={["~30 seconds","Any name, spelled right","5 free designs","3 views per cake"]}>
+            To make an AI birthday cake with a name, open Cake AI Artist, choose birthday as the occasion, type the recipient's name and any short message, pick a style, and generate. In about 30 seconds you get three views of a personalised cake with the name spelled correctly. Your first 5 designs are free.
+          </AnswerBox>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
             <Button size="lg" onClick={() => navigate("/")} className="bg-gradient-gold text-base px-7 py-6 font-semibold">
               <Cake className="w-5 h-5 mr-2" /> Make a Birthday Cake with a Name →
@@ -155,6 +160,12 @@ const AiBirthdayCakeWithName = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="an AI birthday cake with a name" definition={<>An AI birthday cake with a name is a personalised cake design generated from the recipient's name plus an occasion and style, with the name rendered cleanly on the cake. Cake AI Artist spells short, long and unusual names correctly and returns three views of each design in about 30 seconds — your first 5 are free.</>} />
         </div>
       </section>
 

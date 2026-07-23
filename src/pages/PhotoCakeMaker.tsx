@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const PHOTO_CAKE_FALLBACK = [
   "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
@@ -147,6 +148,10 @@ const PhotoCakeMaker = () => {
             Upload a photo, choose your style, and watch our AI create a stunning personalised photo cake design. Perfect for birthdays, anniversaries and every special moment.
           </p>
 
+          <AnswerBox stats={["~30 seconds","Name + photo","5 free designs","3 views per cake"]}>
+            A photo cake maker lets you put a photo on a cake by adding your picture and a name, then previewing a photorealistic design before you order or bake. Upload a photo, pick a style, and Cake AI Artist generates a birthday cake with name and photo in about 30 seconds — your first 5 designs are free.
+          </AnswerBox>
+
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-sm text-muted-foreground">
             {["Upload any photo", "30-second AI design", "Baker-ready download"].map((item) => (
               <div key={item} className="flex items-center gap-1.5">
@@ -230,6 +235,12 @@ const PhotoCakeMaker = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-8 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="a photo cake maker" definition={<>A photo cake maker is a tool that designs a cake featuring a personal photo and name, letting you preview a picture cake before ordering or baking. Cake AI Artist generates a photorealistic photo-cake design with the name spelled correctly in about 30 seconds, from three angles, and your first 5 designs are free.</>} />
         </div>
       </section>
 

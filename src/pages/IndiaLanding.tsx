@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Cake, PartyPopper, Sparkles, CheckCircle2, Palette, Menu, Download, Loader2, Gift, Heart } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 import { CountryRecipesSection } from "@/components/CountryRecipesSection";
 import { CountryBlogFeed } from "@/components/CountryBlogFeed";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
@@ -256,6 +257,9 @@ const IndiaLanding = () => {
             >
               Design AI cakes for birthdays, anniversaries, weddings &amp; every celebration — ready in 30 seconds, priced in ₹
             </motion.p>
+            <AnswerBox stats={["~30 seconds", "Priced in ₹", "5 free designs", "Eggless & Diwali themes"]}>
+              Cake AI Artist is a free online AI cake designer for India that turns a short description into a personalised cake design. Create birthday, Diwali and eggless cake designs — with any name spelled correctly — in about 30 seconds. You get three views per cake, pricing in ₹, and your first 5 designs free.
+            </AnswerBox>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -715,6 +719,8 @@ const IndiaLanding = () => {
           <PricingPlans country="IN" />
         </div>
       </section>
+
+      <DefinitionBox term="an AI cake designer in India" definition={<>An AI cake designer in India is an online tool that generates personalised cake designs — birthday, anniversary, Diwali, Rakhi and eggless styles — from a short text description, priced in rupees. Cake AI Artist creates three views of each cake in about 30 seconds, spells any name correctly, and gives you 5 free designs to start.</>} />
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-party-pink/20 via-party-purple/20 to-party-gold/20">

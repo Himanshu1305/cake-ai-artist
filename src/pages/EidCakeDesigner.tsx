@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const EID_FALLBACK = [
   "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
@@ -143,6 +144,12 @@ const EidCakeDesigner = () => {
             Celebrate Eid al-Fitr and Eid al-Adha with a personalised AI cake design. Crescent moons, gold accents, geometric patterns — describe your vision in seconds.
           </p>
 
+          <div className="max-w-3xl mx-auto mb-10 text-left">
+            <AnswerBox stats={["~30 seconds","Eid themes","5 free designs","3 views per cake"]}>
+              To design an Eid cake, describe your vision — crescent moons, lanterns, gold accents, geometric patterns or an Eid Mubarak greeting — and the AI generates a festive design in about 30 seconds. Add a recipient's name to personalise it, and get three views of each cake. Your first 5 designs are free.
+            </AnswerBox>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
             <Button size="lg" onClick={() => navigate("/free-ai-cake-designer?occasion=eid")} className="bg-gradient-gold text-base px-7 py-6 font-semibold">
               <Zap className="w-5 h-5 mr-2" /> Design My Eid Cake →
@@ -217,6 +224,12 @@ const EidCakeDesigner = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="an AI Eid cake designer" definition={<>An AI Eid cake designer creates festive Eid Mubarak cake designs — crescent moons, lanterns, gold accents and Arabic-style greetings — from a short description. Cake AI Artist generates three views of each Eid cake in about 30 seconds and can add a name, with your first 5 designs free.</>} />
         </div>
       </section>
 

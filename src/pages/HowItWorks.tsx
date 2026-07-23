@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, HowToSchema, FAQSchema } from "@/components/SEOSchema";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const HowItWorks = () => {
   return (
@@ -68,6 +69,10 @@ const HowItWorks = () => {
             Creating personalized cakes has never been easier. Here&apos;s how you go from idea to image in half a minute.
           </p>
         </div>
+
+        <AnswerBox stats={["3 easy steps", "~30 seconds", "5 free designs", "No signup to try"]}>
+          To design a cake with AI, follow three easy steps: type a name, pick an occasion and style, then generate. Cake AI Artist turns those details into a photorealistic design and returns three views of the cake — front, side and top-down — in about 30 seconds, with names spelled correctly and your first 5 designs free.
+        </AnswerBox>
 
         {/* Step-by-step Guide */}
         <div className="space-y-12 mb-16">
@@ -783,6 +788,8 @@ const HowItWorks = () => {
             </Card>
           </div>
         </div>
+
+        <DefinitionBox term="an AI cake generator" definition={<>An AI cake generator is a tool that turns a short text description — a name, occasion and style — into a photorealistic cake design image in seconds. Cake AI Artist follows three steps (enter a name, choose an occasion and style, generate) and returns three views of the cake in about 30 seconds, with your first 5 designs free.</>} />
 
         {/* CTA Section */}
         <div className="text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">

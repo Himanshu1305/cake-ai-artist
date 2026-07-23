@@ -31,6 +31,7 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const UKLanding = () => {
   const navigate = useNavigate();
@@ -282,6 +283,9 @@ const UKLanding = () => {
             >
               Design personalised birthday, wedding &amp; celebration cakes in 30 seconds — free to try, no signup needed
             </motion.p>
+            <AnswerBox stats={["~30 seconds","5 free designs","Any name, spelled right","3 views per cake"]}>
+              Cake AI Artist is a free AI cake designer for the UK. Type a name, pick an occasion and choose a style, and it generates a photorealistic personalised birthday cake with the name spelled correctly. You get three views of each design in about 30 seconds online, with your first 5 designs completely free — no signup needed.
+            </AnswerBox>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -794,6 +798,10 @@ const UKLanding = () => {
             </Link>
           </motion.div>
         </div>
+      </section>
+
+      <section className="py-8 px-4">
+        <DefinitionBox term="an AI cake designer" definition={<>An AI cake designer is an online tool that turns a name, occasion and style into a photorealistic cake design in seconds, so you can visualise a cake before ordering from a bakery or baking it yourself. Cake AI Artist returns three views of each design in about 30 seconds, spells any name correctly, and gives UK users 5 free designs.</>} />
       </section>
 
       <CountryRecipesSection countryCode="UK" countryName="UK" adjective="British" />

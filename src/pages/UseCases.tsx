@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Helmet } from "react-helmet-async";
 import { BreadcrumbSchema, FAQSchema } from "@/components/SEOSchema";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const UseCases = () => {
   return (
@@ -54,6 +55,10 @@ const UseCases = () => {
             Whether it's a big milestone or just a random Tuesday, here's how people are using this thing.
           </p>
         </div>
+
+        <AnswerBox stats={["20+ occasions", "~30 seconds", "5 free designs", "3 views per cake"]}>
+          You can use an AI cake designer for almost any celebration — birthdays, weddings, anniversaries, baby showers, graduations, retirements and corporate events among 20+ occasions. Just type a name and pick a style, and you get three views of a photorealistic cake in about 30 seconds, with names spelled correctly and your first 5 designs free.
+        </AnswerBox>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {/* Birthday Parties */}
@@ -253,6 +258,8 @@ const UseCases = () => {
             </Card>
           </div>
         </div>
+
+        <DefinitionBox term="AI cake design" definition={<>AI cake design is the practice of generating a photorealistic cake concept from a text description instead of sketching it or briefing a baker by hand. With Cake AI Artist you describe the occasion, name and style and get three views of a finished cake design in about 30 seconds — useful for birthdays, weddings, anniversaries, corporate events and 20+ other occasions.</>} />
 
         {/* CTA Section */}
         <div className="text-center bg-gradient-to-r from-party-purple/20 to-party-pink/20 p-12 rounded-lg">

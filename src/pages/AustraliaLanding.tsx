@@ -31,6 +31,7 @@ import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const AustraliaLanding = () => {
   const navigate = useNavigate();
@@ -272,6 +273,13 @@ const AustraliaLanding = () => {
             </motion.div>
           </div>
         </div>
+      </div>
+
+      {/* AEO Answer Box */}
+      <div className="container mx-auto px-4 pt-10">
+        <AnswerBox stats={["~30 seconds", "5 free designs", "Any name, spelled right", "3 views per cake"]}>
+          Yes — you can design a birthday cake online for free with Cake AI Artist, Australia's AI cake generator. Type a name, occasion and style, and the AI returns three photorealistic views of your custom cake in about 30 seconds. Your first 5 designs are free, names are always spelled correctly, and no signup is needed to start.
+        </AnswerBox>
       </div>
 
       {/* Feature Highlight */}
@@ -539,6 +547,11 @@ const AustraliaLanding = () => {
           <PricingPlans country="AU" />
         </div>
       </section>
+
+      {/* AEO Definition Box */}
+      <div className="container mx-auto px-4 py-8">
+        <DefinitionBox term="an AI cake generator" definition={<>An AI cake generator is an online tool that turns a name, occasion and style into a photorealistic cake design in seconds, so you can visualise a cake before ordering or baking it. Cake AI Artist returns three views of each design in about 30 seconds, spells any name correctly, and gives Australian users 5 free designs to start.</>} />
+      </div>
 
       {/* CTA */}
       <section className="py-16 bg-gradient-to-r from-party-pink/20 via-party-purple/20 to-party-gold/20">

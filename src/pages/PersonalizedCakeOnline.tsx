@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema";
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const PERSONALIZED_FALLBACK = [
   "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
@@ -142,6 +143,10 @@ const PersonalizedCakeOnline = () => {
             Add any name, message and theme to a stunning AI cake design in 30 seconds. The easiest way to design a personalised cake online — free to try.
           </p>
 
+          <AnswerBox stats={["~30 seconds","5 free designs","20+ occasions","3 views per cake"]}>
+            To design a personalised cake online, describe the person or occasion — their name, age, theme and favourite colours. Cake AI Artist turns that short description into a photorealistic cake in about 30 seconds, showing three views of each design. Your first 5 designs are free, with no signup for your first.
+          </AnswerBox>
+
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-sm text-muted-foreground">
             {["Any name spelled correctly", "Custom messages + themes", "Download in seconds"].map((item) => (
               <div key={item} className="flex items-center gap-1.5">
@@ -225,6 +230,12 @@ const PersonalizedCakeOnline = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <DefinitionBox term="a personalised cake" definition={<>A personalised cake is a cake designed around a specific person or occasion — their name, age, theme and favourite colours — rather than a generic template. Cake AI Artist lets you design one online in about 30 seconds from a short description, returning three views of the cake, with your first 5 designs free.</>} />
         </div>
       </section>
 
