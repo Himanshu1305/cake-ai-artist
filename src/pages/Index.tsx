@@ -495,16 +495,8 @@ const Index = () => {
                 <Button
                   type="button"
                   size="lg"
-                  className="relative z-10 touch-manipulation bg-gradient-gold hover:shadow-gold text-base md:text-lg px-7 py-6 font-semibold btn-shimmer"
-                  onClick={() => {
-                    const el = document.getElementById('creator');
-                    if (el) {
-                      const y = el.getBoundingClientRect().top + window.scrollY - 80;
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    } else {
-                      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                    }
-                  }}
+                  className="relative z-10 touch-manipulation bg-gradient-gold hover:shadow-gold text-base md:text-lg px-7 py-6 font-semibold"
+                  onClick={() => navigate('/free-ai-cake-designer?ref=home_hero')}
                 >
                   Design Your Cake Free →
                 </Button>
@@ -578,17 +570,10 @@ const Index = () => {
               That&apos;s where we come in. Get gorgeous, personalized cake designs in the time it takes to make coffee.
             </p>
             <Button
+              type="button"
               size="lg"
-              className="bg-gradient-party hover:opacity-90 text-white font-bold px-8 py-6 text-lg"
-              onClick={() => {
-                const creatorEl = document.getElementById('creator');
-                if (creatorEl) {
-                  const headerOffset = 80;
-                  const elementPosition = creatorEl.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                }
-              }}
+              className="touch-manipulation bg-gradient-party hover:opacity-90 text-white font-bold px-8 py-6 text-lg"
+              onClick={() => navigate('/free-ai-cake-designer?ref=home_other')}
             >
               🎂 Start Creating Your Cake Now
             </Button>
@@ -1173,16 +1158,8 @@ const Index = () => {
               <Button
                 type="button"
                 size="lg"
-                onClick={() => {
-                  const el = document.getElementById('creator');
-                  if (el) {
-                    const y = el.getBoundingClientRect().top + window.scrollY - 80;
-                    window.scrollTo({ top: y, behavior: 'smooth' });
-                  } else {
-                    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                  }
-                }}
-                className="relative z-10 touch-manipulation btn-shimmer text-lg px-8"
+                onClick={() => navigate('/free-ai-cake-designer?ref=home_cta')}
+                className="relative z-10 touch-manipulation text-lg px-8"
               >
                 Create Your Next Masterpiece
               </Button>
@@ -1191,16 +1168,8 @@ const Index = () => {
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => {
-                    const el = document.getElementById('creator');
-                    if (el) {
-                      const y = el.getBoundingClientRect().top + window.scrollY - 80;
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    } else {
-                      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                    }
-                  }}
-                  className="relative z-10 touch-manipulation btn-shimmer text-lg px-8"
+                  onClick={() => navigate('/free-ai-cake-designer?ref=home_cta2')}
+                  className="relative z-10 touch-manipulation text-lg px-8"
                 >
                   Create a Cake Now
                 </Button>
