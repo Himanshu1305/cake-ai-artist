@@ -11,6 +11,7 @@ import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const EID_FALLBACK = [
   "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
@@ -21,6 +22,7 @@ const EID_FALLBACK = [
 ];
 
 const EidCakeDesigner = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(EID_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -257,7 +259,7 @@ const EidCakeDesigner = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/eid-cake-ideas" />
       <Footer />
     </div>

@@ -11,6 +11,7 @@ import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const GRADUATION_FALLBACK = [
   "https://images.unsplash.com/photo-1523294587484-bae6cc870010?w=400&h=400&fit=crop",
@@ -21,6 +22,7 @@ const GRADUATION_FALLBACK = [
 ];
 
 const GraduationCakeDesigner = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(GRADUATION_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -255,7 +257,7 @@ const GraduationCakeDesigner = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/graduation-cake-ideas" />
       <Footer />
     </div>

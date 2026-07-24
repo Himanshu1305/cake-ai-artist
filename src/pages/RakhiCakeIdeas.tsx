@@ -11,6 +11,7 @@ import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 import { RelatedTools } from "@/components/RelatedTools";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const RAKHI_FALLBACK = [
   "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=400&fit=crop",
@@ -21,6 +22,7 @@ const RAKHI_FALLBACK = [
 ];
 
 const RakhiCakeIdeas = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(RAKHI_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -264,7 +266,7 @@ const RakhiCakeIdeas = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/rakhi-cake-ideas" />
       <Footer />
     </div>

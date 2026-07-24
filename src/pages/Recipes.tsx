@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ChefHat, Clock, Users, Sparkles } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 interface Recipe {
   slug: string;
@@ -34,6 +35,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
 };
 
 const Recipes = () => {
+  const { detectedCountry } = useGeoContext();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -226,7 +228,7 @@ const Recipes = () => {
         )}
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <Footer />
     </div>
   );

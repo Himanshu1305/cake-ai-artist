@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const SEO_TITLE = "Free AI Party Planner — Plan Birthdays & Showers in Minutes";
 const SEO_DESC =
@@ -286,6 +287,7 @@ function PartyPlannerSEO() {
 }
 
 export default function PartyPlanner() {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -491,7 +493,7 @@ export default function PartyPlanner() {
           </div>
         )}
       </div>
-      {authChecked && <ExitIntentModal isLoggedIn={!!user} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={!!user} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <Footer />
     </div>
   );

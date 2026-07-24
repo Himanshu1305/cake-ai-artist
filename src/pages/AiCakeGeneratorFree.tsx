@@ -16,8 +16,10 @@ import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const AiCakeGeneratorFree = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
@@ -228,7 +230,7 @@ const AiCakeGeneratorFree = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/ai-cake-generator-free" />
       <Footer />
     </div>

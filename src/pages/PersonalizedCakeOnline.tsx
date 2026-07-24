@@ -11,6 +11,7 @@ import { BreadcrumbSchema, FAQSchema, HowToSchema } from "@/components/SEOSchema
 import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const PERSONALIZED_FALLBACK = [
   "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=400&fit=crop",
@@ -21,6 +22,7 @@ const PERSONALIZED_FALLBACK = [
 ];
 
 const PersonalizedCakeOnline = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(PERSONALIZED_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -263,7 +265,7 @@ const PersonalizedCakeOnline = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/personalized-cake-online" />
       <Footer />
     </div>

@@ -11,6 +11,7 @@ import { CheckCircle2, Sparkles, Zap, Heart, Star } from "lucide-react";
 import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 import { RelatedTools } from "@/components/RelatedTools";
+import { useGeoContext } from "@/contexts/GeoContext";
 
 const WEDDING_FALLBACK = [
   "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=400&fit=crop",
@@ -21,6 +22,7 @@ const WEDDING_FALLBACK = [
 ];
 
 const WeddingCakeDesigner = () => {
+  const { detectedCountry } = useGeoContext();
   const navigate = useNavigate();
   const [featuredCakes, setFeaturedCakes] = useState<string[]>(WEDDING_FALLBACK);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -268,7 +270,7 @@ const WeddingCakeDesigner = () => {
         </div>
       </section>
 
-      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country="US" />}
+      {authChecked && <ExitIntentModal isLoggedIn={isLoggedIn} isPremium={isPremium} country={detectedCountry || 'US'} />}
       <RelatedTools exclude="/wedding-cake-designer" />
       <Footer />
     </div>
