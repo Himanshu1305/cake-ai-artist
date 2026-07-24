@@ -188,7 +188,7 @@ const USALanding = () => {
         faqs={[
           { question: "Can I design American-themed cakes like 4th of July or Thanksgiving?", answer: "Yes — the AI cake designer supports 4th of July, Thanksgiving, Halloween, Christmas, Super Bowl, baby shower, graduation and all birthday themes popular in the USA." },
           { question: "Is there a free tier?", answer: "Yes — you get 5 free cake designs with no signup required. After that, paid plans start from $4.99/month." },
-          { question: "What's the pricing in USD?", answer: "Three plans in USD: Monthly $4.99/month, Yearly $19.99/year, or Lifetime $49 once. The free plan lets you try 5 designs instantly." },
+          { question: "What's the pricing in USD?", answer: "Three plans in USD: Monthly $4.99/month, Yearly $29/year, or Lifetime $49 once. The free plan lets you try 5 designs instantly." },
         ]}
       />
 
