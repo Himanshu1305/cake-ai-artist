@@ -35,33 +35,17 @@ If Lovable already fixed the same thing, `git rebase --skip`.
 
 Ordered by user impact.
 
-**2.1 Exit modal shows USD to non-US visitors on ~13 pages**
-`ExitIntentModal` takes `country`, defaulting to `'US'`, and silently falls back to USD for any
-unmapped value. The 5 country landings and `Index.tsx` pass region correctly — but these pass a
-literal `country="US"` and read no geo at all:
-`EgglessCakeDesign:267` · `WeddingCakeDesigner:271` · `PhotoCakeMaker:271` · `PersonalizedCakeOnline:266`
-· `EidCakeDesigner:260` · `AiBirthdayCakeWithName:196` · `RakhiCakeIdeas:267` · `Recipes:229`
-· `AiCakeGeneratorFree:231` · `ThreeDCakeDesigner:322` · `AnniversaryCakeDesigner:267`
-· `GraduationCakeDesigner:258` · `PartyPlanner:494`
-→ An Indian visitor sees "$49 lifetime" on those pages while the footer and pricing page show ₹.
-
-**2.2 Pricing has drifted between hardcoded tables**
-Three independent copies: `PricingPlans.tsx:20-47` · `ExitIntentModal.tsx:34-47` ·
-FAQ pages (`FAQ.tsx:20-23`, `PremiumComparison.tsx:9`, inline in landings).
-**Confirmed live inconsistency:** US yearly is `$29` everywhere except `USALanding.tsx:191`
-which states **"$19.99/year"** in an FAQ answer.
-
-**2.3 Lifetime-only users are treated as non-premium on ~15 pages**
+**2.1 Lifetime-only users are treated as non-premium on ~15 pages**
 Only `PartyPlanner.tsx:316` and `usePartyPackAccess.ts:47` check `is_premium || lifetime_access`.
 Everywhere else checks `is_premium` alone. `Admin.tsx:714-718` sets both together, so this may not
 trigger today — but any grant path that sets only `lifetime_access` breaks premium for that user.
 
-**2.4 Social proof numbers are copy-pasted across ~25 files and already inconsistent**
+**2.2 Social proof numbers are copy-pasted across ~25 files and already inconsistent**
 `4.9` / `2847` almost everywhere, but `PartyPlanner.tsx:133` uses `4.8` / `1240`, and
 `EgglessCakeDesign.tsx:174` says "20+ occasions". Changing the marketing number means editing
 ~25 files.
 
-**2.5 Swallowed errors hide real failures**
+**2.3 Swallowed errors hide real failures**
 `generate-blog-post:393,514` (blog-image dedup) · `generate-complete-cake:786,873` (background
 vendor message) · `send-reengagement-sequence:276,336,400` (per-recipient send reason discarded).
 
@@ -134,7 +118,7 @@ wrong. Stop fixing. Re-identify the element.
    "works on desktop, dead on mobile" report.
 4. **Is the change deployed?** Verify a behavioural difference. Old behaviour after a push =
    stale bundle; stop shipping more fixes into the void.
-5. **Check prop defaults.** Three components silently default to `US`/no-op (§2.1, §8 of survey).
+5. **Check prop defaults.** Components can silently default to `US`/no-op (§8 of survey; the `ExitIntentModal` instance was fixed Jul 24 — see §6, but `PostShareUpgradeModal`/`PricingPlans` still default `country="US"`).
 
 ```bash
 grep -rn "ComponentName" src/ --include="*.tsx"   # who mounts it, with what props
@@ -156,7 +140,7 @@ console.log('element at centre:', document.elementFromPoint(r.left+r.width/2, r.
 
 ## 5. Key facts
 
-**Pricing — source of truth is `PricingPlans.tsx` `PRICING`** (but see §2.2 for drift)
+**Pricing — source of truth is `PricingPlans.tsx` `PRICING`** (prior copy drift corrected Jul 24 — see §6)
 IN ₹299/₹1,999/₹2,999 · GB £4.99/£29/£49 · CA C$6.99/C$39/C$69 · AU A$7.99/A$49/A$79 · US $4.99/$29/$49
 
 **Limits** — free: 5 lifetime + `bonus_generations` from referrals · premium: 150/yr · admin: 500/yr.
@@ -179,6 +163,8 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Jul 24 | Non-US visitors saw USD in the exit-intent modal on 13 pages | `ExitIntentModal` defaults `country` to `US` and falls back to USD for unmapped values; 13 pages passed a literal `country="US"` and read no geo. Wired each to `useGeoContext().detectedCountry` → `country={detectedCountry \|\| 'US'}` (matches Index.tsx). USALanding intentionally keeps `US`. |
+| Jul 24 | Pricing copy drifted from the source-of-truth table | Prices hardcoded in several places instead of read from `PricingPlans.PRICING`. `USALanding` FAQ said yearly `$19.99` (real `$29`); `PremiumComparison` had no `US` key so US/unmapped visitors fell back to a stale `$9.99/mo` (real `$4.99`). Corrected both; other copies already matched. |
 | Jul 24 | Mobile CTA dead (4 wrong fixes first) | `StickyMobileCTA` href defaulted to `/`; mounted only on country landings, not `Index.tsx` |
 | Jul 23 | Low CTR on high-impression pages | Meta rewrites ×4 pages + 5 blog posts; AEO answer/definition blocks on 15 pages |
 | Jul 23 | 250 pages not indexed | `noindex` on `/cake/:id`; 7 bad sitemap URLs removed |
