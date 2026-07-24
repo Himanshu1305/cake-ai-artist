@@ -12,7 +12,7 @@ interface StickyMobileCTAProps {
  * because desktop already shows the primary CTA in the hero.
  */
 export const StickyMobileCTA = ({
-  href = "/",
+  href = "/free-ai-cake-designer?ref=sticky_mobile",
   label = "Design Your Cake — Free",
   subLabel = "30 seconds · No card required",
 }: StickyMobileCTAProps) => {
