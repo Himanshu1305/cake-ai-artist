@@ -458,9 +458,9 @@ const Index = () => {
       <section className="relative overflow-hidden bg-gradient-to-b from-surface via-background to-party-pink/5">
         {/* Decorative blurred gold orbs */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -left-16 w-96 h-96 rounded-full bg-gold/20 blur-3xl" />
-          <div className="absolute top-1/3 -right-20 w-[28rem] h-[28rem] rounded-full bg-party-pink/15 blur-3xl" />
-          <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
+          <div className="pointer-events-none absolute -top-24 -left-16 w-96 h-96 rounded-full bg-gold/20 blur-3xl" />
+          <div className="pointer-events-none absolute top-1/3 -right-20 w-[28rem] h-[28rem] rounded-full bg-party-pink/15 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
         </div>
 
         <div className="container relative mx-auto px-4 py-6 md:py-12">
@@ -493,11 +493,17 @@ const Index = () => {
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Button
+                  type="button"
                   size="lg"
-                  className="bg-gradient-gold hover:shadow-gold text-base md:text-lg px-7 py-6 font-semibold btn-shimmer"
+                  className="relative z-10 touch-manipulation bg-gradient-gold hover:shadow-gold text-base md:text-lg px-7 py-6 font-semibold btn-shimmer"
                   onClick={() => {
                     const el = document.getElementById('creator');
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (el) {
+                      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    } else {
+                      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                    }
                   }}
                 >
                   Design Your Cake Free →
@@ -1164,19 +1170,37 @@ const Index = () => {
                 </Button>
               </>
             ) : isPremium ? (
-              <Button 
-                size="lg" 
-                onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
-                className="btn-shimmer text-lg px-8"
+              <Button
+                type="button"
+                size="lg"
+                onClick={() => {
+                  const el = document.getElementById('creator');
+                  if (el) {
+                    const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                  } else {
+                    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                  }
+                }}
+                className="relative z-10 touch-manipulation btn-shimmer text-lg px-8"
               >
                 Create Your Next Masterpiece
               </Button>
             ) : (
               <>
-                <Button 
-                  size="lg" 
-                  onClick={() => document.getElementById('creator')?.scrollIntoView({ behavior: 'smooth' })} 
-                  className="btn-shimmer text-lg px-8"
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => {
+                    const el = document.getElementById('creator');
+                    if (el) {
+                      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    } else {
+                      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                    }
+                  }}
+                  className="relative z-10 touch-manipulation btn-shimmer text-lg px-8"
                 >
                   Create a Cake Now
                 </Button>
