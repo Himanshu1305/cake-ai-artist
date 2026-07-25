@@ -332,10 +332,8 @@ const Index = () => {
         </Suspense>
       </DeferredMount>
 
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="US" />
-      
       {/* Navigation Header */}
-      <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: isBannerVisible ? `${bannerHeight}px` : '0px' }}>
+      <nav className="sticky z-40 bg-gradient-to-b from-party-pink/10 via-background/95 to-background backdrop-blur-md transition-all duration-300" style={{ top: 'var(--banner-h, 0px)' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-party-pink hover:opacity-80 transition-opacity drop-shadow-[0_0_8px_hsl(var(--party-pink)/0.4)]">
@@ -455,12 +453,12 @@ const Index = () => {
       </nav>
 
       {/* Hero Section - Premium / Elegant */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-surface via-background to-party-pink/5">
-        {/* Decorative blurred gold orbs */}
+      <section className="relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+        {/* Decorative blurred party orbs — deeper so the hero anchors visually */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="pointer-events-none absolute -top-24 -left-16 w-96 h-96 rounded-full bg-gold/20 blur-3xl" />
-          <div className="pointer-events-none absolute top-1/3 -right-20 w-[28rem] h-[28rem] rounded-full bg-party-pink/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
+          <div className="pointer-events-none absolute -top-24 -left-16 w-[28rem] h-[28rem] rounded-full bg-gold/35 blur-3xl" />
+          <div className="pointer-events-none absolute top-1/4 -right-24 w-[32rem] h-[32rem] rounded-full bg-party-pink/35 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 w-96 h-96 rounded-full bg-party-purple/25 blur-3xl" />
         </div>
 
         <div className="container relative mx-auto px-4 py-6 md:py-12">

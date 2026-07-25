@@ -14,11 +14,18 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
   useEffect(() => {
     onVisibilityChange?.(true);
     const measure = () => {
-      if (ref.current) onHeightChange?.(ref.current.offsetHeight);
+      const h = ref.current?.offsetHeight ?? 0;
+      if (h) {
+        onHeightChange?.(h);
+        // Expose as a CSS var so any sticky element on any page can offset itself.
+        document.documentElement.style.setProperty("--banner-h", `${h}px`);
+      }
     };
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+    };
   }, [onVisibilityChange, onHeightChange]);
 
   return (
@@ -42,3 +49,4 @@ export const UrgencyBanner = ({ onVisibilityChange, onHeightChange }: UrgencyBan
 };
 
 export default UrgencyBanner;
+

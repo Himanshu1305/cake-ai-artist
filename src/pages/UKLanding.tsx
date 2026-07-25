@@ -253,7 +253,7 @@ const UKLanding = () => {
 
       <FloatingEmojis />
       <ConfettiRain count={32} />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="UK" />
+      
 
       <SiteHeader />
 
