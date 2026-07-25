@@ -453,12 +453,12 @@ const Index = () => {
       </nav>
 
       {/* Hero Section - Premium / Elegant */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-surface via-background to-party-pink/5">
-        {/* Decorative blurred gold orbs */}
+      <section className="relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+        {/* Decorative blurred party orbs — deeper so the hero anchors visually */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="pointer-events-none absolute -top-24 -left-16 w-96 h-96 rounded-full bg-gold/20 blur-3xl" />
-          <div className="pointer-events-none absolute top-1/3 -right-20 w-[28rem] h-[28rem] rounded-full bg-party-pink/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
+          <div className="pointer-events-none absolute -top-24 -left-16 w-[28rem] h-[28rem] rounded-full bg-gold/35 blur-3xl" />
+          <div className="pointer-events-none absolute top-1/4 -right-24 w-[32rem] h-[32rem] rounded-full bg-party-pink/35 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 w-96 h-96 rounded-full bg-party-purple/25 blur-3xl" />
         </div>
 
         <div className="container relative mx-auto px-4 py-6 md:py-12">
