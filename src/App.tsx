@@ -92,6 +92,7 @@ const App = () => {
               {!/^\/cake\//.test(window.location.pathname) && <CookieConsent />}
               <GeoRedirectWrapper />
               <AuthCountrySync />
+              {!/^\/(embed|admin|auth)(\/|$)/.test(window.location.pathname) && <UrgencyBanner />}
               <Suspense fallback={
                 <div className="fixed inset-0 flex items-center justify-center bg-background">
                   <div className="w-8 h-8 border-4 border-party-pink border-t-transparent rounded-full animate-spin" />
