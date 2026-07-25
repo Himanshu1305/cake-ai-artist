@@ -106,6 +106,8 @@ export default {
         'gradient-surface': 'var(--gradient-surface)',
         'gradient-party': 'var(--gradient-party)',
         'gradient-celebration': 'var(--gradient-celebration)',
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-subtle': 'var(--gradient-subtle)',
       },
       boxShadow: {
         'elegant': 'var(--shadow-elegant)',

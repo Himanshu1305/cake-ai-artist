@@ -235,7 +235,7 @@ const USALanding = () => {
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+      <section className="bg-gradient-hero"><div className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="space-y-5 text-center md:text-left">
             <motion.h1
@@ -283,7 +283,7 @@ const USALanding = () => {
             Cake AI Artist is a free AI cake generator for the USA that designs a custom cake online from a short text prompt. Describe the occasion, name, flavor and style, and the AI returns three photorealistic views in about 30 seconds, spelling any name correctly. Your first 5 designs are free, no signup needed.
           </AnswerBox>
         </div>
-      </section>
+      </div></section>
 
       {/* Feature Highlight */}
       <div className="container mx-auto px-4 py-12">

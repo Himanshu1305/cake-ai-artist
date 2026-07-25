@@ -258,7 +258,7 @@ const UKLanding = () => {
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+      <section className="bg-gradient-hero"><div className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="space-y-5 text-center md:text-left">
             <motion.h1
@@ -306,7 +306,7 @@ const UKLanding = () => {
             Cake AI Artist is a free AI cake designer for the UK. Type a name, pick an occasion and choose a style, and it generates a photorealistic personalised birthday cake with the name spelled correctly. You get three views of each design in about 30 seconds online, with your first 5 designs completely free — no signup needed.
           </AnswerBox>
         </div>
-      </section>
+      </div></section>
 
       {/* Feature Highlight with Cake Image */}
       <div className="container mx-auto px-4 py-12">

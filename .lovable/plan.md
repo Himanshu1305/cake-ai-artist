@@ -1,58 +1,58 @@
-# Fix visual consistency + homepage readability
+## Is pink "bad"? No — pink is on-brand and on-category.
 
-## What's wrong (verified from live screenshots)
+Quick analysis of what's actually going on:
 
-**1. Inconsistent backgrounds across pages**
-Each page uses its own gradient wrapper, so the site feels like several different apps stitched together:
-- Home (UK landing at `/`) — pink/orange balloon photo behind hero, then cream
-- `/about` — peach/orange gradient
-- `/blog`, `/gallery`, `/how-it-works` — purple/lavender gradient
-- `/faq` — pink → purple gradient
-- `/pricing` — mostly cream (this is the target look)
-- Body token is already correct (`--background: 35 50% 98%` cream) — the drift comes from per-page section wrappers overriding it with `bg-gradient-*`, `from-party-*`, and full-bleed hero images.
+- **Category convention.** Cake / bakery / celebration sites overwhelmingly use warm pinks, blush, and coral (Milk Bar, Magnolia Bakery, Sprinkles, Flour Shop). A cream/white base makes the site feel like a SaaS dashboard, not a party brand.
+- **SEO/brand fit.** Semrush shows your traffic comes from birthday / celebration / "cake with name" intent (`ai birthday cake`, `birthday cake and name` — 590/mo, `40th birthday cake` — 1,900/mo). Those visitors expect celebratory warmth, not neutral cream.
+- **What actually broke earlier wasn't the pink.** The real problems were: (1) five different gradient themes across pages (peach on /about, purple on /blog, pink-purple on /gallery) — that inconsistency is what felt "off", not pink itself; (2) white H1 sitting on a bright photo with only a weak scrim — a contrast bug, not a color-choice bug.
 
-**2. Homepage hero is unreadable (both mobile and desktop)**
-On `/` (renders `UKLanding` via geo routing):
-- The H1 "The UK's Favourite Free AI Cake Generator" sits directly on a bright balloon photo with no scrim → text disappears into the image.
-- The "QUICK ANSWER" `AnswerBox` overlaps the hero image on mobile — it's positioned inside the hero band instead of below it.
-- Large sections below the hero render nearly invisible text ("Actually Looks Good" etc.) because foreground color is too light on the pastel gradient.
-- Overall the hero band is too tall on mobile, pushing all real content off-screen.
+So the fix is: **bring pink back, but as one consistent, restrained system** — and keep the readable stacked hero we just built.
 
-The same hero pattern is used in `USALanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding` — fix once, apply to all five.
+---
 
-## Fix plan
+## Plan
 
-### A. Unify page backgrounds (site-wide)
-1. Establish a single canonical page shell: cream `bg-background` with an optional subtle top gradient (`bg-gradient-surface`) — matching `/pricing`.
-2. Remove per-page full-bleed color gradients from:
-   - `src/pages/About.tsx`
-   - `src/pages/Blog.tsx`
-   - `src/pages/Gallery.tsx`
-   - `src/pages/HowItWorks.tsx`
-   - `src/pages/FAQ.tsx`
-   - `src/pages/CommunityGallery.tsx`
-   - the five landing pages (`UKLanding`, `USALanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding`)
-3. Keep accent color only inside hero eyebrow chips, buttons, and card highlights — never as full-page backgrounds.
-4. Keep `UrgencyBanner` (top pink bar) as the single site-wide color accent.
+### 1. New canonical background — soft blush, not cream
+Update `--background` in `src/index.css` from cream (`35 50% 98%`) to a warm blush (`340 60% 97%` — barely-there pink wash). Nudge `--surface` and `--muted` to the same hue family so cards still pop against the page. Result: every page reads as pink-tinted without any per-page gradient.
 
-### B. Fix homepage hero readability
-In the shared landing hero block (used by all five country landings):
-1. Replace the full-bleed balloon photo with a contained hero: photo on the right (desktop) or as a smaller framed image below the copy (mobile), never behind the H1.
-2. Give the H1/subhead a solid cream surface so text always has ≥4.5:1 contrast; drop the current gradient-over-photo treatment that makes the title fade out.
-3. Move `AnswerBox` (QUICK ANSWER) out of the hero band into its own section directly below, with normal card styling — so it never overlaps the hero image on mobile.
-4. Tighten hero vertical padding on mobile (`py-8` instead of the current tall band) so the fold shows the CTA + first proof section, not empty gradient.
-5. Audit muted-text usage in "Why People Love This" and similar sections — swap `text-muted-foreground` on pastel backgrounds for `text-foreground` where contrast fails.
+Remove the leftover `bg-gradient-celebration` / `bg-gradient-subtle` / `bg-gradient-surface` wrappers so pages inherit this one background — no more purple `/blog`, peach `/about`, lavender `/how-it-works`.
 
-### C. Verify
-- Playwright screenshot pass across `/`, `/pricing`, `/gallery`, `/blog`, `/about`, `/how-it-works`, `/faq`, `/free-ai-cake-designer` on mobile (390px) and desktop (1280px).
-- Confirm: (a) every page shares the cream shell, (b) hero H1 and QUICK ANSWER never overlap the hero image, (c) all body copy is legible.
+### 2. Add a "hero band" pink accent
+Introduce `--gradient-hero: linear-gradient(180deg, hsl(340 75% 94%), hsl(35 50% 98%))` — a soft blush-to-cream vertical fade — and apply it only to the hero `<section>` on the 5 country landings and `/`. This gives back the celebratory pink feel at the top of the page without repeating the mistake of coloring the whole page differently everywhere.
 
-## Out of scope
-- No changes to functionality, routing, SEO copy, or the design tokens themselves.
-- No redesign of individual sections beyond the hero — just background unification + hero fix.
-- Country geo-routing behavior stays as-is; only the shared landing hero markup changes.
+### 3. Keep the readable hero structure (don't revert)
+Keep the two-column stacked layout from the previous fix (H1 on solid surface, contained image beside/below, AnswerBox below hero). We're only changing the *color wash behind it*, not going back to white-text-on-photo.
 
-## Technical notes
-- Shared hero markup currently lives inline in each of the five `*Landing.tsx` files (they were forked). I'll extract the hero into a single `LandingHero` component in `src/components/` so the fix applies once and future drift is prevented.
-- Backgrounds are controlled by wrapper `div`s using Tailwind gradient utilities; replacing them with `bg-background` (or removing the wrapper) is a mechanical edit per file.
-- No CSS token changes needed — `--background` is already the correct cream.
+### 4. Re-tint supporting tokens for cohesion
+- `--muted-foreground`: slightly warmer to stay legible on blush.
+- `--border`: shift to `340 25% 90%` so card edges tie into the pink base.
+- Keep `--primary` (party-pink) and gold accents unchanged — they already work.
+
+### 5. Sweep for lingering per-page gradients
+Audit and remove/replace any remaining `bg-gradient-celebration|subtle|surface` at the top-level of pages so nothing overrides the new blush base. Section-level accent gradients (feature cards, CTAs) stay.
+
+### 6. Verify
+- Screenshot `/`, `/india`, `/uk`, `/usa`, `/blog`, `/gallery`, `/about`, `/how-it-works`, `/faq`, `/pricing` at mobile + desktop.
+- Confirm: same pink base everywhere, H1 legible, hero image no longer sitting under text, AnswerBox below the hero.
+
+---
+
+## Technical details
+
+**Files to edit:**
+- `src/index.css` — update `:root` tokens: `--background`, `--surface`, `--muted`, `--border`, `--muted-foreground`; add `--gradient-hero`.
+- `tailwind.config.ts` — add `'gradient-hero': 'var(--gradient-hero)'` under `backgroundImage`.
+- `src/pages/UKLanding.tsx`, `USALanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx` — add `bg-gradient-hero` to the hero `<section>` wrapper.
+- `src/pages/Index.tsx` — same hero-band accent if it renders its own hero at `/`.
+- Sweep: `rg "bg-gradient-(celebration|subtle|surface)"` and remove any top-level page wrappers still using them; leave section-level accents alone.
+
+**Tokens (HSL, per design system):**
+```
+--background: 340 60% 97%;   /* soft blush wash */
+--surface:    340 40% 98%;
+--muted:      340 30% 94%;
+--border:     340 25% 90%;
+--gradient-hero: linear-gradient(180deg, hsl(340 75% 94%), hsl(340 60% 97%));
+```
+
+**Out of scope:** no changes to typography, buttons, or component logic. Purely the color base + hero accent band.

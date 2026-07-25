@@ -232,7 +232,7 @@ const IndiaLanding = () => {
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+      <section className="bg-gradient-hero"><div className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="space-y-5 text-center md:text-left">
             <motion.h1
@@ -288,7 +288,7 @@ const IndiaLanding = () => {
             Cake AI Artist is a free online AI cake designer for India that turns a short description into a personalised cake design. Create birthday, Diwali and eggless cake designs — with any name spelled correctly — in about 30 seconds. You get three views per cake, pricing in ₹, and your first 5 designs free.
           </AnswerBox>
         </div>
-      </section>
+      </div></section>
 
       {/* Feature Highlight with Cake Image */}
       <div className="container mx-auto px-4 py-12">
