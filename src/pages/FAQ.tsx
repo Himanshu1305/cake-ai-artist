@@ -32,7 +32,7 @@ const FAQ = () => {
     return PRICING_LOOKUP[region] || PRICING_LOOKUP.US;
   }, [detectedCountry, location.pathname, location.search]);
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>AI Cake Designer FAQ — Your Questions Answered</title>
         <meta name="description" content="Answers about the best AI cake designer — pricing, customization, downloads, commercial use & more for your personalized cake." />
