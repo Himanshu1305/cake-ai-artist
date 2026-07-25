@@ -161,7 +161,7 @@ const UKLanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <Helmet>
         <title>Birthday Cake With Name UK — Free AI Cake Maker (Better Than ChatGPT)</title>
         <meta name="description" content="Make a personalised birthday cake with name & photo in 30 seconds. Free UK AI cake generator with 50+ themes — sharper, faster and more realistic than ChatGPT or Gemini." />

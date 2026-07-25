@@ -141,7 +141,7 @@ const CanadaLanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <Helmet>
         <title>AI Cake Generator Canada — Birthday Cake AI Designer</title>
         <meta name="description" content="Canada's #1 AI cake generator. Design personalized AI birthday cakes, anniversary, wedding, Canada Day & hockey cakes in 30 seconds. Free." />

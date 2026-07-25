@@ -258,14 +258,14 @@ const Gallery = () => {
 
   if (loading || isCheckingCountry) {
     return (
-      <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-party-pink" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-celebration">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>My Gallery - Your Best Virtual Cakes | Cake AI Artist</title>
         <meta name="description" content="View and manage your personalized virtual cakes created with the best AI cake generator. Download, share, and organize your custom AI-generated cake designs." />

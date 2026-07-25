@@ -9,7 +9,7 @@ import { BreadcrumbSchema } from "@/components/SEOSchema";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-gradient-celebration">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>About Cake AI Artist — The Best AI Cake Designer Online</title>
         <meta name="description" content="Cake AI Artist is the best AI cake designer for personalized birthday, anniversary, wedding & celebration cakes. Here's the story behind the platform." />
