@@ -11,6 +11,7 @@ import { GeoProvider } from "@/contexts/GeoContext";
 import { AuthCountrySync } from "@/components/AuthCountrySync";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { OrganizationSchema, WebSiteSchema } from "@/components/SEOSchema";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
