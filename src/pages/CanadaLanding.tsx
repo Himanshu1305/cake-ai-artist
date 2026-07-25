@@ -230,7 +230,7 @@ const CanadaLanding = () => {
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+      <section className="bg-gradient-hero"><div className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="space-y-5 text-center md:text-left">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
@@ -254,7 +254,7 @@ const CanadaLanding = () => {
             Yes — you can design a birthday cake online for free with Cake AI Artist, Canada's AI cake generator. Just enter a name, occasion and style, and the tool returns three photorealistic views of a custom cake in about 30 seconds. Your first 5 designs are free, names are always spelled correctly, and there is no signup to start.
           </AnswerBox>
         </div>
-      </section>
+      </div></section>
 
       {/* Feature Highlight */}
       <div className="container mx-auto px-4 py-12">
