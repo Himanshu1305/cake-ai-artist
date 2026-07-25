@@ -231,40 +231,31 @@ const IndiaLanding = () => {
 
       <SiteHeader />
 
-      {/* Hero Section with Image */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
-        <img
-          src={partyHero}
-          alt="Vibrant birthday party celebration"
-          className="w-full h-auto md:h-[600px] object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4 max-w-4xl">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="space-y-5 text-center md:text-left">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
+              transition={{ delay: 0.2 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground"
             >
               🇮🇳 India's #1 Free AI Cake Generator with Name
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-white text-lg md:text-xl drop-shadow-md"
+              transition={{ delay: 0.3 }}
+              className="text-base md:text-lg text-muted-foreground"
             >
-              Design AI cakes for birthdays, anniversaries, weddings &amp; every celebration — ready in 30 seconds, priced in ₹
+              Design AI cakes for birthdays, anniversaries, weddings &amp; every celebration — ready in 30 seconds, priced in ₹.
             </motion.p>
-            <AnswerBox stats={["~30 seconds", "Priced in ₹", "5 free designs", "Eggless & Diwali themes"]}>
-              Cake AI Artist is a free online AI cake designer for India that turns a short description into a personalised cake design. Create birthday, Diwali and eggless cake designs — with any name spelled correctly — in about 30 seconds. You get three views per cake, pricing in ₹, and your first 5 designs free.
-            </AnswerBox>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center"
+              transition={{ delay: 0.4 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start"
             >
               <Button
                 size="lg"
@@ -276,15 +267,28 @@ const IndiaLanding = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white/90 text-foreground text-lg px-8 py-6 font-bold border-2"
+                className="text-lg px-8 py-6 font-bold border-2"
                 onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 See Plans
               </Button>
             </motion.div>
           </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-elegant order-first md:order-last">
+            <img
+              src={partyHero}
+              alt="Vibrant birthday party celebration"
+              className="w-full h-56 sm:h-72 md:h-[420px] object-cover"
+              loading="eager"
+            />
+          </div>
         </div>
-      </div>
+        <div className="mt-8 md:mt-10 max-w-3xl mx-auto">
+          <AnswerBox stats={["~30 seconds", "Priced in ₹", "5 free designs", "Eggless & Diwali themes"]}>
+            Cake AI Artist is a free online AI cake designer for India that turns a short description into a personalised cake design. Create birthday, Diwali and eggless cake designs — with any name spelled correctly — in about 30 seconds. You get three views per cake, pricing in ₹, and your first 5 designs free.
+          </AnswerBox>
+        </div>
+      </section>
 
       {/* Feature Highlight with Cake Image */}
       <div className="container mx-auto px-4 py-12">
