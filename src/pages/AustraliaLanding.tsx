@@ -250,7 +250,7 @@ const AustraliaLanding = () => {
 
       <FloatingEmojis />
       <ConfettiRain count={32} />
-      <UrgencyBanner onVisibilityChange={setIsBannerVisible} onHeightChange={setBannerHeight} countryCode="AU" />
+      
 
       <SiteHeader />
 
