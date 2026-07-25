@@ -161,7 +161,7 @@ const AustraliaLanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>Free AI Cake Generator Australia — Design Custom Birthday Cakes in Seconds</title>
         <meta name="description" content="Australia's best free AI cake generator. Design custom birthday, wedding, Australia Day & celebration cakes with AI in 30 seconds. Loved by thousands of Aussies." />

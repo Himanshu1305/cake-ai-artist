@@ -144,7 +144,7 @@ const USALanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>Birthday Cake With Name & Photo — Free AI Cake Maker (Better Than ChatGPT)</title>
         <meta name="description" content="Create a personalized birthday cake with name & photo in 30 seconds. Free US AI cake generator with 50+ themes — sharper, faster and more realistic than ChatGPT or Gemini." />

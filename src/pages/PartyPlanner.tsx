@@ -369,7 +369,7 @@ export default function PartyPlanner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-celebration">
         <SiteHeader />
         <div className="flex items-center justify-center py-32">Loading…</div>
         <Footer />
