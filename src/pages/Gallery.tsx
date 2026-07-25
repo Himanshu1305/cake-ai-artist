@@ -258,7 +258,7 @@ const Gallery = () => {
 
   if (loading || isCheckingCountry) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-party-pink" />
       </div>
     );

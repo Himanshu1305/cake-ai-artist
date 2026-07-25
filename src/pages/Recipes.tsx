@@ -108,7 +108,7 @@ const Recipes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-celebration">
       <SiteHeader />
       <Helmet>
         <title>{title}</title>

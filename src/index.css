@@ -67,11 +67,11 @@ All colors MUST be HSL.
     
     /* Premium gradients with softer tones */
     --gradient-gold: linear-gradient(135deg, hsl(45 90% 58%), hsl(30 90% 63%));
-    --gradient-surface: linear-gradient(135deg, hsl(340 65% 95%), hsl(340 55% 91%));
+    --gradient-surface: linear-gradient(45deg, hsl(315 88% 82%), hsl(270 85% 82%), hsl(45 90% 82%));
     --gradient-party: linear-gradient(135deg, hsl(315 88% 62%), hsl(270 85% 72%), hsl(45 90% 58%));
     --gradient-celebration: linear-gradient(45deg, hsl(315 88% 82%), hsl(270 85% 82%), hsl(45 90% 82%));
     --gradient-hero: linear-gradient(180deg, hsl(335 85% 88%), hsl(340 72% 92%));
-    --gradient-subtle: linear-gradient(180deg, hsl(340 72% 92%), hsl(340 60% 95%));
+    --gradient-subtle: linear-gradient(45deg, hsl(315 88% 82%), hsl(270 85% 82%), hsl(45 90% 82%));
     
     /* Refined shadows */
     --shadow-elegant: 0 20px 40px -12px hsl(315 45% 65% / 0.25);

@@ -278,7 +278,7 @@ export default function SharedCake() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-muted to-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-celebration">
         <Loader2 className="h-10 w-10 animate-spin text-party-purple" />
       </div>
     );

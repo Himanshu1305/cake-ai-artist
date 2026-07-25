@@ -7,7 +7,7 @@ import { Helmet } from "react-helmet-async";
 
 const Advertising = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Advertising Disclosure - How We Use Ads | Cake AI Artist</title>
         <meta name="description" content="Learn about advertising on Cake AI Artist. Understand how we use Google AdSense, personalized ads, and your choices for ad preferences." />

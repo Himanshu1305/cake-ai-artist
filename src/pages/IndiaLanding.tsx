@@ -141,7 +141,7 @@ const IndiaLanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
         <title>Free AI Cake Designer India — Birthday, Diwali & Eggless</title>
         <meta name="description" content="Design birthday, Diwali & eggless cakes with India's free AI cake designer. Add any name, get a cake in 30 seconds — priced in ₹. Try 5 free, no signup." />

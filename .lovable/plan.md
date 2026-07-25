@@ -1,59 +1,47 @@
-## Goals
-1. Make the pink background actually pink (not near-white).
-2. Show the top urgency banner ("#1 AI Cake Generator… Loved in 30+ countries") on every page, not just landings.
-3. Restore the "fuller" feel of the homepage hero (the layout refactor from the last pass made it feel emptier and shifted the background image).
 
----
+## Problem
 
-## 1. Deeper, warmer pink (site-wide)
+Pages use 5 different background treatments today, so the pink homepage feel doesn't carry across. Audit result:
 
-In `src/index.css`:
-- `--background`: `340 60% 97%` → **`340 70% 92%`** (visibly blush instead of off-white).
-- `--surface`: bump saturation/darkness one step so cards still sit above the page.
-- `--muted`: `340 30% 94%` → **`340 45% 88%`** so muted chips read as pink, not gray.
-- `--border`: retint to `340 35% 85%` for cohesion.
-- `--gradient-hero`: `linear-gradient(180deg, hsl(340 80% 90%), hsl(340 70% 94%))` — deeper top, soft fade into the new page background.
-- Add a subtle `--gradient-page` band used on section wrappers so long pages get gentle pink variation instead of one flat tone.
+- `bg-gradient-celebration` (pink/purple/gold — the homepage look): Index, FreeCakeDesigner, Auth, Privacy, NotFound
+- `bg-gradient-surface` (pale pink): AiCakeGeneratorFree, AiBirthdayCakeWithName, AnniversaryCakeDesigner, EgglessCakeDesign, EidCakeDesigner, GraduationCakeDesigner, NamedCakePage, Occasions, PersonalizedCakeOnline, PhotoCakeMaker, Pricing, RakhiCakeIdeas, ThemedCakePage, ThreeDCakeDesigner, WeddingCakeDesigner
+- `bg-gradient-subtle` (undefined token → falls back to nothing): Contact, Terms, UseCases, BlogPost
+- Flat `bg-background`: About, Advertising, Blog, CommunityGallery, FAQ, HowItWorks, PartyPlanner, Recipes, and every country landing (USA/UK/India/Canada/Australia)
+- Ad‑hoc: BlogUnsubscribe (`from-background to-muted`), SharedCake (`from-muted to-background`)
 
-Dark mode tokens untouched.
+`ai-cake-generator-free` looks different because it uses `bg-gradient-surface` while Index uses `bg-gradient-celebration`.
 
-## 2. Global urgency banner
+## Goal
 
-Currently `UrgencyBanner` is mounted individually inside `Index.tsx` and each country landing (`USALanding`, `UKLanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding`). Every other page (Blog, About, Gallery, Pricing, Party Planner, FAQ, name pages, etc.) has no banner.
+One consistent pink celebration background site-wide — same as the homepage — with the same-tone lighter variant for utility screens so text stays readable.
 
-Fix:
-- Mount `<UrgencyBanner />` once in `src/App.tsx` (inside the Router, above `<Routes>`), driven by a small `BannerContext` that exposes `bannerHeight` + `isBannerVisible` so pages that still need to offset their sticky nav can read it.
-- Remove the per-page `<UrgencyBanner />` instances from `Index.tsx` and the 5 country landings so it isn't rendered twice.
-- Country detection stays: the global instance auto-detects country the same way the current one does; `countryCode` prop becomes optional.
-- Hidden routes (e.g. `/admin`, `/auth`, embedded editor routes) get a small pathname-based opt-out inside the global mount.
+## Approach
 
-## 3. Restore the "full" homepage hero
+1. Collapse the background tokens in `src/index.css` so every gradient resolves to the same pink family:
+   - Keep `--gradient-celebration` as the canonical page background (homepage look).
+   - Redefine `--gradient-surface` and `--gradient-subtle` to visually match `--gradient-celebration` (same hues, slightly softer) so any page already using them auto-inherits the homepage look with no per-file edits.
+   - Leave `--gradient-party` (the vivid CTA/button gradient) untouched.
 
-Last pass converted country landing heroes to a two-column grid, but the user is reporting the *homepage* (`Index.tsx`) also feels emptier and the background image shifted. Homepage hero itself wasn't restructured, so what changed is the background: the new near-white `--background` washes out the hero image and the decorative floating emojis are less visible.
+2. Update the content pages that currently use flat `bg-background` to `bg-gradient-celebration` so they match the homepage:
+   - Country landings: `USALanding`, `UKLanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding`
+   - Content hubs: `About`, `Advertising`, `Blog`, `CommunityGallery`, `FAQ`, `HowItWorks`, `PartyPlanner`, `Recipes`, `Gallery`
 
-Fix for `Index.tsx` hero section only:
-- Wrap the hero in a section that uses `background: var(--gradient-hero)` (the new deeper pink fade) plus a soft radial pink glow behind the hero image, so the hero visually anchors again.
-- Restore the hero image to its original position: full-bleed on the right on desktop, edge-to-edge on top on mobile, with `object-position: center 30%` so the cake stays framed after the background change.
-- Re-enable the decorative confetti/emoji layer above the hero image (was rendered but invisible against near-white).
-- Do not change any copy, CTAs, or the sections below the hero.
+3. Normalize the two ad‑hoc gradients (`BlogUnsubscribe`, `SharedCake`) to `bg-gradient-celebration`.
 
-Country landings keep the two-column grid from the previous fix (that's what made their hero text readable) — only the global background gets the deeper pink.
+4. Leave alone (intentionally neutral):
+   - Admin surfaces: `Admin`, `AdminBlogAnalytics`, `AdminLogoGenerator`
+   - Account/utility flows: `Settings`, `CompleteProfile`, `PartyRSVP`, `PublicParty`, `PartyPlannerDetail`, `RecipeDetail`
+   These are dashboards/forms where a strong pink hurts legibility.
 
-## Files touched
+5. Verify build + type-check, then spot-check `/ai-cake-generator-free`, `/pricing`, `/blog`, `/usa`, `/uk` to confirm they now match `/`.
 
-- `src/index.css` — deeper pink tokens + gradients.
-- `src/App.tsx` — mount global `UrgencyBanner`, add `BannerContext`.
-- `src/components/UrgencyBanner.tsx` — make `countryCode` optional, self-detect if missing, respect route opt-out.
-- `src/pages/Index.tsx` — remove local banner mount, restore hero background + image position.
-- `src/pages/USALanding.tsx`, `UKLanding.tsx`, `IndiaLanding.tsx`, `CanadaLanding.tsx`, `AustraliaLanding.tsx` — remove local banner mount, keep two-column hero, consume `bannerHeight` from context for sticky-nav offset.
+## Technical notes
 
-## Verification
-
-- Build + typecheck.
-- Playwright screenshot of `/`, `/blog`, `/pricing`, `/in`, `/uk` at 1280×1800 and mobile 390×844 to confirm: (a) pink is visibly pink, (b) banner is present on all five, (c) homepage hero image is back in its original spot and no longer feels empty.
+- Token redefinition happens once in `:root` inside `src/index.css` — no Tailwind config change needed since `bg-gradient-surface` / `bg-gradient-celebration` / `bg-gradient-subtle` are already mapped in `tailwind.config.ts`.
+- `bg-gradient-subtle` currently has no CSS variable, so pages using it render as transparent (falls through to body). Defining it fixes them automatically.
+- Only presentation classes change; no business logic touched.
 
 ## Out of scope
 
-- No copy, pricing, or feature-logic changes.
-- No dark-mode retune.
-- No changes to sections below the homepage hero.
+- Section-level gradients inside pages (hero cards, CTA bands) stay as-is.
+- Dark mode tokens untouched.
