@@ -99,7 +99,7 @@ const RakhiCakeIdeas = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Rakhi Cake Design Ideas 2026 — Free AI Cake Designer</title>
         <meta name="description" content="Design Raksha Bandhan cakes for your brother & sister with AI — add names & a message, get photorealistic rakhi cake ideas in 30 seconds. First 5 free." />

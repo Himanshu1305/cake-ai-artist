@@ -96,7 +96,7 @@ const EgglessCakeDesign = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Eggless Cake Design — Free AI Eggless Cake Designer</title>
         <meta name="description" content="Design eggless birthday and anniversary cakes free with AI. Add names, pick flavours, get photorealistic egg-free designs in 30 seconds to share with your baker (priced in ₹)." />

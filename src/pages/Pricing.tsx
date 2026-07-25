@@ -81,7 +81,7 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Pricing — Cake AI Artist Monthly, Yearly & Lifetime Plans</title>
         <meta name="description" content="Three simple plans: Monthly, Yearly or Lifetime. Pick the AI cake designer plan that suits your celebrations — clear local pricing, cancel anytime." />

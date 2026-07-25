@@ -100,7 +100,7 @@ const WeddingCakeDesigner = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Free AI Wedding Cake Designer — Design Your Dream Wedding Cake Online</title>
         <meta name="description" content="Design stunning AI wedding cakes online for free. From elegant tiered designs to rustic naked cakes — create your perfect wedding cake with AI in 30 seconds. Used by brides worldwide." />

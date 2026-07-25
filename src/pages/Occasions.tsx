@@ -133,7 +133,7 @@ const Occasions = () => {
     OCCASION_TYPES.find((o) => o.value === type)?.label ?? type;
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>My Occasions — Cake AI Artist</title>
         <meta name="description" content="Save upcoming birthdays, anniversaries and celebrations. Get reminders and design cakes in one click." />

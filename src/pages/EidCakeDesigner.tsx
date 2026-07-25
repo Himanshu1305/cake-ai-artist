@@ -96,7 +96,7 @@ const EidCakeDesigner = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Eid Cake Ideas — Free AI Eid Mubarak Cake Designer Online</title>
         <meta name="description" content="Design beautiful Eid Mubarak cakes with AI in 30 seconds. Personalised Eid al-Fitr and Eid al-Adha cake designs — free to try, no credit card needed." />

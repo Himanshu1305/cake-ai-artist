@@ -91,7 +91,7 @@ const NamedCakePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
