@@ -121,7 +121,7 @@ const CommunityGallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-celebration">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>AI Cake Gallery — Real AI Cakes & Birthday Cake AI</title>
         <meta name="description" content="Browse thousands of AI cakes designed by our community. AI birthday cakes, anniversary & wedding inspiration. Try the free AI cake generator." />

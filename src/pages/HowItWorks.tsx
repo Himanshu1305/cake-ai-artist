@@ -10,7 +10,7 @@ import { AnswerBox, DefinitionBox } from "@/components/AeoBlocks";
 
 const HowItWorks = () => {
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>How to Design a Cake with AI — Step-by-Step (Free)</title>
         <meta name="description" content="Learn how to design a cake with AI in 3 easy steps: type a name, pick an occasion, and get 3 personalized cake designs in 30 seconds. Free, no signup." />

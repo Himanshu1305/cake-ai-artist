@@ -424,7 +424,7 @@ const Blog = () => {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>AI Cake Blog — AI Cake Generator Tips & Inspiration</title>
         <meta name="description" content="AI cake design ideas, AI cake generator tips & personalized cake inspiration from the team behind the best AI cake designer online." />

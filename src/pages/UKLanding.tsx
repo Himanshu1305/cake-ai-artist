@@ -161,7 +161,7 @@ const UKLanding = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <Helmet>
         <title>Birthday Cake With Name UK — Free AI Cake Maker (Better Than ChatGPT)</title>
         <meta name="description" content="Make a personalised birthday cake with name & photo in 30 seconds. Free UK AI cake generator with 50+ themes — sharper, faster and more realistic than ChatGPT or Gemini." />
@@ -257,39 +257,31 @@ const UKLanding = () => {
 
       <SiteHeader />
 
-      {/* Hero Section with Image */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
-        <img
-          src={partyHero}
-          alt="Vibrant birthday party celebration"
-          className="w-full h-auto md:h-[600px] object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4 max-w-4xl">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="space-y-5 text-center md:text-left">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
+              transition={{ delay: 0.2 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground"
             >
               🇬🇧 The UK's Favourite Free AI Cake Generator
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-white text-lg md:text-xl drop-shadow-md"
+              transition={{ delay: 0.3 }}
+              className="text-base md:text-lg text-muted-foreground"
             >
-              Design personalised birthday, wedding &amp; celebration cakes in 30 seconds — free to try, no signup needed
+              Design personalised birthday, wedding &amp; celebration cakes in 30 seconds — free to try, no signup needed.
             </motion.p>
-            <AnswerBox stats={["~30 seconds","5 free designs","Any name, spelled right","3 views per cake"]}>
-              Cake AI Artist is a free AI cake designer for the UK. Type a name, pick an occasion and choose a style, and it generates a photorealistic personalised birthday cake with the name spelled correctly. You get three views of each design in about 30 seconds online, with your first 5 designs completely free — no signup needed.
-            </AnswerBox>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
+              className="flex justify-center md:justify-start"
             >
               <Button
                 size="lg"
@@ -300,8 +292,21 @@ const UKLanding = () => {
               </Button>
             </motion.div>
           </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-elegant order-first md:order-last">
+            <img
+              src={partyHero}
+              alt="Vibrant birthday party celebration"
+              className="w-full h-56 sm:h-72 md:h-[420px] object-cover"
+              loading="eager"
+            />
+          </div>
         </div>
-      </div>
+        <div className="mt-8 md:mt-10 max-w-3xl mx-auto">
+          <AnswerBox stats={["~30 seconds","5 free designs","Any name, spelled right","3 views per cake"]}>
+            Cake AI Artist is a free AI cake designer for the UK. Type a name, pick an occasion and choose a style, and it generates a photorealistic personalised birthday cake with the name spelled correctly. You get three views of each design in about 30 seconds online, with your first 5 designs completely free — no signup needed.
+          </AnswerBox>
+        </div>
+      </section>
 
       {/* Feature Highlight with Cake Image */}
       <div className="container mx-auto px-4 py-12">

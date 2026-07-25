@@ -285,14 +285,14 @@ export default function Settings() {
 
   if (loading || isCheckingCountry) {
     return (
-      <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-celebration">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>Settings - Manage Your Preferences | Cake AI Artist</title>
         <meta name="description" content="Manage your Cake AI Artist account settings. Configure email reminders, notification preferences, and personalize your virtual cake designer experience." />

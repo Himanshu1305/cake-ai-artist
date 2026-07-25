@@ -97,14 +97,14 @@ const CompleteProfile = () => {
 
   if (checkingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-celebration flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-party-pink"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-celebration flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>Complete Your Profile - Cake AI Artist</title>
         <meta name="description" content="Complete your profile to access the best AI cake designer." />
