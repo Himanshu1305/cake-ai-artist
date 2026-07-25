@@ -230,32 +230,31 @@ const CanadaLanding = () => {
       <SiteHeader />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/80 z-10" />
-        <img loading="lazy" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-auto md:h-[600px] object-cover" />
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center space-y-6 px-4 max-w-4xl">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
+      <section className="container mx-auto px-4 pt-8 pb-10 md:pt-14 md:pb-16">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="space-y-5 text-center md:text-left">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
               🇨🇦 Canada's Favourite Free AI Cake Generator
             </motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-white text-lg md:text-xl drop-shadow-md">
-              Design custom birthday, Canada Day, hockey &amp; winter celebration cakes in 30 seconds — priced in CAD, no signup needed
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-base md:text-lg text-muted-foreground">
+              Design custom birthday, Canada Day, hockey &amp; winter celebration cakes in 30 seconds — priced in CAD, no signup needed.
             </motion.p>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex justify-center md:justify-start">
               <Button size="lg" className="bg-gradient-gold hover:shadow-gold text-lg px-8 py-6 font-bold pulse-glow" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
                 See Plans →
               </Button>
             </motion.div>
           </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-elegant order-first md:order-last">
+            <img loading="eager" decoding="async" src={partyHero} alt="Vibrant birthday party celebration" className="w-full h-56 sm:h-72 md:h-[420px] object-cover" />
+          </div>
         </div>
-      </div>
-
-      {/* AEO Answer Box */}
-      <div className="container mx-auto px-4 pt-8">
-        <AnswerBox stats={["~30 seconds","5 free designs","Any name, spelled right","3 views per cake"]}>
-          Yes — you can design a birthday cake online for free with Cake AI Artist, Canada's AI cake generator. Just enter a name, occasion and style, and the tool returns three photorealistic views of a custom cake in about 30 seconds. Your first 5 designs are free, names are always spelled correctly, and there is no signup to start.
-        </AnswerBox>
-      </div>
+        <div className="mt-8 md:mt-10 max-w-3xl mx-auto">
+          <AnswerBox stats={["~30 seconds","5 free designs","Any name, spelled right","3 views per cake"]}>
+            Yes — you can design a birthday cake online for free with Cake AI Artist, Canada's AI cake generator. Just enter a name, occasion and style, and the tool returns three photorealistic views of a custom cake in about 30 seconds. Your first 5 designs are free, names are always spelled correctly, and there is no signup to start.
+          </AnswerBox>
+        </div>
+      </section>
 
       {/* Feature Highlight */}
       <div className="container mx-auto px-4 py-12">
