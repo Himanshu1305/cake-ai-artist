@@ -96,7 +96,7 @@ const AnniversaryCakeDesigner = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Anniversary Cake Designer — Free AI Cake &amp; Photo</title>
         <meta name="description" content="Design free AI anniversary cakes with a photo and names for your husband or wife. Milestone 25th & 50th designs, names spelled right, ready in 30 seconds." />

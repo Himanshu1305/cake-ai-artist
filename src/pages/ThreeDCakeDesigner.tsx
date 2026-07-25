@@ -83,7 +83,7 @@ const ThreeDCakeDesigner = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Free 3D Cake Designer Online — AI Cake Design Tool</title>
         <meta name="description" content="Design photorealistic 3D cakes online for free. AI-powered 3D cake designer with realistic depth, lighting and custom decorations." />

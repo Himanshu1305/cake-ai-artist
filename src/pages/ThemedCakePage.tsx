@@ -83,7 +83,7 @@ const ThemedCakePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={metaDesc} />

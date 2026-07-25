@@ -95,7 +95,7 @@ const PersonalizedCakeOnline = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Personalised Cake Online — Free Custom Cake Designer with AI</title>
         <meta name="description" content="Design a personalised cake online for free. Custom AI cake designs with names, messages and themes in 30 seconds. The easiest custom cake maker online." />

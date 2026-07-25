@@ -72,7 +72,7 @@ const AiCakeGeneratorFree = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Free AI Cake Generator — Design Any Cake Online Free</title>
         <meta name="description" content="The best free AI cake generator online. Create personalised birthday, wedding and Eid cakes with AI in 30 seconds. No credit card needed." />

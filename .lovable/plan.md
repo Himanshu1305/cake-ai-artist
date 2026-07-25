@@ -1,47 +1,42 @@
-
 ## Problem
 
-Pages use 5 different background treatments today, so the pink homepage feel doesn't carry across. Audit result:
+`/anniversary-cake-designer` uses `bg-gradient-surface` on its root wrapper (line 99). Even though `--gradient-surface` and `--gradient-celebration` currently resolve to the same CSS string, several other pages still reference `bg-gradient-surface` too — and any future tweak to one token silently desyncs them from the homepage. The user is reading a real visual difference on this page, so we should normalize it to the canonical homepage class.
 
-- `bg-gradient-celebration` (pink/purple/gold — the homepage look): Index, FreeCakeDesigner, Auth, Privacy, NotFound
-- `bg-gradient-surface` (pale pink): AiCakeGeneratorFree, AiBirthdayCakeWithName, AnniversaryCakeDesigner, EgglessCakeDesign, EidCakeDesigner, GraduationCakeDesigner, NamedCakePage, Occasions, PersonalizedCakeOnline, PhotoCakeMaker, Pricing, RakhiCakeIdeas, ThemedCakePage, ThreeDCakeDesigner, WeddingCakeDesigner
-- `bg-gradient-subtle` (undefined token → falls back to nothing): Contact, Terms, UseCases, BlogPost
-- Flat `bg-background`: About, Advertising, Blog, CommunityGallery, FAQ, HowItWorks, PartyPlanner, Recipes, and every country landing (USA/UK/India/Canada/Australia)
-- Ad‑hoc: BlogUnsubscribe (`from-background to-muted`), SharedCake (`from-muted to-background`)
+A quick audit shows the same drift on other content pages still using `bg-gradient-surface`:
 
-`ai-cake-generator-free` looks different because it uses `bg-gradient-surface` while Index uses `bg-gradient-celebration`.
+- AiCakeGeneratorFree
+- AiBirthdayCakeWithName
+- AnniversaryCakeDesigner
+- EgglessCakeDesign
+- EidCakeDesigner
+- GraduationCakeDesigner
+- NamedCakePage
+- Occasions
+- PersonalizedCakeOnline
+- PhotoCakeMaker
+- Pricing
+- RakhiCakeIdeas
+- ThemedCakePage
+- ThreeDCakeDesigner
+- WeddingCakeDesigner
 
 ## Goal
 
-One consistent pink celebration background site-wide — same as the homepage — with the same-tone lighter variant for utility screens so text stays readable.
+One canonical pink background class site-wide so no page can drift again.
 
 ## Approach
 
-1. Collapse the background tokens in `src/index.css` so every gradient resolves to the same pink family:
-   - Keep `--gradient-celebration` as the canonical page background (homepage look).
-   - Redefine `--gradient-surface` and `--gradient-subtle` to visually match `--gradient-celebration` (same hues, slightly softer) so any page already using them auto-inherits the homepage look with no per-file edits.
-   - Leave `--gradient-party` (the vivid CTA/button gradient) untouched.
+1. Replace `bg-gradient-surface` with `bg-gradient-celebration` on the root wrapper of each page listed above (single-line class swap per file, presentation only).
+2. Leave `--gradient-surface` defined in `index.css` (kept in sync with celebration) so any stray usage elsewhere still renders correctly.
+3. No token, tailwind config, or component logic changes.
 
-2. Update the content pages that currently use flat `bg-background` to `bg-gradient-celebration` so they match the homepage:
-   - Country landings: `USALanding`, `UKLanding`, `IndiaLanding`, `CanadaLanding`, `AustraliaLanding`
-   - Content hubs: `About`, `Advertising`, `Blog`, `CommunityGallery`, `FAQ`, `HowItWorks`, `PartyPlanner`, `Recipes`, `Gallery`
+## Verification
 
-3. Normalize the two ad‑hoc gradients (`BlogUnsubscribe`, `SharedCake`) to `bg-gradient-celebration`.
-
-4. Leave alone (intentionally neutral):
-   - Admin surfaces: `Admin`, `AdminBlogAnalytics`, `AdminLogoGenerator`
-   - Account/utility flows: `Settings`, `CompleteProfile`, `PartyRSVP`, `PublicParty`, `PartyPlannerDetail`, `RecipeDetail`
-   These are dashboards/forms where a strong pink hurts legibility.
-
-5. Verify build + type-check, then spot-check `/ai-cake-generator-free`, `/pricing`, `/blog`, `/usa`, `/uk` to confirm they now match `/`.
-
-## Technical notes
-
-- Token redefinition happens once in `:root` inside `src/index.css` — no Tailwind config change needed since `bg-gradient-surface` / `bg-gradient-celebration` / `bg-gradient-subtle` are already mapped in `tailwind.config.ts`.
-- `bg-gradient-subtle` currently has no CSS variable, so pages using it render as transparent (falls through to body). Defining it fixes them automatically.
-- Only presentation classes change; no business logic touched.
+- Build + typecheck.
+- Spot-check `/anniversary-cake-designer`, `/pricing`, `/ai-cake-generator-free` against `/` — backgrounds should be visually identical.
 
 ## Out of scope
 
-- Section-level gradients inside pages (hero cards, CTA bands) stay as-is.
-- Dark mode tokens untouched.
+- Section-level gradients inside heroes/CTA bands.
+- Dark mode.
+- Any content or layout changes on these pages.

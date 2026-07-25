@@ -65,7 +65,7 @@ const AiBirthdayCakeWithName = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>AI Birthday Cake with Name — Free &amp; Spelled Correctly</title>
         <meta name="description" content="Add any name to a birthday cake with AI — spelled correctly, every time. Short, long or unusual names all work. Free in 30 seconds, no signup." />

@@ -96,7 +96,7 @@ const GraduationCakeDesigner = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Graduation Cake Ideas 2026 — Free AI Cake Designer</title>
         <meta name="description" content="Graduation cake ideas for 2026 — design one free with AI in 30 seconds. Personalized with the grad's name, Class of 2026 & school colours. No credit card." />

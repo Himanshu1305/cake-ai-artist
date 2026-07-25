@@ -99,7 +99,7 @@ const PhotoCakeMaker = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-screen bg-gradient-celebration">
       <Helmet>
         <title>Free Photo Cake Maker — Add Photos to Cakes Online with AI</title>
         <meta name="description" content="Create stunning photo cakes online for free. Upload a photo and our AI designs a beautiful personalised cake with your image in 30 seconds. No skills needed." />
