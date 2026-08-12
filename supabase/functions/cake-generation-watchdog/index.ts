@@ -15,6 +15,9 @@ const ALERT_EMAIL = "himanshu1305@gmail.com";
 // killed healthy jobs at 2 min which surfaced as "stuck at 75%" in the UI.
 const STUCK_THRESHOLD_MINUTES = 5;
 const ALERT_COOLDOWN_MINUTES = 60;
+// Credit exhaustion is a billing outage, not a flaky model: it never self-heals
+// and it kills 100% of generations. Longer cooldown, but it re-sends until fixed.
+const CREDITS_ALERT_COOLDOWN_MINUTES = 360;
 const MIN_SAMPLE_SIZE = 3;
 const FAILURE_RATE_THRESHOLD = 0.5;
 

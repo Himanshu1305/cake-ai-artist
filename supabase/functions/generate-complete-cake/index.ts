@@ -835,7 +835,12 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
               const expected = finalRow?.view_count ?? allViewNames.length;
               const filled = [finalRow?.hero_url, finalRow?.side_url, finalRow?.top_url].filter(Boolean).length;
               const errors = [finalRow?.hero_error, finalRow?.side_error, finalRow?.top_error].filter(Boolean);
-              const status = filled >= expected ? 'completed' : 'partial_failed';
+              // Zero images is a total failure, not a partial one — keeping it
+              // 'partial_failed' hid a 10h credit outage behind a status that
+              // normally means "2 of 3 views rendered".
+              const status = filled >= expected
+                ? 'completed'
+                : (filled === 0 ? 'failed' : 'partial_failed');
               await supabase.from('cake_generation_jobs')
                 .update({
                   status,
