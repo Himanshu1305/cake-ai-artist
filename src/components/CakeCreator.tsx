@@ -1223,7 +1223,7 @@ export const CakeCreator = ({ onGenerate }: CakeCreatorProps) => {
           } else if (error.message.includes('Rate limit')) {
             errorMessage = "You've hit the rate limit. Please wait a moment and try again.";
           } else if (error.message.includes('CREDITS_EXHAUSTED') || error.message.includes('402') || error.message.includes('credits')) {
-            errorMessage = "AI generation credits are temporarily exhausted. Please try again later.";
+            errorMessage = "Our cake design service is temporarily unavailable — this is on our side, not yours. This attempt was NOT counted against your free cakes. Please try again shortly.";
           } else if (error.message.includes('timed out')) {
             errorMessage = generationQuality === 'high'
               ? "High Quality is taking longer than usual. Try Standard mode, or try High Quality again in a moment."

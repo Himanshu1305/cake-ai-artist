@@ -15,6 +15,9 @@ const ALERT_EMAIL = "himanshu1305@gmail.com";
 // killed healthy jobs at 2 min which surfaced as "stuck at 75%" in the UI.
 const STUCK_THRESHOLD_MINUTES = 5;
 const ALERT_COOLDOWN_MINUTES = 60;
+// Credit exhaustion is a billing outage, not a flaky model: it never self-heals
+// and it kills 100% of generations. Longer cooldown, but it re-sends until fixed.
+const CREDITS_ALERT_COOLDOWN_MINUTES = 360;
 const MIN_SAMPLE_SIZE = 3;
 const FAILURE_RATE_THRESHOLD = 0.5;
 
@@ -69,7 +72,7 @@ serve(async (req) => {
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: recent, error: recentErr } = await supabase
       .from("cake_generation_jobs")
-      .select("status, error_message, hero_error")
+      .select("status, error_message, hero_error, side_error, top_error")
       .gte("created_at", hourAgo);
 
     if (recentErr) {
@@ -104,11 +107,23 @@ serve(async (req) => {
         ? dominantHeroError[0]
         : null;
 
+    // ---- 3b) Detect credit exhaustion ----
+    // A single CREDITS_EXHAUSTED job is enough: it means the AI gateway is
+    // refusing every request, so there is no "sample size" to wait for.
+    const creditsFailures = (recent ?? []).filter((r) =>
+      [r.hero_error, r.side_error, r.top_error, r.error_message]
+        .some((e) => typeof e === "string" && e.includes("CREDITS_EXHAUSTED"))
+    ).length;
+    result.creditsFailuresLastHour = creditsFailures;
+
     // ---- 4) Decide whether to alert ----
     let alertType: string | null = null;
     let alertReason = "";
 
-    if (stuckCount >= MIN_SAMPLE_SIZE) {
+    if (creditsFailures > 0) {
+      alertType = "credits_exhausted";
+      alertReason = `AI credits are exhausted — ${creditsFailures} cake generation${creditsFailures === 1 ? "" : "s"} failed in the last hour because the AI gateway returned 402. EVERY generation is failing until the workspace is topped up.`;
+    } else if (stuckCount >= MIN_SAMPLE_SIZE) {
       alertType = "mass_stuck_jobs";
       alertReason = `${stuckCount} cake jobs got stuck in 'processing' and were auto-failed in this run.`;
     } else if (total >= MIN_SAMPLE_SIZE && failureRate > FAILURE_RATE_THRESHOLD) {
@@ -123,9 +138,14 @@ serve(async (req) => {
       });
     }
 
-    // ---- 5) Rate-limit: skip if same base alert type sent in last hour ----
+    // ---- 5) Rate-limit: skip if same base alert type sent recently ----
+    // Cooldown is per alert type, so a credits alert is never swallowed by a
+    // generic "degraded" alert that happened to fire first.
     const baseAlertType = alertType.split("+")[0];
-    const cooldownCutoff = new Date(Date.now() - ALERT_COOLDOWN_MINUTES * 60 * 1000).toISOString();
+    const cooldownMinutes = baseAlertType === "credits_exhausted"
+      ? CREDITS_ALERT_COOLDOWN_MINUTES
+      : ALERT_COOLDOWN_MINUTES;
+    const cooldownCutoff = new Date(Date.now() - cooldownMinutes * 60 * 1000).toISOString();
     const { data: recentAlerts } = await supabase
       .from("system_alert_log")
       .select("id")
@@ -154,13 +174,17 @@ serve(async (req) => {
       .map(([msg, n]) => `<li><b>${n}×</b> ${escapeHtml(msg).slice(0, 200)}</li>`)
       .join("");
 
-    const subject = massIdenticalError
-      ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
-      : `🚨 Cake AI Artist — Generation degraded`;
+    const isCredits = alertType === "credits_exhausted";
+    const subject = isCredits
+      ? `💳 Cake AI Artist — AI CREDITS EXHAUSTED, all generations failing`
+      : massIdenticalError
+        ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
+        : `🚨 Cake AI Artist — Generation degraded`;
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;background:#fffaf3;border-radius:12px">
-        <h2 style="color:#c0392b;margin-top:0">⚠️ Cake generation is degraded</h2>
+        <h2 style="color:#c0392b;margin-top:0">${isCredits ? "💳 AI credits exhausted — top up now" : "⚠️ Cake generation is degraded"}</h2>
         <p style="font-size:15px;color:#333">${escapeHtml(alertReason)}</p>
+        ${isCredits ? `<p style="font-size:14px;color:#c0392b;background:#fdecea;padding:12px;border-radius:8px"><b>Action:</b> add credits in Lovable → Settings → Plans &amp; credits. Nothing else is broken — generation resumes the moment credits are available. You'll get this reminder again in 6 hours if it is still failing.</p>` : ""}
         <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
           <tr><td style="padding:6px;border-bottom:1px solid #eee"><b>Total attempts (1h)</b></td><td style="padding:6px;border-bottom:1px solid #eee">${total}</td></tr>
           <tr><td style="padding:6px;border-bottom:1px solid #eee"><b>Completed</b></td><td style="padding:6px;border-bottom:1px solid #eee;color:#27ae60">${completed}</td></tr>
