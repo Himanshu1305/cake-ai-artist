@@ -174,13 +174,17 @@ serve(async (req) => {
       .map(([msg, n]) => `<li><b>${n}×</b> ${escapeHtml(msg).slice(0, 200)}</li>`)
       .join("");
 
-    const subject = massIdenticalError
-      ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
-      : `🚨 Cake AI Artist — Generation degraded`;
+    const isCredits = alertType === "credits_exhausted";
+    const subject = isCredits
+      ? `💳 Cake AI Artist — AI CREDITS EXHAUSTED, all generations failing`
+      : massIdenticalError
+        ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
+        : `🚨 Cake AI Artist — Generation degraded`;
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;background:#fffaf3;border-radius:12px">
-        <h2 style="color:#c0392b;margin-top:0">⚠️ Cake generation is degraded</h2>
+        <h2 style="color:#c0392b;margin-top:0">${isCredits ? "💳 AI credits exhausted — top up now" : "⚠️ Cake generation is degraded"}</h2>
         <p style="font-size:15px;color:#333">${escapeHtml(alertReason)}</p>
+        ${isCredits ? `<p style="font-size:14px;color:#c0392b;background:#fdecea;padding:12px;border-radius:8px"><b>Action:</b> add credits in Lovable → Settings → Plans &amp; credits. Nothing else is broken — generation resumes the moment credits are available. You'll get this reminder again in 6 hours if it is still failing.</p>` : ""}
         <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
           <tr><td style="padding:6px;border-bottom:1px solid #eee"><b>Total attempts (1h)</b></td><td style="padding:6px;border-bottom:1px solid #eee">${total}</td></tr>
           <tr><td style="padding:6px;border-bottom:1px solid #eee"><b>Completed</b></td><td style="padding:6px;border-bottom:1px solid #eee;color:#27ae60">${completed}</td></tr>
