@@ -72,7 +72,7 @@ serve(async (req) => {
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: recent, error: recentErr } = await supabase
       .from("cake_generation_jobs")
-      .select("status, error_message, hero_error")
+      .select("status, error_message, hero_error, side_error, top_error")
       .gte("created_at", hourAgo);
 
     if (recentErr) {
@@ -107,11 +107,23 @@ serve(async (req) => {
         ? dominantHeroError[0]
         : null;
 
+    // ---- 3b) Detect credit exhaustion ----
+    // A single CREDITS_EXHAUSTED job is enough: it means the AI gateway is
+    // refusing every request, so there is no "sample size" to wait for.
+    const creditsFailures = (recent ?? []).filter((r) =>
+      [r.hero_error, r.side_error, r.top_error, r.error_message]
+        .some((e) => typeof e === "string" && e.includes("CREDITS_EXHAUSTED"))
+    ).length;
+    result.creditsFailuresLastHour = creditsFailures;
+
     // ---- 4) Decide whether to alert ----
     let alertType: string | null = null;
     let alertReason = "";
 
-    if (stuckCount >= MIN_SAMPLE_SIZE) {
+    if (creditsFailures > 0) {
+      alertType = "credits_exhausted";
+      alertReason = `AI credits are exhausted — ${creditsFailures} cake generation${creditsFailures === 1 ? "" : "s"} failed in the last hour because the AI gateway returned 402. EVERY generation is failing until the workspace is topped up.`;
+    } else if (stuckCount >= MIN_SAMPLE_SIZE) {
       alertType = "mass_stuck_jobs";
       alertReason = `${stuckCount} cake jobs got stuck in 'processing' and were auto-failed in this run.`;
     } else if (total >= MIN_SAMPLE_SIZE && failureRate > FAILURE_RATE_THRESHOLD) {
@@ -126,9 +138,14 @@ serve(async (req) => {
       });
     }
 
-    // ---- 5) Rate-limit: skip if same base alert type sent in last hour ----
+    // ---- 5) Rate-limit: skip if same base alert type sent recently ----
+    // Cooldown is per alert type, so a credits alert is never swallowed by a
+    // generic "degraded" alert that happened to fire first.
     const baseAlertType = alertType.split("+")[0];
-    const cooldownCutoff = new Date(Date.now() - ALERT_COOLDOWN_MINUTES * 60 * 1000).toISOString();
+    const cooldownMinutes = baseAlertType === "credits_exhausted"
+      ? CREDITS_ALERT_COOLDOWN_MINUTES
+      : ALERT_COOLDOWN_MINUTES;
+    const cooldownCutoff = new Date(Date.now() - cooldownMinutes * 60 * 1000).toISOString();
     const { data: recentAlerts } = await supabase
       .from("system_alert_log")
       .select("id")
