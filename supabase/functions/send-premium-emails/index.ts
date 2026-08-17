@@ -421,7 +421,7 @@ function getPremiumWelcomeEmailHtml(
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -553,7 +553,7 @@ function getPaymentConfirmationEmailHtml(
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           <!-- Header -->
@@ -655,7 +655,7 @@ function getPaymentConfirmationEmailHtml(
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           <!-- Header -->
@@ -873,7 +873,7 @@ function getSubscriptionHaltedEmailHtml(firstName: string): string {
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -971,7 +971,7 @@ function getSubscriptionExpiredEmailHtml(firstName: string): string {
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           
@@ -1083,7 +1083,7 @@ function getSubscriptionCancelledEmailHtml(firstName: string, periodEndDate: str
           <!-- Logo -->
           <tr>
             <td style="padding: 25px 30px 0; text-align: center;">
-              <img src="https://ozgghjbvhveswqplzegd.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
+              <img src="https://gadiwsbvbycfygsaizja.supabase.co/storage/v1/object/public/cake-images/logo.png" alt="Cake AI Artist" style="width: 100px; height: 100px; border-radius: 50%;" />
             </td>
           </tr>
           

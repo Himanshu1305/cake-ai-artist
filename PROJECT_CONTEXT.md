@@ -31,6 +31,57 @@ If Lovable already fixed the same thing, `git rebase --skip`.
 
 ---
 
+## 1a. Migration Status (Lovable Cloud → new Supabase) — IN PROGRESS
+
+Migrating off Lovable Cloud onto a self-owned Supabase project.
+
+- **New Supabase project:** `gadiwsbvbycfygsaizja` (Mumbai, `ap-south-1`).
+  New functions base URL: `https://gadiwsbvbycfygsaizja.supabase.co/functions/v1/…`
+- **Old project (still live):** `ozgghjbvhveswqplzegd`.
+- **Census:** `docs/reports/function_census.md` — 36 folders → **34 to deploy, 2 DEAD skipped**
+  (`test-premium-email`, `test-weekly-digest` = manual QA harnesses).
+
+**Functions to deploy (LIVE):** add-contact-to-brevo · analyze-cake-photo · analyze-cake-text ·
+cake-generation-watchdog · cancel-razorpay-subscription · check-payment-status ·
+create-razorpay-order · create-razorpay-subscription · delete-user-account · detect-country ·
+generate-blog-post · generate-complete-cake · generate-invite-artwork · generate-invite-copy ·
+generate-logo · generate-party-pack · generate-vendor-message · grant-referral-bonus ·
+party-planner-chat · razorpay-webhook · save-cake-audio · save-image-to-storage ·
+search-local-vendors · send-anniversary-reminders · send-engagement-drip · send-party-invite ·
+send-premium-emails · send-reengagement-sequence · send-vendor-email · send-weekly-blog-digest ·
+send-weekly-upgrade-nudge · unsubscribe-blog · verify-razorpay-payment · **send-welcome-email**
+(⚠️ deploy but confirm trigger — no invoke site in code; see census).
+
+**Secrets needed on new project** (set via `supabase secrets set`):
+RAZORPAY_KEY_ID · RAZORPAY_KEY_SECRET · GOOGLE_PLACES_API_KEY · CRON_SECRET · TEST_EMAIL_SECRET ·
+BREVO_API_KEY · RESEND_API_KEY · SUPABASE_URL · SUPABASE_ANON_KEY · SUPABASE_SERVICE_ROLE_KEY.
+(`LOVABLE_API_KEY` deliberately NOT set — replaced by `GEMINI_API_KEY` in Phase A.)
+
+**Code that still points at the old stack** (report only, not yet fixed):
+- Hardcoded old ref `ozgghjbvhveswqplzegd` in **email logo URLs** — `send-premium-emails`
+  (6×: L424,556,658,876,974,1086) and `send-welcome-email` (2×: L23,111). Storage must be
+  migrated or these hotlink the old project.
+- `https://ai.gateway.lovable.dev/v1/chat/completions` in **10 functions** — the AI gateway,
+  swapped in Phase A.
+- `LOVABLE_API_KEY` used by those same 10 functions.
+- Razorpay webhook URL (§3.4) is hardcoded to the old ref in the Razorpay dashboard — repoint.
+
+**Cron schedules do NOT deploy with the code** — recreate on the new project:
+cake-generation-watchdog (10 min, critical) · generate-blog-post · send-anniversary-reminders ·
+send-engagement-drip · send-reengagement-sequence (daily 9am) · send-weekly-blog-digest ·
+send-weekly-upgrade-nudge. No `cron.schedule` exists in migrations — they lived in the dashboard.
+
+**Pending phases:**
+- **Phase A** — swap `LOVABLE_API_KEY` → `GEMINI_API_KEY` across the 10 AI-gateway functions
+  (repoint `ai.gateway.lovable.dev` → Gemini API; models already centralised in
+  `_shared/ai-models.ts`).
+- **Phase D** — Cloudflare Pages setup (frontend hosting off Lovable).
+- Migrate storage bucket `cake-images` (logo + generated images) to the new project, then fix
+  the 8 hardcoded email logo URLs above.
+- Recreate all cron schedules; recreate the `send-welcome-email` trigger if it was a dashboard hook.
+
+---
+
 ## 2. Live bugs found by survey — not yet fixed
 
 Ordered by user impact.
