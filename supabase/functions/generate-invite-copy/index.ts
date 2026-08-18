@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateWithTools } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,52 +45,35 @@ When: ${eventDate || "TBD"}
 
 ${avoid && avoid.length ? `Do NOT reuse or paraphrase these previous headlines: ${avoid.map((s: string) => `"${s}"`).join(", ")}. Produce something distinctly different.` : ""}`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    let args: { headline?: string; message?: string } | null;
+    try {
+      const result = await generateWithTools({
         model: CHAT_MODEL_DEFAULT,
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: user },
-        ],
+        systemPrompt: sys,
+        messages: [{ role: "user", content: user }],
         tools: [{
-          type: "function",
-          function: {
-            name: "invite_copy",
-            description: "Return invitation headline and message.",
-            parameters: {
-              type: "object",
-              properties: {
-                headline: { type: "string", description: "Short, evocative headline, max ~8 words." },
-                message: { type: "string", description: "Warm 2-3 sentence personal note." },
-              },
-              required: ["headline", "message"],
-              additionalProperties: false,
+          name: "invite_copy",
+          description: "Return invitation headline and message.",
+          parameters: {
+            type: "object",
+            properties: {
+              headline: { type: "string", description: "Short, evocative headline, max ~8 words." },
+              message: { type: "string", description: "Warm 2-3 sentence personal note." },
             },
+            required: ["headline", "message"],
           },
         }],
-        tool_choice: { type: "function", function: { name: "invite_copy" } },
-      }),
-    });
-
-    if (aiResp.status === 429) {
-      return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (aiResp.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (!aiResp.ok) {
-      const t = await aiResp.text();
-      console.error("AI error", aiResp.status, t);
+        toolConfig: { mode: "ANY", allowedFunctionNames: ["invite_copy"] },
+      });
+      args = (result.toolCall?.args as { headline?: string; message?: string } | undefined) ?? null;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("AI error", msg);
+      if (msg.includes("RATE_LIMIT")) {
+        return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       throw new Error("AI gateway error");
     }
-    const data = await aiResp.json();
-    const call = data.choices?.[0]?.message?.tool_calls?.[0];
-    const args = call?.function?.arguments ? JSON.parse(call.function.arguments) : null;
     if (!args?.headline || !args?.message) throw new Error("No copy generated");
 
     return new Response(JSON.stringify({ headline: args.headline, message: args.message }), {

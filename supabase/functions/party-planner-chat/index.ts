@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateWithTools } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,80 +94,63 @@ serve(async (req) => {
       content: userMessage,
     });
 
+    const systemPrompt = SYSTEM_PROMPT + `\n\nCurrent party context: ${JSON.stringify({ title: party.title, occasion: party.occasion, event_date: party.event_date, event_timezone: party.event_timezone, guest_count: party.guest_count, venue: party.venue, city: party.city, theme: party.theme, contact_email: party.contact_email, contact_phone: party.contact_phone })}`;
+    // Gemini roles are "user" | "model" — map stored "assistant" turns to "model".
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT + `\n\nCurrent party context: ${JSON.stringify({ title: party.title, occasion: party.occasion, event_date: party.event_date, event_timezone: party.event_timezone, guest_count: party.guest_count, venue: party.venue, city: party.city, theme: party.theme, contact_email: party.contact_email, contact_phone: party.contact_phone })}` },
-      ...(history || []).map((m) => ({ role: m.role, content: m.content })),
-      { role: "user", content: userMessage },
+      ...(history || []).map((m) => ({ role: m.role === "assistant" ? "model" as const : "user" as const, content: m.content })),
+      { role: "user" as const, content: userMessage },
     ];
 
     const tools = [{
-      type: "function",
-      function: {
-        name: "build_party_plan",
-        description: "Generate the smart checklist of tasks for the party",
-        parameters: {
-          type: "object",
-          properties: {
-            occasion: { type: "string" },
-            event_date: { type: "string", description: "ISO date" },
-            guest_count: { type: "number" },
-            venue: { type: "string" },
-            theme: { type: "string" },
-            budget: { type: "number" },
-            tasks: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  description: { type: "string" },
-                  category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of", "photography", "entertainment", "gifts"] },
-                  days_before: { type: "number", description: "Days before event_date" },
-                  estimated_cost: { type: "number", description: "Realistic local-market cost estimate for this task" },
-                  currency: { type: "string", description: "3-letter ISO currency code (INR, USD, GBP, EUR, AUD, CAD)" },
-                },
-                required: ["title", "category", "days_before"],
+      name: "build_party_plan",
+      description: "Generate the smart checklist of tasks for the party",
+      parameters: {
+        type: "object",
+        properties: {
+          occasion: { type: "string" },
+          event_date: { type: "string", description: "ISO date" },
+          guest_count: { type: "number" },
+          venue: { type: "string" },
+          theme: { type: "string" },
+          budget: { type: "number" },
+          tasks: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                description: { type: "string" },
+                category: { type: "string", enum: ["invitations", "food", "decor", "activities", "logistics", "day-of", "photography", "entertainment", "gifts"] },
+                days_before: { type: "number", description: "Days before event_date" },
+                estimated_cost: { type: "number", description: "Realistic local-market cost estimate for this task" },
+                currency: { type: "string", description: "3-letter ISO currency code (INR, USD, GBP, EUR, AUD, CAD)" },
               },
+              required: ["title", "category", "days_before"],
             },
           },
-          required: ["tasks"],
         },
+        required: ["tasks"],
       },
     }];
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: CHAT_MODEL_DEFAULT,
-        messages,
-        tools,
-      }),
-    });
-
-    if (aiResp.status === 429) {
-      return new Response(JSON.stringify({ error: "Too many requests, slow down a bit." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (aiResp.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (!aiResp.ok) {
-      const t = await aiResp.text();
-      console.error("AI error", aiResp.status, t);
+    let assistantText = "";
+    let planBuilt = false;
+    let toolCall: { name: string; args: Record<string, unknown> } | null = null;
+    try {
+      const result = await generateWithTools({ model: CHAT_MODEL_DEFAULT, systemPrompt, messages, tools });
+      assistantText = result.text || "";
+      toolCall = result.toolCall;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("AI error", msg);
+      if (msg.includes("RATE_LIMIT")) {
+        return new Response(JSON.stringify({ error: "Too many requests, slow down a bit." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       throw new Error("AI gateway error");
     }
 
-    const aiData = await aiResp.json();
-    const choice = aiData.choices?.[0]?.message;
-    let assistantText = choice?.content || "";
-    let planBuilt = false;
-
-    const toolCall = choice?.tool_calls?.[0];
-    if (toolCall?.function?.name === "build_party_plan") {
-      const args = JSON.parse(toolCall.function.arguments);
+    if (toolCall?.name === "build_party_plan") {
+      const args = toolCall.args as any;
       planBuilt = true;
 
       // Update party

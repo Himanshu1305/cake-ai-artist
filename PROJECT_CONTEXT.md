@@ -54,16 +54,16 @@ send-weekly-upgrade-nudge · unsubscribe-blog · verify-razorpay-payment · **se
 
 **Secrets needed on new project** (set via `supabase secrets set`):
 RAZORPAY_KEY_ID · RAZORPAY_KEY_SECRET · GOOGLE_PLACES_API_KEY · CRON_SECRET · TEST_EMAIL_SECRET ·
-BREVO_API_KEY · RESEND_API_KEY · SUPABASE_URL · SUPABASE_ANON_KEY · SUPABASE_SERVICE_ROLE_KEY.
-(`LOVABLE_API_KEY` deliberately NOT set — replaced by `GEMINI_API_KEY` in Phase A.)
+BREVO_API_KEY · RESEND_API_KEY · SUPABASE_URL · SUPABASE_ANON_KEY · SUPABASE_SERVICE_ROLE_KEY · **GEMINI_API_KEY**.
+(`LOVABLE_API_KEY` is NO LONGER USED as of Phase A — all AI calls go direct to Gemini via `GEMINI_API_KEY`.)
 
 **Code that still points at the old stack** (report only, not yet fixed):
 - Hardcoded old ref `ozgghjbvhveswqplzegd` in **email logo URLs** — `send-premium-emails`
   (6×: L424,556,658,876,974,1086) and `send-welcome-email` (2×: L23,111). Storage must be
   migrated or these hotlink the old project.
-- `https://ai.gateway.lovable.dev/v1/chat/completions` in **10 functions** — the AI gateway,
-  swapped in Phase A.
-- `LOVABLE_API_KEY` used by those same 10 functions.
+- ~~Lovable AI gateway in 10 functions~~ — **DONE (Phase A)**: all now call the direct Google
+  Gemini API via `supabase/functions/_shared/gemini-client.ts`.
+- ~~`LOVABLE_API_KEY` in those 10 functions~~ — **DONE (Phase A)**: removed; `GEMINI_API_KEY` used.
 - Razorpay webhook URL (§3.4) is hardcoded to the old ref in the Razorpay dashboard — repoint.
 
 **Cron schedules do NOT deploy with the code** — recreate on the new project:
@@ -72,9 +72,15 @@ send-engagement-drip · send-reengagement-sequence (daily 9am) · send-weekly-bl
 send-weekly-upgrade-nudge. No `cron.schedule` exists in migrations — they lived in the dashboard.
 
 **Pending phases:**
-- **Phase A** — swap `LOVABLE_API_KEY` → `GEMINI_API_KEY` across the 10 AI-gateway functions
-  (repoint `ai.gateway.lovable.dev` → Gemini API; models already centralised in
-  `_shared/ai-models.ts`).
+- **Phase A — DONE (2026-08-18).** All 10 AI functions call the direct Google Gemini API via
+  `supabase/functions/_shared/gemini-client.ts` (`generateImage` / `generateText` /
+  `generateWithTools`). `LOVABLE_API_KEY` no longer used; new secret `GEMINI_API_KEY` required.
+  Rollback is DNS-level (repoint to Lovable), NOT a code kill switch. Model IDs stay centralised
+  in `_shared/ai-models.ts`; the client strips the `google/` gateway prefix for the direct API.
+  Behaviour notes: complete-cake now advances `IMAGE_FALLBACK_CHAIN` on 429/RATE_LIMIT (was
+  terminal on the gateway); the tool-calling functions (invite-copy, party-planner-chat) use
+  Gemini-native function calling. **Deploy of these 10 functions is still PENDING** — needs
+  `SUPABASE_ACCESS_TOKEN`; no local `deno`/CLI so they are UNVERIFIED until deployed/smoke-tested.
 - **Phase D** — Cloudflare Pages setup (frontend hosting off Lovable).
 - Migrate storage bucket `cake-images` (logo + generated images) to the new project, then fix
   the 8 hardcoded email logo URLs above.

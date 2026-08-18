@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { IMAGE_MODEL_CHEAP } from "../_shared/ai-models.ts";
+import { generateImage } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,33 +204,19 @@ serve(async (req) => {
 
     const { prompt, style, variationSeed } = buildPrompt(effTheme, effOcc, effTitle, effAge);
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: IMAGE_MODEL_CHEAP,
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
-
-    if (aiResp.status === 429) {
-      return new Response(JSON.stringify({ error: "Rate limited, try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (aiResp.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (!aiResp.ok) {
-      const t = await aiResp.text();
-      console.error("AI error", aiResp.status, t);
+    let dataUrl: string;
+    try {
+      const base64 = await generateImage({ model: IMAGE_MODEL_CHEAP, prompt });
+      dataUrl = `data:image/png;base64,${base64}`;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("AI error", msg);
+      if (msg.includes("RATE_LIMIT")) {
+        return new Response(JSON.stringify({ error: "Rate limited, try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       return new Response(JSON.stringify({ error: "AI gateway error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const data = await aiResp.json();
-    const dataUrl: string | undefined = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!dataUrl?.startsWith("data:image/")) throw new Error("No image returned");
+    if (!dataUrl.startsWith("data:image/")) throw new Error("No image returned");
 
     const [meta, b64] = dataUrl.split(",");
     const mime = meta.match(/data:(image\/[a-zA-Z]+)/)?.[1] || "image/png";

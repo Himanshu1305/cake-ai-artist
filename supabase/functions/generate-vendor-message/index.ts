@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateText } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,34 +84,21 @@ Email: ${party.contact_email || "(not provided)"}
 
 Ask politely for: availability on the date, a price quote, and what's included. Mention the theme so they can suggest themed options. Do NOT include a "Subject:" line, do NOT add disclaimers or "here is your message" preamble — return only the message body itself.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    let raw: string;
+    try {
+      raw = (await generateText({
         model: CHAT_MODEL_DEFAULT,
-        messages: [
-          { role: "system", content: "You write short, warm, copy-paste-ready messages for party hosts to send to vendors. Output only the message body, no extra commentary." },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
-
-    if (aiResp.status === 429) {
-      return new Response(JSON.stringify({ error: "Too many requests, slow down a bit." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (aiResp.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (!aiResp.ok) {
-      const t = await aiResp.text();
-      console.error("AI error", aiResp.status, t);
+        systemPrompt: "You write short, warm, copy-paste-ready messages for party hosts to send to vendors. Output only the message body, no extra commentary.",
+        messages: [{ role: "user", content: userPrompt }],
+      })).trim();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("AI error", msg);
+      if (msg.includes("RATE_LIMIT")) {
+        return new Response(JSON.stringify({ error: "Too many requests, slow down a bit." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       throw new Error("AI gateway error");
     }
-    const aiData = await aiResp.json();
-    const raw = (aiData.choices?.[0]?.message?.content || "").trim();
     // Strip any leading "Subject: ..." line the model may have added despite instructions.
     const message = raw.replace(/^\s*subject\s*:.*$/im, "").replace(/^\s*\n+/, "").trim();
     if (!message) throw new Error("No message generated");

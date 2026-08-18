@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { IMAGE_FALLBACK_CHAIN, CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateImage, generateText } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -212,11 +213,6 @@ serve(async (req) => {
 
     console.log('Generate complete cake request:', { name, character, occasion, relation, gender, cakeStyle, quality, primaryModel: IMAGE_FALLBACK_CHAIN[0] });
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
-
     // Get occasion-specific text for the cake
     const getOccasionText = (occ: string): string => {
       const texts: Record<string, string> = {
@@ -327,7 +323,9 @@ COMPOSITION RULES:
 
     const SYSTEM_PROMPT = 'You are a professional food photographer. Generate a single high-quality photograph of ONE real edible cake with NO people, humans, faces, or body parts anywhere in the image (including the background). For sculpted cakes show visible fondant texture, cake structure, and handcrafted bakery details — never plastic, toy, or CGI looks. Never produce collages or multiple cakes in one image.';
 
-    // Low-level call with abort timeout — returns base64 data URL or throws.
+    // Low-level call with abort timeout — returns a base64 data URL or throws.
+    // Flattens the OpenAI-style `messages` (system + user, text and/or the photo
+    // for the top view) into a single Gemini prompt + optional inline images.
     const callImageModel = async (
       messages: any[],
       model: string,
@@ -337,30 +335,29 @@ COMPOSITION RULES:
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Lovable-API-Key': LOVABLE_API_KEY,
-            'X-Lovable-AIG-SDK': 'vercel-ai-sdk',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ model, messages, modalities: ['image', 'text'] }),
-          signal: controller.signal,
-        });
-        if (!resp.ok) {
-          const errText = await resp.text().catch(() => '');
-          console.error(`[${label}] gateway ${resp.status}:`, errText.slice(0, 300));
-          if (resp.status === 429) throw new Error('RATE_LIMIT');
-          if (resp.status === 402) throw new Error('CREDITS_EXHAUSTED');
-          if (resp.status === 503) throw new Error('UPSTREAM_503');
-          if (resp.status === 403) throw new Error('MODEL_UNAVAILABLE');
-          if (resp.status === 400 && errText.toLowerCase().includes('model')) throw new Error('MODEL_ERROR_400');
-          throw new Error(`Image generation failed: ${resp.status}`);
+        const textSegments: string[] = [];
+        const inputImages: Array<{ base64: string; mimeType: string }> = [];
+        for (const m of messages) {
+          if (typeof m.content === 'string') {
+            textSegments.push(m.content);
+          } else if (Array.isArray(m.content)) {
+            for (const part of m.content) {
+              if (part.type === 'text') {
+                textSegments.push(part.text);
+              } else if (part.type === 'image_url') {
+                const dataUrl: string = part.image_url?.url ?? '';
+                const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/);
+                if (match) inputImages.push({ mimeType: match[1], base64: match[2] });
+              }
+            }
+          }
         }
-        const data = await resp.json();
-        const url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        if (!url) throw new Error('No image returned');
-        return url;
+        const prompt = textSegments.join('\n\n');
+        const base64 = await generateImage({ model, prompt, inputImages, signal: controller.signal });
+        return `data:image/png;base64,${base64}`;
+      } catch (err: any) {
+        console.error(`[${label}] gemini image error:`, (err?.message || String(err)).slice(0, 300));
+        throw err;
       } finally {
         clearTimeout(timer);
       }
@@ -444,15 +441,17 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
           return url;
         } catch (err: any) {
           const msg = err?.message || String(err);
-          if (msg === 'RATE_LIMIT' || msg === 'CREDITS_EXHAUSTED') throw err;
+          // Direct Gemini API: a 429/RATE_LIMIT is now chain-fallbackable — a
+          // per-model quota can free up on the next model — whereas the old
+          // gateway 429 was account-wide and terminal. Aborts (timeout), 5xx,
+          // model-shaped 4xx, and empty results also advance the chain.
           const isChainFallbackable =
+            msg.includes('RATE_LIMIT') ||
             err?.name === 'AbortError' ||
             msg.includes('aborted') ||
-            msg === 'UPSTREAM_503' ||
-            msg === 'MODEL_UNAVAILABLE' ||
-            msg === 'MODEL_ERROR_400' ||
-            msg === 'No image returned' ||
-            msg.startsWith('Image generation failed: 5');
+            msg === 'No image returned from Gemini' ||
+            /Gemini 5\d\d/.test(msg) ||
+            (/Gemini 4\d\d/.test(msg) && /model/i.test(msg));
           const isLast = i === IMAGE_FALLBACK_CHAIN.length - 1;
           if (!isChainFallbackable || isLast) {
             console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
@@ -630,26 +629,11 @@ ${character ? '8' : '7'}. Return ONLY the message text. No quotes, no preface, n
 
 ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of the right tone (do not copy verbatim):\n${getExampleMessages(relation, occasion || 'birthday', gender)}` : ''}`;
 
-      const messageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Lovable-API-Key': LOVABLE_API_KEY,
-          'X-Lovable-AIG-SDK': 'vercel-ai-sdk',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: CHAT_MODEL_DEFAULT,
-          messages: [{ role: 'user', content: messagePrompt }],
-        }),
+      const messageText = await generateText({
+        model: CHAT_MODEL_DEFAULT,
+        messages: [{ role: 'user', content: messagePrompt }],
       });
-
-      if (!messageResponse.ok) {
-        console.error('Message generation failed:', messageResponse.status);
-        throw new Error('Failed to generate greeting message');
-      }
-
-      const messageData = await messageResponse.json();
-      return messageData.choices?.[0]?.message?.content?.trim() || 
+      return messageText?.trim() ||
         `Happy ${occasion || 'Birthday'}, ${name}! Wishing you a day filled with joy and celebration!`;
     };
 
@@ -901,7 +885,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
     } catch (error) {
       const m = error instanceof Error ? error.message : String(error);
       logStage('X_inner_catch', { error: m });
-      if (m === 'RATE_LIMIT') {
+      if (m.includes('RATE_LIMIT')) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a few moments.', requestId }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

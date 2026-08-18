@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { IMAGE_MODEL_CHEAP } from "../_shared/ai-models.ts";
+import { generateImage as generateGeminiImage } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,11 +70,6 @@ serve(async (req) => {
 
     console.log(`Generating party pack for user ${user.id}, cake ${cakeImageId}`);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY not configured");
-    }
-
     const themeDesc = theme || character || "elegant celebration";
     const colorDesc = colors || "gold, white, and pastel";
     
@@ -113,49 +109,9 @@ serve(async (req) => {
 
     const generateImage = async (itemPrompt: string, itemType: string) => {
       console.log(`Generating ${itemType}...`);
-      
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: IMAGE_MODEL_CHEAP,
-          messages: [
-            {
-              role: "user",
-              content: itemPrompt
-            }
-          ],
-          modalities: ["image", "text"]
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`AI generation failed for ${itemType}: ${response.status} - ${errorText}`);
-        
-        if (response.status === 429) {
-          throw new Error("Rate limit exceeded. Please try again in a few moments.");
-        }
-        if (response.status === 402) {
-          throw new Error("AI credits depleted. Please add funds to your Lovable workspace.");
-        }
-        
-        throw new Error(`Failed to generate ${itemType}: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      
-      if (!imageUrl) {
-        console.error(`No image returned for ${itemType}. Content:`, data.choices?.[0]?.message?.content?.substring(0, 200));
-        throw new Error(`No image returned for ${itemType}`);
-      }
-
+      const base64 = await generateGeminiImage({ model: IMAGE_MODEL_CHEAP, prompt: itemPrompt });
       console.log(`Successfully generated ${itemType}`);
-      return imageUrl;
+      return `data:image/png;base64,${base64}`;
     };
 
     // Generate all items in parallel

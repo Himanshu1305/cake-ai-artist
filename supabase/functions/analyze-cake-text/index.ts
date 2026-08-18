@@ -4,6 +4,22 @@
 // ============================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateText } from "../_shared/gemini-client.ts";
+
+// Convert an image URL (remote http(s) or a data: URL) to inline base64 for
+// Gemini vision. The gateway fetched remote URLs server-side; we do it explicitly.
+async function toInlineImage(src: string): Promise<{ base64: string; mimeType: string }> {
+  const dataMatch = src.match(/^data:([^;]+);base64,(.*)$/);
+  if (dataMatch) return { mimeType: dataMatch[1], base64: dataMatch[2] };
+  const resp = await fetch(src);
+  if (!resp.ok) throw new Error(`Failed to fetch image (${resp.status})`);
+  const mimeType = resp.headers.get("content-type") || "image/jpeg";
+  const buf = new Uint8Array(await resp.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]);
+  return { base64: btoa(binary), mimeType };
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,15 +38,6 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Missing imageUrl or recipientName' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
-      return new Response(
-        JSON.stringify({ error: 'AI service not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -95,50 +102,28 @@ Where:
 
     console.log('Analyzing cake image for recipient:', recipientName);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    let aiResponse: string;
+    try {
+      const img = await toInlineImage(imageUrl);
+      aiResponse = await generateText({
+        model: CHAT_MODEL_DEFAULT,
         messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageUrl
-                }
-              }
-            ]
-          }
+          { role: 'user', content: prompt, images: [img] },
         ],
         temperature: 0.3,
-        max_tokens: 200
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+        maxOutputTokens: 200,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Gemini AI error:', msg);
       return new Response(
-        JSON.stringify({ error: 'AI analysis failed', details: errorText }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'AI analysis failed', details: msg }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content;
-    
     if (!aiResponse) {
-      console.error('No content in AI response:', data);
+      console.error('No content in AI response');
       return new Response(
         JSON.stringify({ error: 'No analysis result from AI' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

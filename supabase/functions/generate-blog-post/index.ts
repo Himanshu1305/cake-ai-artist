@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { CHAT_MODEL_DEFAULT } from "../_shared/ai-models.ts";
+import { generateText } from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -171,11 +172,6 @@ serve(async (req) => {
   };
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
     const body: GenerateBlogRequest = await req.json();
     console.log("Request body:", body);
 
@@ -196,7 +192,7 @@ serve(async (req) => {
       const countryTopic = countryTopics[weekNumber % countryTopics.length];
       
       console.log(`Generating country-specific article for ${targetCountry}: ${countryTopic}`);
-      const countryResult = await generateArticle(supabase, LOVABLE_API_KEY, countryTopic, targetCountry);
+      const countryResult = await generateArticle(supabase, countryTopic, targetCountry);
       results.push(countryResult);
 
       // Generate one universal article
@@ -204,7 +200,7 @@ serve(async (req) => {
       const universalTopic = universalTopics[weekNumber % universalTopics.length];
       
       console.log(`Generating universal article: ${universalTopic}`);
-      const universalResult = await generateArticle(supabase, LOVABLE_API_KEY, universalTopic, null);
+      const universalResult = await generateArticle(supabase, universalTopic, null);
       results.push(universalResult);
 
       // Log task success
@@ -225,7 +221,7 @@ serve(async (req) => {
     const topics = country ? topicPools[country] : topicPools["UNIVERSAL"];
     const topic = body.topic || topics[Math.floor(Math.random() * topics.length)];
 
-    const result = await generateArticle(supabase, LOVABLE_API_KEY, topic, country);
+    const result = await generateArticle(supabase, topic, country);
 
     return new Response(
       JSON.stringify(result),
@@ -254,7 +250,6 @@ serve(async (req) => {
 
 async function generateArticle(
   supabase: any,
-  apiKey: string,
   topic: string,
   country: string | null
 ): Promise<{ slug: string; title: string; status: string }> {
@@ -282,31 +277,13 @@ Respond in this exact JSON format:
   "content": "<p>Your HTML content here...</p>"
 }`;
 
-  console.log(`Calling Lovable AI for topic: ${topic}`);
+  console.log(`Calling Gemini for topic: ${topic}`);
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: CHAT_MODEL_DEFAULT,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
-      ],
-    }),
+  const rawContent = await generateText({
+    model: CHAT_MODEL_DEFAULT,
+    systemPrompt,
+    messages: [{ role: "user", content: prompt }],
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("AI API error:", response.status, errorText);
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const rawContent = data.choices?.[0]?.message?.content;
 
   if (!rawContent) {
     throw new Error("No content returned from AI");
@@ -349,26 +326,21 @@ Return ONLY the new HTML body. No JSON, no markdown fences.
 ORIGINAL:
 ${parsed.content}`;
 
-    const fixRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const fixedRaw = await generateText({
         model: CHAT_MODEL_DEFAULT,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: fixPrompt }
-        ],
-      }),
-    });
-    if (fixRes.ok) {
-      const fixData = await fixRes.json();
-      const fixed = (fixData.choices?.[0]?.message?.content || '').replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+        systemPrompt,
+        messages: [{ role: "user", content: fixPrompt }],
+      });
+      const fixed = (fixedRaw || '').replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
       if (fixed && fixed.length > 200) {
         parsed.content = fixed;
         plain = stripHtml(parsed.content);
         words = plain.split(/\s+/).filter(Boolean);
         console.log(`After rewrite: ${words.length} words`);
       }
+    } catch (e) {
+      console.warn("Rewrite pass failed, keeping original:", e instanceof Error ? e.message : String(e));
     }
   }
 
