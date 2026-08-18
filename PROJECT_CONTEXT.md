@@ -76,7 +76,9 @@ send-weekly-upgrade-nudge. No `cron.schedule` exists in migrations — they live
   `supabase/functions/_shared/gemini-client.ts` (`generateImage` / `generateText` /
   `generateWithTools`). `LOVABLE_API_KEY` no longer used; new secret `GEMINI_API_KEY` required.
   Rollback is DNS-level (repoint to Lovable), NOT a code kill switch. Model IDs stay centralised
-  in `_shared/ai-models.ts`; the client strips the `google/` gateway prefix for the direct API.
+  in `_shared/ai-models.ts` — updated 2026-08-18 to bare direct-API names (no `google/` prefix;
+  chat `gemini-3.6-flash`, image `gemini-2.0-flash-exp-image-generation`), both UNVERIFIED — see §2.4.
+  The client also strips a leading `google/` defensively.
   Behaviour notes: complete-cake now advances `IMAGE_FALLBACK_CHAIN` on 429/RATE_LIMIT (was
   terminal on the gateway); the tool-calling functions (invite-copy, party-planner-chat) use
   Gemini-native function calling. **Deploy of these 10 functions is still PENDING** — needs
@@ -105,6 +107,17 @@ trigger today — but any grant path that sets only `lifetime_access` breaks pre
 **2.3 Swallowed errors hide real failures**
 `generate-blog-post:393,514` (blog-image dedup) · `generate-complete-cake:786,873` (background
 vendor message) · `send-reengagement-sequence:276,336,400` (per-recipient send reason discarded).
+
+**2.4 AI model IDs (direct Gemini API) — UNVERIFIED, deprecate frequently**
+`_shared/ai-models.ts` now uses bare direct-API names (no `google/` prefix). Two risks, both
+untestable until the new project is deployed + smoke-tested (deploy is blocked on
+`SUPABASE_ACCESS_TOKEN`):
+- **`CHAT_MODEL_DEFAULT = "gemini-3.6-flash"`** — set per operator instruction (google/gemini-2.5-flash
+  reported deprecated for new API keys). Not confirmed to exist on `generativelanguage.googleapis.com`
+  — verify against Google's model list before relying on it. A wrong chat ID breaks ALL text/vision/
+  tool functions.
+- **Image models all = `"gemini-2.0-flash-exp-image-generation"`** — a *preview/exp* model; Google
+  deprecates these often (see §3.5). Confirm cake generation actually works after deploy.
 
 ---
 
