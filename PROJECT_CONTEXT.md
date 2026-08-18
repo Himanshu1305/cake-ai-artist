@@ -155,6 +155,13 @@ Login navigates directly after `signInWithPassword` — do **not** reintroduce n
 `onAuthStateChange` for email/password (caused a race where login "succeeded" but the user stayed
 logged out). OAuth still navigates via the listener; it has no other entry point.
 
+### 3.7 Frontend env vars — the .env override trap
+- Frontend reads VITE_SUPABASE_PUBLISHABLE_KEY, NOT VITE_SUPABASE_ANON_KEY. (hearlog uses ANON_KEY — do not copy conventions between projects.)
+- .env is TRACKED in git despite being listed in .gitignore (committed before the rule was added, so the rule is inert). Vite loads it at build time and it OVERRIDES Cloudflare/Lovable platform env vars.
+- If deployed credentials look wrong, check .env FIRST — before platform settings.
+- Frontend vars: VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_SUPABASE_PROJECT_ID, VITE_RAZORPAY_KEY_ID
+- At cutover: merge migration-frontend to main so production picks up the new project.
+
 ---
 
 ## 4. Debugging playbook
