@@ -307,6 +307,19 @@ const FreeCakeDesigner = () => {
               )}
               </>
             )}
+
+            {/* Make-another-cake pull-forward — shown to ALL users, bottom of block */}
+            <div className="rounded-2xl border border-border bg-white p-6 text-center">
+              <h3 className="text-base font-semibold text-foreground mb-1">🎂 Make a cake for someone else?</h3>
+              <p className="text-sm text-muted-foreground mb-4">Your designs are saved in My Gallery.</p>
+              <Button
+                variant="outline"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="w-full border-party-pink/40"
+              >
+                Start a new cake →
+              </Button>
+            </div>
           </div>
         )}
 
