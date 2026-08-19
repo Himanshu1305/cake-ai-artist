@@ -12,84 +12,84 @@ Scale check: 51 routes · 49 pages · 76 components · 36 edge functions · 41 t
 
 ## 1. Stack & deployment
 
-React + TypeScript + Vite + Tailwind + shadcn/ui · Lovable Cloud (Supabase) ·
-Razorpay · Brevo (marketing) + Resend (transactional) · Lovable AI Gateway → Gemini
+React + TypeScript + Vite + Tailwind + shadcn/ui · **Cloudflare Pages** ·
+**Supabase (self-managed, `gadiwsbvbycfygsaizja`, Mumbai `ap-south-1`)** ·
+Razorpay · Brevo (marketing) + Resend (transactional) · **Direct Google Gemini API**
 
-Repo `github.com/Himanshu1305/cake-ai-artist` · Supabase ref `ozgghjbvhveswqplzegd`
+Repo `github.com/Himanshu1305/cake-ai-artist` · Supabase ref `gadiwsbvbycfygsaizja`
 
-**Deploy:** push to `main` → Lovable auto-builds → 2–4 min. Always verify a *behavioural*
-change after deploying, not just that the page loads.
+**Deploy (frontend):** push to `main` → **Cloudflare Pages** auto-builds (`npm run build` → `dist`)
+→ live in a few minutes. Always verify a *behavioural* change after deploying, not just that the
+page loads.
 
 **Local build is impossible.** `node_modules` is absent; `vite build` fails. `npx tsc --noEmit`
 works (fetches TS on demand) and is the only local gate.
 
-**New edge functions are NOT deployed by a git push** — they must be deployed explicitly.
-A function in the repo but missing from the Edge Functions list has never been deployed.
+**Edge functions are NOT deployed by a git push** — deploy them explicitly, and **from the Mac
+terminal** (`npx supabase functions deploy …`; the Claude Code container has no pre-installed CLI —
+see §3.8). A function in the repo but missing from the Edge Functions list has never been deployed.
 
-**Lovable pushes to `main` independently.** Rejected push → `git pull --rebase origin main && git push`.
-If Lovable already fixed the same thing, `git rebase --skip`.
+**Old project `ozgghjbvhveswqplzegd`** (Lovable Cloud) is now dark — **decommission after Oct 2026**
+once we're confident nothing references it (email logo URLs still do — §2.5).
 
 ---
 
-## 1a. Migration Status (Lovable Cloud → new Supabase) — IN PROGRESS
+## 1a. Migration Status — ✅ COMPLETE (2026-08-19)
 
-Migrating off Lovable Cloud onto a self-owned Supabase project.
+Fully migrated off Lovable Cloud to a self-managed stack (Cloudflare Pages + Supabase +
+direct Gemini). DNS cut over 2026-08-19; `cakeaiartist.com` now serves entirely from the new
+stack. **Saving ~$90/month.**
 
-- **New Supabase project:** `gadiwsbvbycfygsaizja` (Mumbai, `ap-south-1`).
-  New functions base URL: `https://gadiwsbvbycfygsaizja.supabase.co/functions/v1/…`
-- **Old project (still live):** `ozgghjbvhveswqplzegd`.
-- **Census:** `docs/reports/function_census.md` — 36 folders → **34 to deploy, 2 DEAD skipped**
-  (`test-premium-email`, `test-weekly-digest` = manual QA harnesses).
+| Phase | What | Done |
+|---|---|---|
+| B1 | DB schema + data migrated to new project (migrations applied) | Aug 17 |
+| B2 | Auth users imported (454; see `import_log.json`) | Aug 17 |
+| B3 | Storage buckets copied (see `storage_log.json`) | Aug 18 |
+| B4 | Secrets set on new project | Aug 18 |
+| B5 | Cron schedules recreated (7 pg_cron jobs — §1b) | Aug 18 |
+| C  | 34 LIVE edge functions deployed (census: `docs/reports/function_census.md`) | Aug 18–19 |
+| A  | AI gateway → direct Gemini (10 fns via `_shared/gemini-client.ts`) | Aug 18–19 |
+| D  | Cloudflare Pages frontend (`.env` → new project) | Aug 19 |
+| F  | DNS cutover — `cakeaiartist.com` + `www` → Cloudflare | Aug 19 |
+| G  | Post-cutover verification + old-project wind-down prep | Aug 19 |
 
-**Functions to deploy (LIVE):** add-contact-to-brevo · analyze-cake-photo · analyze-cake-text ·
-cake-generation-watchdog · cancel-razorpay-subscription · check-payment-status ·
-create-razorpay-order · create-razorpay-subscription · delete-user-account · detect-country ·
-generate-blog-post · generate-complete-cake · generate-invite-artwork · generate-invite-copy ·
-generate-logo · generate-party-pack · generate-vendor-message · grant-referral-bonus ·
-party-planner-chat · razorpay-webhook · save-cake-audio · save-image-to-storage ·
-search-local-vendors · send-anniversary-reminders · send-engagement-drip · send-party-invite ·
-send-premium-emails · send-reengagement-sequence · send-vendor-email · send-weekly-blog-digest ·
-send-weekly-upgrade-nudge · unsubscribe-blog · verify-razorpay-payment · **send-welcome-email**
-(⚠️ deploy but confirm trigger — no invoke site in code; see census).
+*(Phase labels B1–B5/F/G inferred from the migration record — adjust if your naming differs.)*
 
-**Secrets needed on new project** (set via `supabase secrets set`):
-RAZORPAY_KEY_ID · RAZORPAY_KEY_SECRET · GOOGLE_PLACES_API_KEY · CRON_SECRET · TEST_EMAIL_SECRET ·
-BREVO_API_KEY · RESEND_API_KEY · SUPABASE_URL · SUPABASE_ANON_KEY · SUPABASE_SERVICE_ROLE_KEY · **GEMINI_API_KEY**.
-(`LOVABLE_API_KEY` is NO LONGER USED as of Phase A — all AI calls go direct to Gemini via `GEMINI_API_KEY`.)
+**Pending (not blockers):**
+- **Rotate the Supabase service_role key** — it was exposed in the migration chat. Do this before
+  Oct decommission.
+- **Email logo URLs still hotlink the old project** (§2.5) — fix before decommissioning `ozg…`.
 
-**Code that still points at the old stack** (report only, not yet fixed):
-- Hardcoded old ref `ozgghjbvhveswqplzegd` in **email logo URLs** — `send-premium-emails`
-  (6×: L424,556,658,876,974,1086) and `send-welcome-email` (2×: L23,111). Storage must be
-  migrated or these hotlink the old project.
-- ~~Lovable AI gateway in 10 functions~~ — **DONE (Phase A)**: all now call the direct Google
-  Gemini API via `supabase/functions/_shared/gemini-client.ts`.
-- ~~`LOVABLE_API_KEY` in those 10 functions~~ — **DONE (Phase A)**: removed; `GEMINI_API_KEY` used.
-- Razorpay webhook URL (§3.4) is hardcoded to the old ref in the Razorpay dashboard — repoint.
+---
 
-**Cron schedules do NOT deploy with the code** — recreate on the new project:
-cake-generation-watchdog (10 min, critical) · generate-blog-post · send-anniversary-reminders ·
-send-engagement-drip · send-reengagement-sequence (daily 9am) · send-weekly-blog-digest ·
-send-weekly-upgrade-nudge. No `cron.schedule` exists in migrations — they lived in the dashboard.
+## 1b. New stack config
 
-**Pending phases:**
-- **Phase A — DONE (2026-08-18).** All 10 AI functions call the direct Google Gemini API via
-  `supabase/functions/_shared/gemini-client.ts` (`generateImage` / `generateText` /
-  `generateWithTools`). `LOVABLE_API_KEY` no longer used; new secret `GEMINI_API_KEY` required.
-  Rollback is DNS-level (repoint to Lovable), NOT a code kill switch. Model IDs stay centralised
-  in `_shared/ai-models.ts` — corrected 2026-08-19 to GA direct-API names (no `google/` prefix):
-  chat `gemini-3.7-flash`, image `gemini-3.1-flash-image` (fast/cheap) + `gemini-3-pro-image` (HQ).
-  The client also strips a leading `google/` defensively. See §2.4 — still needs a live
-  cake-generation smoke test to confirm the IDs actually resolve.
-  Behaviour notes: complete-cake now advances `IMAGE_FALLBACK_CHAIN` on 429/RATE_LIMIT (was
-  terminal on the gateway); the tool-calling functions (invite-copy, party-planner-chat) use
-  Gemini-native function calling. **Deployed 2026-08-19** to the new project via the CLI's stored
-  credentials (not `SUPABASE_ACCESS_TOKEN`) — all 10 ACTIVE (complete-cake v15, rest v14);
-  `GEMINI_API_KEY` confirmed set, `LOVABLE_API_KEY` absent. Still UNVERIFIED at runtime — no live
-  generation has been exercised, so a real cake-generation smoke test is the next gate.
-- **Phase D** — Cloudflare Pages setup (frontend hosting off Lovable).
-- Migrate storage bucket `cake-images` (logo + generated images) to the new project, then fix
-  the 8 hardcoded email logo URLs above.
-- Recreate all cron schedules; recreate the `send-welcome-email` trigger if it was a dashboard hook.
+**Cloudflare Pages** — project `cake-ai-artist` · domains `cakeaiartist.com` + `www` ·
+production branch `main` · build `npm run build` → output `dist` ·
+env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`,
+`VITE_RAZORPAY_KEY_ID`. (Frontend reads the **PUBLISHABLE** key, not ANON — §3.7.)
+
+**Supabase secrets** (edge functions): `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`,
+`GOOGLE_PLACES_API_KEY`, `CRON_SECRET`, `BREVO_API_KEY`, `RESEND_API_KEY`, `GEMINI_API_KEY`,
+`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+(`LOVABLE_API_KEY` is gone — all AI is direct Gemini.)
+
+**Cron jobs (7 — schedules in UTC; pg_cron on the new project):**
+| Job | Schedule (UTC) | Function |
+|---|---|---|
+| cake-generation-watchdog | `*/10 * * * *` | cake-generation-watchdog |
+| engagement-recent-visitors | `30 3 * * 1` | send-engagement-drip (campaign=recent_visitors) |
+| engagement-we-miss-you | `30 3 * * 3` | send-engagement-drip (campaign=we_miss_you) |
+| send-anniversary-reminders | `30 3 * * *` | send-anniversary-reminders |
+| weekly-blog-digest | `0 21 * * 6` | send-weekly-blog-digest |
+| weekly-blog-generation | `30 18 * * 5` | generate-blog-post |
+| weekly-upgrade-nudge | `30 3 * * 4` | send-weekly-upgrade-nudge |
+
+**Razorpay webhook:** `https://gadiwsbvbycfygsaizja.supabase.co/functions/v1/razorpay-webhook`
+
+**AI models** (direct Gemini, **no `google/` prefix**): chat `gemini-3.7-flash` ·
+image `gemini-3.1-flash-image` (fast) + `gemini-3-pro-image` (HQ). Centralised in
+`supabase/functions/_shared/ai-models.ts`; `gemini-client.ts` strips a leading `google/` defensively.
 
 ---
 
@@ -111,14 +111,16 @@ trigger today — but any grant path that sets only `lifetime_access` breaks pre
 `generate-blog-post:393,514` (blog-image dedup) · `generate-complete-cake:786,873` (background
 vendor message) · `send-reengagement-sequence:276,336,400` (per-recipient send reason discarded).
 
-**2.4 AI model IDs (direct Gemini API) — deployed but NOT runtime-verified**
-`_shared/ai-models.ts` uses bare direct-API names (no `google/` prefix), set per operator as GA
-IDs (reported verified from Google docs, Aug 2026): chat `gemini-3.7-flash`, image
-`gemini-3.1-flash-image` (fast/cheap) + `gemini-3-pro-image` (HQ). Deployed to the new project
-2026-08-19; `GEMINI_API_KEY` is set. But **no live generation has been exercised** — a wrong chat
-ID breaks ALL text/vision/tool functions, and Google deprecates image models often (see §3.5).
-Next gate: trigger a real cake generation on the new project and confirm images + greeting return
-(watch function logs for `Gemini 4xx` / `RATE_LIMIT`).
+**2.4 PostShareUpgradeModal defaults `country="US"`**
+Quotes USD pricing at a high-intent moment even for non-US visitors. Wire it to
+`useGeoContext().detectedCountry` like the ExitIntentModal fix (§6, Jul 24). `PricingPlans` still
+defaults `US` too — cross-check both.
+
+**2.5 Email logo URLs hotlink the OLD project — breaks at decommission**
+`send-premium-emails` (L424, 556, 658, 876, 974, 1086) and `send-welcome-email` (L23, 111) load the
+logo from `https://ozgghjbvhveswqplzegd.supabase.co/storage/...`. When the old project is
+decommissioned (after Oct 2026) every transactional/premium email shows a broken logo. Repoint to
+the new project's storage (or a stable CDN) before then.
 
 ---
 
@@ -158,16 +160,22 @@ handler firing. When a CTA "does nothing", identify which type it is first.
 - The webhook was once **disabled** while a different project's (bornclock.com) stayed enabled →
   users paid, premium never granted. If premium isn't being granted, check
   Razorpay → Settings → Webhooks **first**.
-- Correct URL: `https://ozgghjbvhveswqplzegd.supabase.co/functions/v1/razorpay-webhook`
-- Plan IDs are hardcoded in `create-razorpay-subscription/index.ts` and must match the dashboard.
+- **Webhook now points at the new project:**
+  `https://gadiwsbvbycfygsaizja.supabase.co/functions/v1/razorpay-webhook`. The **BornClock webhook
+  was deleted** (no more cross-project confusion).
+- **30 plans in the Razorpay account:** 10 CakeAI (all correct + in use) · 5 BornClock (harmless,
+  can't delete) · 5 lifetime (dead weight) · 10 legacy. Only the 10 CakeAI plan IDs matter — they're
+  hardcoded in `create-razorpay-subscription/index.ts` and must match the dashboard.
 
 ### 3.5 AI model IDs
-When Google promotes a Gemini model preview → GA, the `-preview` suffix is dropped and the old ID
-returns **403**. This caused a 100% generation outage.
+When Google promotes a Gemini model preview → GA (or retires an old one), the old ID starts
+returning **403/404**. This has caused 100% generation outages. Direct Gemini API uses **bare**
+model names (no `google/` prefix — that was the Lovable gateway format).
 - All IDs live in `supabase/functions/_shared/ai-models.ts`. **Never hardcode.**
-- `scripts/check-model-ids.sh` fails if a raw model string appears elsewhere.
-- `generate-complete-cake` walks `IMAGE_FALLBACK_CHAIN` on 403 / model-shaped 400.
-  Does **not** fall back on 402 (credits) or 429 (rate limit) — terminal.
+- `scripts/check-model-ids.sh` fails if a provider-prefixed model string appears elsewhere.
+- `generate-complete-cake` walks `IMAGE_FALLBACK_CHAIN` on 403 / model-shaped 400 / **429
+  (RATE_LIMIT)** — 429 now advances the chain (a per-model quota may free up on the next model).
+  The direct Gemini API has **no 402 "credits" concept** (billing is Google Cloud).
 
 ### 3.6 Auth is fully decentralised
 ~60 independent `supabase.auth.*` call sites; no auth context. Every page checks for itself.
@@ -176,11 +184,34 @@ Login navigates directly after `signInWithPassword` — do **not** reintroduce n
 logged out). OAuth still navigates via the listener; it has no other entry point.
 
 ### 3.7 Frontend env vars — the .env override trap
-- Frontend reads VITE_SUPABASE_PUBLISHABLE_KEY, NOT VITE_SUPABASE_ANON_KEY. (hearlog uses ANON_KEY — do not copy conventions between projects.)
-- .env is TRACKED in git despite being listed in .gitignore (committed before the rule was added, so the rule is inert). Vite loads it at build time and it OVERRIDES Cloudflare/Lovable platform env vars.
-- If deployed credentials look wrong, check .env FIRST — before platform settings.
-- Frontend vars: VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_SUPABASE_PROJECT_ID, VITE_RAZORPAY_KEY_ID
-- At cutover: merge migration-frontend to main so production picks up the new project.
+- Frontend reads `VITE_SUPABASE_PUBLISHABLE_KEY`, NOT `VITE_SUPABASE_ANON_KEY`. (Don't copy
+  conventions between projects.)
+- `.env` is TRACKED in git despite being listed in `.gitignore` (committed before the rule was
+  added, so the rule is inert). Vite loads it at build time and it **OVERRIDES Cloudflare platform
+  env vars**.
+- If deployed credentials look wrong, check `.env` **FIRST** — before platform settings.
+- Frontend vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`,
+  `VITE_RAZORPAY_KEY_ID`.
+- Cutover done (Aug 19): `migration-frontend` carried the new-project `.env`; `main` builds on
+  Cloudflare against the new project.
+
+### 3.8 Supabase CLI is not in the Claude Code container
+Deploy edge functions **from the Mac terminal**: `export SUPABASE_ACCESS_TOKEN=…` then
+`npx supabase functions deploy <fn> --project-ref gadiwsbvbycfygsaizja`. (In-container `npx supabase`
+can work off stored `~/.supabase` creds, but treat the Mac terminal as the source of truth.)
+Note: **`npx supabase functions logs` does not exist** — read logs from the Supabase **dashboard**.
+
+### 3.9 Auth email confirmation rate limit (Lovable-era lockout)
+On Lovable's shared SMTP the confirmation-email rate limit was **2/hour**, so signup confirmations
+were silently dropped in bursts — **72 of 117 email users never confirmed**. Fixed **Aug 14**:
+auto-confirm **ON**, rate limit raised to **100/hour**, and the 72 back-confirmed via SQL. The new
+Supabase project uses **auto-confirm by default**, so this shouldn't recur — but watch it if you
+ever turn auto-confirm off.
+
+### 3.10 IPv6 — new Supabase projects default to IPv6 direct connections
+Direct-connection `pg_restore`/`psql` from a Mac (often IPv4-only) **fails to connect**. Use the
+**Session pooler** (IPv4) instead:
+`postgresql://postgres.gadiwsbvbycfygsaizja:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`
 
 ---
 
@@ -196,7 +227,9 @@ wrong. Stop fixing. Re-identify the element.
    "works on desktop, dead on mobile" report.
 4. **Is the change deployed?** Verify a behavioural difference. Old behaviour after a push =
    stale bundle; stop shipping more fixes into the void.
-5. **Check prop defaults.** Components can silently default to `US`/no-op (§8 of survey; the `ExitIntentModal` instance was fixed Jul 24 — see §6, but `PostShareUpgradeModal`/`PricingPlans` still default `country="US"`).
+5. **Check prop defaults.** Components can silently default to `US`/no-op (the `ExitIntentModal`
+   instance was fixed Jul 24 — see §6, but `PostShareUpgradeModal`/`PricingPlans` still default
+   `country="US"` — §2.4).
 
 ```bash
 grep -rn "ComponentName" src/ --include="*.tsx"   # who mounts it, with what props
@@ -241,9 +274,12 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
-| Aug 12 | 10h silent outage: 9 cake jobs produced zero images | AI credits hit zero (gateway 402 → `CREDITS_EXHAUSTED`). Watchdog sent **one** generic "degraded" email in 10h (1h cooldown + 3-job/hour minimum sample) and never named credits. Zero-image jobs were also stored as `partial_failed`, indistinguishable from a 2-of-3 success. Added a dedicated `credits_exhausted` alert (fires on a single failure, no sample minimum, 6h cooldown, explicit "top up now" copy), made `filled === 0` resolve to `failed`, and gave the 402 case its own user-facing message. `generation_tracking` is only incremented on save, so no free generation was consumed. |
-| Jul 24 | Non-US visitors saw USD in the exit-intent modal on 13 pages | `ExitIntentModal` defaults `country` to `US` and falls back to USD for unmapped values; 13 pages passed a literal `country="US"` and read no geo. Wired each to `useGeoContext().detectedCountry` → `country={detectedCountry \|\| 'US'}` (matches Index.tsx). USALanding intentionally keeps `US`. |
-| Jul 24 | Pricing copy drifted from the source-of-truth table | Prices hardcoded in several places instead of read from `PricingPlans.PRICING`. `USALanding` FAQ said yearly `$19.99` (real `$29`); `PremiumComparison` had no `US` key so US/unmapped visitors fell back to a stale `$9.99/mo` (real `$4.99`). Corrected both; other copies already matched. |
+| Aug 19 | Full Lovable migration complete | DNS cutover — `cakeaiartist.com` now on **Cloudflare Pages + self-managed Supabase (`gadiwsbvbycfygsaizja`) + direct Gemini**. 34 edge functions deployed, 7 cron jobs recreated, Razorpay webhook repointed, frontend `.env` → new project. **~$90/mo saved.** Old project `ozgghjbvhveswqplzegd` dark → decommission after Oct 2026. |
+| Aug 19 | AI functions using deprecated models | `gemini-2.5-flash` deprecated for new API keys; image `-exp` model retired. Switched to `gemini-3.7-flash` (chat) + `gemini-3.1-flash-image` / `gemini-3-pro-image` (image), bare direct-API names. IDs centralised in `_shared/ai-models.ts`. |
+| Aug 14 | 72 email signups locked out | Lovable shared SMTP confirmation limit was **2/hr** → confirmations silently dropped (72 of 117 email users never confirmed). Fixed: auto-confirm ON, rate limit 100/hr, 72 back-confirmed via SQL (see §3.9). |
+| Aug 12 | 10h silent outage: 9 cake jobs produced zero images | AI credits hit zero (gateway 402 → `CREDITS_EXHAUSTED`). Watchdog sent **one** generic "degraded" email in 10h and never named credits. Zero-image jobs were also stored as `partial_failed`, indistinguishable from a 2-of-3 success. Added a dedicated `credits_exhausted` alert (single failure, 6h cooldown, explicit "top up now"), made `filled === 0` resolve to `failed`, and gave the 402 case its own user-facing message. `generation_tracking` is only incremented on save, so no free generation was consumed. |
+| Jul 24 | Non-US visitors saw USD in the exit-intent modal on 13 pages | `ExitIntentModal` defaults `country` to `US` and falls back to USD for unmapped values; 13 pages passed a literal `country="US"` and read no geo. Wired each to `useGeoContext().detectedCountry` → `country={detectedCountry \|\| 'US'}`. USALanding intentionally keeps `US`. |
+| Jul 24 | Pricing copy drifted from the source-of-truth table | Prices hardcoded instead of read from `PricingPlans.PRICING`. `USALanding` FAQ said yearly `$19.99` (real `$29`); `PremiumComparison` had no `US` key so US/unmapped visitors fell back to a stale `$9.99/mo` (real `$4.99`). Corrected both. |
 | Jul 24 | Mobile CTA dead (4 wrong fixes first) | `StickyMobileCTA` href defaulted to `/`; mounted only on country landings, not `Index.tsx` |
 | Jul 23 | Low CTR on high-impression pages | Meta rewrites ×4 pages + 5 blog posts; AEO answer/definition blocks on 15 pages |
 | Jul 23 | 250 pages not indexed | `noindex` on `/cake/:id`; 7 bad sitemap URLs removed |
@@ -258,19 +294,23 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 ## 7. Open items
 
+**Fix soon**
+- Rotate the Supabase **service_role key** (exposed in migration chat).
+- Repoint **email logo URLs** off the old project (§2.5) — before Oct decommission.
+- **PostShareUpgradeModal** `country="US"` default → geo (§2.4).
+- **Lifetime-only premium** check across ~15 pages (§2.1).
+
+**Decommission after Oct 2026**
+- Remove Lovable Cloud project `ozgghjbvhveswqplzegd` once nothing references it (email logos first).
+
 **Decisions pending**
 Hero declutter + font-contrast audit (analysis done, unimplemented — biggest UX win) ·
 browse-hub for ~220 programmatic `/birthday-cake-for/*` pages (likely most of "Discovered –
-not indexed") · Trustpilot for SERP stars (needs ~25 reviews) · migration off Lovable Cloud
-(feasible; main coupling is the AI gateway key)
-
-**Manual actions outstanding**
-Request-indexing list in `docs/reports/request-indexing-list.md` (max 10/day) ·
-daily 9am cron for `send-reengagement-sequence` · confirm `grant-referral-bonus` is deployed
+not indexed") · Trustpilot for SERP stars (needs ~25 reviews).
 
 **Growth backlog (researched, not started)**
 Pinterest · weekly Reels · bakery embed widget · WhatsApp share-message copy ·
-community posting · GA4 + Ads conversion tracking **before** any paid spend
+community posting · GA4 + Ads conversion tracking **before** any paid spend.
 
 ---
 
