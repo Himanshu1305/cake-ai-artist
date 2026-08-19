@@ -192,8 +192,9 @@ logged out). OAuth still navigates via the listener; it has no other entry point
 - If deployed credentials look wrong, check `.env` **FIRST** — before platform settings.
 - Frontend vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`,
   `VITE_RAZORPAY_KEY_ID`.
-- Cutover done (Aug 19): `migration-frontend` carried the new-project `.env`; `main` builds on
-  Cloudflare against the new project.
+- Lovable was disconnected from GitHub on 2026-08-19 after it reverted `.env` to the old project and Cloudflare shipped that to production. Nothing external has write access to `main` now — keep it that way.
+- A clean `git pull --rebase` is NOT a safety check. It replays YOUR commit onto whatever is on origin; a file you did not touch (like `.env`) silently keeps the other side's version. Verifying "my change survived the rebase" does not verify the build is correct.
+- After ANY rebase or merge on main, verify `.env` before considering the push done: `git show origin/main:.env | grep SUPABASE_URL` must show `gadiwsbvbycfygsaizja`.
 
 ### 3.8 Supabase CLI is not in the Claude Code container
 Deploy edge functions **from the Mac terminal**: `export SUPABASE_ACCESS_TOKEN=…` then
@@ -227,7 +228,9 @@ wrong. Stop fixing. Re-identify the element.
    "works on desktop, dead on mobile" report.
 4. **Is the change deployed?** Verify a behavioural difference. Old behaviour after a push =
    stale bundle; stop shipping more fixes into the void.
-5. **Check prop defaults.** Components can silently default to `US`/no-op (the `ExitIntentModal`
+5. **After any rebase/merge onto main, check `.env` on origin** — a rebase preserves your commit,
+   not the other side's file changes.
+6. **Check prop defaults.** Components can silently default to `US`/no-op (the `ExitIntentModal`
    instance was fixed Jul 24 — see §6, but `PostShareUpgradeModal`/`PricingPlans` still default
    `country="US"` — §2.4).
 
@@ -274,6 +277,7 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Aug 19 | Production silently reverted to the OLD Supabase project | Lovable was still GitHub-connected post-migration and pushed 3 commits to main; "Work in progress" reverted .env to ozgghjbvhveswqplzegd. Cloudflare auto-built from main → production hit the old DB. Caught same day: 2 orphaned users, 0 cakes, 0 payments. Fixed: .env restored, Lovable disconnected from GitHub permanently. |
 | Aug 19 | Full Lovable migration complete | DNS cutover — `cakeaiartist.com` now on **Cloudflare Pages + self-managed Supabase (`gadiwsbvbycfygsaizja`) + direct Gemini**. 34 edge functions deployed, 7 cron jobs recreated, Razorpay webhook repointed, frontend `.env` → new project. **~$90/mo saved.** Old project `ozgghjbvhveswqplzegd` dark → decommission after Oct 2026. |
 | Aug 19 | AI functions using deprecated models | `gemini-2.5-flash` deprecated for new API keys; image `-exp` model retired. Switched to `gemini-3.7-flash` (chat) + `gemini-3.1-flash-image` / `gemini-3-pro-image` (image), bare direct-API names. IDs centralised in `_shared/ai-models.ts`. |
 | Aug 14 | 72 email signups locked out | Lovable shared SMTP confirmation limit was **2/hr** → confirmations silently dropped (72 of 117 email users never confirmed). Fixed: auto-confirm ON, rate limit 100/hr, 72 back-confirmed via SQL (see §3.9). |
