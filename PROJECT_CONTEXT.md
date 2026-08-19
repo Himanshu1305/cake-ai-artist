@@ -76,13 +76,16 @@ send-weekly-upgrade-nudge. No `cron.schedule` exists in migrations — they live
   `supabase/functions/_shared/gemini-client.ts` (`generateImage` / `generateText` /
   `generateWithTools`). `LOVABLE_API_KEY` no longer used; new secret `GEMINI_API_KEY` required.
   Rollback is DNS-level (repoint to Lovable), NOT a code kill switch. Model IDs stay centralised
-  in `_shared/ai-models.ts` — updated 2026-08-18 to bare direct-API names (no `google/` prefix;
-  chat `gemini-3.6-flash`, image `gemini-2.0-flash-exp-image-generation`), both UNVERIFIED — see §2.4.
-  The client also strips a leading `google/` defensively.
+  in `_shared/ai-models.ts` — corrected 2026-08-19 to GA direct-API names (no `google/` prefix):
+  chat `gemini-3.7-flash`, image `gemini-3.1-flash-image` (fast/cheap) + `gemini-3-pro-image` (HQ).
+  The client also strips a leading `google/` defensively. See §2.4 — still needs a live
+  cake-generation smoke test to confirm the IDs actually resolve.
   Behaviour notes: complete-cake now advances `IMAGE_FALLBACK_CHAIN` on 429/RATE_LIMIT (was
   terminal on the gateway); the tool-calling functions (invite-copy, party-planner-chat) use
-  Gemini-native function calling. **Deploy of these 10 functions is still PENDING** — needs
-  `SUPABASE_ACCESS_TOKEN`; no local `deno`/CLI so they are UNVERIFIED until deployed/smoke-tested.
+  Gemini-native function calling. **Deployed 2026-08-19** to the new project via the CLI's stored
+  credentials (not `SUPABASE_ACCESS_TOKEN`) — all 10 ACTIVE (complete-cake v15, rest v14);
+  `GEMINI_API_KEY` confirmed set, `LOVABLE_API_KEY` absent. Still UNVERIFIED at runtime — no live
+  generation has been exercised, so a real cake-generation smoke test is the next gate.
 - **Phase D** — Cloudflare Pages setup (frontend hosting off Lovable).
 - Migrate storage bucket `cake-images` (logo + generated images) to the new project, then fix
   the 8 hardcoded email logo URLs above.
@@ -108,16 +111,14 @@ trigger today — but any grant path that sets only `lifetime_access` breaks pre
 `generate-blog-post:393,514` (blog-image dedup) · `generate-complete-cake:786,873` (background
 vendor message) · `send-reengagement-sequence:276,336,400` (per-recipient send reason discarded).
 
-**2.4 AI model IDs (direct Gemini API) — UNVERIFIED, deprecate frequently**
-`_shared/ai-models.ts` now uses bare direct-API names (no `google/` prefix). Two risks, both
-untestable until the new project is deployed + smoke-tested (deploy is blocked on
-`SUPABASE_ACCESS_TOKEN`):
-- **`CHAT_MODEL_DEFAULT = "gemini-3.6-flash"`** — set per operator instruction (google/gemini-2.5-flash
-  reported deprecated for new API keys). Not confirmed to exist on `generativelanguage.googleapis.com`
-  — verify against Google's model list before relying on it. A wrong chat ID breaks ALL text/vision/
-  tool functions.
-- **Image models all = `"gemini-2.0-flash-exp-image-generation"`** — a *preview/exp* model; Google
-  deprecates these often (see §3.5). Confirm cake generation actually works after deploy.
+**2.4 AI model IDs (direct Gemini API) — deployed but NOT runtime-verified**
+`_shared/ai-models.ts` uses bare direct-API names (no `google/` prefix), set per operator as GA
+IDs (reported verified from Google docs, Aug 2026): chat `gemini-3.7-flash`, image
+`gemini-3.1-flash-image` (fast/cheap) + `gemini-3-pro-image` (HQ). Deployed to the new project
+2026-08-19; `GEMINI_API_KEY` is set. But **no live generation has been exercised** — a wrong chat
+ID breaks ALL text/vision/tool functions, and Google deprecates image models often (see §3.5).
+Next gate: trigger a real cake generation on the new project and confirm images + greeting return
+(watch function logs for `Gemini 4xx` / `RATE_LIMIT`).
 
 ---
 
