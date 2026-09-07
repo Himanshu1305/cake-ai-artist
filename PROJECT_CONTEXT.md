@@ -224,6 +224,15 @@ New Supabase projects default to IPv6 direct connections, so a direct-connection
 **Session pooler** (IPv4):
 `postgresql://postgres.gadiwsbvbycfygsaizja:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`
 
+### 3.11 Cloudflare production branch — check it after any branch experiment
+Cloudflare Pages → Settings → Branch control → **Production branch**. During the migration this was
+set to `migration-frontend` so we could test without touching production. It was **never set back
+to `main`** after the DNS cutover, so from **Aug 19 to Sep 7** production served a frozen build
+while every new commit deployed only as a **Preview** on a throwaway `*.pages.dev` URL.
+- **Symptom:** fixes appear to have no effect; Deployments shows Production dated days or weeks old
+  while recent commits show as Preview.
+- **Check:** the Production row in Deployments should show branch `main` and a recent date.
+
 ---
 
 ## 4. Debugging playbook
@@ -237,7 +246,8 @@ wrong. Stop fixing. Re-identify the element.
 3. **Is it a mobile-only component?** `StickyMobileCTA` is the only one. Check it early on any
    "works on desktop, dead on mobile" report.
 4. **Is the change deployed?** Verify a behavioural difference. Old behaviour after a push =
-   stale bundle; stop shipping more fixes into the void.
+   stale bundle; stop shipping more fixes into the void. **Check the Cloudflare Production
+   branch first (§3.11)** — a wrong production branch looks exactly like a stale bundle.
 5. **After any rebase/merge onto main, check `.env` on origin** — a rebase preserves your commit,
    not the other side's file changes.
 6. **Check prop defaults.** Components can silently default to `US`/no-op (the `ExitIntentModal`
@@ -285,7 +295,10 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 ## 5a. Weekly health check
 
-Run this in the Supabase SQL editor once a week:
+**1. Cloudflare Pages → Deployments.** The **Production** row must show branch `main` and a recent
+date. Anything else means production is frozen and nothing you ship is live — see §3.11.
+
+**2. Run this in the Supabase SQL editor:**
 
 ```sql
 SELECT 'jobs_7d' AS metric, COUNT(*)::text AS value FROM cake_generation_jobs WHERE created_at > NOW() - INTERVAL '7 days'
@@ -303,8 +316,8 @@ UNION ALL SELECT 'client_errors_7d', COUNT(*)::text FROM client_errors WHERE cre
 - `cron_active` != 7 → a scheduled job has died
 
 **Why this exists:** every incident to date (Aug 12 credit outage, Aug 14 auth leak, Aug 19 `.env`
-revert, Sep 7 auth leak recurrence) was found by manual querying days or weeks late. The watchdog
-detects **failures**; these incidents were **absences**.
+revert, Sep 7 auth leak recurrence, Sep 7 frozen production) was found by manual querying days or
+weeks late. The watchdog detects **failures**; these incidents were **absences**.
 
 ---
 
@@ -312,6 +325,7 @@ detects **failures**; these incidents were **absences**.
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Sep 7 | Production frozen for 20 days | Cloudflare production branch was left on `migration-frontend` after the migration cutover. All commits Aug 19–Sep 7 deployed as Preview only; cakeaiartist.com served the Aug 19 build. Fixed: production branch set to `main`. |
 | Sep 7 | Auth leak recurred on new project — ~30 users blocked ~3 weeks | Auth settings do not migrate between Supabase projects; new project had default Confirm-email ON with default SMTP limits. Fixed: confirm-email off, rate limit raised, users back-confirmed via SQL. Added §5a weekly health check because this was found manually, not by alert. |
 | Sep 7 | Top view failing on every generation | "No image returned from Gemini" on the top view — the most complex prompt. hero/side succeed, so users still see 2 of 3 views. Fix pending. |
 | Aug 19 | Production silently reverted to the OLD Supabase project | Lovable was still GitHub-connected post-migration and pushed 3 commits to main; "Work in progress" reverted .env to ozgghjbvhveswqplzegd. Cloudflare auto-built from main → production hit the old DB. Caught same day: 2 orphaned users, 0 cakes, 0 payments. Fixed: .env restored, Lovable disconnected from GitHub permanently. |
