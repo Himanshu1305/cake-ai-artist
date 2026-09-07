@@ -22,12 +22,13 @@ Repo `github.com/Himanshu1305/cake-ai-artist` · Supabase ref `gadiwsbvbycfygsai
 → live in a few minutes. Always verify a *behavioural* change after deploying, not just that the
 page loads.
 
-**Local build is impossible.** `node_modules` is absent; `vite build` fails. `npx tsc --noEmit`
-works (fetches TS on demand) and is the only local gate.
+**Local build works.** Dependencies are installed and `npm run build` succeeds (~11s) —
+**run it before pushing.** (`npx tsc --noEmit` is still a useful faster gate.)
 
-**Edge functions are NOT deployed by a git push** — deploy them explicitly, and **from the Mac
-terminal** (`npx supabase functions deploy …`; the Claude Code container has no pre-installed CLI —
-see §3.8). A function in the repo but missing from the Edge Functions list has never been deployed.
+**Edge functions are NOT deployed by a git push** — deploy them explicitly:
+`npx supabase functions deploy <fn> --project-ref gadiwsbvbycfygsaizja` (see §3.8 for the
+access-token footgun). A function in the repo but missing from the Edge Functions list has never
+been deployed.
 
 **Old project `ozgghjbvhveswqplzegd`** (Lovable Cloud) is now dark — **decommission after Oct 2026**
 once we're confident nothing references it (email logo URLs still do — §2.5).
@@ -196,22 +197,31 @@ logged out). OAuth still navigates via the listener; it has no other entry point
 - A clean `git pull --rebase` is NOT a safety check. It replays YOUR commit onto whatever is on origin; a file you did not touch (like `.env`) silently keeps the other side's version. Verifying "my change survived the rebase" does not verify the build is correct.
 - After ANY rebase or merge on main, verify `.env` before considering the push done: `git show origin/main:.env | grep SUPABASE_URL` must show `gadiwsbvbycfygsaizja`.
 
-### 3.8 Supabase CLI is not in the Claude Code container
-Deploy edge functions **from the Mac terminal**: `export SUPABASE_ACCESS_TOKEN=…` then
-`npx supabase functions deploy <fn> --project-ref gadiwsbvbycfygsaizja`. (In-container `npx supabase`
-can work off stored `~/.supabase` creds, but treat the Mac terminal as the source of truth.)
+### 3.8 Supabase CLI on Windows — never set SUPABASE_ACCESS_TOKEN
+`npx supabase` works on Windows. Authenticate **once** via `npx supabase login --token sbp_...`.
+**Do NOT set `SUPABASE_ACCESS_TOKEN` as an env var** — it silently overrides the stored credential
+and produces "Unauthorized" on every command (cost ~20 min on Sep 7).
+Deploy: `npx supabase functions deploy <NAME> --project-ref gadiwsbvbycfygsaizja`.
 Note: **`npx supabase functions logs` does not exist** — read logs from the Supabase **dashboard**.
 
-### 3.9 Auth email confirmation rate limit (Lovable-era lockout)
-On Lovable's shared SMTP the confirmation-email rate limit was **2/hour**, so signup confirmations
-were silently dropped in bursts — **72 of 117 email users never confirmed**. Fixed **Aug 14**:
-auto-confirm **ON**, rate limit raised to **100/hour**, and the 72 back-confirmed via SQL. The new
-Supabase project uses **auto-confirm by default**, so this shouldn't recur — but watch it if you
-ever turn auto-confirm off.
+### 3.9 Auth settings are PER-PROJECT and do not migrate
+- **Aug 14 2026:** Lovable's SMTP rate limit was 2 emails/hour → **72 of 117 email signups** never
+  received a confirmation email and could not log in. Fixed on the Lovable project: auto-confirm ON,
+  rate limit 100/hr, password min 8.
+- **Sep 7 2026:** the SAME failure reappeared on the new Supabase project (`gadiwsbvbycfygsaizja`).
+  **Auth settings are per-project and were NOT carried over by the migration** — the new project was
+  created with defaults. **~30 users blocked for roughly 3 weeks.** Symptom that gave it away:
+  15 signups in 7 days but only 2 generation attempts.
+- **FIX:** Authentication → Sign In/Providers → Email → **Confirm email OFF**.
+  Authentication → Rate Limits → raise email sends well above default.
+- **Check this after creating ANY new Supabase project.**
+- Detection: `SELECT COUNT(*) FROM auth.users WHERE email_confirmed_at IS NULL;` — must be 0.
 
-### 3.10 IPv6 — new Supabase projects default to IPv6 direct connections
-Direct-connection `pg_restore`/`psql` from a Mac (often IPv4-only) **fails to connect**. Use the
-**Session pooler** (IPv4) instead:
+### 3.10 IPv6 / session pooler — *Mac + IPv4 only, historical*
+Applied to the **one-off `pg_restore` during the Aug 2026 migration**, not to normal Windows work.
+New Supabase projects default to IPv6 direct connections, so a direct-connection
+`pg_restore`/`psql` from a Mac (often IPv4-only) **fails to connect**. The workaround was the
+**Session pooler** (IPv4):
 `postgresql://postgres.gadiwsbvbycfygsaizja:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`
 
 ---
@@ -273,10 +283,37 @@ Enforced client-side in `CakeCreator.tsx` **and** server-side in `generate-compl
 
 ---
 
+## 5a. Weekly health check
+
+Run this in the Supabase SQL editor once a week:
+
+```sql
+SELECT 'jobs_7d' AS metric, COUNT(*)::text AS value FROM cake_generation_jobs WHERE created_at > NOW() - INTERVAL '7 days'
+UNION ALL SELECT 'completed_7d', COUNT(*)::text FROM cake_generation_jobs WHERE created_at > NOW() - INTERVAL '7 days' AND status='completed'
+UNION ALL SELECT 'signups_7d', COUNT(*)::text FROM auth.users WHERE created_at > NOW() - INTERVAL '7 days'
+UNION ALL SELECT 'unconfirmed', COUNT(*)::text FROM auth.users WHERE email_confirmed_at IS NULL
+UNION ALL SELECT 'cron_active', COUNT(*)::text FROM cron.job WHERE active
+UNION ALL SELECT 'client_errors_7d', COUNT(*)::text FROM client_errors WHERE created_at > NOW() - INTERVAL '7 days';
+```
+
+**How to read it:**
+- `unconfirmed` > 0 → auth settings broken, see §3.9
+- `completed_7d` = 0 while `jobs_7d` > 0 → generation broken
+- `signups_7d` high but `jobs_7d` low → users blocked before reaching the generator
+- `cron_active` != 7 → a scheduled job has died
+
+**Why this exists:** every incident to date (Aug 12 credit outage, Aug 14 auth leak, Aug 19 `.env`
+revert, Sep 7 auth leak recurrence) was found by manual querying days or weeks late. The watchdog
+detects **failures**; these incidents were **absences**.
+
+---
+
 ## 6. Fix history
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Sep 7 | Auth leak recurred on new project — ~30 users blocked ~3 weeks | Auth settings do not migrate between Supabase projects; new project had default Confirm-email ON with default SMTP limits. Fixed: confirm-email off, rate limit raised, users back-confirmed via SQL. Added §5a weekly health check because this was found manually, not by alert. |
+| Sep 7 | Top view failing on every generation | "No image returned from Gemini" on the top view — the most complex prompt. hero/side succeed, so users still see 2 of 3 views. Fix pending. |
 | Aug 19 | Production silently reverted to the OLD Supabase project | Lovable was still GitHub-connected post-migration and pushed 3 commits to main; "Work in progress" reverted .env to ozgghjbvhveswqplzegd. Cloudflare auto-built from main → production hit the old DB. Caught same day: 2 orphaned users, 0 cakes, 0 payments. Fixed: .env restored, Lovable disconnected from GitHub permanently. |
 | Aug 19 | Full Lovable migration complete | DNS cutover — `cakeaiartist.com` now on **Cloudflare Pages + self-managed Supabase (`gadiwsbvbycfygsaizja`) + direct Gemini**. 34 edge functions deployed, 7 cron jobs recreated, Razorpay webhook repointed, frontend `.env` → new project. **~$90/mo saved.** Old project `ozgghjbvhveswqplzegd` dark → decommission after Oct 2026. |
 | Aug 19 | AI functions using deprecated models | `gemini-2.5-flash` deprecated for new API keys; image `-exp` model retired. Switched to `gemini-3.7-flash` (chat) + `gemini-3.1-flash-image` / `gemini-3-pro-image` (image), bare direct-API names. IDs centralised in `_shared/ai-models.ts`. |
