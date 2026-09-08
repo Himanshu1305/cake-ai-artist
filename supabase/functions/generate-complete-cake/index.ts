@@ -479,10 +479,27 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
         const msg = err?.message || String(err);
         if (view.name !== 'top' || msg !== 'No image returned from Gemini') throw err;
 
-        console.log(`[bg ${logId}] top simplified-prompt retry — attempting`);
-        const simplePrompt = `Overhead photo of a birthday cake seen from directly above. The name "${name}" written on top. ${occasionText}. ${colors || 'pastel'} colors. Whole round cake centred in frame, plain background.`;
+        // The failure is caused by the FRAMING language (numeric ranges, "DO NOT
+        // crop", "never clipped"), not by the photo instruction — so the retry strips
+        // the framing and KEEPS the photo. The photo appears on the top view ONLY
+        // (see buildMessages), so a photo-less retry returns a broken result rather
+        // than a degraded one. The photo variant builds the same message shape as the
+        // normal photo path so callImageModel parses it into inputImages.
+        console.log(`[bg ${logId}] top simplified-prompt retry — attempting (photo: ${!!userPhotoBase64})`);
+        const simpleMessages: any[] = userPhotoBase64
+          ? [{
+              role: 'user',
+              content: [
+                { type: 'text', text: `Overhead photo of a birthday cake seen from directly above. A large circular edible photo print of the supplied image covers the top of the cake. The name "${name}" written on the cake. ${occasionText}. ${colors || 'pastel'} colors. Whole round cake centred in frame, plain background.` },
+                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${userPhotoBase64}` } },
+              ],
+            }]
+          : [{
+              role: 'user',
+              content: `Overhead photo of a birthday cake seen from directly above. The name "${name}" written on top. ${occasionText}. ${colors || 'pastel'} colors. Whole round cake centred in frame, plain background.`,
+            }];
         const url = await callImageModel(
-          [{ role: 'user', content: simplePrompt }],
+          simpleMessages,
           IMAGE_FALLBACK_CHAIN[0],
           PRIMARY_TIMEOUT_MS,
           `${view.name}/simplified`,

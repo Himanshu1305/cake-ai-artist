@@ -253,6 +253,11 @@ it. Hero and side (~40 words, one instruction each) have never failed.
 - **`IMAGE_FALLBACK_CHAIN` cannot fix prompt problems** — it varies the model, not the prompt.
   It is also `[FAST, HQ, CHEAP]` where `CHEAP === FAST`, so only **2 distinct models** are tried.
 - **Mitigation in place:** simplified-prompt retry for 'top' after the chain exhausts.
+- **The retry KEEPS the user's uploaded photo.** The photo appears on the **top view only**, so a
+  photo-less retry returns a *broken* result, not a degraded one — and we are moving from 3 views
+  to 2, which makes the top view matter more. The failure cause is the **framing** language, not
+  the photo instruction, so the retry strips the framing and passes the photo through as
+  `inputImages` using the same message shape as the normal photo path.
 
 ---
 
