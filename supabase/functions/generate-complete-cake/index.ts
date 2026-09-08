@@ -427,41 +427,69 @@ SCULPTED CAKE — must look like a REAL EDIBLE CAKE inspired by ${character || '
 
     // Generate one view: walk IMAGE_FALLBACK_CHAIN until a model succeeds.
     // 429/402 are terminal — never retry. 403 and model-shaped 400 trigger chain advance.
-    const generateView = async (view: typeof viewAngles[0]): Promise<string> => {
+    const generateView = async (
+      view: typeof viewAngles[0],
+      jobId: string | null = null,
+    ): Promise<string> => {
       const messages = buildMessages(view);
       const t0 = Date.now();
+      const logId = jobId ?? 'regen';
 
-      for (let i = 0; i < IMAGE_FALLBACK_CHAIN.length; i++) {
-        const model = IMAGE_FALLBACK_CHAIN[i];
-        const timeoutMs = i === 0 ? PRIMARY_TIMEOUT_MS : FALLBACK_TIMEOUT_MS;
-        const label = i === 0 ? view.name : `${view.name}/fallback${i}`;
-        try {
-          const url = await callImageModel(messages, model, timeoutMs, label);
-          console.log(`⏱ ${view.name} ok in ${Date.now() - t0}ms (model=${model})`);
-          return url;
-        } catch (err: any) {
-          const msg = err?.message || String(err);
-          // Direct Gemini API: a 429/RATE_LIMIT is now chain-fallbackable — a
-          // per-model quota can free up on the next model — whereas the old
-          // gateway 429 was account-wide and terminal. Aborts (timeout), 5xx,
-          // model-shaped 4xx, and empty results also advance the chain.
-          const isChainFallbackable =
-            msg.includes('RATE_LIMIT') ||
-            err?.name === 'AbortError' ||
-            msg.includes('aborted') ||
-            msg === 'No image returned from Gemini' ||
-            /Gemini 5\d\d/.test(msg) ||
-            (/Gemini 4\d\d/.test(msg) && /model/i.test(msg));
-          const isLast = i === IMAGE_FALLBACK_CHAIN.length - 1;
-          if (!isChainFallbackable || isLast) {
-            console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
-            throw err;
+      try {
+        for (let i = 0; i < IMAGE_FALLBACK_CHAIN.length; i++) {
+          const model = IMAGE_FALLBACK_CHAIN[i];
+          const timeoutMs = i === 0 ? PRIMARY_TIMEOUT_MS : FALLBACK_TIMEOUT_MS;
+          const label = i === 0 ? view.name : `${view.name}/fallback${i}`;
+          try {
+            const url = await callImageModel(messages, model, timeoutMs, label);
+            console.log(`⏱ ${view.name} ok in ${Date.now() - t0}ms (model=${model})`);
+            return url;
+          } catch (err: any) {
+            const msg = err?.message || String(err);
+            // Direct Gemini API: a 429/RATE_LIMIT is now chain-fallbackable — a
+            // per-model quota can free up on the next model — whereas the old
+            // gateway 429 was account-wide and terminal. Aborts (timeout), 5xx,
+            // model-shaped 4xx, and empty results also advance the chain.
+            const isChainFallbackable =
+              msg.includes('RATE_LIMIT') ||
+              err?.name === 'AbortError' ||
+              msg.includes('aborted') ||
+              msg === 'No image returned from Gemini' ||
+              /Gemini 5\d\d/.test(msg) ||
+              (/Gemini 4\d\d/.test(msg) && /model/i.test(msg));
+            const isLast = i === IMAGE_FALLBACK_CHAIN.length - 1;
+            if (!isChainFallbackable || isLast) {
+              console.log(`⏱ ${view.name} fail in ${Date.now() - t0}ms — ${msg}`);
+              throw err;
+            }
+            console.log(`⏱ ${view.name} failed with ${model} after ${Date.now() - t0}ms (${msg}) — trying ${IMAGE_FALLBACK_CHAIN[i + 1]}`);
           }
-          console.log(`⏱ ${view.name} failed with ${model} after ${Date.now() - t0}ms (${msg}) — trying ${IMAGE_FALLBACK_CHAIN[i + 1]}`);
         }
-      }
 
-      throw new Error('IMAGE_FALLBACK_CHAIN_EXHAUSTED');
+        throw new Error('IMAGE_FALLBACK_CHAIN_EXHAUSTED');
+      } catch (err: any) {
+        // LAST-RESORT SIMPLIFIED-PROMPT RETRY — 'top' only.
+        // 'top' is the only over-constrained prompt (~110 words stacking numeric
+        // ranges and negative constraints). Gemini answers an over-constrained
+        // image prompt with a TEXT part and no image, which surfaces as exactly
+        // this message. IMAGE_FALLBACK_CHAIN cannot help: it varies the MODEL and
+        // the cause is the PROMPT. So retry ONCE on the primary model with a
+        // short, purely descriptive prompt. See PROJECT_CONTEXT §3.12.
+        // Deliberately narrow — never fires on timeout/abort, 402 or 429.
+        const msg = err?.message || String(err);
+        if (view.name !== 'top' || msg !== 'No image returned from Gemini') throw err;
+
+        console.log(`[bg ${logId}] top simplified-prompt retry — attempting`);
+        const simplePrompt = `Overhead photo of a birthday cake seen from directly above. The name "${name}" written on top. ${occasionText}. ${colors || 'pastel'} colors. Whole round cake centred in frame, plain background.`;
+        const url = await callImageModel(
+          [{ role: 'user', content: simplePrompt }],
+          IMAGE_FALLBACK_CHAIN[0],
+          PRIMARY_TIMEOUT_MS,
+          `${view.name}/simplified`,
+        );
+        console.log(`[bg ${logId}] top simplified-prompt retry — SUCCESS`);
+        return url;
+      }
     };
 
     // Helper functions for message generation
@@ -783,7 +811,7 @@ ${getExampleMessages(relation, occasion || 'birthday', gender) ? `EXAMPLES of th
               const slot = slotForIndex(i);
               const tv = Date.now();
               try {
-                const url = await generateView(v);
+                const url = await generateView(v, bgJobId);
                 await supabase.from('cake_generation_jobs')
                   .update({ [slot.url]: url })
                   .eq('id', bgJobId);
