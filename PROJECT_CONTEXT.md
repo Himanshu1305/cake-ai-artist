@@ -216,6 +216,11 @@ Note: **`npx supabase functions logs` does not exist** — read logs from the Su
   Authentication → Rate Limits → raise email sends well above default.
 - **Check this after creating ANY new Supabase project.**
 - Detection: `SELECT COUNT(*) FROM auth.users WHERE email_confirmed_at IS NULL;` — must be 0.
+- **ROOT CAUSE of the Sep 7 recurrence:** auth configuration lives in the Supabase **platform**,
+  NOT in the repo. `pg_dump`/`pg_restore`, the storage migration and function deploys all carried
+  data and code but **not project SETTINGS**. Any future migration checklist must include a
+  settings pass: auth config, rate limits, storage policies.
+- **Mitigation in place:** watchdog `users_blocked` alert fires when unconfirmed users > 0.
 
 ### 3.10 IPv6 / session pooler — *Mac + IPv4 only, historical*
 Applied to the **one-off `pg_restore` during the Aug 2026 migration**, not to normal Windows work.
@@ -232,6 +237,17 @@ while every new commit deployed only as a **Preview** on a throwaway `*.pages.de
 - **Symptom:** fixes appear to have no effect; Deployments shows Production dated days or weeks old
   while recent commits show as Preview.
 - **Check:** the Production row in Deployments should show branch `main` and a recent date.
+
+### 3.12 Image prompt fragility — describe, don't forbid
+The 'top' view failed intermittently (~3% of jobs historically, **100% during early September**)
+with "No image returned from Gemini". Cause: **~110 words of stacked numeric ranges and negative
+constraints**. Gemini returns a **text** response instead of an image when a prompt over-constrains
+it. Hero and side (~40 words, one instruction each) have never failed.
+- **Writing view prompts: describe the desired result.** Avoid `DO NOT` / `never` phrasing.
+  Avoid stacking numeric ranges.
+- **`IMAGE_FALLBACK_CHAIN` cannot fix prompt problems** — it varies the model, not the prompt.
+  It is also `[FAST, HQ, CHEAP]` where `CHEAP === FAST`, so only **2 distinct models** are tried.
+- **Mitigation in place:** simplified-prompt retry for 'top' after the chain exhausts.
 
 ---
 
@@ -325,9 +341,12 @@ weeks late. The watchdog detects **failures**; these incidents were **absences**
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Sep 7 | Top view failing — root cause found | Prompt over-constrained (~110 words, stacked numeric + negative constraints); Gemini returns text not image. Only 'top' affected. Fixed: simplified-prompt retry after chain exhaustion. See §3.12. |
+| Sep 7 | Auth leak recurrence — root cause found | Auth settings are platform config, not repo config, so the migration never carried them. Fixed: settings corrected, watchdog 'users_blocked' alert added. See §3.9. |
+| Sep 7 | Monitoring blind to absence | All three incidents this month were absences, not failures. Watchdog now checks consecutive failures (volume-based, not time-based — volume is ~2 jobs/week) and blocked users. |
 | Sep 7 | Production frozen for 20 days | Cloudflare production branch was left on `migration-frontend` after the migration cutover. All commits Aug 19–Sep 7 deployed as Preview only; cakeaiartist.com served the Aug 19 build. Fixed: production branch set to `main`. |
 | Sep 7 | Auth leak recurred on new project — ~30 users blocked ~3 weeks | Auth settings do not migrate between Supabase projects; new project had default Confirm-email ON with default SMTP limits. Fixed: confirm-email off, rate limit raised, users back-confirmed via SQL. Added §5a weekly health check because this was found manually, not by alert. |
-| Sep 7 | Top view failing on every generation | "No image returned from Gemini" on the top view — the most complex prompt. hero/side succeed, so users still see 2 of 3 views. Fix pending. |
+| Sep 7 | Top view failing on every generation | "No image returned from Gemini" on the top view — the most complex prompt. hero/side succeed, so users still see 2 of 3 views. Root cause found and fixed the same day — see the Sep 7 row above and §3.12. |
 | Aug 19 | Production silently reverted to the OLD Supabase project | Lovable was still GitHub-connected post-migration and pushed 3 commits to main; "Work in progress" reverted .env to ozgghjbvhveswqplzegd. Cloudflare auto-built from main → production hit the old DB. Caught same day: 2 orphaned users, 0 cakes, 0 payments. Fixed: .env restored, Lovable disconnected from GitHub permanently. |
 | Aug 19 | Full Lovable migration complete | DNS cutover — `cakeaiartist.com` now on **Cloudflare Pages + self-managed Supabase (`gadiwsbvbycfygsaizja`) + direct Gemini**. 34 edge functions deployed, 7 cron jobs recreated, Razorpay webhook repointed, frontend `.env` → new project. **~$90/mo saved.** Old project `ozgghjbvhveswqplzegd` dark → decommission after Oct 2026. |
 | Aug 19 | AI functions using deprecated models | `gemini-2.5-flash` deprecated for new API keys; image `-exp` model retired. Switched to `gemini-3.7-flash` (chat) + `gemini-3.1-flash-image` / `gemini-3-pro-image` (image), bare direct-API names. IDs centralised in `_shared/ai-models.ts`. |
