@@ -2,6 +2,10 @@
 // 1) Auto-fails any cake_generation_jobs stuck in 'processing' > 2 minutes.
 // 2) If failure rate in the last hour is unhealthy, sends ONE alert email
 //    to himanshu1305@gmail.com (rate-limited to 1 email per hour per alert type).
+// 3) ABSENCE detection (added Sep 7): alerts when the last 5 jobs all failed
+//    (volume-based, not time-based) and, independently, when any auth.users row
+//    has no confirmed email — a blocked signup produces no job at all, so the
+//    failure-rate check structurally cannot see it.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -20,6 +24,13 @@ const ALERT_COOLDOWN_MINUTES = 60;
 const CREDITS_ALERT_COOLDOWN_MINUTES = 360;
 const MIN_SAMPLE_SIZE = 3;
 const FAILURE_RATE_THRESHOLD = 0.5;
+// ---- Absence detection (added Sep 7) ----
+// Volume is ~2 generations per WEEK, so every condition below is VOLUME-based and
+// never time-based: a rule like "nothing succeeded in 24h" would fire almost every
+// day at this traffic level and train us to ignore it. See PROJECT_CONTEXT §5a.
+const CONSECUTIVE_FAILURE_WINDOW = 5;
+const CONSECUTIVE_FAILURES_COOLDOWN_MINUTES = 720;
+const USERS_BLOCKED_COOLDOWN_MINUTES = 1440;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -116,6 +127,85 @@ serve(async (req) => {
     ).length;
     result.creditsFailuresLastHour = creditsFailures;
 
+    // ---- 3c) Detect consecutive failures (ABSENCE detection) ----
+    // Traffic-independent: the last N jobs regardless of age, so it fires whether
+    // they accumulated over an hour or over a month. The failure-RATE check below
+    // needs MIN_SAMPLE_SIZE jobs inside ONE hour, which at ~2 jobs/week is almost
+    // never true — that is how a week of 2-out-of-2 failures stayed silent.
+    const { data: lastJobs, error: lastJobsErr } = await supabase
+      .from("cake_generation_jobs")
+      .select("status")
+      .order("created_at", { ascending: false })
+      .limit(CONSECUTIVE_FAILURE_WINDOW);
+    if (lastJobsErr) console.error("[watchdog] last-jobs query error", lastJobsErr);
+    const consecutiveFailures =
+      (lastJobs?.length ?? 0) === CONSECUTIVE_FAILURE_WINDOW &&
+      (lastJobs ?? []).every((j) => j.status !== "completed");
+    result.consecutiveFailures = consecutiveFailures;
+
+    // ---- 3d) INDEPENDENT auth-health check ----
+    // Deliberately NOT a branch in the alert chain below: auth health has nothing
+    // to do with generation health, and both must be able to alert in the SAME run.
+    // This is the check that would have caught Aug 14 and Sep 7 — see §3.9.
+    // auth.users is not reachable through PostgREST (public schema only), so the
+    // equivalent of SELECT COUNT(*) FROM auth.users WHERE email_confirmed_at IS NULL
+    // is a paginated admin scan. ~470 users today = a single page.
+    const checkUsersBlocked = async () => {
+      let unconfirmed = 0;
+      for (let page = 1; page <= 20; page++) {
+        const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+        if (error) {
+          console.error("[watchdog] listUsers error", error);
+          result.usersBlocked = { error: error.message };
+          return;
+        }
+        const users = data?.users ?? [];
+        for (const u of users) if (!u.email_confirmed_at) unconfirmed += 1;
+        if (users.length < 1000) break;
+      }
+      if (unconfirmed === 0) {
+        result.usersBlocked = { unconfirmed: 0, alertSent: false };
+        return;
+      }
+      const cutoff = new Date(Date.now() - USERS_BLOCKED_COOLDOWN_MINUTES * 60 * 1000).toISOString();
+      const { data: alreadySent } = await supabase
+        .from("system_alert_log")
+        .select("id")
+        .eq("alert_type", "users_blocked")
+        .gte("sent_at", cutoff)
+        .limit(1);
+      if (alreadySent && alreadySent.length > 0) {
+        result.usersBlocked = { unconfirmed, alertSent: false, suppressedReason: "cooldown" };
+        return;
+      }
+      const plural = unconfirmed === 1 ? "" : "s";
+      const blockedSubject = `🔒 Cake AI Artist — ${unconfirmed} user${plural} cannot confirm their email`;
+      const blockedHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;background:#fffaf3;border-radius:12px">
+          <h2 style="color:#c0392b;margin-top:0">🔒 ${unconfirmed} user${plural} cannot confirm their email</h2>
+          <p style="font-size:15px;color:#333"><b>New signups cannot log in.</b> ${unconfirmed} account${plural} in auth.users ${unconfirmed === 1 ? "has" : "have"} no confirmed email — either the confirmation email never arrived, or confirmation is switched on behind a low SMTP rate limit.</p>
+          <p style="font-size:14px;color:#c0392b;background:#fdecea;padding:12px;border-radius:8px"><b>Fix:</b> Supabase Dashboard → Authentication → Sign In/Providers → Email → <b>Confirm email OFF</b>, and Authentication → Rate Limits → raise email sends. Then back-confirm the affected users via SQL. See PROJECT_CONTEXT §3.9.</p>
+          <p style="font-size:13px;color:#555">This has happened twice: Aug 14 (72 of 117 signups) and Sep 7 (~30 users blocked for ~3 weeks). Auth settings are per-project and did not survive the migration.</p>
+          <p style="margin-top:24px"><a href="https://supabase.com/dashboard/project/gadiwsbvbycfygsaizja/auth/providers" style="background:#2563EB;color:white;padding:10px 18px;text-decoration:none;border-radius:8px">Open auth settings</a></p>
+          <p style="font-size:11px;color:#999;margin-top:20px">At most one of these per 24h while the issue persists. Watchdog runs every 10 min.</p>
+        </div>`;
+      const { ok, error: mailErr } = await sendAlertEmail(blockedSubject, blockedHtml);
+      await supabase.from("system_alert_log").insert({
+        alert_type: "users_blocked",
+        details: { unconfirmed, emailOk: ok, emailError: mailErr },
+      });
+      result.usersBlocked = { unconfirmed, alertSent: ok, ...(mailErr ? { emailError: mailErr } : {}) };
+    };
+
+    // Every non-fatal exit goes through finish(), so the auth check still runs on
+    // the common path where generation is healthy and nothing else alerts.
+    const finish = async () => {
+      await checkUsersBlocked();
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    };
+
     // ---- 4) Decide whether to alert ----
     let alertType: string | null = null;
     let alertReason = "";
@@ -123,6 +213,9 @@ serve(async (req) => {
     if (creditsFailures > 0) {
       alertType = "credits_exhausted";
       alertReason = `AI credits are exhausted — ${creditsFailures} cake generation${creditsFailures === 1 ? "" : "s"} failed in the last hour because the AI gateway returned 402. EVERY generation is failing until the workspace is topped up.`;
+    } else if (consecutiveFailures) {
+      alertType = "consecutive_failures";
+      alertReason = `The last ${CONSECUTIVE_FAILURE_WINDOW} cake generations ALL failed — none reached status 'completed', however long they took to accumulate. At current volume this is the signal that generation is broken; the hourly failure-rate check needs ${MIN_SAMPLE_SIZE} jobs within one hour and will not see it.`;
     } else if (stuckCount >= MIN_SAMPLE_SIZE) {
       alertType = "mass_stuck_jobs";
       alertReason = `${stuckCount} cake jobs got stuck in 'processing' and were auto-failed in this run.`;
@@ -133,18 +226,18 @@ serve(async (req) => {
 
     if (!alertType) {
       result.alertSent = false;
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return await finish();
     }
 
     // ---- 5) Rate-limit: skip if same base alert type sent recently ----
     // Cooldown is per alert type, so a credits alert is never swallowed by a
     // generic "degraded" alert that happened to fire first.
     const baseAlertType = alertType.split("+")[0];
-    const cooldownMinutes = baseAlertType === "credits_exhausted"
-      ? CREDITS_ALERT_COOLDOWN_MINUTES
-      : ALERT_COOLDOWN_MINUTES;
+    const COOLDOWN_BY_TYPE: Record<string, number> = {
+      credits_exhausted: CREDITS_ALERT_COOLDOWN_MINUTES,
+      consecutive_failures: CONSECUTIVE_FAILURES_COOLDOWN_MINUTES,
+    };
+    const cooldownMinutes = COOLDOWN_BY_TYPE[baseAlertType] ?? ALERT_COOLDOWN_MINUTES;
     const cooldownCutoff = new Date(Date.now() - cooldownMinutes * 60 * 1000).toISOString();
     const { data: recentAlerts } = await supabase
       .from("system_alert_log")
@@ -156,9 +249,7 @@ serve(async (req) => {
     if (recentAlerts && recentAlerts.length > 0) {
       result.alertSent = false;
       result.alertSuppressedReason = "cooldown";
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return await finish();
     }
 
     // ---- 6) Build top error breakdown ----
@@ -175,11 +266,14 @@ serve(async (req) => {
       .join("");
 
     const isCredits = alertType === "credits_exhausted";
+    const isConsecutive = alertType === "consecutive_failures";
     const subject = isCredits
       ? `💳 Cake AI Artist — AI CREDITS EXHAUSTED, all generations failing`
-      : massIdenticalError
-        ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
-        : `🚨 Cake AI Artist — Generation degraded`;
+      : isConsecutive
+        ? `⚠️ Cake AI Artist — last ${CONSECUTIVE_FAILURE_WINDOW} generations all failed`
+        : massIdenticalError
+          ? `🚨 Cake AI Artist — Mass identical error: ${massIdenticalError.slice(0, 80)}`
+          : `🚨 Cake AI Artist — Generation degraded`;
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;background:#fffaf3;border-radius:12px">
         <h2 style="color:#c0392b;margin-top:0">${isCredits ? "💳 AI credits exhausted — top up now" : "⚠️ Cake generation is degraded"}</h2>
@@ -198,32 +292,7 @@ serve(async (req) => {
       </div>`;
 
     // ---- 7) Send email via Resend ----
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    let emailOk = false;
-    let emailError: string | null = null;
-    if (resendKey) {
-      try {
-        const r = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${resendKey}`,
-          },
-          body: JSON.stringify({
-            from: "Cake AI Artist Alerts <alerts@cakeaiartist.com>",
-            to: [ALERT_EMAIL],
-            subject,
-            html,
-          }),
-        });
-        emailOk = r.ok;
-        if (!r.ok) emailError = `Resend ${r.status}: ${await r.text()}`;
-      } catch (e) {
-        emailError = e instanceof Error ? e.message : String(e);
-      }
-    } else {
-      emailError = "RESEND_API_KEY not set";
-    }
+    const { ok: emailOk, error: emailError } = await sendAlertEmail(subject, html);
 
     // ---- 8) Log the alert ----
     await supabase.from("system_alert_log").insert({
@@ -235,9 +304,7 @@ serve(async (req) => {
     result.alertType = alertType;
     if (emailError) result.emailError = emailError;
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return await finish();
   } catch (e) {
     console.error("[watchdog] fatal", e);
     return new Response(JSON.stringify({ ...result, error: e instanceof Error ? e.message : String(e) }), {
@@ -246,6 +313,31 @@ serve(async (req) => {
     });
   }
 });
+
+// Shared Resend sender — used by the generation alert and by the independent
+// users_blocked alert, which must be able to fire in the same run.
+async function sendAlertEmail(subject: string, html: string): Promise<{ ok: boolean; error: string | null }> {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) return { ok: false, error: "RESEND_API_KEY not set" };
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendKey}`,
+      },
+      body: JSON.stringify({
+        from: "Cake AI Artist Alerts <alerts@cakeaiartist.com>",
+        to: [ALERT_EMAIL],
+        subject,
+        html,
+      }),
+    });
+    return { ok: r.ok, error: r.ok ? null : `Resend ${r.status}: ${await r.text()}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
