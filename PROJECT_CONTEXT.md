@@ -203,6 +203,11 @@ logged out). OAuth still navigates via the listener; it has no other entry point
 and produces "Unauthorized" on every command (cost ~20 min on Sep 7).
 Deploy: `npx supabase functions deploy <NAME> --project-ref gadiwsbvbycfygsaizja`.
 Note: **`npx supabase functions logs` does not exist** — read logs from the Supabase **dashboard**.
+- **`npx tsc --noEmit` does NOT check edge functions.** `tsconfig.app.json` has `include: ['src']`,
+  so everything under `supabase/functions/` is outside its scope, and Deno is not installed locally.
+  **A clean tsc run says nothing about edge function correctness.** Use a TypeScript
+  `transpileModule` parse gate over the changed function files to catch syntax and structural
+  errors before deploying.
 
 ### 3.9 Auth settings are PER-PROJECT and do not migrate
 - **Aug 14 2026:** Lovable's SMTP rate limit was 2 emails/hour → **72 of 117 email signups** never

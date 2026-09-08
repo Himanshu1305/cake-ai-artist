@@ -132,6 +132,8 @@ serve(async (req) => {
     // they accumulated over an hour or over a month. The failure-RATE check below
     // needs MIN_SAMPLE_SIZE jobs inside ONE hour, which at ~2 jobs/week is almost
     // never true — that is how a week of 2-out-of-2 failures stayed silent.
+    // Only TERMINAL failures count: in-flight jobs (in_progress/processing) must not
+    // trip this, or a burst of concurrent generations would alert on healthy traffic.
     const { data: lastJobs, error: lastJobsErr } = await supabase
       .from("cake_generation_jobs")
       .select("status")
@@ -140,7 +142,7 @@ serve(async (req) => {
     if (lastJobsErr) console.error("[watchdog] last-jobs query error", lastJobsErr);
     const consecutiveFailures =
       (lastJobs?.length ?? 0) === CONSECUTIVE_FAILURE_WINDOW &&
-      (lastJobs ?? []).every((j) => j.status !== "completed");
+      (lastJobs ?? []).every((j) => j.status === "failed" || j.status === "partial_failed");
     result.consecutiveFailures = consecutiveFailures;
 
     // ---- 3d) INDEPENDENT auth-health check ----
