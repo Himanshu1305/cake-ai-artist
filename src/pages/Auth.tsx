@@ -27,6 +27,17 @@ const signupSchema = z.object({
   ageConfirmed: z.literal(true, { errorMap: () => ({ message: "You must confirm you are at least 13 years old" }) }),
 });
 
+// TEMPORARY (2026-10-09): Google OAuth is not configured on the new Supabase
+// project (gadiwsbvbycfygsaizja) — /auth/v1/authorize returns 400
+// "provider is not enabled". The button was a dead end for every visitor who
+// clicked it, so it is hidden until the provider is re-enabled.
+// TO RE-ENABLE: set this back to true after (1) Authentication → Sign In /
+// Providers → Google is enabled with a client ID + secret, and (2) the Google
+// Cloud Console OAuth client lists
+// https://gadiwsbvbycfygsaizja.supabase.co/auth/v1/callback as an authorised
+// redirect URI. See PROJECT_CONTEXT.md §3.9.
+const GOOGLE_AUTH_ENABLED = false;
+
 const PROFILE_LOOKUP_TIMEOUT_MS = 2500;
 
 const withTimeout = <T,>(promise: PromiseLike<T>, timeoutMs: number): Promise<T | null> =>
@@ -458,7 +469,9 @@ const Auth = () => {
             </form>
           ) : (
             <>
-              {/* Google Sign-in Button */}
+              {/* Google Sign-in Button — hidden while GOOGLE_AUTH_ENABLED is false */}
+              {GOOGLE_AUTH_ENABLED && (
+              <>
               <Button
                 type="button"
                 variant="outline"
@@ -497,6 +510,8 @@ const Auth = () => {
                   <span className="bg-surface-elevated px-2 text-muted-foreground">Or continue with email</span>
                 </div>
               </div>
+              </>
+              )}
 
               <form onSubmit={handleAuth} className="space-y-4">
                 {!isLogin && (
