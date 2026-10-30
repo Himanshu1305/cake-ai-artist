@@ -1,0 +1,26 @@
+# Cloudflare Pages redirects.
+# Evaluated before the SPA fallback, so these return a real 301.
+
+# 2026-10-30 — six name pages shipped with a slug belonging to a DIFFERENT name
+# (e.g. /birthday-cake-for/jack-2 served the page for "Jacob"). Google treated
+# them as duplicates of the jack / kevin / anna / maya / noah / ava pages and
+# left them out of the index ("Duplicate without user-selected canonical").
+# Slugs now match the name; these keep the old URLs' equity.
+/birthday-cake-for/jack-2    /birthday-cake-for/jacob   301
+/birthday-cake-for/kevin-2   /birthday-cake-for/kyle    301
+/birthday-cake-for/anna-2    /birthday-cake-for/anya    301
+/birthday-cake-for/maya-2    /birthday-cake-for/maia    301
+/birthday-cake-for/noah-2    /birthday-cake-for/nate    301
+/birthday-cake-for/ava-2     /birthday-cake-for/aria    301
+
+# 2026-10-30 — blog posts that were listed in the old static sitemap but never
+# existed in the database. Google indexed them anyway; these five still rank
+# (247 impressions over the last 3 months) and currently land on a client-side
+# bounce to /blog, which reads as a soft 404. Point each at its closest live
+# equivalent so the equity is kept. The other 22 phantoms earn nothing and are
+# simply dropped from the sitemap.
+/blog/cake-message-writing-tips     /ai-birthday-cake-with-name          301
+/blog/creative-cake-ideas-birthday  /blog/cake-design-ideas-2026         301
+/blog/first-birthday-cake-ideas     /blog/1st-birthday-cake-ideas-girl   301
+/blog/indian-new-year-cake-ideas    /blog/best-birthday-cake-ideas-india 301
+/blog/indian-christmas-cake-ideas   /blog/best-birthday-cake-ideas-india 301
