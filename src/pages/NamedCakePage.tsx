@@ -39,8 +39,25 @@ const NamedCakePage = () => {
   const hasDeepMeaning = !!NAME_MEANINGS[entry.slug];
   const meaning = NAME_MEANINGS[entry.slug] || fallbackMeaning(name, entry.origin);
   const url = `https://cakeaiartist.com/birthday-cake-for/${entry.slug}`;
-  const title = `Birthday Cake with Name "${name}" — Meaning, Designs & Free AI Maker`;
-  const description = `Design a birthday cake with the name ${name} in 30 seconds. ${name} means "${meaning.meaning.split(' — ')[0]}" (${meaning.origin}). Free AI cake maker, 12+ ready-to-use messages, expert tips.`;
+  // Title and description are written against the query these pages actually
+  // rank for. Search Console, 3 months to 2026-10-30: the 194 live name pages
+  // drew 52,493 impressions at average position 5.7 but only 424 clicks —
+  // 0.81% CTR, against 6.20% for the landing pages at position 4.5. Position
+  // was never the problem; the snippet was.
+  //
+  // The dominant query shape is "happy birthday <name> cake" (178 such queries,
+  // 8,250 impressions, 0.30% CTR). The old title —
+  //   Birthday Cake with Name "Ibrahim" — Meaning, Designs & Free AI Maker
+  // was 68 characters, so Google truncated it around "Meaning, Designs…" and
+  // the free-maker promise never showed. It also led with etymology, which is
+  // not what someone searching for a cake to send wants, and it never carried
+  // the searched phrase intact, so little of it was bolded in the result.
+  //
+  // The new title leads with the exact phrase and fits in 56 characters at the
+  // longest name. The meaning content stays on the page; it just no longer
+  // occupies the part of the snippet that has to earn the click.
+  const title = `Happy Birthday ${name} Cake — Free AI Design with Name`;
+  const description = `Create a free Happy Birthday ${name} cake in 30 seconds. Add the name ${name}, pick a design, then download or share it — plus 12+ cake message ideas.`;
 
   const messages = cakeMessagesFor();
 
@@ -121,7 +138,7 @@ const NamedCakePage = () => {
         steps={howToSteps}
       />
       <ArticleSchema
-        headline={`Birthday Cake with Name "${name}" — Meaning, Designs & Free AI Maker`}
+        headline={title}
         description={description}
         datePublished="2026-06-15"
         dateModified={LAST_UPDATED}

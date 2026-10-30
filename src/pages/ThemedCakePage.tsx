@@ -34,8 +34,25 @@ const ThemedCakePage = () => {
   const { title, description, audience } = entry;
   const deep = THEME_DEEP[entry.slug];
   const url = `https://cakeaiartist.com/birthday-cake-theme/${entry.slug}`;
-  const pageTitle = `${title} Birthday Cake — Designs, Tips & Free AI Maker`;
-  const metaDesc = `Design a ${title.toLowerCase()} birthday cake in 30 seconds. ${deep?.story.slice(0, 100) ?? description.slice(0, 110)} Free AI cake maker with expert tips.`;
+  // Same reasoning as NamedCakePage: these pages rank (avg position 6.4) but
+  // convert badly (2.28% CTR over the 3 months to 2026-10-30). "Designs, Tips &"
+  // is filler that spends the headline without promising anything, so the
+  // concrete offer leads instead.
+  const pageTitle = `${title} Birthday Cake — Free AI Design in 30 Seconds`;
+
+  // The snippet used to be built with a raw .slice(), which cut mid-word and
+  // shipped fragments like "…the cen" into the meta description. Trim on a word
+  // boundary and keep the whole thing inside Google's ~160-char limit.
+  const clip = (text: string, max: number) => {
+    const t = text.trim();
+    if (t.length <= max) return t;
+    const cut = t.slice(0, max);
+    return cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:—-]$/, "") + "…";
+  };
+  const lead = `Design a ${title.toLowerCase()} birthday cake in 30 seconds. `;
+  const tail = " Free to try — add any name and download.";
+  const metaDesc =
+    lead + clip(deep?.story ?? description, 158 - lead.length - tail.length) + tail;
 
   const faqs = [
     {

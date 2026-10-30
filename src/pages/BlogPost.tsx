@@ -35,6 +35,7 @@ interface DatabaseBlogPost {
   is_ai_generated: boolean;
   ai_disclosure: string | null;
   meta_description: string | null;
+  meta_title: string | null;
   keywords: string[] | null;
 }
 
@@ -2121,6 +2122,10 @@ const BlogPost = () => {
     dateISO: dbPost.published_at ? new Date(dbPost.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     readTime: dbPost.read_time || '5 min read',
     category: dbPost.category,
+    // meta_title is the search-facing <title>; title stays the on-page H1.
+    // 19 of 62 published titles ran past 60 chars and were truncated in
+    // results, so the two are now separate fields (2026-10-30).
+    metaTitle: dbPost.meta_title || dbPost.title,
     metaDescription: dbPost.meta_description || dbPost.excerpt,
     keywords: dbPost.keywords?.join(', ') || '',
     content: dbPost.content,
@@ -2131,6 +2136,7 @@ const BlogPost = () => {
     aiDisclosure: dbPost.ai_disclosure || 'This article was written with AI assistance and reviewed by our editorial team.',
   } : hardcodedPost ? {
     ...hardcodedPost,
+    metaTitle: hardcodedPost.title,
     imageAlt: hardcodedPost.title,
     isAiGenerated: false,
     aiDisclosure: '',
@@ -2171,18 +2177,21 @@ const BlogPost = () => {
       <ReadingProgressBar />
       
       <Helmet>
-        <title>{post.title} | Cake AI Artist Blog</title>
+        {/* No " | Cake AI Artist Blog" suffix: it added 21 characters to every
+            title, pushing all of them past Google's ~60-char truncation point, so
+            it never actually rendered in a result — it only cost headline room. */}
+        <title>{post.metaTitle}</title>
         <meta name="description" content={post.metaDescription} />
         <meta name="keywords" content={post.keywords} />
         <link rel="canonical" href={postUrl} />
-        <meta property="og:title" content={`${post.title} | Cake AI Artist Blog`} />
+        <meta property="og:title" content={post.metaTitle} />
         <meta property="og:description" content={post.metaDescription} />
         <meta property="og:url" content={postUrl} />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={heroImage || "https://cakeaiartist.com/hero-cake.jpg"} />
         <meta property="og:site_name" content="Cake AI Artist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${post.title} | Cake AI Artist`} />
+        <meta name="twitter:title" content={post.metaTitle} />
         <meta name="twitter:description" content={post.metaDescription} />
         <meta name="twitter:image" content={heroImage || "https://cakeaiartist.com/hero-cake.jpg"} />
       </Helmet>

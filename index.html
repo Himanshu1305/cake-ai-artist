@@ -30,9 +30,20 @@
     <!-- Preload the actual LCP hero image (animated webp) -->
     <link rel="preload" as="image" href="/hero-cake.webp" type="image/webp" fetchpriority="high" />
     <title>Cake AI — Free AI Birthday Cake Generator | Cake AI Artist</title>
-    <meta name="description" content="Cake AI by Cake AI Artist — the free AI birthday cake generator. Design a personalized cake with any name in 30 seconds. Weddings, anniversaries & more.">
     <meta name="author" content="Cake AI Artist" />
-    <meta name="keywords" content="cake ai, ai cake, ai cakes, ai cake generator, ai cake generator free, cake generator, birthday cake ai, ai birthday cakes, ai cake designer, ai cake design, best ai cake designer, personalized birthday cake, custom cake design, anniversary cake design, wedding cake ai, baby shower cake, diwali cake, virtual cake creator, online cake design tool, personalized cake generator">
+    <!--
+      PER-PAGE TAGS LIVE IN THE PAGE, NOT HERE.
+      This file is the SPA shell, served for every route. react-helmet-async
+      replaces <title> but APPENDS meta tags, so anything page-specific left
+      here produced two tags on every URL — and crawlers take the first, which
+      is this one. Until 2026-10-30 that meant all 369 pages shipped the same
+      description, og:title, og:description, og:url and og:type as the
+      homepage: a search snippet about a generic cake generator on every name
+      page, and every shared link resolving to "/".
+      Only genuinely global fallbacks belong here (site_name, locale, image,
+      twitter:card). description / keywords / og:title / og:description /
+      og:url / og:type are set per page via Helmet or <PageSeo />.
+    -->
     
     <!-- Hreflang Tags for International SEO (USA, Canada, UK, Australia) -->
     <!--
@@ -59,8 +70,6 @@
     <meta property="og:locale:alternate" content="en_AU" />
     <meta property="og:locale:alternate" content="en_IN" />
     
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cakeaiartist.com/" />
     <meta property="og:image" content="https://cakeaiartist.com/hero-cake.jpg" />
 
     <meta name="twitter:card" content="summary_large_image" />
@@ -137,9 +146,7 @@
         }
       }
     </style>
-    <meta property="og:title" content="Cake AI — Free AI Birthday Cake Generator | Cake AI Artist">
   <meta name="twitter:title" content="Cake AI — Free AI Birthday Cake Generator | Cake AI Artist">
-  <meta property="og:description" content="Cake AI by Cake AI Artist — the free AI birthday cake generator. Personalized AI cakes with any name in 30 seconds.">
   <meta name="twitter:description" content="Cake AI — the free AI birthday cake generator. Personalized AI cakes with any name in 30 seconds.">
   <meta property="og:image:alt" content="Personalized AI birthday cake designed by Cake AI Artist">
   <meta name="twitter:image:alt" content="Personalized AI birthday cake designed by Cake AI Artist">

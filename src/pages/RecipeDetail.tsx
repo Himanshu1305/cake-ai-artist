@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BreadcrumbSchema } from "@/components/SEOSchema";
 import { ArrowLeft, ChefHat, Clock, Users, Sparkles } from "lucide-react";
+import NotFound from "./NotFound";
 
 interface Recipe {
   slug: string;
@@ -61,14 +62,10 @@ const RecipeDetail = () => {
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
   }
-  if (!recipe) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6">
-        <p>Recipe not found.</p>
-        <Link to="/recipes" className="text-party-pink font-bold">Browse recipes</Link>
-      </div>
-    );
-  }
+  // An unknown recipe slug used to render this bare message with HTTP 200, no
+  // Helmet and no noindex — a soft 404 that Google will index and keep. Same
+  // fix as BlogPost / NamedCakePage / ThemedCakePage (2026-10-30).
+  if (!recipe) return <NotFound />;
 
   const designPrompt = recipe.related_cake_design_prompt || `${recipe.title} celebration cake, elegant design, personalised`;
 
