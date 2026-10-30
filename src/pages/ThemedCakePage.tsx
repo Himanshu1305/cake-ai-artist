@@ -14,6 +14,7 @@ import featuredCake4 from "@/assets/featured-cake-4.jpg";
 import featuredCake5 from "@/assets/featured-cake-5.jpg";
 import { CAKE_THEMES } from "@/data/cakeThemes";
 import { THEME_DEEP } from "@/data/themeDeep";
+import NotFound from "./NotFound";
 
 const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
 
@@ -27,7 +28,8 @@ const ThemedCakePage = () => {
     [slug],
   );
 
-  if (!entry) return <Navigate to="/free-ai-cake-designer" replace />;
+  // Unknown theme slug: render the noindex 404 rather than a 200 bounce.
+  if (!entry) return <NotFound />;
 
   const { title, description, audience } = entry;
   const deep = THEME_DEEP[entry.slug];

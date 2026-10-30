@@ -11,7 +11,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:models": "bash scripts/check-model-ids.sh",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seo:check": "node scripts/check-seo.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

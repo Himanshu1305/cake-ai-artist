@@ -1,30 +1,40 @@
+# cakeaiartist.com — reviewed 2026-10-30
+#
+# "Allow: /" already permits everything, so the long per-path Allow list that
+# used to live here did nothing. What matters is the Disallow set below.
+#
+# Two ways to keep a page out of Google, and they do NOT combine:
+#   - Disallow here  -> Googlebot never fetches the page. It can still be
+#     indexed URL-only from external links, and any noindex tag on the page is
+#     never seen, so the page can get stuck in the index indefinitely.
+#   - noindex on the page -> Googlebot must be ABLE to fetch it to read the tag.
+# So each private area below is listed here OR relies on its noindex tag,
+# never both. Anything with a noindex meta tag in src/pages is deliberately
+# absent from this file.
+
 User-agent: *
 Allow: /
-Allow: /community
-Allow: /free-ai-cake-designer
-Allow: /pricing
-Allow: /how-it-works
-Allow: /use-cases
-Allow: /blog
-Allow: /faq
-Allow: /uk
-Allow: /canada
-Allow: /australia
-Allow: /india
 
+# Authenticated / private areas. No noindex is relied on here — these must not
+# be fetched at all, and they carry no search value.
 Disallow: /admin
 Disallow: /admin/
 Disallow: /settings
-Disallow: /gallery
-Disallow: /auth
 Disallow: /complete-profile
+Disallow: /auth
+
+# Per-user and per-event URLs: unbounded URL space, nothing to rank.
 Disallow: /embed/
-Disallow: /blog/unsubscribe
 Disallow: /rsvp/
 Disallow: /party/
+Disallow: /blog/unsubscribe
 
+# /gallery and /occasions are intentionally NOT listed. Both carry
+# <meta name="robots" content="noindex">, and Googlebot has to be allowed to
+# fetch them to act on it. Blocking them here is what left them indexed
+# without a description ("Blocked by robots.txt" in Search Console).
 
-# Allow major search/social bots full access to public assets
+# Image crawling is wanted — cake renders drive Google Images traffic.
 User-agent: Googlebot-Image
 Allow: /
 

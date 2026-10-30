@@ -83,6 +83,29 @@ function slugsFrom(relPath) {
   return unique;
 }
 
+/**
+ * The blog has TWO content sources and both must reach the sitemap:
+ *   1. `blogPostsContent` — 27 posts hardcoded in src/pages/BlogPost.tsx
+ *   2. the blog_posts table — everything the generator wrote
+ * BlogPost.tsx checks the hardcoded map as well as the database, so these 27
+ * URLs are live pages, not strays. An earlier version of this script only
+ * looked at the database and would have dropped all 27 from the sitemap,
+ * including /blog/cake-message-writing-tips, which ranks at position 8.9.
+ */
+function staticBlogSlugs() {
+  const lines = readFileSync(resolve(ROOT, "src/pages/BlogPost.tsx"), "utf8").split("\n");
+  const start = lines.findIndex((l) => l.includes("const blogPostsContent"));
+  if (start === -1) throw new Error("BlogPost.tsx: blogPostsContent not found — parser out of date?");
+  const end = lines.findIndex((l, i) => i > start && l.startsWith("};"));
+  const slugs = lines
+    .slice(start + 1, end)
+    .map((l) => l.match(/^ {2}"([a-z0-9][a-z0-9-]*)":\s*\{/))
+    .filter(Boolean)
+    .map((m) => m[1]);
+  if (!slugs.length) throw new Error("BlogPost.tsx: parsed zero hardcoded posts — parser out of date?");
+  return slugs;
+}
+
 /** Read the committed sitemap so we can fall back to its dynamic URLs. */
 function previousUrls(prefix) {
   if (!existsSync(OUT)) return [];
@@ -162,13 +185,23 @@ async function main() {
 
   const names = slugsFrom("src/data/cakeNames.ts");
   const themes = slugsFrom("src/data/cakeThemes.ts");
-  console.log(`  names: ${names.length}   themes: ${themes.length}`);
+  const hardcoded = staticBlogSlugs();
+  console.log(`  names: ${names.length}   themes: ${themes.length}   hardcoded posts: ${hardcoded.length}`);
+
+  const dbBlog = await dynamicSection("blog_posts", "blog (db)", "/blog/", 0.7, "monthly");
+
+  // A slug defined in both places is one page, so emit it once. The duplicate
+  // guard below would otherwise abort the build.
+  const dbBlogPaths = new Set(dbBlog.map(([p]) => p));
 
   const entries = [
     ...STATIC_ROUTES.map(([p, pr, cf]) => [p, pr, cf, today]),
     ...names.map((s) => [`/birthday-cake-for/${s}`, 0.6, "monthly", today]),
     ...themes.map((s) => [`/birthday-cake-theme/${s}`, 0.6, "monthly", today]),
-    ...(await dynamicSection("blog_posts", "blog", "/blog/", 0.7, "monthly")),
+    ...hardcoded
+      .map((s) => [`/blog/${s}`, 0.7, "monthly", today])
+      .filter(([p]) => !dbBlogPaths.has(p)),
+    ...dbBlog,
     ...(await dynamicSection("cake_recipes", "recipes", "/recipes/", 0.6, "monthly")),
   ];
 

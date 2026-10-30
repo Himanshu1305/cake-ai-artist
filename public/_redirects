@@ -13,14 +13,42 @@
 /birthday-cake-for/noah-2    /birthday-cake-for/nate    301
 /birthday-cake-for/ava-2     /birthday-cake-for/aria    301
 
-# 2026-10-30 — blog posts that were listed in the old static sitemap but never
-# existed in the database. Google indexed them anyway; these five still rank
-# (247 impressions over the last 3 months) and currently land on a client-side
-# bounce to /blog, which reads as a soft 404. Point each at its closest live
-# equivalent so the equity is kept. The other 22 phantoms earn nothing and are
-# simply dropped from the sitemap.
-/blog/cake-message-writing-tips     /ai-birthday-cake-with-name          301
-/blog/creative-cake-ideas-birthday  /blog/cake-design-ideas-2026         301
-/blog/first-birthday-cake-ideas     /blog/1st-birthday-cake-ideas-girl   301
-/blog/indian-new-year-cake-ideas    /blog/best-birthday-cake-ideas-india 301
-/blog/indian-christmas-cake-ideas   /blog/best-birthday-cake-ideas-india 301
+# NOTE (2026-10-30): no redirects for the 27 /blog/ URLs that are absent from
+# the blog_posts table. They are NOT dead — they are hardcoded in
+# `blogPostsContent` in src/pages/BlogPost.tsx and render real content. The
+# sitemap generator reads that map as a second source so they stay listed.
+# Redirecting them would have thrown away live pages, including
+# /blog/cake-message-writing-tips, which ranks at position 8.9.
+
+# 2026-10-30 — duplicate blog consolidation. The auto-generator wrote the same
+# topic two to five times with different random slug suffixes, which Google
+# reports as "Alternate page with proper canonical" / "Duplicate without
+# user-selected canonical". For each cluster the post with the most
+# impressions over the last 3 months is kept; the rest are unpublished in the
+# database (is_published = false, reversible) and 301'd here. The 25 retired
+# posts carried 76 impressions between them, so almost no equity is at risk.
+/blog/hit-a-six-with-these-cricket-world-cup-celebration-cakes-mntkje1r  /blog/hit-a-six-with-these-cricket-world-cup-celebration-cakes-mkhjjxol 301
+/blog/aussie-day-bites-sweet-treats-for-your-celebration-modkpads        /blog/aussie-day-bites-sweet-treats-for-your-celebration-ml1jpxz7 301
+/blog/beat-the-heat-aussie-christmas-cakes-for-a-sizzling-summer-mm5k1tp5 /blog/beat-the-heat-aussie-summer-christmas-cakes-mphl12zq 301
+/blog/sparkle-shine-the-rise-of-metallic-gold-accent-cakes-mp4e61aw      /blog/sparkle-shine-the-magic-of-metallic-gold-accent-cakes-mnjkgqbk 301
+/blog/strike-gold-metallic-cake-trends-that-shine-bright-mk7jhfkj        /blog/sparkle-shine-the-magic-of-metallic-gold-accent-cakes-mnjkgqbk 301
+/blog/oh-canada-red-white-cakes-for-your-canada-day-bash-mmfk4t0w        /blog/canada-day-cakes-your-red-white-recipe-for-fun-mprl433w 301
+/blog/northern-lights-cakes-a-luminous-treat-for-your-canadian-party-monksax8 /blog/northern-lights-cakes-a-celestial-canadian-celebration-mlbjsqvj 301
+/blog/geometric-cakes-the-trend-thats-shaping-sweet-celebrations-mm5k234h /blog/geometric-cakes-bold-shapes-sweet-rewards-mphl16wy 301
+/blog/sleek-sweet-minimalist-cakes-for-modern-celebrations-moxkvf5q      /blog/minimalist-cakes-simple-beauty-for-your-modern-celebration-mlljw49x 301
+/blog/retro-cakes-are-back-get-ready-for-whimsical-bakes-mprl47qa        /blog/retro-rises-vintage-cake-aesthetics-are-back-mmfk502v 301
+/blog/sweet-inclusive-gender-neutral-birthday-cake-designs-mkrjnb0j      /blog/celebration-for-everyone-gender-neutral-cake-designs-mo3kmkbu 301
+/blog/sweet-sustainability-delicious-eco-friendly-cake-ideas-mkhjk4xs    /blog/bake-a-better-world-eco-friendly-cake-ideas-mntkjod2 301
+/blog/milestone-magic-cake-ideas-for-30th-40th-50th-birthdays-mlvjz4za   /blog/big-milestones-sweet-cakes-celebrating-30-40-50-mp7ky82g 301
+/blog/score-big-with-premier-league-team-cakes-a-british-bake-off-mlvjytuk /blog/score-a-sweet-goal-premier-league-cakes-for-every-fan-mp7ky330 301
+/blog/mountain-majesty-crafting-your-dream-rocky-wedding-cake-mk7jh6jk   /blog/rocky-mountain-wedding-cakes-sweet-peaks-for-your-big-day-mnjkggzy 301
+/blog/royal-treats-crafting-coronation-jubilee-cakes-mkrjn2ym            /blog/crown-jewels-buttercream-jubilee-coronation-cake-ideas-mo3kmctm 301
+/blog/divine-delights-navratri-durga-puja-celebration-cakes-mmpk7l22     /blog/navratri-durga-puja-cakes-sweet-ways-to-celebrate-devi-mq1l71v0 301
+/blog/diwali-delights-cakes-with-diya-rangoli-charm-mlljvujn             /blog/light-up-your-diwali-with-these-beautiful-cake-ideas-moxkv8uj 301
+/blog/bake-a-memory-personalized-cakes-that-tell-your-story-ml1jq6za     /blog/your-cake-your-story-personalized-designs-that-impress-mq1l77e2 301
+/blog/cakes-that-talk-telling-your-story-one-slice-at-a-time-mmpk7uhs    /blog/your-cake-your-story-personalized-designs-that-impress-mq1l77e2 301
+/blog/cakes-that-talk-personalizing-your-celebration-story-mpm5wiu0      /blog/your-cake-your-story-personalized-designs-that-impress-mq1l77e2 301
+/blog/sweet-memories-personalised-cakes-that-tell-your-story-modkpiyp    /blog/your-cake-your-story-personalized-designs-that-impress-mq1l77e2 301
+/blog/how-to-design-birthday-cake-online-free                            /blog/how-to-design-a-birthday-cake-online-free 301
+/blog/how-to-make-cake-design-for-free-online                            /blog/how-to-design-a-birthday-cake-online-free 301
+/blog/best-free-ai-cake-generator-2026                                   /blog/best-ai-cake-generators-2026 301

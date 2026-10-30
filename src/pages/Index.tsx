@@ -55,6 +55,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { RecipesNavDropdown, RecipesMobileMenu } from "@/components/RecipesNavDropdown";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useDynamicCakeCount } from "@/hooks/useDynamicCakeCount";
+import { HreflangCluster } from "@/components/HreflangCluster";
 
 // Lazy load TrustBadges to prevent render blocking
 // Lazy load TrustBadges - disabled for now to fix blank screen
@@ -262,6 +263,7 @@ const Index = () => {
         <meta name="twitter:image" content="https://cakeaiartist.com/hero-cake.jpg" />
         <meta name="twitter:image:alt" content="AI cake generator result — personalized birthday cake by Cake AI Artist" />
       </Helmet>
+        <HreflangCluster />
       
       <SoftwareApplicationSchema />
 

@@ -18,6 +18,7 @@ import { useBlogViewTracking } from "@/hooks/useBlogViewTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import DOMPurify from "dompurify";
+import NotFound from "./NotFound";
 
 // Database blog post type
 interface DatabaseBlogPost {
@@ -2145,7 +2146,11 @@ const BlogPost = () => {
   }
   
   if (!post) {
-    return <Navigate to="/blog" replace />;
+    // A slug with no published post must render the noindex 404, not bounce to
+    // /blog. The bounce returned HTTP 200 with the blog index, which Google
+    // reads as a soft 404 and keeps in the index — that is what kept 22 dead
+    // /blog/ URLs alive after they were dropped from the sitemap (2026-10-30).
+    return <NotFound />;
   }
 
   // Split content to insert CTA box mid-article

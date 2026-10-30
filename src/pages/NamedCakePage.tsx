@@ -17,6 +17,7 @@ import { NAME_MEANINGS, fallbackMeaning } from "@/data/nameMeanings";
 import { cakeMessagesFor } from "@/data/cakeMessages";
 import { CAKE_THEMES } from "@/data/cakeThemes";
 import { themesForName } from "@/data/nameThemeMap";
+import NotFound from "./NotFound";
 
 const samples = [featuredCake1, featuredCake2, featuredCake3, featuredCake4, featuredCake5];
 
@@ -30,7 +31,9 @@ const NamedCakePage = () => {
     [slug],
   );
 
-  if (!entry) return <Navigate to="/ai-birthday-cake-with-name" replace />;
+  // Unknown name slug: render the noindex 404 rather than a 200 bounce, which
+  // Google would treat as a soft 404. See BlogPost.tsx for the same fix.
+  if (!entry) return <NotFound />;
 
   const { name } = entry;
   const hasDeepMeaning = !!NAME_MEANINGS[entry.slug];
