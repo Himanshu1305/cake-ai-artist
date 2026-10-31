@@ -146,7 +146,7 @@ const USALanding = () => {
   return (
     <div className="min-h-screen bg-gradient-celebration relative overflow-hidden">
       <Helmet>
-        <title>Birthday Cake With Name & Photo — Free AI Cake Maker (Better Than ChatGPT)</title>
+        <title>Birthday Cake With Name & Photo — Free AI Maker</title>
         <meta name="description" content="Create a personalized birthday cake with name & photo in 30 seconds. Free US AI cake generator with 50+ themes — sharper, faster and more realistic than ChatGPT or Gemini." />
         <meta name="keywords" content="birthday cake with name, birthday cake with name and photo, personalized birthday cake usa, photo cake maker, name cake generator, ai cake generator usa, free ai cake generator, ai cake vs chatgpt, ai cake vs gemini, ai cake vs midjourney, best ai cake designer usa, 4th of july cake, thanksgiving cake design, halloween cake ai, wedding cake ai usa, baby shower cake generator, graduation cake design" />
 
