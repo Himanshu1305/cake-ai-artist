@@ -182,34 +182,39 @@ serve(async (req) => {
 
       const countries = ["IN", "UK", "AU", "CA"];
       const weekNumber = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-      const countryIndex = weekNumber % countries.length;
-      const targetCountry = countries[countryIndex];
+      const targetCountry = countries[weekNumber % countries.length];
 
       const results = [];
+      const skipped: string[] = [];
 
-      // Generate one country-specific article
-      const countryTopics = topicPools[targetCountry];
-      const countryTopic = countryTopics[weekNumber % countryTopics.length];
-      
-      console.log(`Generating country-specific article for ${targetCountry}: ${countryTopic}`);
-      const countryResult = await generateArticle(supabase, countryTopic, targetCountry);
-      results.push(countryResult);
+      // One country-specific article, if that pool still has an unwritten topic.
+      const countryTopic = await pickUnusedTopic(supabase, topicPools[targetCountry], targetCountry);
+      if (countryTopic) {
+        console.log(`Generating country-specific article for ${targetCountry}: ${countryTopic}`);
+        results.push(await generateArticle(supabase, countryTopic, targetCountry));
+      } else {
+        skipped.push(targetCountry);
+      }
 
-      // Generate one universal article
-      const universalTopics = topicPools["UNIVERSAL"];
-      const universalTopic = universalTopics[weekNumber % universalTopics.length];
-      
-      console.log(`Generating universal article: ${universalTopic}`);
-      const universalResult = await generateArticle(supabase, universalTopic, null);
-      results.push(universalResult);
+      // One universal article, same rule.
+      const universalTopic = await pickUnusedTopic(supabase, topicPools["UNIVERSAL"], null);
+      if (universalTopic) {
+        console.log(`Generating universal article: ${universalTopic}`);
+        results.push(await generateArticle(supabase, universalTopic, null));
+      } else {
+        skipped.push("UNIVERSAL");
+      }
 
-      // Log task success
-      await logTaskRun('success', `Generated ${results.length} articles`, null, results.length);
+      const summary = skipped.length
+        ? `Generated ${results.length} articles; skipped ${skipped.join(", ")} (topic pool exhausted)`
+        : `Generated ${results.length} articles`;
+      await logTaskRun('success', summary, null, results.length);
 
       return new Response(
         JSON.stringify({ 
           message: "Weekly batch generated",
           articles: results,
+          skipped,
           records_processed: results.length
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -219,7 +224,20 @@ serve(async (req) => {
     // Single article generation
     const country = body.country || null;
     const topics = country ? topicPools[country] : topicPools["UNIVERSAL"];
-    const topic = body.topic || topics[Math.floor(Math.random() * topics.length)];
+    // An explicit body.topic is honoured as-is (manual override). Otherwise pick
+    // one that has not been written — never at random, which is how the
+    // duplicates happened.
+    const topic = body.topic || (await pickUnusedTopic(supabase, topics, country));
+
+    if (!topic) {
+      return new Response(
+        JSON.stringify({
+          message: "No unused topic available for this pool — nothing generated.",
+          country: country ?? "UNIVERSAL",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
 
     const result = await generateArticle(supabase, topic, country);
 
@@ -247,6 +265,90 @@ serve(async (req) => {
     );
   }
 });
+
+
+/**
+ * Pick a topic from `pool` that has not been written yet.
+ *
+ * WHY THIS EXISTS (2026-10-31)
+ * ----------------------------
+ * Selection used to be `pool[weekNumber % pool.length]` for the weekly batch
+ * and `pool[Math.random() * pool.length]` for one-offs. Neither checked what
+ * was already published, and every pool holds exactly 12 topics, so:
+ *   - the universal pool repeated itself every 12 weeks
+ *   - worse, countries rotate 4-weekly while the index advanced by 1 per week,
+ *     so a given country only ever reached indices k, k+4, k+8 — THREE of its
+ *     twelve topics, on a 12-week loop
+ * That produced the duplicate clusters cleaned up on 2026-10-30: two identical
+ * cricket-world-cup posts, two aussie-day-bites, two geometric-cakes, and so
+ * on — 25 posts retired and redirected.
+ *
+ * Topics already used are read from blog_posts.source_topic, which includes
+ * retired duplicates, so a retired topic is never regenerated. Posts written
+ * before this column existed have source_topic null and cannot be matched by
+ * topic, so a slug-stem fallback catches the obvious repeats too.
+ *
+ * Returns null when the pool is exhausted. Callers must SKIP rather than fall
+ * back to repeating — writing a duplicate is worse than writing nothing.
+ */
+async function pickUnusedTopic(
+  supabase: any,
+  pool: string[],
+  country: string | null,
+): Promise<string | null> {
+  const { data: rows, error } = await supabase
+    .from("blog_posts")
+    .select("source_topic, slug")
+    .limit(5000);
+
+  if (error) {
+    // Fail closed: without the history we cannot tell what is a duplicate.
+    console.error("pickUnusedTopic: could not read blog_posts, skipping:", error.message);
+    return null;
+  }
+
+  const usedTopics = new Set(
+    (rows || []).map((r: any) => r.source_topic).filter(Boolean).map((t: string) => t.toLowerCase()),
+  );
+  const existingSlugs = (rows || []).map((r: any) => r.slug).filter(Boolean);
+
+  // Fallback for any post with no source_topic: compare the topic's distinctive
+  // words against existing slugs. source_topic was backfilled for all 45
+  // generator-written posts on 2026-10-31, so this is now only a safety net for
+  // anything hand-written later. It is deliberately STRICT (0.8 overlap and at
+  // least 2 shared words): at 0.6 it produced false positives — "French-Canadian
+  // celebration cake ideas" matched the northern-lights slug on
+  // {canadian, celebration} and would have been skipped forever.
+  const STOP = new Set(["the","a","and","for","your","with","to","of","in","on","that","this","are","is","its","you","my","our","how","what","why","best","ideas","cake","cakes"]);
+  const signature = (text: string) =>
+    new Set(
+      text.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/[\s-]+/)
+        .filter((w) => w.length > 3 && !STOP.has(w)),
+    );
+  const looksWritten = (topic: string) => {
+    const sig = signature(topic);
+    if (sig.size === 0) return false;
+    return existingSlugs.some((slug: string) => {
+      const slugSig = signature(slug);
+      let shared = 0;
+      sig.forEach((w) => { if (slugSig.has(w)) shared++; });
+      return shared >= 2 && shared / sig.size >= 0.8;
+    });
+  };
+
+  const unused = pool.filter((t) => !usedTopics.has(t.toLowerCase()) && !looksWritten(t));
+
+  if (unused.length === 0) {
+    console.warn(
+      `pickUnusedTopic: every topic in the ${country ?? "UNIVERSAL"} pool has been written. ` +
+      `Skipping rather than repeating one. Add new topics to topicPools.`,
+    );
+    return null;
+  }
+
+  console.log(`pickUnusedTopic: ${unused.length}/${pool.length} unused in ${country ?? "UNIVERSAL"}`);
+  return unused[0];
+}
 
 async function generateArticle(
   supabase: any,
@@ -389,6 +491,8 @@ ${parsed.content}`;
       is_ai_generated: true,
       featured_image: featuredImage,
       image_alt: parsed.image_alt || parsed.title,
+      // Recorded so pickUnusedTopic() can never choose this topic again.
+      source_topic: topic,
     });
 
   if (insertError) {
