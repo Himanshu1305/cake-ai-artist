@@ -5,7 +5,7 @@ import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowLeft, Home, Sparkles, Info } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
-import { ArticleSchema } from "@/components/SEOSchema";
+import { ArticleSchema, FAQSchema } from "@/components/SEOSchema";
 import { AdSlot } from "@/components/AdSlot";
 import { SidebarAd } from "@/components/SidebarAd";
 import { AD_SLOTS } from "@/config/adSlots";
@@ -36,6 +36,7 @@ interface DatabaseBlogPost {
   ai_disclosure: string | null;
   meta_description: string | null;
   meta_title: string | null;
+  faq: { question: string; answer: string }[] | null;
   keywords: string[] | null;
 }
 
@@ -2126,6 +2127,7 @@ const BlogPost = () => {
     // 19 of 62 published titles ran past 60 chars and were truncated in
     // results, so the two are now separate fields (2026-10-30).
     metaTitle: dbPost.meta_title || dbPost.title,
+    faq: Array.isArray(dbPost.faq) ? dbPost.faq : null,
     metaDescription: dbPost.meta_description || dbPost.excerpt,
     keywords: dbPost.keywords?.join(', ') || '',
     content: dbPost.content,
@@ -2137,6 +2139,7 @@ const BlogPost = () => {
   } : hardcodedPost ? {
     ...hardcodedPost,
     metaTitle: hardcodedPost.title,
+    faq: null as { question: string; answer: string }[] | null,
     imageAlt: hardcodedPost.title,
     isAiGenerated: false,
     aiDisclosure: '',
@@ -2196,6 +2199,12 @@ const BlogPost = () => {
         <meta name="twitter:image" content={heroImage || "https://cakeaiartist.com/hero-cake.jpg"} />
       </Helmet>
       
+      {/* FAQPage schema. Answer engines (AI Overviews, ChatGPT, Perplexity)
+          lift self-contained Q/A pairs far more readily than prose, so the
+          generator writes three per post and they are stored structured
+          rather than buried in the content HTML. */}
+      {post.faq && post.faq.length > 0 && <FAQSchema faqs={post.faq} />}
+
       <ArticleSchema 
         headline={post.title}
         description={post.metaDescription}

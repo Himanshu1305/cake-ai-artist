@@ -83,26 +83,32 @@ const topicPools: Record<string, string[]> = {
 };
 
 // Humanized, SHORT-FORM writing system prompt — built for skim-readers
-const systemPrompt = `You are a real cake-blog writer with a warm, personal voice. You've been writing about cakes and parties for ten years and it shows.
+const systemPrompt = `You are a cake designer who has been writing about cakes and parties for ten years, and it shows in the specifics you reach for.
 
-NON-NEGOTIABLE RULES:
-- Total length: 400 to 550 words. Never more.
-- Use contractions every time (it's, you'll, that's, we're, don't).
-- Mix sentence lengths heavily. Some 4 words. Some longer ones that flow like you're talking to a friend across the kitchen counter.
-- One small personal aside or opinion ("honestly, I'd skip the fondant on this one").
-- Specific, concrete details over generic praise. Names, brands, exact temperatures, real prices when relevant.
-- Reference real cultural context for the target country.
-- Second person ("you").
-- Zero AI-tells. NEVER use any of these words or phrases: "In conclusion", "To summarize", "Moreover", "Furthermore", "delve", "tapestry", "leverage", "elevate your", "unleash", "unlock the", "embark on", "navigate the world of", "in today's fast-paced", "game-changer", "level up", "at the end of the day", "when it comes to".
-- No corporate fluff. No throat-clearing intros.
+LENGTH: 900 to 1400 words. Measured on this site: posts under 900 words and posts over 2,300 words both underperform — the 2,300+ group averages 154 impressions each. Depth earns the ranking; padding does not.
+
+EXPERIENCE AND EXPERTISE (this is what separates a page that ranks from one that does not):
+- Lead with something only someone who has actually done this would know. A failure mode, a cost, a timing, a thing that goes wrong.
+- Concrete over general every time: real prices with currency, oven temperatures, timings, quantities, brand names, how long something keeps.
+- Name the trade-off. Every technique has one. Say which.
+- One honest opinion, including when it is "skip this".
+- Never invent a statistic, a study, a price or a quote. If you do not know a number, describe the thing without one. A made-up figure is the fastest way to lose trust, and it is worse than saying nothing.
+
+VOICE:
+- Contractions throughout. Second person.
+- Mix sentence lengths hard. Some short. Some that run on a little the way people actually talk.
+- No throat-clearing. The first sentence is already useful.
+- NEVER use: "In conclusion", "To summarize", "Moreover", "Furthermore", "delve", "tapestry", "leverage", "elevate your", "unleash", "unlock the", "embark on", "navigate the world of", "in today's fast-paced", "game-changer", "level up", "at the end of the day", "when it comes to".
 
 STRUCTURE (strict):
-- Opening hook: 1-2 punchy sentences. ~30-50 words.
-- Exactly 3 H2 sections, ~110-140 words each.
-- One short <ul> with 3-5 quick tips inside one of the sections.
-- Closing: 1 warm sentence + soft CTA to design a cake on Cake AI Artist. ~25 words.
+- Opening: 40-70 words. Answer the search intent immediately — do not make them scroll for it.
+- A <p> immediately after the opening that answers the core question in 40-60 self-contained words. No pronouns referring backwards, no "as mentioned above". An answer engine must be able to quote this paragraph alone and have it make sense.
+- 4 to 6 H2 sections. Phrase at least two as the question a reader would actually type.
+- One <ul> of 4-6 concrete tips.
+- One short <ol> walking through a process step by step, where the topic has one.
+- Closing: 2 sentences, one soft CTA to design a cake free on Cake AI Artist.
 
-OUTPUT: Pure HTML using <p>, <h2>, <ul>, <li>, <strong>. No markdown. No <h1>. No wrapper div.`;
+OUTPUT: Pure HTML using <p>, <h2>, <h3>, <ul>, <ol>, <li>, <strong>. No markdown. No <h1>. No wrapper div. No inline styles.`;
 
 // Phrases that mark a post as obviously AI — used to reject and retry
 const AI_TELLS = [
@@ -187,7 +193,18 @@ serve(async (req) => {
       const results = [];
       const skipped: string[] = [];
 
-      // One country-specific article, if that pool still has an unwritten topic.
+      // FIRST CHOICE: the highest-scoring keyword the site already ranks for.
+      // This is the whole point of the 2026-10-31 rework — the hand-written
+      // topic pools had no relationship to real demand, and the posts they
+      // produced averaged 154 impressions each.
+      const kw = await pickKeywordTopic(supabase);
+      if (kw) {
+        console.log(`Generating keyword-led article: "${kw.query}" (${kw.bucket})`);
+        results.push(await generateArticle(supabase, kw.query, null, kw.query));
+      }
+
+      // SECOND: a country article from the legacy pool, to keep regional
+      // coverage going while the keyword table is small.
       const countryTopic = await pickUnusedTopic(supabase, topicPools[targetCountry], targetCountry);
       if (countryTopic) {
         console.log(`Generating country-specific article for ${targetCountry}: ${countryTopic}`);
@@ -196,13 +213,16 @@ serve(async (req) => {
         skipped.push(targetCountry);
       }
 
-      // One universal article, same rule.
-      const universalTopic = await pickUnusedTopic(supabase, topicPools["UNIVERSAL"], null);
-      if (universalTopic) {
-        console.log(`Generating universal article: ${universalTopic}`);
-        results.push(await generateArticle(supabase, universalTopic, null));
-      } else {
-        skipped.push("UNIVERSAL");
+      // Only fall back to a universal pool topic when no keyword was available,
+      // so a normal week produces two posts rather than three.
+      if (!kw) {
+        const universalTopic = await pickUnusedTopic(supabase, topicPools["UNIVERSAL"], null);
+        if (universalTopic) {
+          console.log(`Generating universal article: ${universalTopic}`);
+          results.push(await generateArticle(supabase, universalTopic, null));
+        } else {
+          skipped.push("UNIVERSAL");
+        }
       }
 
       const summary = skipped.length
@@ -227,7 +247,14 @@ serve(async (req) => {
     // An explicit body.topic is honoured as-is (manual override). Otherwise pick
     // one that has not been written — never at random, which is how the
     // duplicates happened.
-    const topic = body.topic || (await pickUnusedTopic(supabase, topics, country));
+    // Manual override wins; then a real keyword; then the legacy pool.
+    let topic: string | null = body.topic || null;
+    let targetKeyword: string | null = body.target_keyword || null;
+    if (!topic && !country) {
+      const kw = await pickKeywordTopic(supabase);
+      if (kw) { topic = kw.query; targetKeyword = kw.query; }
+    }
+    if (!topic) topic = await pickUnusedTopic(supabase, topics, country);
 
     if (!topic) {
       return new Response(
@@ -239,7 +266,7 @@ serve(async (req) => {
       );
     }
 
-    const result = await generateArticle(supabase, topic, country);
+    const result = await generateArticle(supabase, topic, country, targetKeyword);
 
     return new Response(
       JSON.stringify(result),
@@ -266,6 +293,71 @@ serve(async (req) => {
   }
 });
 
+
+
+/**
+ * Pick the highest-value keyword to write about next.
+ *
+ * Replaces guesswork with the site's own Search Console demand. Rows live in
+ * keyword_opportunities, scored on impressions, how movable the current
+ * position is, and the gap between actual and expected CTR. See
+ * supabase/migrations/20261031000001_keyword_opportunities.sql for the model.
+ *
+ * Three gates, in order:
+ *   1. status must be 'available' — 'used' means written, 'vetoed' means it
+ *      ranks but can never convert (e.g. "erek kue ulang tahun 3d", an
+ *      Indonesian dream-number search that reached position 1.6)
+ *   2. season_months must include the current month, or be null (evergreen).
+ *      Without this the top-scoring row would have us writing a Raksha Bandhan
+ *      post in November.
+ *   3. the query must not already be a blog_posts.target_keyword
+ *
+ * Returns null when nothing qualifies, and the caller then falls back to the
+ * legacy topic pools. Never repeats — that is the whole point.
+ */
+async function pickKeywordTopic(
+  supabase: any,
+): Promise<{ query: string; bucket: string; impressions: number; position: number } | null> {
+  const month = new Date().getUTCMonth() + 1;
+
+  const { data: rows, error } = await supabase
+    .from("keyword_opportunities")
+    .select("query, bucket, impressions, position, season_months")
+    .eq("status", "available")
+    .order("score", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("pickKeywordTopic: keyword_opportunities unavailable:", error.message);
+    return null;
+  }
+  if (!rows?.length) return null;
+
+  const { data: written } = await supabase
+    .from("blog_posts")
+    .select("target_keyword")
+    .not("target_keyword", "is", null)
+    .limit(5000);
+  const alreadyWritten = new Set(
+    (written || []).map((r: any) => (r.target_keyword || "").toLowerCase()),
+  );
+
+  for (const row of rows) {
+    const inSeason = !row.season_months?.length || row.season_months.includes(month);
+    if (!inSeason) {
+      console.log(`pickKeywordTopic: skipping "${row.query}" — out of season (months ${row.season_months})`);
+      continue;
+    }
+    if (alreadyWritten.has(row.query.toLowerCase())) continue;
+    console.log(
+      `pickKeywordTopic: "${row.query}" (${row.bucket}, ${row.impressions} impr, pos ${row.position})`,
+    );
+    return row;
+  }
+
+  console.warn("pickKeywordTopic: no in-season unwritten keyword available");
+  return null;
+}
 
 /**
  * Pick a topic from `pool` that has not been written yet.
@@ -353,30 +445,55 @@ async function pickUnusedTopic(
 async function generateArticle(
   supabase: any,
   topic: string,
-  country: string | null
+  country: string | null,
+  targetKeyword: string | null = null
 ): Promise<{ slug: string; title: string; status: string }> {
   const countryContext = country 
     ? `This article is specifically for ${getCountryName(country)} readers. Include culturally relevant examples, local traditions, and specific references that will resonate with this audience.`
     : "This article should be universal and appeal to readers from any country.";
 
+  const keywordBrief = targetKeyword
+    ? `PRIMARY SEARCH TERM: "${targetKeyword}"
+This site already appears in Google for that exact term, so the article must be
+unmistakably about it. Use it in the title, in the first 60 words, and as the
+wording of at least one H2 — phrased naturally, never stuffed. Write for the
+person who typed it: match what they were hoping to find, not a neighbouring topic.
+`
+    : "";
+
   const prompt = `Write a blog article about: ${topic}
 
-${countryContext}
+${keywordBrief}${countryContext}
+
+INTERNAL LINKS — include two or three, worded as a natural part of a sentence,
+never as a bare "click here". Use exactly these paths:
+  /free-ai-cake-designer   the free cake designer
+  /3d-cake-designer        the 3D designer
+  /ai-birthday-cake-with-name   cakes with a name on them
+  /photo-cake-maker        photo cakes
+Only link one where the sentence genuinely calls for it.
+
+Also produce 3 FAQ pairs. Each question is one a real person would type into
+Google or ask an assistant. Each answer is 40-60 words and stands completely on
+its own — no "as above", no pronouns pointing back at other text — because
+answer engines quote these one at a time.
 
 Generate:
-1. A catchy, SEO-friendly title (max 70 characters)
-2. A compelling excerpt/meta description (max 160 characters)
-3. 5 relevant SEO keywords (comma-separated)
-4. The full article content in HTML format
-5. A descriptive image alt text (10-15 words) describing a celebration cake that matches this article's topic — be specific (colors, decorations, style)
+1. A title, max 60 characters, primary search term first
+2. A meta description, max 155 characters, that gives a reason to click
+3. 5 SEO keywords
+4. The article in HTML
+5. Image alt text, 10-15 words, describing a specific cake for this topic
+6. The 3 FAQ pairs
 
-Respond in this exact JSON format:
+Respond in this exact JSON format and nothing else:
 {
-  "title": "Your Article Title Here",
-  "excerpt": "A compelling 1-2 sentence excerpt that makes readers want to click.",
-  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
-  "image_alt": "Descriptive alt text of a cake matching this article topic",
-  "content": "<p>Your HTML content here...</p>"
+  "title": "Title Here",
+  "excerpt": "Meta description here.",
+  "keywords": ["k1","k2","k3","k4","k5"],
+  "image_alt": "Specific cake description",
+  "faq": [{"question":"...","answer":"..."},{"question":"...","answer":"..."},{"question":"...","answer":"..."}],
+  "content": "<p>...</p>"
 }`;
 
   console.log(`Calling Gemini for topic: ${topic}`);
@@ -412,7 +529,10 @@ Respond in this exact JSON format:
   let words = plain.split(/\s+/).filter(Boolean);
 
   const findTells = () => AI_TELLS.filter(t => plain.toLowerCase().includes(t));
-  const needsRewrite = () => words.length > 600 || findTells().length > 0;
+  // Was `words.length > 600`, which capped every post at roughly half the
+  // length the spec now asks for. Rewrite only when the article misses the
+  // 900-1400 band or carries an AI tell.
+  const needsRewrite = () => words.length < 900 || words.length > 1400 || findTells().length > 0;
 
   if (needsRewrite()) {
     console.log(`Rewriting: ${words.length} words, AI-tells: ${findTells().join(', ') || 'none'}`);
@@ -493,6 +613,8 @@ ${parsed.content}`;
       image_alt: parsed.image_alt || parsed.title,
       // Recorded so pickUnusedTopic() can never choose this topic again.
       source_topic: topic,
+      target_keyword: targetKeyword,
+      faq: Array.isArray(parsed.faq) ? parsed.faq : null,
     });
 
   if (insertError) {
@@ -501,6 +623,18 @@ ${parsed.content}`;
   }
 
   console.log(`Article saved: ${slug} (published=${autoPublish})`);
+
+  // Retire the keyword so it is never written twice. Best-effort: a failure
+  // here must not lose the article that was just written successfully.
+  if (targetKeyword) {
+    const { error: markError } = await supabase
+      .from("keyword_opportunities")
+      .update({ status: "used", used_by_slug: slug, updated_at: new Date().toISOString() })
+      .eq("query", targetKeyword);
+    if (markError) {
+      console.error(`Could not mark "${targetKeyword}" as used:`, markError.message);
+    }
+  }
 
   return {
     slug,
