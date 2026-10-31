@@ -185,6 +185,13 @@ export default function AdminBlogAnalytics() {
         .from('blog_posts')
         .select('id, slug, title, excerpt, category, target_country, is_ai_generated, created_at')
         .eq('is_published', false)
+        // Exclude retired posts. On 2026-10-30, 25 near-duplicate posts were
+        // unpublished and 301-redirected to the surviving post in each cluster
+        // (public/_redirects). They are unpublished but they are NOT drafts
+        // awaiting review — republishing one re-creates the duplicate-content
+        // problem Search Console reports as "Alternate page with proper
+        // canonical", and strands its redirect pointing at a live page.
+        .is('retired_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
