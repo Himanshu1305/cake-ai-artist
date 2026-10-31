@@ -250,8 +250,31 @@ Note: **`npx supabase functions logs` does not exist** — read logs from the Su
   database**. Proof: `pg_cron` and `pg_net` are installed here, and `cron.job_run_details` holds
   9,663 historical runs ending 2026-08-16 — rows that live here, carried over by the `pg_restore`,
   which is why they pointed at the old project's URLs.
-- All 7 were unscheduled on 2026-09-08 to clear those stale rows, and **nothing rescheduled them.**
-  That, not Lovable, is the whole reason the blog pipeline and watchdog were silent for 10 weeks.
+- All 7 were unscheduled on 2026-09-08 to clear those stale rows, and nothing rescheduled them.
+- **THE ACTUAL BLOCKER (found 2026-10-31): a `pg_restore` sequence desync.** Rescheduling alone
+  would never have worked. `pg_restore` copied 9,663 `cron.job_run_details` rows (runids up to
+  9663) but left `cron.runid_seq` at 3011. Every tick pg_cron called `nextval` -> 3012, hit a
+  runid that already existed, and died:
+  ```
+  duplicate key value violates unique constraint "job_run_details_pkey"
+  background worker "pg_cron launcher" (PID ...) exited with exit code 1
+  pg_cron scheduler started          <- restarts, crashes again next tick
+  ```
+  The crash happens BEFORE any run row is written, so `cron.job_run_details` looked frozen at the
+  restore date and the scheduler looked merely idle. This project had never executed a single
+  cron job until 2026-10-31.
+- **FIX:** `setval` is denied — `cron.runid_seq` is owned by `supabase_admin` and `postgres` is
+  NOT superuser on this project, so it fails with 42501 in the MCP **and** in the dashboard SQL
+  editor. DELETE on `cron.job_run_details` *is* granted to `postgres`, so the fix is to remove the
+  colliding rows instead: `delete from cron.job_run_details where runid >= <seq last_value>;`
+  Verified: probe job succeeded three minutes running, then `cake-generation-watchdog` ran on
+  schedule at 05:10 UTC with the function returning HTTP 200.
+- **Diagnosing this class of fault:** `cron.job` looking correct proves nothing. Schedule
+  `select 1;` at `* * * * *`, wait two minutes, and if `cron.job_run_details` stays empty the
+  scheduler is dying — then read `postgres_logs` for the launcher's exit, which names the cause.
+- Historical note: the OLD project's watchdog job was itself broken. Run rows from 2026-06-24 and
+  2026-07-01 show `ERROR: column "value" does not exist` from a Vault lookup using the wrong
+  column name, so the watchdog had not alerted on anything for months before the migration either.
 - **No service_role key is required.** All six cron target functions are `verify_jwt = false` in
   `supabase/config.toml`, so the platform JWT gate is off:
   - `cake-generation-watchdog` — no JWT gate, no secret check → **no credentials at all**

@@ -4,6 +4,15 @@
 -- STATUS: APPLIED to the live database on 2026-10-31 (jobids 8-14). This file
 -- is the record of what is running. Re-running it is idempotent.
 --
+-- PREREQUISITE — if cron appears scheduled but never runs, see PROJECT_CONTEXT
+-- §3.14. The pg_restore left cron.runid_seq (3011) behind the restored
+-- job_run_details rows (max runid 9663), so the pg_cron launcher crashed with a
+-- duplicate-key error on every tick and no run row was ever written. setval is
+-- denied (sequence owned by supabase_admin; postgres is not superuser), so the
+-- fix is to delete the colliding rows:
+--   delete from cron.job_run_details where runid >= (select last_value from cron.runid_seq);
+-- Done on 2026-10-31; jobs have run correctly since.
+--
 -- ----------------------------------------------------------------------------
 -- WHERE CRON ACTUALLY LIVES (corrected 2026-10-31)
 -- ----------------------------------------------------------------------------
