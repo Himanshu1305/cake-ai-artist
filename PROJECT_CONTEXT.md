@@ -227,6 +227,42 @@ Note: **`npx supabase functions logs` does not exist** — read logs from the Su
   settings pass: auth config, rate limits, storage policies.
 - **Mitigation in place:** watchdog `users_blocked` alert fires when unconfirmed users > 0.
 
+### 3.13 index.html is the SPA shell — never put page-specific meta in it
+- **Oct 30 2026:** every page on the site served **two** `<meta name="description">` tags, and
+  crawlers take the first. `react-helmet-async` replaces `<title>` but **appends** meta tags, so
+  anything page-specific sitting in `index.html` — which Cloudflare serves for every route —
+  produced a duplicate on all 369 URLs with the shell's value winning.
+- **Effect:** all 369 pages presented the homepage's generic description in search
+  ("Cake AI by Cake AI Artist — the free AI birthday cake generator…"). A searcher looking for
+  "happy birthday ibrahim cake" saw a blurb that never mentioned Ibrahim. `og:url` also resolved
+  to `/` everywhere, so **every shared link pointed at the homepage** rather than the cake.
+- Also duplicated: `og:title`, `og:description`, `og:type`, `keywords`.
+- **FIX:** only global fallbacks belong in the shell (`og:site_name`, `og:locale`, `og:image`,
+  `twitter:card`). Everything page-specific goes through Helmet or `<PageSeo />`.
+- **This was invisible to `tsc` and to the build.** It only showed up by rendering the built site
+  in a real browser and counting tags. Any future meta change must be verified that way.
+- Same trap bit hreflang: a cluster hardcoded in the shell told Google that all 369 URLs had
+  regional alternates at /uk, /usa, /canada, /australia, /india.
+
+### 3.14 Cron lives in Postgres, not in Lovable — and needs no service_role key
+- **Dead 2026-08-16 → 2026-10-31.** The standing explanation was "those jobs were on Lovable and
+  went away with it". Lovable's dashboard was only a UI; the jobs are **pg_cron rows in this
+  database**. Proof: `pg_cron` and `pg_net` are installed here, and `cron.job_run_details` holds
+  9,663 historical runs ending 2026-08-16 — rows that live here, carried over by the `pg_restore`,
+  which is why they pointed at the old project's URLs.
+- All 7 were unscheduled on 2026-09-08 to clear those stale rows, and **nothing rescheduled them.**
+  That, not Lovable, is the whole reason the blog pipeline and watchdog were silent for 10 weeks.
+- **No service_role key is required.** All six cron target functions are `verify_jwt = false` in
+  `supabase/config.toml`, so the platform JWT gate is off:
+  - `cake-generation-watchdog` — no JWT gate, no secret check → **no credentials at all**
+  - the other five — compare `X-Cron-Secret` against `CRON_SECRET` → **cron secret only**
+  The task was blocked for weeks on a key it never needed. Check `config.toml` before assuming.
+- The cron secret is read from **Vault** at fire time, so it is never in `cron.job.command`, git or
+  a chat transcript. Set/rotate with `select vault.create_secret('<value>', 'cron_secret');`
+- `cron.unschedule(name)` inside a `do $$` block fails with **42702** if the loop variable is named
+  `job` — `jobname = job` is ambiguous against `cron.job.job`. Name it `jname`.
+- See `supabase/migrations/20260818000001_cron_schedules.sql` — it is the applied record.
+
 ### 3.10 IPv6 / session pooler — *Mac + IPv4 only, historical*
 Applied to the **one-off `pg_restore` during the Aug 2026 migration**, not to normal Windows work.
 New Supabase projects default to IPv6 direct connections, so a direct-connection
@@ -351,6 +387,13 @@ weeks late. The watchdog detects **failures**; these incidents were **absences**
 
 | Date | Issue | Root cause / fix |
 |---|---|---|
+| Oct 31 | Cron dead 10 weeks — root cause found | Not a Lovable casualty: pg_cron runs in this database and the 7 jobs were unscheduled on Sep 8 and never recreated. Also found the service_role key was never needed (all targets verify_jwt=false). All 7 rescheduled, jobids 8–14, cron secret in Vault. See §3.14. |
+| Oct 30 | Every page served the homepage's meta description | index.html is the SPA shell; Helmet appends rather than replaces meta, so all 369 pages had two description tags and crawlers took the shell's. og:url was "/" sitewide, so every shared link pointed at the homepage. Fixed: page-specific meta removed from the shell. See §3.13. |
+| Oct 30 | Name pages: 52,493 impressions, 424 clicks (0.81% CTR at pos 5.7) | Title was 68 chars so the offer truncated away, led with etymology, and never carried the searched phrase. Rewritten to lead with "Happy Birthday {name} Cake" (54 chars). Theme and blog titles likewise; blog "| Cake AI Artist Blog" suffix removed (21 wasted chars, never rendered). |
+| Oct 30 | Sitemap had drifted badly from reality | Hand-maintained static file: 27 blog URLs for posts not in the DB, 25 published posts missing, lastmod frozen at July. Replaced with a build-time generator reading cakeNames, cakeThemes, blog_posts, cake_recipes **and** the 27 hardcoded posts in BlogPost.tsx. npm run seo:check guards consistency. |
+| Oct 30 | 6 name pages were duplicates of other names | /birthday-cake-for/jack-2 served the page for "Jacob" (also kevin-2/Kyle, anna-2/Anya, maya-2/Maia, noah-2/Nate, ava-2/Aria) — Google's "Duplicate without user-selected canonical". Slugs renamed, 301s added. |
+| Oct 30 | 25 duplicate blog posts | The generator wrote the same topic 2–5 times with different slug suffixes. Winner by impressions kept per cluster; the rest unpublished (reversible) and 301'd. |
+| Oct 30 | Missing pages returned HTTP 200 with other pages' content | BlogPost, NamedCakePage, ThemedCakePage and RecipeDetail bounced unknown slugs via client-side <Navigate>, which Google reads as a soft 404 and keeps indexed. All four now render <NotFound /> with noindex. |
 | Sep 7 | Top view failing — root cause found | Prompt over-constrained (~110 words, stacked numeric + negative constraints); Gemini returns text not image. Only 'top' affected. Fixed: simplified-prompt retry after chain exhaustion. See §3.12. |
 | Sep 7 | Auth leak recurrence — root cause found | Auth settings are platform config, not repo config, so the migration never carried them. Fixed: settings corrected, watchdog 'users_blocked' alert added. See §3.9. |
 | Sep 7 | Monitoring blind to absence | All three incidents this month were absences, not failures. Watchdog now checks consecutive failures (volume-based, not time-based — volume is ~2 jobs/week) and blocked users. |
@@ -379,7 +422,9 @@ weeks late. The watchdog detects **failures**; these incidents were **absences**
 ## 7. Open items
 
 **Fix soon**
-- Rotate the Supabase **service_role key** (exposed in migration chat).
+- Rotate the Supabase **service_role key** (exposed in migration chat). Note: no cron job needs
+  it any more (§3.14), so rotating it will not break scheduling.
+- **Set `cron_secret` in Vault** — five of the seven cron jobs 401 until it exists (§3.14).
 - Repoint **email logo URLs** off the old project (§2.5) — before Oct decommission.
 - **PostShareUpgradeModal** `country="US"` default → geo (§2.4).
 - **Lifetime-only premium** check across ~15 pages (§2.1).
@@ -389,8 +434,9 @@ weeks late. The watchdog detects **failures**; these incidents were **absences**
 
 **Decisions pending**
 Hero declutter + font-contrast audit (analysis done, unimplemented — biggest UX win) ·
-browse-hub for ~220 programmatic `/birthday-cake-for/*` pages (likely most of "Discovered –
-not indexed") · Trustpilot for SERP stars (needs ~25 reviews).
+browse-hub for ~220 programmatic `/birthday-cake-for/*` pages (note: the "Discovered – not
+indexed" bucket turned out to be the stale sitemap, fixed Oct 30 — a hub is still worth doing
+for internal linking, but it was not the indexing cause) · Trustpilot for SERP stars (needs ~25 reviews).
 
 **Growth backlog (researched, not started)**
 Pinterest · weekly Reels · bakery embed widget · WhatsApp share-message copy ·
